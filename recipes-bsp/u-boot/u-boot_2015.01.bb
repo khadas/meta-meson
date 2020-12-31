@@ -76,6 +76,8 @@ DEPENDS_append_g12a = " gcc-arm-none-eabi-native"
 
 DEPENDS_append = " coreutils-native python-native python-pycrypto-native "
 inherit pythonnative
+export BL30_ARG = ""
+export BL2_ARG = ""
 
 do_compile () {
     cd ${S}
@@ -91,7 +93,7 @@ do_compile () {
             --in=${STAGING_DIR_TARGET}/usr/share/tdk/secureos/${BL32_SOC_FAMILY}/bl32.img \
             --out=${S}/bl32/bin/${BL32_SOC_FAMILY}/bl32.img
 
-        ./mk ${UBOOT_TYPE%_config} --bl32 bl32/bin/${BL32_SOC_FAMILY}/bl32.img
+        ./mk ${UBOOT_TYPE%_config} --bl32 bl32/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
     else
         ./mk ${UBOOT_TYPE%_config}
     fi

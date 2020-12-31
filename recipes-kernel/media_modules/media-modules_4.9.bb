@@ -4,11 +4,15 @@ SUMMARY = "Amlogic media driver"
 LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://${THISDIR}/../../license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
 
-#SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/amlogic/media_modules.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-4.9-dev;"
+MBRANCH = "amlogic-4.9-dev"
+MBRANCH_sc2 = "amlogic-4.9-dev-q"
+#SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/amlogic/media_modules.git;protocol=${AML_GIT_PROTOCOL};branch=${MBRANCH};"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-4.9/amlogic/media_modules')}"
-
+MDIR = "media_modules"
+MDIR_sc2 = "media_modules-q"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-4.9/amlogic/${MDIR}')}"
+SRC_URI_append = " file://modules-load.sh"
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
@@ -24,10 +28,13 @@ do_install() {
     mkdir -p ${MEDIADIR} ${FIRMWAREDIR}
     find ${S}/drivers/ -name *.ko | xargs -i install -m 0666 {} ${MEDIADIR}
     install -m 0666 ${MEDIA_MODULES_UCODE_BIN} ${FIRMWAREDIR}
+    install -d ${D}/etc
+    install -m 0755 ${WORKDIR}/modules-load.sh ${D}/etc
 }
 
 FILES_${PN} = " \
         /lib/firmware/video/video_ucode.bin \
+        /etc/modules-load.sh \
         "
 
 # Header file provided by a separate package
@@ -55,6 +62,10 @@ MEDIA_CONFIGS = " \
                  CONFIG_AMLOGIC_MEDIA_GE2D=y \
                  "
 
+MEDIA_CONFIGS_append_tm2 = " \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_AV1=m \
+                 "
+
 S = "${WORKDIR}/git"
 EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M="${S}/drivers" ${MEDIA_CONFIGS} modules'
 
@@ -80,3 +91,7 @@ KERNEL_MODULE_AUTOLOAD += "amvdec_ports"
 KERNEL_MODULE_AUTOLOAD += "aml_hardware_dmx"
 #KERNEL_MODULE_AUTOLOAD += "vpu"
 KERNEL_MODULE_AUTOLOAD += "encoder"
+KERNEL_MODULE_AUTOLOAD_append_tm2 = " amvdec_av1"
+KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
+module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"
+module_conf_amvdec_mh264 = "options amvdec_mh264 error_proc_policy=4181938"
