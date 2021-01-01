@@ -34,8 +34,9 @@ SRCREV ?="${AUTOREV}"
 
 PV = "${LINUX_VERSION}+git${SRCPV}"
 
-COMPATIBLE_MACHINE = "(mesontm2_*|mesonsc2_*)"
+COMPATIBLE_MACHINE = "(mesontm2_*|mesonsc2_*|mesont7_*)"
 
 KERNEL_IMAGETYPE = "Image"
+KCONFIG_MODE = "alldefconfig"
 
 S = "${WORKDIR}/git"

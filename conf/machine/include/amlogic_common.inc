@@ -25,8 +25,10 @@ INITRAMFS_FSTYPES = "cpio.gz"
 #KERNEL_MODULE_AUTOLOAD += "mali"
 #TDK_VERSION = "v2.4"
 
-AML_GIT_ROOT ?= "git@openlinux.amlogic.com/yocto"
-AML_GIT_PROTOCOL ?= "ssh"
+#AML_GIT_ROOT ?= "git@openlinux.amlogic.com/yocto"
+#AML_GIT_PROTOCOL ?= "ssh"
+AML_GIT_ROOT ?= "git.myamlogic.com"
+AML_GIT_PROTOCOL ?= "git"
 AML_GIT_ROOT_YOCTO_SUFFIX ?= ""
 
 LINUXLIBCVERSION ?= "4.9%"
