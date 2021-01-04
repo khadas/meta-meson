@@ -69,7 +69,7 @@ export BL2_ARG = ""
 
 do_compile () {
     cd ${S}
-    cp fip/mk .
+    cp -f fip/mk .
     export BUILD_FOLDER=${S}/build/
     export PYTHONPATH="${STAGING_DIR_NATIVE}/usr/lib/python2.7/site-packages/"
     UBOOT_TYPE="${UBOOT_MACHINE}"
