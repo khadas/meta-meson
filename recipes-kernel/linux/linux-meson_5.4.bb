@@ -5,9 +5,9 @@ LIC_FILES_CHKSUM = "file://${THISDIR}/../../license/COPYING.GPL;md5=751419260aa9
 
 #We still need patch even in external src mode
 SRCTREECOVEREDTASKS_remove = "do_patch"
-FILESEXTRAPATHS_prepend := "${THISDIR}/5.4:"
-FILESEXTRAPATHS_prepend_aarch64 := "${THISDIR}/5.4_aarch64:"
-FILESEXTRAPATHS_prepend_armv7a := "${THISDIR}/5.4_armv7a:"
+#FILESEXTRAPATHS_prepend := "${THISDIR}/5.4:"
+FILESEXTRAPATHS_prepend_t7 := "${THISDIR}/5.4_t7:"
+FILESEXTRAPATHS_prepend_sc2 := "${THISDIR}/5.4_sc2:"
 
 KBRANCH = "amlogic-5.4-dev"
 #SRC_URI = "git://${AML_GIT_ROOT}/kernel/common.git;protocol=${AML_GIT_PROTOCOL};branch=${KBRANCH};"
