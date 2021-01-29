@@ -3,11 +3,7 @@ include conf/machine/include/amlogic_externalsrc.inc
 include conf/machine/include/amlogic_patches.inc
 
 MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
-        media-modules \
-        "
-#        optee-linux-driver \
-#        gpu \
-#
+        media-modules "
 
 MACHINE_EXTRA_RRECOMMENDS = " kernel-modules kernel-devicetree"
 EXTRA_IMAGEDEPENDS += "u-boot"
@@ -32,7 +28,7 @@ AML_GIT_PROTOCOL ?= "git"
 AML_GIT_ROOT_YOCTO_SUFFIX ?= ""
 
 LINUXLIBCVERSION ?= "4.9%"
-#PREFERRED_VERSION_libdrm = "2.4.100"
+PREFERRED_VERSION_libdrm = "2.4.100"
 
 WARN_QA_append = "ldflags installed-vs-shipped already-stripped pkgvarcheck"
 ERROR_QA_remove = "ldflags installed-vs-shipped already-stripped pkgvarcheck"

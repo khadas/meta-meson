@@ -1,0 +1,160 @@
+From 81b0afb1ec34b9ede8197542a32d6f94705fd963 Mon Sep 17 00:00:00 2001
+From: lingjie li <lingjie.li@amlogic.com>
+Date: Thu, 26 Mar 2020 21:27:43 +0800
+Subject: [PATCH] Enable Connector by priority
+
+we just support only one pipline.
+---
+ compositor/main.c      | 86 +++++++++++++++++++++++++++++++++++++++++-
+ compositor/meson.build |  2 +
+ meson_options.txt      |  7 ++++
+ 3 files changed, 93 insertions(+), 2 deletions(-)
+
+diff --git a/compositor/main.c b/compositor/main.c
+index 8eb8a47..f0cef9f 100644
+--- a/compositor/main.c
++++ b/compositor/main.c
+@@ -2162,6 +2162,73 @@ drm_head_disable(struct weston_head *head)
+ 		wet_output_destroy(output);
+ }
+ 
++static int drm_get_head_priority(struct wet_compositor *wet,
++		struct weston_head* head)
++{
++	const char *name = weston_head_get_name(head);
++	struct weston_config_section *section;
++	int priority = 0;
++
++	section = drm_config_find_controlling_output_section(wet->config, name);
++	if (section) {
++		weston_config_section_get_int(section, "priority", &priority, 0);
++	}
++	return priority;
++}
++
++static void drm_get_should_enable_heads_by_priority(struct weston_compositor *compositor,
++		struct weston_head** out, int out_size)
++{
++
++	int i,j;
++	struct weston_head *head = NULL;
++	bool connected;
++	bool forced;
++	int priority = 0;
++	struct wet_compositor *wet = to_wet_compositor(compositor);
++	int *priority_array = (int *)zalloc(sizeof(int) * out_size);
++
++	if (!priority_array) {
++		perror("out of memory");
++		return;
++	}
++
++	memset(out, 0, sizeof(struct weston_head*) * out_size);
++
++	while ((head = weston_compositor_iterate_heads(compositor, head))) {
++		connected = weston_head_is_connected(head);
++		forced = drm_head_should_force_enable(wet, head);
++		priority = drm_get_head_priority(wet, head);
++
++		if (!(connected || forced)) {
++			continue;
++		}
++
++		for (i = 0; i < out_size; i++) {
++			if (priority > priority_array[i] || out[i] == NULL) {
++				for (j = out_size - 1; j > i; j--) {
++					out[j] = out[j-1];
++					priority_array[j] = priority_array[j-1];
++				}
++				out[i] = head;
++				priority_array[i] = priority;
++				break;
++			}
++		}
++	}
++	free(priority_array);
++
++	for (i = 0; i < out_size; i++) {
++		if (i == 0)
++			weston_log("Output pipline limited:%d, Enable connect by priority:", out_size);
++		if (out[i] != NULL) {
++			weston_log("[=>%s]", weston_head_get_name(out[i]));
++		}
++	}
++	weston_log("\n");
++}
++
++
+ static void
+ drm_heads_changed(struct wl_listener *listener, void *arg)
+ {
+@@ -2173,18 +2240,33 @@ drm_heads_changed(struct wl_listener *listener, void *arg)
+ 	bool changed;
+ 	bool forced;
+ 
++#if AML_MAX_OUTPUT_PIPLINE > 0
++	struct weston_head* head_should_enable[AML_MAX_OUTPUT_PIPLINE] = {NULL};
++	drm_get_should_enable_heads_by_priority(compositor, head_should_enable, AML_MAX_OUTPUT_PIPLINE);
++#endif
+ 	/* We need to collect all cloned heads into outputs before enabling the
+ 	 * output.
+ 	 */
+ 	while ((head = weston_compositor_iterate_heads(compositor, head))) {
++#if AML_MAX_OUTPUT_PIPLINE > 0
++		bool should_enable = false;
++		int i;
++		for (i = 0; i < AML_MAX_OUTPUT_PIPLINE; i++) {
++			if (head == head_should_enable[i]) {
++				should_enable = true;
++			}
++		}
++#else
++		bool should_enable = true;
++#endif
+ 		connected = weston_head_is_connected(head);
+ 		enabled = weston_head_is_enabled(head);
+ 		changed = weston_head_is_device_changed(head);
+ 		forced = drm_head_should_force_enable(wet, head);
+ 
+-		if ((connected || forced) && !enabled) {
++		if (((connected || forced) && should_enable) && !enabled) {
+ 			drm_head_prepare_enable(wet, head);
+-		} else if (!(connected || forced) && enabled) {
++		} else if (!((connected || forced) && should_enable) && enabled) {
+ 			drm_head_disable(head);
+ 		} else if (enabled && changed) {
+ 			weston_log("Detected a monitor change on head '%s', "
+diff --git a/compositor/meson.build b/compositor/meson.build
+index e1334d6..d02ed62 100644
+--- a/compositor/meson.build
++++ b/compositor/meson.build
+@@ -175,6 +175,8 @@ if get_option('systemd')
+ 	env_modmap += 'systemd-notify.so=@0@;'.format(plugin_systemd_notify.full_path())
+ endif
+ 
++config_h.set('AML_MAX_OUTPUT_PIPLINE', get_option('WESTON_MAX_OUTPUT_PIPLINE'))
++
+ weston_ini_config = configuration_data()
+ weston_ini_config.set('bindir', dir_bin)
+ weston_ini_config.set('libexecdir', dir_libexec)
+diff --git a/meson_options.txt b/meson_options.txt
+index 73ef2c3..281f98d 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -99,6 +99,13 @@ option(
+ 	description: 'systemd service plugin: state notify, watchdog, socket activation'
+ )
+ 
++option(
++	'WESTON_MAX_OUTPUT_PIPLINE',
++	type: 'string',
++	value: '0',
++	description: 'limit output pipline (int): 0 is without limit'
++)
++
+ option(
+ 	'remoting',
+ 	type: 'boolean',
+-- 
+2.29.0
+
