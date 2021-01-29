@@ -51,6 +51,20 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     faad2 \
     libopus \
     android-tools-adbd \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'tee-supplicant', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-video-firmware', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'widevine', 'aml-mediadrm-widevine', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'gstreamer1', \
+        'gstreamer1.0-plugins-good \
+        gstreamer1.0-plugins-bad \
+        gstreamer1.0-plugins-ugly \
+        gst-plugin-aml-asink \
+        gst-plugin-aml-vsink \
+        gst-aml-drm-plugins \
+        gstreamer1.0-libav \
+        gst-player \
+        ', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'weston', \
         'wayland \
         weston-init \
