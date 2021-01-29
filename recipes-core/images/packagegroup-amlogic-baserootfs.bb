@@ -8,9 +8,6 @@ PACKAGES = "\
     packagegroup-amlogic-baserootfs \
     "
 
-#    android-tools-adbd \
-#
-
 RDEPENDS_packagegroup-amlogic-baserootfs = "\
     toybox \
     sqlite3 \
@@ -61,4 +58,8 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         dvalin-dmaexport \
         fbscripts \
         ', '', d)} \
+    pulseaudio \
+    ffmpeg \
+    libopus \
+    playscripts \
     "

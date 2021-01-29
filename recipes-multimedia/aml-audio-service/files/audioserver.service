@@ -1,0 +1,12 @@
+[Unit]
+Description=Audio Server Startup
+
+[Service]
+User=root
+ExecStartPre=/bin/bash -c "mkdir -p /tmp/ds"
+ExecStartPre=/bin/bash -c "mkdir -p /opt"
+ExecStartPre=-/usr/bin/dolby_fw_dms12_32bits /usr/lib/libdolbyms12.so /tmp/ds/0x4d_0x5331_0x32.so
+ExecStart=/usr/bin/audio_server
+
+[Install]
+WantedBy=multi-user.target
