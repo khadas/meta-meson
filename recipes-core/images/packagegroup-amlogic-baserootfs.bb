@@ -53,4 +53,5 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     dbus \
     faad2 \
     libopus \
+    android-tools-adbd \
     "
