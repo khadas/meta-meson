@@ -11,7 +11,7 @@ FILESEXTRAPATHS_prepend_sc2-5.4 := "${THISDIR}/5.4_sc2:"
 
 KBRANCH = "amlogic-5.4-dev"
 #SRC_URI = "git://${AML_GIT_ROOT}/kernel/common.git;protocol=${AML_GIT_PROTOCOL};branch=${KBRANCH};"
-SRC_URI_append = " file://defconfig"
+#SRC_URI_append = " file://defconfig"
 
 #SRC_URI_append = " file://meson.scc \
 #            file://meson.cfg \
@@ -40,3 +40,6 @@ KERNEL_IMAGETYPE = "Image"
 KCONFIG_MODE = "alldefconfig"
 
 S = "${WORKDIR}/git"
+KBUILD_DEFCONFIG_t7 = "meson64_a64_P_defconfig"
+KBUILD_DEFCONFIG_sc2-5.4 = "meson64_a64_R_defconfig"
+
