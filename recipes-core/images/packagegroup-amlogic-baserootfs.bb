@@ -54,4 +54,11 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     faad2 \
     libopus \
     android-tools-adbd \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'weston', \
+        'wayland \
+        weston-init \
+        meson-display \
+        dvalin-dmaexport \
+        fbscripts \
+        ', '', d)} \
     "
