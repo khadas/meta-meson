@@ -14,6 +14,7 @@ SRC_URI_append = " file://modules-load.sh"
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
+COMPATIBLE_MACHINE="(mesontm2_5.4*|mesonsc2_5.4*|mesont7_*)"
 
 do_configure[noexec] = "1"
 
@@ -65,7 +66,7 @@ MEDIA_CONFIGS_append_tm2 = " \
                  "
 
 S = "${WORKDIR}/git"
-EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M="${S}/drivers" ${MEDIA_CONFIGS} modules'
+EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M="${S}/drivers" EXTRA_CFLAGS="$(cat ${STAGING_KERNEL_DIR}/gki_ext_module_predefine || true)" ${MEDIA_CONFIGS} modules'
 
 KERNEL_MODULE_AUTOLOAD += "amvdec_avs"
 KERNEL_MODULE_AUTOLOAD += "amvdec_h264"

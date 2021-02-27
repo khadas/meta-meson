@@ -16,6 +16,7 @@ SRC_URI_append = " file://modules-load.sh"
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
+COMPATIBLE_MACHINE = "(mesong12a_*|mesontm2_*|mesonsc2_*)"
 
 do_configure[noexec] = "1"
 
