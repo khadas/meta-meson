@@ -27,7 +27,8 @@ PV = "git${SRCPV}"
 VER = "r25p0"
 
 S = "${WORKDIR}/git"
-
+MALI_ARCH="eabihf"
+MALI_ARCH_aarch64="arm64"
 inherit autotools pkgconfig
 
 do_install() {
@@ -62,7 +63,7 @@ do_install() {
     #patchelf --set-soname libMali.so ${S}/lib/eabihf/dvalin/${VER}/wayland/drm/libMali.so
     # wayland lib
     #install -m 0755 ${S}/lib/eabihf/dvalin/${VER}/wayland/drm/libMali_rdk.so ${D}${libdir}/libMali.so
-    install -m 0755 ${S}/lib/eabihf/dvalin/${VER}/wayland/drm/libMali.so ${D}${libdir}/libMali.so
+    install -m 0755 ${S}/lib/${MALI_ARCH}/dvalin/${VER}/wayland/drm/libMali.so ${D}${libdir}/libMali.so
     patchelf --set-soname libMali.so ${D}${libdir}/libMali.so
 
     ln -s libMali.so ${D}${libdir}/libEGL.so.1.4.0

@@ -36,6 +36,6 @@ SRCREV ?="${AUTOREV}"
 
 PV = "${LINUX_VERSION}+git${SRCPV}"
 
-COMPATIBLE_MACHINE = "(mesong12b_*|mesong12a_*|mesongxl_*|mesontxlx_*|mesontm2_*|mesonsc2_*)"
+COMPATIBLE_MACHINE = "(mesong12a_*|mesontm2_ab311|mesonsc2_ah212)"
 
 S = "${WORKDIR}/git"
