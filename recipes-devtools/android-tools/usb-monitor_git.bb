@@ -13,7 +13,7 @@ PV = "1.0"
 PR = "r0"
 
 SRCREV = "${AUTOREV}"
-SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_commonlib;protocol=${AML_GIT_PROTOCOL};branch=master;"
+#SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_commonlib;protocol=${AML_GIT_PROTOCOL};branch=master;"
 #SRC_URI += "file://liblog.patch"
 SRC_URI += "file://LICENSE-2.0"
 
