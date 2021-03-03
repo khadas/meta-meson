@@ -76,6 +76,9 @@ do_install(){
     "mesonsc2_ah212" | "mesonsc2_ah219")
         sed 's@ff400000.dwc2_a@fdd00000.dwc2_a@' -i ${D}${bindir}/adbd_post.sh
     ;;
+    "mesont7_an400")
+        sed 's@ff400000.dwc2_a@fdd00000.crgudc2@' -i ${D}${bindir}/adbd_post.sh
+    ;;
     esac
 }
 
