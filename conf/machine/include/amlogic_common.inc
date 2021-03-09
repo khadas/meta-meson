@@ -32,6 +32,9 @@ AML_GIT_ROOT ?= "git.myamlogic.com"
 AML_GIT_PROTOCOL ?= "git"
 AML_GIT_ROOT_YOCTO_SUFFIX ?= ""
 
+#check connectivity using bing
+CONNECTIVITY_CHECK_URIS = "https://www.bing.com/"
+
 LINUXLIBCVERSION ?= "4.9%"
 PREFERRED_VERSION_libdrm = "2.4.100"
 
