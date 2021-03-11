@@ -66,3 +66,7 @@ EXTERNALSRC_pn-ap6xxx = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/wifi/b
 EXTERNALSRC_pn-mt76x8 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/wifi/mediatek/driver/mt76x8' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/wifi/mediatek/driver/mt76x8')) else ''}"
 EXTERNALSRC_pn-btmtkusb = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/bluetooth/mediatek/mt76xx/driver/mt76x8/usb' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/bluetooth/mediatek/mt76xx/driver/mt76x8/usb')) else ''}"
 EXTERNALSRC_pn-usb-monitor = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
+EXTERNALSRC_pn-aml-secmem = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm')) else ''}"
+EXTERNALSRC_pn-optee-video-firmware = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/secfirmload/secloadbin' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/secfirmload/secloadbin')) else ''}"
+EXTERNALSRC_pn-gst-aml-drmbufferpool-plugins = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-aml-drmbufferpool1/gst-aml-drmbufferpool-1.0' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-aml-drmbufferpool1/gst-aml-drmbufferpool-1.0')) else ''}"
+EXTERNALSRC_pn-aml-mediahal-sdk = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/mediahal-sdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/mediahal-sdk')) else ''}"

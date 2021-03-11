@@ -24,7 +24,7 @@ IMAGE_BOOT_FILES ?= "u-boot.${UBOOT_SUFFIX}"
 INITRAMFS_FSTYPES = "cpio.gz"
 
 #KERNEL_MODULE_AUTOLOAD += "mali"
-#TDK_VERSION = "v2.4"
+TDK_VERSION = "v2.4"
 
 #AML_GIT_ROOT ?= "git@openlinux.amlogic.com/yocto"
 #AML_GIT_PROTOCOL ?= "ssh"
