@@ -15,7 +15,9 @@ DEPENDS = "aml-mediahal-sdk"
 #RDEPENDS_${PN} = "aml-mediahal-sdk"
 
 ARM_TARGET="arm.aapcs-linux.hard"
+ARM_TARGET_aarch64 ="aarch64.lp64."
 TA_TARGET="noarch"
+
 do_install() {
     install -d -m 0644 ${D}/usr/lib
     install -d -m 0644 ${D}/usr/include

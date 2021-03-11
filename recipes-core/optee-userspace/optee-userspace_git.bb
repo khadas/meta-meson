@@ -14,12 +14,15 @@ PACKAGES =+ "\
     "
 PR = "${INC_PR}.1"
 
+ARM_TARGET="ca_export_arm"
+ARM_TARGET_aarch64 ="ca_export_arm64"
+
 do_install() {
     mkdir -p ${D}${bindir}
-    install -m 0755 ${S}/ca_export_arm/bin/tee-supplicant ${D}${bindir}
+    install -m 0755 ${S}/${ARM_TARGET}/bin/tee-supplicant ${D}${bindir}
 
     mkdir -p ${D}${libdir}
-    install -m 0755 ${S}/ca_export_arm/lib/libteec.so ${D}${libdir}/libteec.so.1.0
+    install -m 0755 ${S}/${ARM_TARGET}/lib/libteec.so ${D}${libdir}/libteec.so.1.0
 
     ln -s libteec.so.1 ${D}${libdir}/libteec.so
     ln -s libteec.so.1.0 ${D}${libdir}/libteec.so.1

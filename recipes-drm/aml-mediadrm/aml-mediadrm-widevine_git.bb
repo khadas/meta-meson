@@ -22,8 +22,10 @@ DEPENDS = "optee-userspace aml-secmem"
 RDEPENDS_${PN} = "libamavutils"
 inherit autotools pkgconfig
 ARM_TARGET="arm.aapcs-linux.hard"
+ARM_TARGET_aarch64="aarch64.lp64."
 TA_TARGET="noarch"
 WIDEVINE_VER="prebuilt-v15"
+
 do_install() {
 
     install -d -m 0644 ${D}/lib/teetz

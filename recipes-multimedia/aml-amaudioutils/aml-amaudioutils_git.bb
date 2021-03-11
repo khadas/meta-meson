@@ -22,8 +22,9 @@ export AML_AMAUDIOUTILS_STAGING_DIR = "${D}"
 export AML_AMAUDIOUTILS_TARGET_DIR = "${D}"
 export AML_AMAUDIOUTILS_BR2_ARCH = "${TARGET_ARCH}"
 export TARGET_DIR = "${D}"
+EXTRA_FLAGS_aarch64="TOOLCHAIN_NEON_SUPPORT=n"
 
-EXTRA_OEMAKE="STAGING_DIR=${D} \
+EXTRA_OEMAKE="${EXTRA_FLAGS} STAGING_DIR=${D} \
                   TARGET_DIR=${D} \
                                 "
 

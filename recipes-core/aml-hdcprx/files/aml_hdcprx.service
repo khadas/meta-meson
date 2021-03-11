@@ -1,0 +1,10 @@
+[Unit]
+Description=hdcp Startup
+After=aml_key_inject.service
+
+[Service]
+User=root
+ExecStart=/usr/bin/tee_hdcp
+
+[Install]
+WantedBy=multi-user.target
