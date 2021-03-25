@@ -12,7 +12,7 @@ PROVIDES = "optee-userspace-securebl32"
 PACKAGES =+ "\
     ${PN}-securebl32 \
     "
-PR = "${INC_PR}.1"
+#PR = "${INC_PR}.1"
 
 ARM_TARGET="ca_export_arm"
 ARM_TARGET_aarch64 ="ca_export_arm64"
@@ -27,8 +27,8 @@ do_install() {
     ln -s libteec.so.1 ${D}${libdir}/libteec.so
     ln -s libteec.so.1.0 ${D}${libdir}/libteec.so.1
     echo "TDK_VERSION is ${TDK_VERSION}"
-    case ${TDK_VERSION} in
-    "2.4.4")
+    case "${TDK_VERSION}" in
+    "v2.4")
         mkdir -p ${D}${datadir}/tdk/secureos
         cp -rf ${S}/secureos/* ${D}${datadir}/tdk/secureos
     ;;
