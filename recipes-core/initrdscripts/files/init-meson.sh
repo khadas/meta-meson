@@ -3,8 +3,11 @@
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
 ROOT_MOUNT="/rootfs"
+ROOT_ROMOUNT="/rom"
+ROOT_RWMOUNT="/data/overlay"
 INIT="/sbin/init"
 ROOT_DEVICE="/dev/system"
+ROOT_RWDEVICE="/dev/data"
 MOUNT="/bin/mount"
 UMOUNT="/bin/umount"
 FIRMWARE=""
@@ -168,6 +171,25 @@ format_and_install() {
     fi
 }
 
+data_ext4_handle() {
+	echo -e "Partition formater on $ROOT_RWDEVICE"
+	FsType=$(blkid $ROOT_RWDEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
+	if [ "${FsType}" != "ext4" ]; then
+		echo -e "Formating $ROOT_RWDEVICE to ext4 ..."
+		yes 2>/dev/null | mkfs.ext4 -q -m 0 $ROOT_RWDEVICE
+		sync
+		FsType=$(blkid $ROOT_RWDEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
+		echo -e "After formating FSTYPE of $ROOT_RWDEVICE = ${FsType} ..."
+	else
+		echo -e "FSTYPE of $ROOT_RWDEVICE is already ext4 ..."
+	fi
+
+	mkdir -p /data
+	if ! mount -t ext4 -o rw,noatime,nodiratime $ROOT_RWDEVICE /data ; then
+		fatal "Could not mount $ROOT_RWDEVICE"
+	fi
+}
+
 # Try to mount the root image read-write and then boot it up.
 # This function distinguishes between a read-only image and a read-write image.
 # In the former case (typically an iso), it tries to make a union mount if possible.
@@ -183,7 +205,7 @@ mount_and_boot() {
     fi
 	if [ "$ROOT_DEVICE" != "" ];
 	then
-    	if ! mount -o rw,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
+    	if ! mount -o ro,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
 		fatal "Could not mount rootfs device"
     	fi
 	fi
@@ -210,17 +232,17 @@ mount_and_boot() {
     # make a union mount if possible
     case $union_fs_type in
 	"overlay")
-	    mkdir -p /rootfs.ro /rootfs.rw
-	    if ! mount -n --move $ROOT_MOUNT /rootfs.ro; then
-		rm -rf /rootfs.ro /rootfs.rw
+	    mkdir -p $ROOT_ROMOUNT
+	    if ! mount -n --move $ROOT_MOUNT $ROOT_ROMOUNT; then
+		rm -rf $ROOT_ROMOUNT
 		fatal "Could not move rootfs mount point"
 	    else
-		mount -t tmpfs -o rw,noatime,mode=755 tmpfs /rootfs.rw
-		mkdir -p /rootfs.rw/upperdir /rootfs.rw/work
-		mount -t overlay overlay -o "lowerdir=/rootfs.ro,upperdir=/rootfs.rw/upperdir,workdir=/rootfs.rw/work" $ROOT_MOUNT
-		mkdir -p $ROOT_MOUNT/rootfs.ro $ROOT_MOUNT/rootfs.rw
-		mount --move /rootfs.ro $ROOT_MOUNT/rootfs.ro
-		mount --move /rootfs.rw $ROOT_MOUNT/rootfs.rw
+		data_ext4_handle
+		mkdir -p $ROOT_RWMOUNT/upperdir $ROOT_RWMOUNT/work
+		mount -t overlay overlay -o "lowerdir=$ROOT_ROMOUNT,upperdir=$ROOT_RWMOUNT/upperdir,workdir=$ROOT_RWMOUNT/work" $ROOT_MOUNT
+		mkdir -p ${ROOT_MOUNT}/$ROOT_ROMOUNT $ROOT_MOUNT/data
+		mount --move $ROOT_ROMOUNT ${ROOT_MOUNT}/$ROOT_ROMOUNT
+		mount --move /data $ROOT_MOUNT/data
 	    fi
 	    ;;
 	"aufs")
