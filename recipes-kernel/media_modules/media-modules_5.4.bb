@@ -57,20 +57,24 @@ MEDIA_CONFIGS = " \
                  CONFIG_AMLOGIC_MEDIA_VDEC_AVS2=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_H265=m \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_AV1=m \
                  CONFIG_AMLOGIC_MEDIA_ENHANCEMENT_DOLBYVISION=y \
                  CONFIG_AMLOGIC_MEDIA_GE2D=y \
                  "
 
-MEDIA_CONFIGS_append_tm2 = " \
-                 CONFIG_AMLOGIC_MEDIA_VDEC_AV1=m \
-                 "
-MEDIA_CONFIGS_append_tm2-5.4 = " \
-                 CONFIG_AMLOGIC_MEDIA_VDEC_AV1=m \
-                 "
 
 S = "${WORKDIR}/git"
 EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M="${S}/drivers" EXTRA_CFLAGS="$(cat ${STAGING_KERNEL_DIR}/gki_ext_module_predefine || true)" ${MEDIA_CONFIGS} modules'
 
+KERNEL_MODULE_AUTOLOAD += "amvdec_avs2_v4l"
+KERNEL_MODULE_AUTOLOAD += "amvdec_h265_v4l"
+KERNEL_MODULE_AUTOLOAD += "amvdec_mh264_v4l"
+KERNEL_MODULE_AUTOLOAD += "amvdec_mmjpeg_v4l"
+KERNEL_MODULE_AUTOLOAD += "amvdec_mmpeg12_v4l"
+KERNEL_MODULE_AUTOLOAD += "amvdec_mmpeg4_v4l"
+KERNEL_MODULE_AUTOLOAD += "amvdec_vp9_v4l"
+KERNEL_MODULE_AUTOLOAD += "amvdec_av1_v4l"
+KERNEL_MODULE_AUTOLOAD += "amvdec_av1"
 KERNEL_MODULE_AUTOLOAD += "amvdec_avs"
 KERNEL_MODULE_AUTOLOAD += "amvdec_h264"
 KERNEL_MODULE_AUTOLOAD += "amvdec_h264mvc"
@@ -93,8 +97,6 @@ KERNEL_MODULE_AUTOLOAD += "amvdec_ports"
 KERNEL_MODULE_AUTOLOAD += "aml_hardware_dmx"
 #KERNEL_MODULE_AUTOLOAD += "vpu"
 KERNEL_MODULE_AUTOLOAD += "encoder"
-KERNEL_MODULE_AUTOLOAD_append_tm2 = " amvdec_av1"
-KERNEL_MODULE_AUTOLOAD_append_tm2-5.4 = " amvdec_av1"
 KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
 module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"
 module_conf_amvdec_mh264 = "options amvdec_mh264 error_proc_policy=4181938"
