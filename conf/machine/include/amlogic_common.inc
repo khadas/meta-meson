@@ -25,6 +25,10 @@ INITRAMFS_FSTYPES = "cpio.gz"
 
 #KERNEL_MODULE_AUTOLOAD += "mali"
 TDK_VERSION = "v2.4"
+TDK_VERSION_sc2 = "v3.8/dev/S905X4"
+TDK_VERSION_sc2-5.4 = "v3.8/dev/S905X4"
+TDK_VERSION_t7 = "v3.8/dev/A311D2"
+TDK_VERSION_s4 = "v3.8/dev/S905Y4"
 
 #AML_GIT_ROOT ?= "git@openlinux.amlogic.com/yocto"
 #AML_GIT_PROTOCOL ?= "ssh"
