@@ -11,9 +11,11 @@ require ${OEROOT}/meta-meson/recipes-core/images/aml-package.inc
 LICENSE = "MIT"
 
 #IMAGE_FEATURES += "splash "
+IMAGE_FEATURES += "tools-debug "
 
 IMAGE_INSTALL += " \
     packagegroup-amlogic-baserootfs \
+    gdb \
     "
 
 MACHINE_IMAGE_NAME ?= "${PN}"

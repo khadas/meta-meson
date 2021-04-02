@@ -27,7 +27,7 @@ SRC_URI_append_t7 = " file://t7.cfg"
 KDIR = "aml-5.4"
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
-LINUX_VERSION ?= "5.4.61"
+LINUX_VERSION ?= "5.4.86"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
 
 PR = "r2"
