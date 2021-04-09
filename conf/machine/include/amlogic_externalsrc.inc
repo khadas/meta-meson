@@ -53,6 +53,7 @@ EXTERNALSRC_pn-media-modules_sc2-5.4 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware
 EXTERNALSRC_pn-media-modules_tm2-5.4 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/media_modules' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/media_modules')) else ''}"
 EXTERNALSRC_pn-media-modules_t7 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/media_modules' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/media_modules')) else ''}"
 EXTERNALSRC_pn-media-modules_s4 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/media_modules' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/media_modules')) else ''}"
+EXTERNALSRC_pn-aml-dtvdemod = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dtvdemod' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dtvdemod')) else ''}"
 EXTERNALSRC_pn-aml-tvserver = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_tvserver' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_tvserver')) else ''}"
 #EXTERNALSRC_pn-aml-dvb = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb')) else ''}"
 EXTERNALSRC_pn-aml-zvbi = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/zvbi' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/zvbi')) else ''}"
