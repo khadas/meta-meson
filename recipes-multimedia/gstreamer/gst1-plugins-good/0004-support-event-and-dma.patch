@@ -1,12 +1,26 @@
+From e8292144cc8d997eeb291fa3510e9b1469fdb2e0 Mon Sep 17 00:00:00 2001
+From: Blance Tang <guofeng.tang@amlogic.com>
+Date: Tue, 12 Jan 2021 01:46:19 +0000
+Subject: [PATCH] ACS: Add Weston UVM playback support.
+
+%% original patch: 0004-support-event-and-dma.patch
+---
+ sys/v4l2/gstv4l2bufferpool.c |  85 ++++++++++---
+ sys/v4l2/gstv4l2bufferpool.h |   4 +
+ sys/v4l2/gstv4l2object.c     | 124 ++++++++++++++++++-
+ sys/v4l2/gstv4l2object.h     |   7 ++
+ sys/v4l2/gstv4l2videodec.c   | 276 +++++++++++++++++++++++++++----------------
+ sys/v4l2/v4l2_calls.c        |  43 +++++++
+ 6 files changed, 412 insertions(+), 127 deletions(-)
+
 diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
-index 49f222b6e..51eab32b1 100644
+index 49f222b..51eab32 100644
 --- a/sys/v4l2/gstv4l2bufferpool.c
 +++ b/sys/v4l2/gstv4l2bufferpool.c
-@@ -1203,6 +1203,37 @@ queue_failed:
-   }
+@@ -1204,6 +1204,37 @@ queue_failed:
  }
  
-+static GstFlowReturn
+ static GstFlowReturn
 +gst_v4l2_buffer_pool_dqevent (GstV4l2BufferPool * pool)
 +{
 +  GstV4l2Object *v4l2object = pool->obj;
@@ -37,9 +51,10 @@ index 49f222b6e..51eab32b1 100644
 +  }
 +}
 +
- static GstFlowReturn
++static GstFlowReturn
  gst_v4l2_buffer_pool_dqbuf (GstV4l2BufferPool * pool, GstBuffer ** buffer,
      gboolean wait)
+ {
 @@ -1216,16 +1247,6 @@ gst_v4l2_buffer_pool_dqbuf (GstV4l2BufferPool * pool, GstBuffer ** buffer,
    gsize size;
    gint i;
@@ -69,11 +84,10 @@ index 49f222b6e..51eab32b1 100644
  eos:
    {
      return GST_FLOW_EOS;
-@@ -1374,6 +1390,37 @@ no_buffer:
-   }
+@@ -1375,6 +1391,37 @@ no_buffer:
  }
  
-+static GstFlowReturn
+ static GstFlowReturn
 +gst_v4l2_buffer_pool_dequeue (GstV4l2BufferPool * pool, GstBuffer ** buffer,
 +    gboolean wait)
 +{
@@ -104,9 +118,10 @@ index 49f222b6e..51eab32b1 100644
 +  }
 +}
 +
- static GstFlowReturn
++static GstFlowReturn
  gst_v4l2_buffer_pool_acquire_buffer (GstBufferPool * bpool, GstBuffer ** buffer,
      GstBufferPoolAcquireParams * params)
+ {
 @@ -1410,7 +1457,7 @@ gst_v4l2_buffer_pool_acquire_buffer (GstBufferPool * bpool, GstBuffer ** buffer,
            /* just dequeue a buffer, we basically use the queue of v4l2 as the
             * storage for our buffers. This function does poll first so we can
@@ -144,7 +159,7 @@ index 49f222b6e..51eab32b1 100644
                /* release the rendered buffer back into the pool. This wakes up any
                 * thread waiting for a buffer in _acquire(). */
 diff --git a/sys/v4l2/gstv4l2bufferpool.h b/sys/v4l2/gstv4l2bufferpool.h
-index bf0625d38..a48e30d56 100644
+index bf0625d..a48e30d 100644
 --- a/sys/v4l2/gstv4l2bufferpool.h
 +++ b/sys/v4l2/gstv4l2bufferpool.h
 @@ -50,6 +50,10 @@ G_BEGIN_DECLS
@@ -159,7 +174,7 @@ index bf0625d38..a48e30d56 100644
  struct _GstV4l2BufferPool
  {
 diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
-index 2c78e2227..d28fc6959 100644
+index 2c78e22..f519ffe 100644
 --- a/sys/v4l2/gstv4l2object.c
 +++ b/sys/v4l2/gstv4l2object.c
 @@ -534,6 +534,9 @@ gst_v4l2_object_new (GstElement * element,
@@ -356,8 +371,16 @@ index 2c78e2227..d28fc6959 100644
  
      gst_structure_free (template);
    }
+@@ -4482,6 +4597,7 @@ gst_v4l2_object_decide_allocation (GstV4l2Object * obj, GstQuery * query)
+     config = gst_buffer_pool_get_config (other_pool);
+     gst_buffer_pool_config_set_allocator (config, allocator, &params);
+     gst_buffer_pool_config_set_params (config, caps, size, min, max);
++    gst_buffer_pool_config_set_video_alignment(config, &obj->align);
+ 
+     GST_DEBUG_OBJECT (obj->dbg_obj, "setting other pool config to %"
+         GST_PTR_FORMAT, config);
 diff --git a/sys/v4l2/gstv4l2object.h b/sys/v4l2/gstv4l2object.h
-index eaaff5892..0f673de3d 100644
+index eaaff58..0f673de 100644
 --- a/sys/v4l2/gstv4l2object.h
 +++ b/sys/v4l2/gstv4l2object.h
 @@ -131,6 +131,10 @@ struct _GstV4l2Object {
@@ -389,7 +412,7 @@ index eaaff5892..0f673de3d 100644
  
  gboolean     gst_v4l2_object_set_crop    (GstV4l2Object * obj);
 diff --git a/sys/v4l2/gstv4l2videodec.c b/sys/v4l2/gstv4l2videodec.c
-index 695c675e8..2ee40ec61 100644
+index 695c675..2ee40ec 100644
 --- a/sys/v4l2/gstv4l2videodec.c
 +++ b/sys/v4l2/gstv4l2videodec.c
 @@ -34,6 +34,7 @@
@@ -770,7 +793,7 @@ index 695c675e8..2ee40ec61 100644
  
      /* Skip over if we hit an unmapped type */
 diff --git a/sys/v4l2/v4l2_calls.c b/sys/v4l2/v4l2_calls.c
-index 8909b6afb..4a08df777 100644
+index 8909b6a..4a08df7 100644
 --- a/sys/v4l2/v4l2_calls.c
 +++ b/sys/v4l2/v4l2_calls.c
 @@ -509,6 +509,43 @@ gst_v4l2_adjust_buf_type (GstV4l2Object * v4l2object)
@@ -837,3 +860,6 @@ index 8909b6afb..4a08df777 100644
  
    return TRUE;
  
+-- 
+2.7.4
+
