@@ -16,7 +16,7 @@ SRC_URI_append = " file://modules-load.sh"
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
-COMPATIBLE_MACHINE = "(mesong12a_*|mesontm2_ab311|mesonsc2_ah212)"
+COMPATIBLE_MACHINE = "(mesong12a_*|mesontm2_ab311|mesonsc2_ah212|mesont5d_am301)"
 
 do_configure[noexec] = "1"
 
@@ -66,6 +66,9 @@ MEDIA_CONFIGS = " \
 MEDIA_CONFIGS_append_tm2 = " \
                  CONFIG_AMLOGIC_MEDIA_VDEC_AV1=m \
                  "
+MEDIA_CONFIGS_append_t5d = " \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_AV1=m \
+                 "
 
 S = "${WORKDIR}/git"
 EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M="${S}/drivers" ${MEDIA_CONFIGS} modules'
@@ -93,6 +96,7 @@ KERNEL_MODULE_AUTOLOAD += "aml_hardware_dmx"
 #KERNEL_MODULE_AUTOLOAD += "vpu"
 KERNEL_MODULE_AUTOLOAD += "encoder"
 KERNEL_MODULE_AUTOLOAD_append_tm2 = " amvdec_av1"
+KERNEL_MODULE_AUTOLOAD_append_t5d = " amvdec_av1"
 KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
 module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"
 module_conf_amvdec_mh264 = "options amvdec_mh264 error_proc_policy=4181938"
