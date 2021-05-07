@@ -6,7 +6,6 @@ SRC_URI  = "\
   file://alsactl.conf \
   file://asound.conf \
   file://asound.dev0.conf \
-  file://asound.dev2.conf \
   file://property_set.sh \
   file://COPYING \
 "
@@ -15,7 +14,6 @@ S = "${WORKDIR}"
 ASOUND_CONF = "asound.conf"
 ASOUND_CONF_u212 = "asound.conf"
 ASOUND_CONF_ab311 = "asound.dev0.conf"
-ASOUND_CONF_ap222 = "asound.dev2.conf"
 
 do_install() {
     install -d ${D}${sysconfdir}
@@ -26,9 +24,6 @@ do_install() {
     case ${MACHINE_ARCH} in
     "mesontm2*")
         install -m 0755 ${WORKDIR}/${ASOUND_CONF_ab311} ${D}${sysconfdir}/asound.conf
-    ;;
-    "mesons4_ap222")
-        install -m 0755 ${WORKDIR}/${ASOUND_CONF_ap222} ${D}${sysconfdir}/asound.conf
     ;;
     esac
     install -m 0755 ${WORKDIR}/property_set.sh ${D}${sysconfdir}/profile.d/
