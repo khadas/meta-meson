@@ -74,3 +74,4 @@ EXTERNALSRC_pn-aml-secmem = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmedia
 EXTERNALSRC_pn-optee-video-firmware = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/secfirmload/secloadbin' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/secfirmload/secloadbin')) else ''}"
 EXTERNALSRC_pn-gst-aml-drmbufferpool-plugins = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-aml-drmbufferpool1/gst-aml-drmbufferpool-1.0' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-aml-drmbufferpool1/gst-aml-drmbufferpool-1.0')) else ''}"
 EXTERNALSRC_pn-aml-mediahal-sdk = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/mediahal-sdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/mediahal-sdk')) else ''}"
+EXTERNALSRC_pn-aml-cobalt-starboard = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/rdkcobalt' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/rdkcobalt')) else ''}"

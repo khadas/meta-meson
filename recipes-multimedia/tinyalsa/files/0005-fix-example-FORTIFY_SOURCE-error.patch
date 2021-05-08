@@ -1,0 +1,13 @@
+Index: git/examples/Makefile
+===================================================================
+--- git.orig/examples/Makefile
++++ git/examples/Makefile
+@@ -1,7 +1,7 @@
+ CROSS_COMPILE ?=
+ 
+ CC = $(CROSS_COMPILE)gcc
+-CFLAGS = -Wall -Wextra -Werror -Wfatal-errors -I ../include
++override CFLAGS := -Wall -Wextra -Werror -Wfatal-errors -Wno-error=maybe-uninitialized -I ../include $(CFLAGS)
+ 
+ VPATH = ../src
+ 

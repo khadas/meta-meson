@@ -20,5 +20,6 @@ BBLAYERS ?= " \
   ##OEROOT##/meta-openembedded/meta-initramfs \
   ##OEROOT##/meta-python2 \
   ##OEROOT##/meta-meson \
+  ##OEROOT##/meta-thunder \
   "
 
