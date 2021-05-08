@@ -1,0 +1,25 @@
+From f91be3d15f1aa4de50a6431b3a3b59f8274a6b59 Mon Sep 17 00:00:00 2001
+From: Pradeep Sriram <pradeep.sriram@amlogic.com>
+Date: Wed, 6 Nov 2019 02:10:22 -0800
+Subject: [PATCH] fix firmware path
+
+---
+ AIO/drivers/qcacld-new/CORE/HDD/src/wlan_hdd_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/AIO/drivers/qcacld-new/CORE/HDD/src/wlan_hdd_main.c b/AIO/drivers/qcacld-new/CORE/HDD/src/wlan_hdd_main.c
+index 9159738..d1bff5d 100644
+--- a/AIO/drivers/qcacld-new/CORE/HDD/src/wlan_hdd_main.c
++++ b/AIO/drivers/qcacld-new/CORE/HDD/src/wlan_hdd_main.c
+@@ -255,7 +255,7 @@ typedef char            A_CHAR;
+ #endif
+ #define A_ROUND_UP(x, y)  ((((x) + ((y) - 1)) / (y)) * (y))
+ 
+-char qcafwpath[256] = "/vendor/etc/wifi/qca6174";
++char qcafwpath[256] = "/etc/wifi/qca6174";
+ 
+ static int android_readwrite_file(const A_CHAR *filename, A_CHAR *rbuf, const A_CHAR *wbuf, size_t length)
+ {
+-- 
+2.7.4
+

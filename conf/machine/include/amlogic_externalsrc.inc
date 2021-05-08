@@ -11,6 +11,7 @@ EXTERNALSRC_pn-aml-uvm-test = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/v4l2-u
 EXTERNALSRC_pn-android-tools-logcat = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-liblog = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-qca6174 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/wifi/qualcomm/drivers/qca6174' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/wifi/qualcomm/drivers/qca6174')) else ''}"
+EXTERNALSRC_pn-qca6174_s4 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/qualcomm/drivers/qca6174' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/qualcomm/drivers/qca6174')) else ''}"
 EXTERNALSRC_pn-wififw = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/amlogic/wifi' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/amlogic/wifi')) else ''}"
 EXTERNALSRC_pn-aml-hdcprx = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp')) else ''}"
 EXTERNALSRC_pn-aml-provision = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/provision' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/provision')) else ''}"
