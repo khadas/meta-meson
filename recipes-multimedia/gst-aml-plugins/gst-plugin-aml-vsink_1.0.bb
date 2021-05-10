@@ -19,7 +19,13 @@ inherit autotools pkgconfig distro_features_check
 
 do_configure_append() {
   #Special patch
-  cp ${STAGING_DIR_TARGET}/usr/include/linux-meson-4.9/include/linux/videodev2.h ${STAGING_DIR_TARGET}/usr/include/linux/
+  if [ -n "$(basename ${STAGING_DIR_TARGET} | grep -- lib32)" ]; then
+      rm -f ${STAGING_DIR_TARGET}/usr/include/linux/videodev2.h
+      ln -sf ../../../../recipe-sysroot/usr/include/linux-meson/include/linux/videodev2.h  ${STAGING_DIR_TARGET}/usr/include/linux/
+  else
+      cp ${STAGING_DIR_TARGET}/usr/include/linux-meson/include/linux/videodev2.h ${STAGING_DIR_TARGET}/usr/include/linux/
+  fi
+
   cp -af ${STAGING_DIR_TARGET}/usr/include/libdrm_meson/meson_drm.h ${STAGING_DIR_TARGET}/usr/include/
   cp ${STAGING_DIR_TARGET}/usr/include/libdrm_meson/drm_fourcc.h ${STAGING_DIR_TARGET}/usr/include/
 }

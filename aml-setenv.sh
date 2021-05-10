@@ -122,6 +122,20 @@ AML_GIT_PROTOCOL = "git"
 AML_GIT_ROOT_YOCTO_SUFFIX = "/yocto"
 EOF
     fi
+
+    if [ -n "$(echo $TARGET_MACHINE | grep -- lib32)" ]; then
+      NEED_A6432_SUPPORT=y
+    fi
+
+    if [ "${NEED_A6432_SUPPORT+set}" = "set" ]; then
+      cat >> conf/local.conf <<EOF
+#Added for A6432 support
+require conf/multilib.conf
+MULTTILIBS = "multilib:lib32"
+DEFAULTTUNE_virtclass-multilib-lib32 = "armv7athf-neon"
+EOF
+    fi
+
         export MACHINE=$TARGET_MACHINE
         export AML_PATCH_PATH=${MESON_ROOT_PATH}/aml-patches
         export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} AML_PATCH_PATH"
