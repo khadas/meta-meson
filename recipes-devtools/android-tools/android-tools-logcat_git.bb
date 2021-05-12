@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://${THISDIR}/android-tools-logcat/LICENSE-2.0;md5=3b83e
 
 #DEPENDS = "aml-amaudioutils"
 DEPENDS = "liblog"
+RDEPENDS_${PN} = "liblog"
 
 SRCREV = "${AUTOREV}"
 
