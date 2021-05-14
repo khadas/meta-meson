@@ -5,9 +5,9 @@ TBRANCH = "tdk-v2.4.4"
 TBRANCH_sc2 = "tdk-v3.8.0"
 TBRANCH_sc2-5.4 = "tdk-v3.8.0"
 TBRANCH_s4 = "tdk-v3.8.0"
-SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/tdk.git;protocol=${AML_GIT_PROTOCOL};branch=${TBRANCH};destsuffix=tdk;name=tdk"
-SRC_URI_append = " git://${AML_GIT_ROOT}/vendor/amlogic/tdk_linuxdriver.git;protocol=${AML_GIT_PROTOCOL};branch=tdk-v2.4.4;destsuffix=tdk/linuxdriver;name=tdk_linuxdriver"
-SRC_URI_append = " git://${AML_GIT_ROOT}/vendor/amlogic/tdk_keys.git;protocol=${AML_GIT_PROTOCOL};branch=master;destsuffix=tdk/ta_export/keys;name=tdk_keys"
+#SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/tdk.git;protocol=${AML_GIT_PROTOCOL};branch=${TBRANCH};destsuffix=tdk;name=tdk"
+#SRC_URI_append = " git://${AML_GIT_ROOT}/vendor/amlogic/tdk_linuxdriver.git;protocol=${AML_GIT_PROTOCOL};branch=tdk-v2.4.4;destsuffix=tdk/linuxdriver;name=tdk_linuxdriver"
+#SRC_URI_append = " git://${AML_GIT_ROOT}/vendor/amlogic/tdk_keys.git;protocol=${AML_GIT_PROTOCOL};branch=master;destsuffix=tdk/ta_export/keys;name=tdk_keys"
 
 PATCHTOOL= "git"
 #For common patches

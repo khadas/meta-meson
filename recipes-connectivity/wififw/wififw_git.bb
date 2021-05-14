@@ -2,7 +2,7 @@ SUMMARY = "Wifi firmware"
 SECTION = "base"
 LICENSE = "GPLv2"
 
-SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/amlogic/wifi.git;protocol=${AML_GIT_PROTOCOL};branch=n-amlogic"
+#SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/amlogic/wifi.git;protocol=${AML_GIT_PROTOCOL};branch=n-amlogic"
 
 #For common patches
 SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/hardware/aml-4.9/amlogic/wifi')}"

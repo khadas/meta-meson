@@ -136,6 +136,21 @@ DEFAULTTUNE_virtclass-multilib-lib32 = "armv7athf-neon"
 EOF
     fi
 
+    if [ "${SETUP_SOURCE_MIRROR}" = "1" ]; then
+      cat >> conf/local.conf <<EOF
+#Setup source mirror, package will be generated under DL_DIR folder
+BB_GENERATE_MIRROR_TARBALLS = "1"
+EOF
+    fi
+
+    if [ "${USE_SOURCE_MIRROR}" = "1" ]; then
+      cat >> conf/local.conf <<EOF
+#Utilize source mirror
+SOURCE_MIRROR_URL ?= "file://$(realpath ../downloads)"
+INHERIT += "own-mirrors"
+BB_NO_NETWORK = "1"
+EOF
+    fi
         export MACHINE=$TARGET_MACHINE
         export AML_PATCH_PATH=${MESON_ROOT_PATH}/aml-patches
         export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} AML_PATCH_PATH"
