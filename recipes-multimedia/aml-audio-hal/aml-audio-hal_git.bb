@@ -10,8 +10,8 @@ PV = "${SRCPV}"
 #For common patches
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_audio_hal')}"
 
-DEPENDS += "aml-amaudioutils expat tinyalsa libamavutils liblog"
-RDEPENDS_${PN} += "liblog aml-amaudioutils"
+DEPENDS += "aml-amaudioutils expat tinyalsa libamavutils liblog aml-avsync"
+RDEPENDS_${PN} += "liblog aml-amaudioutils aml-avsync"
 
 inherit cmake pkgconfig
 
@@ -22,6 +22,8 @@ TARGET_CFLAGS += "-fPIC"
 
 PACKAGECONFIG[dtv] = "-DUSE_DTV=ON,-DUSE_DTV=OFF,"
 
+PACKAGECONFIG += "msync"
+PACKAGECONFIG[msync] = "-DUSE_MSYNC=ON,-DUSE_MSYNC=OFF,"
 FILES_${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/*"
 FILES_${PN}-dev = "${includedir}/* "
 INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"

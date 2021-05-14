@@ -9,23 +9,28 @@ do_populate_lic[noexec] = "1"
 
 PROVIDES = "widevine"
 
-#SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/prebuilt/libmediadrm;protocol=${AML_GIT_PROTOCOL};branch=linux-dev"
+#SRC_URI = "git://${AML_GIT_ROOT_WV}/vendor/widevine;protocol=${AML_GIT_PROTOCOL};branch=amlogic-linux;destsuffix=git/widevine-bin"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/multimedia/libmediadrm')}"
 
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
 S = "${WORKDIR}/git"
-DEPENDS = "optee-userspace aml-secmem"
+DEPENDS = "optee-userspace aml-secmem aml-mediahal-sdk"
 RDEPENDS_${PN} = "libamavutils"
 inherit autotools pkgconfig
 ARM_TARGET="arm.aapcs-linux.hard"
-ARM_TARGET_aarch64="aarch64.lp64."
 TA_TARGET="noarch"
-WIDEVINE_VER="prebuilt-v15"
 
+def get_widevine_version(datastore):
+    if datastore.getVar("WIDEVINE_VERSION", True) == "16":
+        return "prebuilt-v16"
+    else:
+        return "prebuilt-v15"
+
+WIDEVINE_VER = "${@get_widevine_version(d)}"
 do_install() {
 
     install -d -m 0644 ${D}/lib/teetz
