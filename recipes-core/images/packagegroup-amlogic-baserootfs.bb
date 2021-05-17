@@ -85,4 +85,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'wpeframework rdkservices', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'cobalt', \
         'cobalt-plugin dolby-ms12 aml-audio-hal', '', d)} \
+    aml-provision \
+    tinyalsa-tools \
     "
