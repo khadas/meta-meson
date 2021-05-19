@@ -53,6 +53,9 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     android-tools-adbd \
     liblog \
     android-tools-logcat \
+    iw \
+    wpa-supplicant \
+    wifi-amlogic \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'tee-supplicant', '', d)} \

@@ -1,0 +1,40 @@
+##########################################################################
+# If not stated otherwise in this file or this component's Licenses.txt
+# file the following copyright and licenses apply:
+#
+# Copyright 2016 RDK Management
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+##########################################################################
+[Unit]
+Description=Wifi Dnl802.11 interface
+
+
+#PathExists=!/sys/class/net/${WIFI_INTERFACE}
+
+[Service]
+Type=oneshot
+RemainAfterExit=yeS
+#EnvironmentFile=/etc/device.properties
+#because in modules.alias, sdio wifi power depends on wlan, so wifi_power on will
+#load wlan.ko automatically. If delete all the wlan related entries in modules.alias,
+#we need insmod wlan.ko explicitly here
+ExecStart=/bin/touch /etc/wifi/rtk_station_mode
+ExecStart=/usr/bin/wifi_power 1
+ExecStart=/bin/sleep 5
+ExecStart=/usr/sbin/wpa_supplicant -u -B -Dnl80211 -iwlan0 -c /etc/wpa_supplicant.conf
+ExecStart=/sbin/udhcpc -T 1 -b -iwlan0 &
+ExecStop=/sbin/ifconfig wlan0 down
+
+[Install]
+WantedBy=multi-user.target

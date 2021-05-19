@@ -1,0 +1,26 @@
+From 234194d649a2966b4bd2feeb337088f05b9699b1 Mon Sep 17 00:00:00 2001
+From: Stephen M Bennett <stephen.bennett@consult.red>
+Date: Thu, 30 Apr 2020 23:33:14 +0000
+Subject: [PATCH] Set CONFIG_AUTOSCAN_PERIODIC=y
+
+Signed-off-by: Stephen M Bennett <stephen.bennett@consult.red>
+---
+ wpa_supplicant/defconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/wpa_supplicant/defconfig b/wpa_supplicant/defconfig
+index af281e5..355803f 100644
+--- a/wpa_supplicant/defconfig
++++ b/wpa_supplicant/defconfig
+@@ -512,7 +512,7 @@ CONFIG_BACKEND=file
+ # For exponential module:
+ #CONFIG_AUTOSCAN_EXPONENTIAL=y
+ # For periodic module:
+-#CONFIG_AUTOSCAN_PERIODIC=y
++CONFIG_AUTOSCAN_PERIODIC=y
+ 
+ # Password (and passphrase, etc.) backend for external storage
+ # These optional mechanisms can be used to add support for storing passwords
+-- 
+2.25.1
+
