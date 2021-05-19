@@ -51,6 +51,8 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     faad2 \
     libopus \
     android-tools-adbd \
+    aml-hdcp \
+    aml-hdcp-load-firmware \
     liblog \
     android-tools-logcat \
     iw \
