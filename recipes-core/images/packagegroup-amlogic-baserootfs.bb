@@ -58,7 +58,9 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     iw \
     wpa-supplicant \
     wifi-amlogic \
+    libamavutils \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'playready', 'playready', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'tee-supplicant', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-video-firmware', '', d)} \
