@@ -54,3 +54,5 @@ DEBUG_PREFIX_MAP = "-fdebug-prefix-map=${WORKDIR}=/usr/src/debug/${PN}/${EXTENDP
                     "
 
 HOSTTOOLS_NONFATAL += "bc cc c++ bison"
+
+DISABLE_STATIC_pn-libevent = ""
