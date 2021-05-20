@@ -13,11 +13,6 @@ LOCAL_DIR=$(pwd)
 if [ -z $BUILD_DIR ]; then
 	BUILD_DIR="build"
 fi
-if [ -z $LOCAL_BUILD ]; then
-    LOCAL_BUILD=0
-else
-    LOCAL_BUILD=1
-fi
 
 DEFCONFIG_ARRAY=($(pushd $MESON_PATH/conf/machine 2>&1 >> /dev/null; find -name '*\.conf' | sed 's@./@@' | sed 's@\.conf@@' | sort))
 
@@ -114,12 +109,15 @@ function lunch()
 {
 	if [ -n "$TARGET_MACHINE" ]; then
 		MACHINE=$TARGET_MACHINE source $MESON_PATH/oe-init-build-env-meson $BUILD_DIR
-    if [ $LOCAL_BUILD == "1" ];then
+    if [ $OPENLINUX_BUILD == "1" ];then
         cat >> conf/local.conf <<EOF
-
-AML_GIT_ROOT = "git.myamlogic.com"
-AML_GIT_PROTOCOL = "git"
-AML_GIT_ROOT_YOCTO_SUFFIX = "/yocto"
+#Force OpenLinux Access
+AML_GIT_ROOT = "git@openlinux.amlogic.com/yocto"
+AML_GIT_PROTOCOL = "ssh"
+AML_GIT_ROOT_YOCTO_SUFFIX = ""
+AML_GIT_ROOT_PR = "git@openlinux.amlogic.com"
+AML_GIT_ROOT_WV = "git@openlinux.amlogic.com/yocto"
+AML_GIT_ROOT_PROTOCOL = "ssh"
 EOF
     fi
 
@@ -158,7 +156,6 @@ EOF
 		echo
 		echo "MACHINE=${TARGET_MACHINE}"
 		echo "OUTPUT_DIR=${BUILD_DIR}"
-		echo "LOCAL_BUILD=${LOCAL_BUILD}"
         echo "AML_PATCH_PATH=${AML_PATCH_PATH}"
 		echo
 		echo "==========================================="
