@@ -35,7 +35,7 @@ PR = "r2"
 SRCREV ?="${AUTOREV}"
 PV = "${LINUX_VERSION}+git${SRCPV}"
 
-COMPATIBLE_MACHINE = "(mesontm2_5.4*|mesonsc2_5.4*|mesont5d_5.4*|mesont7_*|mesons4_*)"
+#COMPATIBLE_MACHINE = "(mesontm2_5.4*|mesonsc2_5.4*|mesont5d_5.4*|mesont7_*|mesons4*)"
 
 KERNEL_IMAGETYPE = "Image"
 KCONFIG_MODE = "alldefconfig"

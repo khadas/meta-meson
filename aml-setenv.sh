@@ -109,7 +109,7 @@ function lunch()
 {
 	if [ -n "$TARGET_MACHINE" ]; then
 		MACHINE=$TARGET_MACHINE source $MESON_PATH/oe-init-build-env-meson $BUILD_DIR
-    if [ $OPENLINUX_BUILD = "1" ];then
+    if [ "$OPENLINUX_BUILD" = "1" ];then
         cat >> conf/local.conf <<EOF
 #Force OpenLinux Access
 AML_GIT_ROOT = "git@openlinux.amlogic.com/yocto"
