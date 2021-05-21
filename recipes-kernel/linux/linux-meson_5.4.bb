@@ -14,7 +14,7 @@ SRC_URI_append = " file://gki-read_ext_module_config.sh"
 SRC_URI_append = " file://gki-read_ext_module_predefine.sh"
 SRC_URI_append_s4 = " file://s4.cfg"
 SRC_URI_append_t7 = " file://t7.cfg"
-SRC_URI_append_t5d = " file://t5d.cfg"
+SRC_URI_append_t5d-5.4 = " file://t5d.cfg"
 
 #SRC_URI_append = " file://meson.scc \
 #            file://meson.cfg \
