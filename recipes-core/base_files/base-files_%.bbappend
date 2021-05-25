@@ -53,3 +53,13 @@ ln -sf /tmp/ds/0x4d_0x5331_0x32.so ${D}/vendor/lib/libdolbyms12.so
 FILES_${PN}_append_g12a = " /vendor/* /data /opt "
 dirs755_append_g12a = " /vendor /data /opt"
 INSANE_SKIP_${PN} = "dev-so"
+
+#/*-----------------------S4 STB--------------------------------------*/
+do_install_append_s4 () {
+    mkdir -p ${D}/vendor/lib
+    mkdir -p ${D}/data
+    mkdir -p ${D}/opt
+    ln -sf /tmp/ds/0x4d_0x5331_0x32.so ${D}/vendor/lib/libdolbyms12.so
+}
+FILES_${PN}_append_s4 = " /vendor/* /data /opt "
+dirs755_append_s4 = " /vendor /data /opt"
