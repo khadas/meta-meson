@@ -1,7 +1,7 @@
 SUMMARY = "amlogic playready"
 LICENSE = "CLOSED"
 DEPENDS = "optee-userspace bzip2 libxml2 aml-secmem aml-mediahal-sdk"
-RDEPENDS_${PN} = "libbz2"
+RDEPENDS_${PN} = "libbz2 libamavutils"
 
 FILESEXTRAPATHS_preppend := "${THISDIR}/files/:"
 #SRC_URI = "git://${AML_GIT_ROOT_PR}/vendor/playready.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=linux-3.x-amlogic"
