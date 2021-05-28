@@ -30,3 +30,5 @@ FILES_${PN} += "${bindir}/* /lib/teetz/* ${includedir}/*"
 FILES_${PN}-dev = "${includedir}/* "
 INSANE_SKIP_${PN} = "ldflags dev-so dev-elf already-stripped"
 INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf already-stripped"
+
+RDEPENDS_${PN} += "optee-userspace"
