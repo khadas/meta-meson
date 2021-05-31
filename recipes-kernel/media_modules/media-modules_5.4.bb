@@ -31,6 +31,14 @@ do_install() {
     install -m 0755 ${WORKDIR}/modules-load.sh ${D}/etc
 }
 
+do_install_append() {
+
+cat >> ${D}/etc/modules-load.sh <<EOF
+/sbin/insmod /lib/modules/${KERNEL_VERSION}/kernel/drivers/amlogic/dvb/demux/dvb_demux.ko
+EOF
+
+}
+
 FILES_${PN} = " \
         /lib/firmware/video/video_ucode.bin \
         /etc/modules-load.sh \
