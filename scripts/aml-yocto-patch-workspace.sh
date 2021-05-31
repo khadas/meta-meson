@@ -117,10 +117,10 @@ if check_input_param; then
   touch $SOURCE_PATH/.aml-yocto-patch-done
   for PatchFolder in $(for p in $(find $AML_PATCHES_PATH -name *.patch -printf "%P\n"); do dirname $p; done | sort -u | xargs);
   do
-        if [ -d $SOURCE_PATH/$PatchFolder ]; then
-            PROJ_PATH=$SOURCE_PATH/$PatchFolder
-        elif [ -d $SOURCE_PATH/aml-comp/$PatchFolder ] && [ -n "$ADVANCE_MODE" ]; then
+        if [ -d $SOURCE_PATH/aml-comp/$PatchFolder ]; then
             PROJ_PATH=$SOURCE_PATH/aml-comp/$PatchFolder
+        elif [ -d $SOURCE_PATH/$PatchFolder ] && [ -n "$ADVANCE_MODE" ]; then
+            PROJ_PATH=$SOURCE_PATH/$PatchFolder
         else
             echo "$SOURCE_PATH/$PatchFolder not exist"
             continue
