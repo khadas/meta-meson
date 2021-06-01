@@ -23,6 +23,7 @@ do_compile(){
 
 
 do_install() {
+    install -d ${D}/${sysconfdir}/wifi
     install -d ${D}${bindir}
     install -m 0755 ${S}/utils/wifi_power ${D}${bindir}
 
