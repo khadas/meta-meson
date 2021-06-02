@@ -22,6 +22,9 @@ do_install_append(){
     mesons4*)
         sed -i '/Debug=0/a Device=qca' ${D}${sysconfdir}/bluetooth/main.conf
     ;;
+    mesont5d*)
+        sed -i '/Debug=0/a Device=rtk' ${D}${sysconfdir}/bluetooth/main.conf
+    ;;
     esac
 }
 

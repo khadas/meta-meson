@@ -15,6 +15,7 @@ EXTERNALSRC_pn-qca6174 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/wifi/
 EXTERNALSRC_pn-qca6174_s4 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/qualcomm/drivers/qca6174' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/qualcomm/drivers/qca6174')) else ''}"
 EXTERNALSRC_pn-rtk8723bu = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723bu' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723bu')) else ''}"
 EXTERNALSRC_pn-rtk8723du = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723du' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723du')) else ''}"
+EXTERNALSRC_pn-realtek-bt = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/realtek/bluetooth' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/realtek/bluetooth')) else ''}"
 EXTERNALSRC_pn-wififw = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/amlogic/wifi' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/amlogic/wifi')) else ''}"
 EXTERNALSRC_pn-aml-hdcprx = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp')) else ''}"
 EXTERNALSRC_pn-aml-provision = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/provision' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/provision')) else ''}"

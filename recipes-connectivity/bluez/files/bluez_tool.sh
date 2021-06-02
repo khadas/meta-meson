@@ -53,10 +53,10 @@ realtek_bt_init()
 	else
 		rm -f $rtk_bdaddr
 	fi
-	modprobe rtk_btuart
-	modprobe rtk_btusb
-	usleep 500000
-	rtk_hciattach -n -s 115200 /dev/ttyS1 rtk_h5 &
+	#modprobe rtk_btuart
+	#modprobe rtk_btusb
+	#usleep 500000
+	#rtk_hciattach -n -s 115200 /dev/ttyS1 rtk_h5 &
 }
 
 qca_bt_init()
