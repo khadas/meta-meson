@@ -1,0 +1,88 @@
+Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2object.h
+===================================================================
+--- gst-plugins-good-1.16.3.orig/sys/v4l2/gstv4l2object.h
++++ gst-plugins-good-1.16.3/sys/v4l2/gstv4l2object.h
+@@ -222,6 +222,8 @@ struct _GstV4l2Object {
+   gboolean skip_try_fmt_probes;
+   gboolean can_wait_event;
+   gboolean need_wait_event;
++
++  guint tvin_port;
+ };
+ 
+ struct _GstV4l2ObjectClassHelper {
+Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2src.c
+===================================================================
+--- gst-plugins-good-1.16.3.orig/sys/v4l2/gstv4l2src.c
++++ gst-plugins-good-1.16.3/sys/v4l2/gstv4l2src.c
+@@ -72,6 +72,7 @@ enum
+ {
+   PROP_0,
+   V4L2_STD_OBJECT_PROPS,
++  V4L2_PROPS_VDIN_PORT, // amlogic VDIN port
+   PROP_LAST
+ };
+ 
+@@ -147,6 +148,12 @@ gst_v4l2src_class_init (GstV4l2SrcClass
+   gst_v4l2_object_install_properties_helper (gobject_class,
+       DEFAULT_PROP_DEVICE);
+ 
++  g_object_class_install_property(gobject_class, V4L2_PROPS_VDIN_PORT,
++      g_param_spec_uint("tvin-port", "tvin-port",
++          "bit 28: enable tvin, bit 24: vdin device, bit 15-0: tvin port type",
++          0, G_MAXUINT, -1,
++          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | GST_PARAM_CONTROLLABLE));
++
+   /**
+    * GstV4l2Src::prepare-format:
+    * @v4l2src: the v4l2src instance
+@@ -226,6 +233,9 @@ gst_v4l2src_set_property (GObject * obje
+   if (!gst_v4l2_object_set_property_helper (v4l2src->v4l2object,
+           prop_id, value, pspec)) {
+     switch (prop_id) {
++      case V4L2_PROPS_VDIN_PORT:
++        v4l2src->v4l2object->tvin_port = g_value_get_uint(value);
++        break;
+       default:
+         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+         break;
+@@ -242,6 +252,9 @@ gst_v4l2src_get_property (GObject * obje
+   if (!gst_v4l2_object_get_property_helper (v4l2src->v4l2object,
+           prop_id, value, pspec)) {
+     switch (prop_id) {
++      case V4L2_PROPS_VDIN_PORT:
++        g_value_set_uint (value, v4l2src->v4l2object->tvin_port);
++        break;
+       default:
+         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+         break;
+Index: gst-plugins-good-1.16.3/sys/v4l2/v4l2_calls.c
+===================================================================
+--- gst-plugins-good-1.16.3.orig/sys/v4l2/v4l2_calls.c
++++ gst-plugins-good-1.16.3/sys/v4l2/v4l2_calls.c
+@@ -617,6 +617,13 @@ gst_v4l2_open (GstV4l2Object * v4l2objec
+ 
+   gst_v4l2_adjust_buf_type (v4l2object);
+ 
++  if (v4l2object->tvin_port != -1) {
++    unsigned int portType = v4l2object->tvin_port;
++    if (v4l2object->ioctl(v4l2object->video_fd, VIDIOC_S_INPUT, &portType) < 0) {
++      GST_INFO_OBJECT(v4l2object->dbg_obj, "set tvin_port 0x%x failed", portType);
++    }
++  }
++
+   /* create enumerations, posts errors. */
+   if (!gst_v4l2_fill_lists (v4l2object))
+     goto error;
+Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2object.c
+===================================================================
+--- gst-plugins-good-1.16.3.orig/sys/v4l2/gstv4l2object.c
++++ gst-plugins-good-1.16.3/sys/v4l2/gstv4l2object.c
+@@ -537,6 +537,7 @@ gst_v4l2_object_new (GstElement * elemen
+   v4l2object->poll = gst_poll_new (TRUE);
+   v4l2object->can_wait_event = FALSE;
+   v4l2object->can_poll_device = TRUE;
++  v4l2object->tvin_port = -1;
+ 
+   return v4l2object;
+ }
