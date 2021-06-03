@@ -59,6 +59,8 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     wpa-supplicant \
     wifi-amlogic \
     libamavutils \
+    aml-pqserver \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-tvserver', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'playready', 'playready', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace', '', d)} \

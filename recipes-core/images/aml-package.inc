@@ -1,6 +1,6 @@
 DEPENDS_append = " aml-img-packer-native"
 DEPENDS_append_onepass = " core-image-minimal"
-#DEPENDS_append = " vendor-image"
+DEPENDS_append = " vendor-image"
 
 SOC_FAMILY = "gxl"
 SOC_FAMILY_gxl = "gxl"
@@ -43,6 +43,6 @@ do_aml_pack() {
     ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/${PACK_CONF} ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
 }
 do_aml_pack[depends] += "core-image-minimal:do_image_complete "
-#do_aml_pack[depends] += "vendor-image:do_image_complete "
+do_aml_pack[depends] += "vendor-image:do_image_complete "
 addtask aml_pack after do_image_complete before do_build
 do_aml_pack[nostamp] = "1"
