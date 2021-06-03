@@ -1,0 +1,42 @@
+From 63aeb17e343e613e879867115c20fa025ae248b1 Mon Sep 17 00:00:00 2001
+From: Xueling Li <xueling.li@amlogic.com>
+Date: Thu, 3 Jun 2021 10:32:38 +0000
+Subject: [PATCH] RDK: fix issue in bluez5.55 [1/1]
+
+PD#SWPL-51227
+
+Problem:
+
+Solution:
+
+Verify:
+  Local
+Signed-off-by: Xueling Li <xueling.li@amlogic.com>
+---
+ profiles/input/hog.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/profiles/input/hog.c b/profiles/input/hog.c
+index 130f696..1983ece 100644
+--- a/profiles/input/hog.c
++++ b/profiles/input/hog.c
+@@ -195,6 +195,7 @@ static int hog_accept(struct btd_service *service)
+ 	}
+ 
+ 	/* HOGP 1.0 Section 6.1 requires bonding */
++    /*
+ 	if (!device_is_bonded(device, btd_device_get_bdaddr_type(device))) {
+ 		struct bt_gatt_client *client;
+ 
+@@ -205,7 +206,7 @@ static int hog_accept(struct btd_service *service)
+ 		if (!bt_gatt_client_set_security(client,
+ 						BT_ATT_SECURITY_MEDIUM))
+ 			return -ECONNREFUSED;
+-	}
++	}*/
+ 
+ 	/* TODO: Replace GAttrib with bt_gatt_client */
+ 	bt_hog_attach(dev->hog, attrib);
+-- 
+2.29.2
+

@@ -6,6 +6,7 @@ SRC_URI += "file://0001-BT-add-qca6174-bt-support-2-3.patch"
 SRC_URI += "file://main.conf"
 SRC_URI += "file://bluez.service"
 SRC_URI += "file://bluez_tool.sh"
+SRC_URI += "file://0001-RDK-fix-issue-in-bluez5.55-1-1.patch"
 
 do_install_append(){
     install -d ${D}${bindir}
