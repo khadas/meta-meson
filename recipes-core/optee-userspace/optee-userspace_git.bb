@@ -24,6 +24,9 @@ do_install() {
     mkdir -p ${D}${libdir}
     install -m 0755 ${S}/${ARM_TARGET}/lib/libteec.so ${D}${libdir}/libteec.so.1.0
 
+    mkdir -p ${D}${includedir}
+    install -m 0755 ${S}/${ARM_TARGET}/include/*.h ${D}${includedir}/
+
     ln -s libteec.so.1 ${D}${libdir}/libteec.so
     ln -s libteec.so.1.0 ${D}${libdir}/libteec.so.1
     echo "TDK_VERSION is ${TDK_VERSION}"
