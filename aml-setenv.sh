@@ -149,16 +149,25 @@ INHERIT += "own-mirrors"
 BB_NO_NETWORK = "1"
 EOF
     fi
-        export MACHINE=$TARGET_MACHINE
-        export AML_PATCH_PATH=${MESON_ROOT_PATH}/aml-patches
-        export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} AML_PATCH_PATH"
-		echo "==========================================="
-		echo
-		echo "MACHINE=${TARGET_MACHINE}"
-		echo "OUTPUT_DIR=${BUILD_DIR}"
-        echo "AML_PATCH_PATH=${AML_PATCH_PATH}"
-		echo
-		echo "==========================================="
+
+    if [ -e ${MESON_ROOT_PATH}/CCACHE_DIR ]; then
+        cat >> conf/local.conf << EOF
+# Enable ccache
+INHERIT += "ccache"
+CCACHE_TOP_DIR = "${MESON_ROOT_PATH}/CCACHE_DIR"
+EOF
+    fi
+
+    export MACHINE=$TARGET_MACHINE
+    export AML_PATCH_PATH=${MESON_ROOT_PATH}/aml-patches
+    export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} AML_PATCH_PATH"
+    echo "==========================================="
+    echo
+    echo "MACHINE=${TARGET_MACHINE}"
+    echo "OUTPUT_DIR=${BUILD_DIR}"
+    echo "AML_PATCH_PATH=${AML_PATCH_PATH}"
+    echo
+    echo "==========================================="
 
 	echo "Common targets are:"
 	for file in `ls ${MESON_PATH}/recipes-core/images`
