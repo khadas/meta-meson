@@ -15,6 +15,7 @@ SRC_URI += " \
             file://0003-add-pcm-ioctl.patch \
             file://0004-pcm-rw-return-fix.patch \
             file://0005-fix-example-FORTIFY_SOURCE-error.patch \
+            file://0006-tinymix-enum-print.patch \
             "
 
 do_configure() {
