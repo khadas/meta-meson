@@ -28,6 +28,12 @@ do_aml_pack() {
               #fi
         fi
 
+    if [ -n "$(find ${DEPLOY_DIR_IMAGE}/dtb.img -size +200k)" ]; then
+        echo "dtb.img > 200k will be gziped"
+        mv ${DEPLOY_DIR_IMAGE}/dtb.img ${DEPLOY_DIR_IMAGE}/dtb.img.orig
+        gzip -c ${DEPLOY_DIR_IMAGE}/dtb.img.orig > ${DEPLOY_DIR_IMAGE}/dtb.img
+    fi
+
     cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-img-packer/aml_* ${DEPLOY_DIR_IMAGE}/
     cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-img-packer/img2simg ${DEPLOY_DIR_IMAGE}/
     cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-img-packer/ext2simg ${DEPLOY_DIR_IMAGE}/
