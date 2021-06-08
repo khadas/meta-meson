@@ -34,6 +34,10 @@ do_install() {
 				install -m 0644 -D ${file} ${D}/etc/tvconfig/${file}
 			done
 		fi
+	else
+		# fix build fail for vendor folder empty
+		install -d ${D}/etc/tvconfig/
+		touch ${D}/etc/tvconfig/dummy
 	fi
 }
 
