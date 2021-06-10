@@ -60,6 +60,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     wifi-amlogic \
     procrank \
     libamavutils \
+    aml-libdvr \
     aml-pqserver \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-tvserver', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
