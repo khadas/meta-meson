@@ -23,10 +23,11 @@ do_install() {
 	if [ -d ${S}/etc/tvconfig/${SOC} ]; then
 		install -d ${D}/etc/tvconfig/pq
 		if [ -e ${S}/etc/tvconfig/${SOC}/PQ ]; then
-			cd ${S}/etc/tvconfig/${SOC}/PQ
-			for file in $(find -type f); do
-				install -m 0644 -D ${file} ${D}/etc/tvconfig/pq/${file}
-			done
+			install -m 0644 -D ${S}/etc/tvconfig/${SOC}/PQ/pq.db ${D}/etc/tvconfig/pq/pq.db
+			install -m 0644 -D ${S}/etc/tvconfig/${SOC}/PQ/pq_default.ini ${D}/etc/tvconfig/pq/pq_default.ini
+			if [ -e ${S}/etc/tvconfig/${SOC}/PQ/overscan.db ]; then
+				install -m 0644 -D ${S}/etc/tvconfig/${SOC}/PQ/overscan.db ${D}/etc/tvconfig/pq/overscan.db
+			fi
 		fi
 		if [ -e ${S}/etc/tvconfig/${SOC}/tvconfig ]; then
 			cd ${S}/etc/tvconfig/${SOC}/tvconfig
