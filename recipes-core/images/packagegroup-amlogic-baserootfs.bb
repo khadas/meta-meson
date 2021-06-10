@@ -98,4 +98,5 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'cobalt-plugin aml-cobalt-starboard  dolby-ms12 aml-audio-hal', '', d)} \
     aml-provision \
     tinyalsa-tools \
+    drmplayer-bin \
     "

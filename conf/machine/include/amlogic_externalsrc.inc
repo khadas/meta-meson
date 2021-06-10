@@ -95,3 +95,5 @@ EXTERNALSRC_pn-wpeframework-ocdm-widevine = "${@'${MESON_ROOT_PATH}/aml-comp/rdk
 EXTERNALSRC_pn-aml-hdcp = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp')) else ''}"
 EXTERNALSRC_pn-aucpu-fw = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/amlogic/aucpu_fw' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/amlogic/aucpu_fw')) else ''}"
 EXTERNALSRC_pn-wifi-amlogic = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
+EXTERNALSRC_pn-drmplayer-bin = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/drmplayer-bin/prebuilt' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/drmplayer-bin/prebuilt')) else ''}"
+
