@@ -27,4 +27,14 @@ EOF
 FILES_${PN}_append_t5d-5.4 = " /vendor/* "
 dirs755_append_t5d-5.4 = " /vendor "
 
+#/*-----------------------p1 pxp--------------------------------------*/
+do_install_append_p1 () {
+    mkdir -p ${D}/vendor
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/vendor            /vendor                    auto       defaults              0  0
+EOF
+}
+FILES_${PN}_append_p1 = " /vendor/* "
+dirs755_append_p1 = " /vendor "
+
 INSANE_SKIP_${PN} = "dev-so"

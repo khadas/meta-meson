@@ -16,6 +16,7 @@ SOC_ab301 = "t962x3"
 SOC_ab311 = "t962e2"
 SOC_am301 = "t950d4"
 SOC_ap222 = "s905y4"
+SOC_pxp = "p1_pxp"
 
 S = "${WORKDIR}/git/"
 
@@ -39,10 +40,18 @@ do_install() {
 		# fix build fail for vendor folder empty
 		install -d ${D}/etc/tvconfig/
 		touch ${D}/etc/tvconfig/dummy
+
+		if [ -d ${S}/${SOC} ]; then
+			install -d ${D}/p1_pxp
+			cd ${S}/${SOC}
+			for file in $(find -type f); do
+				install -m 0644 -D ${file} ${D}/p1_pxp/${file}
+			done
+		fi
 	fi
 }
 
-FILES_${PN} = " /etc/tvconfig/* /lib/*"
+FILES_${PN} = " /etc/tvconfig/* /lib/* /p1_pxp/*"
 FILES_${PN}-dev = " "
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 INSANE_SKIP_${PN} = "dev-so dev-elf already-stripped"
