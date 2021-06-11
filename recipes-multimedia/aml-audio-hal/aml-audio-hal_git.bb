@@ -11,19 +11,26 @@ PV = "${SRCPV}"
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_audio_hal')}"
 
 DEPENDS += "aml-amaudioutils expat tinyalsa libamavutils liblog aml-avsync"
-RDEPENDS_${PN} += "liblog aml-amaudioutils aml-avsync"
+DEPENDS += "aml-dvbaudioutils libamadec aml-dvb"
+RDEPENDS_${PN} += "liblog aml-amaudioutils aml-avsync aml-dvbaudioutils aml-dvb libamadec libamavutils"
 
 inherit cmake pkgconfig
 
 S="${WORKDIR}/git"
 TARGET_CFLAGS += "-fPIC"
 
-#PACKAGECONFIG = "dtv"
-
+PACKAGECONFIG_sc2-5.4 += "dtv"
+PACKAGECONFIG_s4 += "dtv"
 PACKAGECONFIG[dtv] = "-DUSE_DTV=ON,-DUSE_DTV=OFF,"
 
-PACKAGECONFIG += "msync"
+#PACKAGECONFIG_sc2-5.4 += "msync"
+#PACKAGECONFIG_s4 += "msync"
 PACKAGECONFIG[msync] = "-DUSE_MSYNC=ON,-DUSE_MSYNC=OFF,"
+
+PACKAGECONFIG_sc2-5.4 += "sc2"
+PACKAGECONFIG_s4 += "sc2"
+PACKAGECONFIG[sc2] = "-DUSE_SC2=ON,-DUSE_SC2=OFF,"
+
 FILES_${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/*"
 FILES_${PN}-dev = "${includedir}/* "
 INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
