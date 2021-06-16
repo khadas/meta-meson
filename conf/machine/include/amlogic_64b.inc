@@ -20,12 +20,16 @@ DISTRO_FEATURES_append = " clearkey"
 #DISTRO_FEATURES_append = " wpelauncher"
 DISTRO_FEATURES_append = " wifi"
 DISTRO_FEATURES_append = " systemd-disable-getty"
-DISTRO_FEATURES_append = " morty"
+DISTRO_FEATURES_append = " dunfell"
 MACHINEOVERRIDES .= ":wpe:thunder"
-DISTROOVERRIDES .= ":morty"
+DISTROOVERRIDES .= ":dunfell"
 #PREFERRED_VERSION_libopus = "1.1"
 #PREFERRED_PROVIDER_faad2 = "libplayer"
 
 include conf/include/bbmasks-amlogic-platform.inc
 PREFERRED_VERSION_cmake-native= "3.8.2"
 
+#DISTRO_FEATURES_append = " amazon-plugin-prebuilt amazon-plugin"
+
+DISTRO_FEATURES_append = " amazon-plugin"
+BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'amazon-plugin', '','|meta-rdk-amazon|amazon-prime-.*', d)}"

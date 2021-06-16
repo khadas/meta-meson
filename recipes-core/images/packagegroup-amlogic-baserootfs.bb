@@ -110,4 +110,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'wpeframework-plugin-netflix netflix-aml aml-netflix-esn', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', \
         'bluetooth-mgr bluetooth-core', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'amazon-plugin', \
+        'amazon-prime-plugin amazon-prime-src', '', d)} \
     "

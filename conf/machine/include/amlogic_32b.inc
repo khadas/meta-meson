@@ -10,7 +10,7 @@ DISTRO_FEATURES_append = " drm gles2"
 #DISTRO_FEATURES_append = " clearkey"
 #DISTRO_FEATURES_append = " wifi"
 DISTRO_FEATURES_append = " systemd-disable-getty"
-DISTRO_FEATURES_append = " morty"
+DISTRO_FEATURES_append = " dunfell"
 
 include conf/include/bbmasks-amlogic-platform.inc
 #PREFERRED_VERSION_cmake-native= "3.8.2"
