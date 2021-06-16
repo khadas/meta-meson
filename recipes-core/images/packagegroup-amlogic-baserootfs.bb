@@ -62,6 +62,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     libamavutils \
     aml-libdvr \
     aml-pqserver \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-tvserver', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'playready', 'playready', '', d)} \
@@ -98,5 +99,4 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'cobalt-plugin aml-cobalt-starboard  dolby-ms12 aml-audio-hal', '', d)} \
     aml-provision \
     tinyalsa-tools \
-    drmplayer-bin \
     "
