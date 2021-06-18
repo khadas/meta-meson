@@ -54,6 +54,7 @@ EXTERNALSRC_pn-linux-meson_sc2-5.4 = "${@'${MESON_ROOT_PATH}/aml-comp/kernel/aml
 EXTERNALSRC_pn-linux-meson_tm2-5.4 = "${@'${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4')) else ''}"
 EXTERNALSRC_pn-linux-meson_t5d-5.4 = "${@'${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4')) else ''}"
 EXTERNALSRC_pn-linux-meson_t7 = "${@'${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4')) else ''}"
+EXTERNALSRC_pn-linux-meson_p1 = "${@'${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4')) else ''}"
 EXTERNALSRC_pn-linux-meson_s4 = "${@'${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4')) else ''}"
 EXTERNALSRC_pn-u-boot = "${@'${MESON_ROOT_PATH}/aml-comp/uboot' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/uboot')) else ''}"
 EXTERNALSRC_pn-media-modules = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/amlogic/media_modules' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/amlogic/media_modules')) else ''}"

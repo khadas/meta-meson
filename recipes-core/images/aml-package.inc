@@ -12,6 +12,7 @@ SOC_FAMILY_tm2 = "tm2"
 SOC_FAMILY_sc2= "sc2"
 SOC_FAMILY_sc2-5.4= "sc2"
 SOC_FAMILY_t7 = "t7"
+SOC_FAMILY_p1 = "p1"
 SOC_FAMILY_s4 = "s4"
 SOC_FAMILY_t5d = "t5d"
 SOC_FAMILY_t5d-5.4 = "t5d"
@@ -42,6 +43,10 @@ do_aml_pack() {
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
     ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/rootfs.ext4.img2simg
     ${DEPLOY_DIR_IMAGE}/ext2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/system.img
+    if [ "${SOC_FAMILY}" = "p1" ];then
+        cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/rootfs.ext4.img2simg
+    fi
+
     if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ];then
         ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/vendor.ext4.img2simg
     fi

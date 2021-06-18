@@ -42,6 +42,7 @@ KCONFIG_MODE = "alldefconfig"
 
 S = "${WORKDIR}/git"
 KBUILD_DEFCONFIG_t7 = "meson64_a64_P_defconfig"
+KBUILD_DEFCONFIG_p1 = "meson64_a64_P_defconfig"
 KBUILD_DEFCONFIG_sc2-5.4 = "meson64_a64_R_defconfig"
 KBUILD_DEFCONFIG_tm2-5.4 = "meson64_a64_R_defconfig"
 KBUILD_DEFCONFIG_t5d-5.4 = "meson64_a64_R_defconfig"
@@ -50,6 +51,7 @@ KBUILD_DEFCONFIG_s4 = "meson64_a64_R_defconfig"
 GKI_DEFCONFIG = "meson64_gki_module_config"
 #T7 did not use GKI yet.
 GKI_DEFCONFIG_t7 = ""
+GKI_DEFCONFIG_p1 = ""
 
 gki_module_compile () {
   oe_runmake -C ${STAGING_KERNEL_DIR}/${1} CC="${KERNEL_CC}" LD="${KERNEL_LD}" O=${B} M=${1} KERNEL_SRC=${S}
