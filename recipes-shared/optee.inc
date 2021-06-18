@@ -3,7 +3,6 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 TBRANCH = "tdk-v2.4.4"
 TBRANCH_sc2 = "tdk-v3.8.0"
-TBRANCH_sc2-5.4 = "tdk-v3.8.0"
 TBRANCH_s4 = "tdk-v3.8.0"
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/tdk.git;protocol=${AML_GIT_PROTOCOL};branch=${TBRANCH};destsuffix=tdk;name=tdk"
 #SRC_URI_append = " git://${AML_GIT_ROOT}/vendor/amlogic/tdk_linuxdriver.git;protocol=${AML_GIT_PROTOCOL};branch=tdk-v2.4.4;destsuffix=tdk/linuxdriver;name=tdk_linuxdriver"
@@ -13,7 +12,6 @@ PATCHTOOL= "git"
 #For common patches
 TDIR = "tdk"
 TDIR_sc2 = "tdk-3.8"
-TDIR_sc2-5.4 = "tdk-3.8"
 TDIR_s4 = "tdk-3.8"
 SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/${TDIR}', '${TDIR}')}"
 SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/tdk/linuxdriver', 'tdk/linuxdriver')}"

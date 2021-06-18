@@ -16,6 +16,7 @@ SOC_ab301 = "t962x3"
 SOC_ab311 = "t962e2"
 SOC_am301 = "t950d4"
 SOC_ap222 = "s905y4"
+SOC_ah212 = "s905x4"
 SOC_pxp = "p1_pxp"
 
 S = "${WORKDIR}/git/"
@@ -51,7 +52,8 @@ do_install() {
 	fi
 }
 
-FILES_${PN} = " /etc/tvconfig/* /lib/* /p1_pxp/*"
+FILES_${PN} = " /etc/tvconfig/*"
+FILES_${PN}_pxp = " /p1_pxp/*"
 FILES_${PN}-dev = " "
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 INSANE_SKIP_${PN} = "dev-so dev-elf already-stripped"

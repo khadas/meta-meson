@@ -17,7 +17,6 @@ SOURCE_DATE_EPOCH = ""
 # but enable individual recipes to change this value.
 UBOOT_SUFFIX ?= "bin"
 UBOOT_SUFFIX_sc2 ?= "bin.signed"
-UBOOT_SUFFIX_sc2-5.4 ?= "bin.signed"
 UBOOT_SUFFIX_t7 ?= "bin.signed"
 UBOOT_SUFFIX_p1 ?= "bin.signed"
 UBOOT_SUFFIX_s4 ?= "bin.signed"

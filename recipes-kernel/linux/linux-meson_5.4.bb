@@ -14,7 +14,9 @@ SRC_URI_append = " file://gki-read_ext_module_config.sh"
 SRC_URI_append = " file://gki-read_ext_module_predefine.sh"
 SRC_URI_append_s4 = " file://s4.cfg"
 SRC_URI_append_t7 = " file://t7.cfg"
-SRC_URI_append_t5d-5.4 = " file://t5d.cfg"
+SRC_URI_append_p1 = " file://p1.cfg"
+SRC_URI_append_t5d = " file://t5d.cfg"
+SRC_URI_append_sc2 = " file://sc2.cfg"
 
 #SRC_URI_append = " file://meson.scc \
 #            file://meson.cfg \
@@ -35,7 +37,7 @@ PR = "r2"
 SRCREV ?="${AUTOREV}"
 PV = "${LINUX_VERSION}+git${SRCPV}"
 
-#COMPATIBLE_MACHINE = "(mesontm2_5.4*|mesonsc2_5.4*|mesont5d_5.4*|mesont7_*|mesons4*)"
+#COMPATIBLE_MACHINE = "(mesontm2*|mesonsc2*|mesont5d*|mesont7*|mesons4*)"
 
 KERNEL_IMAGETYPE = "Image"
 KCONFIG_MODE = "alldefconfig"
@@ -43,9 +45,9 @@ KCONFIG_MODE = "alldefconfig"
 S = "${WORKDIR}/git"
 KBUILD_DEFCONFIG_t7 = "meson64_a64_P_defconfig"
 KBUILD_DEFCONFIG_p1 = "meson64_a64_P_defconfig"
-KBUILD_DEFCONFIG_sc2-5.4 = "meson64_a64_R_defconfig"
-KBUILD_DEFCONFIG_tm2-5.4 = "meson64_a64_R_defconfig"
-KBUILD_DEFCONFIG_t5d-5.4 = "meson64_a64_R_defconfig"
+KBUILD_DEFCONFIG_sc2 = "meson64_a64_R_defconfig"
+KBUILD_DEFCONFIG_tm2 = "meson64_a64_R_defconfig"
+KBUILD_DEFCONFIG_t5d = "meson64_a64_R_defconfig"
 KBUILD_DEFCONFIG_s4 = "meson64_a64_R_defconfig"
 
 GKI_DEFCONFIG = "meson64_gki_module_config"
