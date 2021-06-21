@@ -19,15 +19,15 @@ inherit cmake pkgconfig
 S="${WORKDIR}/git"
 TARGET_CFLAGS += "-fPIC"
 
-PACKAGECONFIG_sc2-5.4 += "dtv"
-PACKAGECONFIG_s4 += "dtv"
+PACKAGECONFIG_append_sc2-5.4 += "dtv"
+PACKAGECONFIG_append_s4 += "dtv"
 PACKAGECONFIG[dtv] = "-DUSE_DTV=ON,-DUSE_DTV=OFF,"
 
 PACKAGECONFIG += "msync"
 PACKAGECONFIG[msync] = "-DUSE_MSYNC=ON,-DUSE_MSYNC=OFF,"
 
-PACKAGECONFIG_sc2-5.4 += "sc2"
-PACKAGECONFIG_s4 += "sc2"
+PACKAGECONFIG_append_sc2-5.4 += "sc2"
+PACKAGECONFIG_append_s4 += "sc2"
 PACKAGECONFIG[sc2] = "-DUSE_SC2=ON,-DUSE_SC2=OFF,"
 
 FILES_${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/*"
