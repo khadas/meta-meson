@@ -4,7 +4,8 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=2f61b7eacf1021ca36600c8932d215b9"
 
 DEPENDS = "bzip2 virtual/gettext libxml2 libamavutils"
 DEPENDS += "alsa-lib aml-dvbaudioutils"
-SRC_URI = "git://${AML_GIT_ROOT}/platform/packages/amlogic/LibPlayer.git;protocol=${AML_GIT_PROTOCOL};branch=buildroot-libplayer"
+
+#SRC_URI = "git://${AML_GIT_ROOT}/platform/packages/amlogic/LibPlayer.git;protocol=${AML_GIT_PROTOCOL};branch=buildroot-libplayer"
 RDEPENDS_${PN} += "alsa-lib"
 
 #For common patches
