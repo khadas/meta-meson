@@ -1,0 +1,10 @@
+[Unit]
+Description=hdmi control service
+After=binder.service
+
+[Service]
+User=root
+ExecStart=/usr/bin/hdmi-control-service
+
+[Install]
+WantedBy=multi-user.target
