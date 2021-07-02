@@ -49,3 +49,5 @@ DEBUG_PREFIX_MAP = "-fdebug-prefix-map=${WORKDIR}=/usr/src/debug/${PN}/${EXTENDP
 HOSTTOOLS_NONFATAL += "bc cc c++ bison"
 
 DISABLE_STATIC_pn-libevent = ""
+
+AML_RDK_PREBUILT_SITE ?= "http://10.18.11.97/firmware/image/linux-distro/Public/YOCTO/prebuilt/"
