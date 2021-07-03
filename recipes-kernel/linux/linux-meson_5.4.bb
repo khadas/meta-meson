@@ -30,7 +30,7 @@ SRC_URI_append_sc2 = " file://sc2.cfg"
 KDIR = "aml-5.4"
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
-LINUX_VERSION ?= "5.4.86"
+LINUX_VERSION ?= "5.4.125"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
 
 PR = "r2"
