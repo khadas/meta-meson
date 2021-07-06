@@ -95,7 +95,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'westeros', \
         'westeros westeros-soc-drm westeros-sink', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
-        'wpeframework wpeframework-ui thunder-services', '', d)} \
+        'wpeframework wpeframework-ui thunder-services aml-launcher', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'cobalt', \
         'cobalt-plugin aml-cobalt-starboard  dolby-ms12 aml-audio-hal', '', d)} \
     aml-provision \
