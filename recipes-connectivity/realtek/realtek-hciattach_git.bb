@@ -2,7 +2,7 @@ SUMMARY = "Realtek bluetooth"
 LICENSE = "CLOSED"
 LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=726a766df559f36316aa5261724ee8cd"
 
-#SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/realtek/bluetooth.git;protocol=${AML_GIT_PROTOCOL};branch=master;nobranch=1"
+#SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/realtek/bluetooth.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 
 SRCREV = "${AUTOREV}"
 PV = "${SRCPV}"

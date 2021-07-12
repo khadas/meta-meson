@@ -62,6 +62,7 @@ cp $OEROOT/poky/.templateconf $OEROOT
 export MESON_ROOT_PATH=$OEROOT
 export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} MESON_ROOT_PATH"
 unset OEROOT
+unset BBPATH
 
 [ -z "$BUILDDIR" ] || cd "$BUILDDIR"
 

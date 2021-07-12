@@ -3,7 +3,7 @@ inherit module
 SUMMARY = "Realtek bluetooth driver"
 LICENSE = "GPLv2"
 
-#SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/realtek/bluetooth.git;protocol=${AML_GIT_PROTOCOL};branch=master;nobranch=1"
+#SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/realtek/bluetooth.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
