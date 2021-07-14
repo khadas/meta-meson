@@ -59,6 +59,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     wpa-supplicant \
     wifi-amlogic \
     procrank \
+    zram \
     libamavutils \
     aml-libdvr \
     aml-mp-sdk \
