@@ -6,7 +6,7 @@ inherit core-image
 
 IMAGE_FSTYPES = "ext4"
 
-require ${OEROOT}/meta-meson/recipes-core/images/aml-package.inc
+require aml-package.inc
 
 LICENSE = "MIT"
 
