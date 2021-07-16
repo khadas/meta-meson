@@ -64,6 +64,7 @@ export BL2_ARG = ""
 VMX_UBOOT_PATH = "TBD"
 VMX_UBOOT_PATH_s4 = "s905y4"
 VMX_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '--bl32 vmx-sdk/bootloader/${VMX_UBOOT_PATH}/bl32/blob-bl32.bin.signed', '', d)}"
+BL33_ARG = "${@bb.utils.contains('DISTRO_FEATURES','AVB','--avb2','',d)}"
 
 do_compile () {
     cd ${S}
@@ -73,7 +74,7 @@ do_compile () {
     export CROSS_COMPILE=aarch64-elf-
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
-    LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${VMX_UBOOT_ARG}
+    LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${VMX_UBOOT_ARG} ${BL33_ARG}
     cp -rf build/* fip/
 }
 

@@ -39,7 +39,6 @@ do_aml_pack() {
     cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-img-packer/ext2simg ${DEPLOY_DIR_IMAGE}/
     cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-img-packer/res_packer ${DEPLOY_DIR_IMAGE}/
     cp -rf ${STAGING_DIR_NATIVE}${bindir}/aml-img-packer/${SOC_FAMILY}/* ${DEPLOY_DIR_IMAGE}/
-
     #Handle vbmeta partition in case AVB feature is not enabled.
     if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'false', 'true', d)}; then
         sed -i '/vbmeta/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
@@ -60,7 +59,9 @@ do_aml_pack() {
 
     ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/${PACK_CONF} ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
 }
+
 do_aml_pack[depends] += "core-image-minimal:do_image_complete "
 do_aml_pack[depends] += "vendor-image:do_image_complete "
+do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', ' vbmeta-image:do_compile', '', d)}"
 addtask aml_pack after do_image_complete before do_build
 do_aml_pack[nostamp] = "1"

@@ -55,6 +55,7 @@ DISTRO_FEATURES_remove = " sysvinit"
 DISTRO_FEATURES_append = " gstreamer1"
 DISTRO_FEATURES_append = " aml-dtv "
 DISTRO_FEATURES_append = " aml-cas "
+#DISTRO_FEATURES_append = " AVB "
 
 #For Weston
 DISTRO_FEATURES_append = " weston wayland weston-init"
