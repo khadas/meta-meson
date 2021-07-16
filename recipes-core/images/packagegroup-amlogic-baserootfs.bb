@@ -96,10 +96,12 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'westeros', \
         'westeros westeros-soc-drm westeros-sink', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
-        'wpeframework wpeframework-ui thunder-services', '', d)} \
+        'wpeframework wpeframework-ui thunder-services aml-launcher', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'cobalt', \
         'cobalt-plugin aml-cobalt-starboard  dolby-ms12 aml-audio-hal', '', d)} \
     aml-provision \
     tinyalsa-tools \
     ${@bb.utils.contains('DISTRO_FEATURES', 'tts', 'wpeframework-plugin-amltts', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'netflix', \
+        'wpeframework-plugin-netflix netflix-aml aml-netflix-esn', '', d)} \
     "
