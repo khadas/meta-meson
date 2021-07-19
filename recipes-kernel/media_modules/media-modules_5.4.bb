@@ -10,7 +10,6 @@ MBRANCH = "amlogic-5.4-dev"
 #For common patches
 MDIR = "media_modules"
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-5.4/amlogic/${MDIR}')}"
-SRC_URI_append = " file://modules-load.sh"
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
@@ -27,21 +26,10 @@ do_install() {
     mkdir -p ${MEDIADIR} ${FIRMWAREDIR}
     find ${S}/drivers/ -name *.ko | xargs -i install -m 0666 {} ${MEDIADIR}
     install -m 0666 ${MEDIA_MODULES_UCODE_BIN} ${FIRMWAREDIR}
-    install -d ${D}/etc
-    install -m 0755 ${WORKDIR}/modules-load.sh ${D}/etc
-}
-
-do_install_append() {
-
-cat >> ${D}/etc/modules-load.sh <<EOF
-/sbin/insmod /lib/modules/${KERNEL_VERSION}/kernel/drivers/amlogic/dvb/demux/dvb_demux.ko
-EOF
-
 }
 
 FILES_${PN} = " \
         /lib/firmware/video/video_ucode.bin \
-        /etc/modules-load.sh \
         "
 
 # Header file provided by a separate package
