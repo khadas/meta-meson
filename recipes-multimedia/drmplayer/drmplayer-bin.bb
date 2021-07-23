@@ -7,20 +7,18 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #For common patches
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/drmplayer-bin/prebuilt')}"
 #PV = "git${SRCPV}"
+
 S = "${WORKDIR}/git"
-
-do_compile[noexec] = "1"
-#do_package[noexec] = "1"
-
 SRCREV ?= "${AUTOREV}"
 
-#inherit externalsrc
-#EXTERNALSRC = "${TOPDIR}/aml-comp/multimedia/libmediadrm/drmplayer-bin/prebuilt"
+do_compile[noexec] = "1"
+
+
 
 INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_SYSROOT_STRIP = "1"
 
-DEPENDS += "aml-dvb aml-mediahal-sdk optee-userspace aml-secmem liblog aml-mp-sdk"
+DEPENDS += "aml-dvb aml-mediahal-sdk optee-userspace aml-secmem liblog aml-mp-sdk ffmpeg-vendor"
 
 EXTRA_OEMAKE=" STAGING_DIR=${STAGING_DIR_TARGET} \
                  TARGET_DIR=${D} \
@@ -34,18 +32,15 @@ do_install() {
     install -D -m 0644 ${S}/${ARM_TARGET}/libdrmp.so ${D}/usr/lib
     install -D -m 0644 ${S}/${ARM_TARGET}/libdec_ca.so ${D}/usr/lib
     install -D -m 0644 ${S}/${ARM_TARGET}/libstbwrapper.so ${D}/usr/lib
-    install -D -m 0644 ${S}/${ARM_TARGET}/libffmpeg-vendor.so ${D}/usr/lib
 
     install -d -m 0644 ${D}/usr/bin
     install -D -m 0755 ${S}/${ARM_TARGET}/drmptest ${D}/usr/bin
 
-    install -d -m 0644 ${D}/lib/teetz
-    install -D -m 0755 ${S}/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
 }
 
 INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
 INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
 
-FILES_${PN} += " ${bindir}/* ${libdir}/*.so ${libdir}/teetz/*.ta /lib/teetz/*.ta"
+FILES_${PN} += " ${bindir}/* ${libdir}/*.so"
 FILES_${PN}-dev = "${includedir}/* "
 
