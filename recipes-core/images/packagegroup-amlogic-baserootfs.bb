@@ -101,6 +101,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'cobalt-plugin aml-cobalt-starboard  dolby-ms12 aml-audio-hal', '', d)} \
     aml-provision \
     tinyalsa-tools \
+    aml-audio-service aml-audio-service-testapps \
     ${@bb.utils.contains('DISTRO_FEATURES', 'tts', 'wpeframework-plugin-amltts', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'netflix', \
         'wpeframework-plugin-netflix netflix-aml aml-netflix-esn', '', d)} \
