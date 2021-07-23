@@ -11,6 +11,7 @@ EXTERNALSRC_pn-optee-video-firmware = "${@'${MESON_ROOT_PATH}/aml-comp/multimedi
 EXTERNALSRC_pn-aml-uvm-test = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/v4l2-uvm-test' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/v4l2-uvm-test')) else ''}"
 EXTERNALSRC_pn-android-tools-logcat = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-liblog = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
+EXTERNALSRC_pn-libatrace = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-qca6174 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/qualcomm/drivers/qca6174' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/qualcomm/drivers/qca6174')) else ''}"
 EXTERNALSRC_pn-rtk8723bu = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723bu' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723bu')) else ''}"
 EXTERNALSRC_pn-rtk8723du = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723du' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723du')) else ''}"
