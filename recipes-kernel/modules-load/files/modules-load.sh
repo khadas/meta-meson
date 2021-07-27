@@ -7,6 +7,18 @@ if [ -e $PATH/media/dovi.ko ];then
     /sbin/insmod $PATH/media/dovi.ko
 fi
 
+if [ -e $PATH/drivers/amlogic/audioinfo/audio_data.ko ];then
+    /sbin/insmod $PATH/drivers/amlogic/audioinfo/audio_data.ko
+fi
+
+if [ -e $PATH/drivers/amlogic/amaudio/amlogic_amaudio.ko ];then
+    /sbin/insmod $PATH/drivers/amlogic/amaudio/amlogic_amaudio.ko
+fi
+
+if [ -e $PATH/drivers/amlogic/audiodsp/audiodsp.ko ];then
+    /sbin/insmod $PATH/drivers/amlogic/audiodsp/audiodsp.ko
+fi
+
 if [ -e $PATH/drivers/amlogic/dvb/demux/dvb_demux.ko ];then
     /sbin/insmod $PATH/drivers/amlogic/dvb/demux/dvb_demux.ko
 fi
