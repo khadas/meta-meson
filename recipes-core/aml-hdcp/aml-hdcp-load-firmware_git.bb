@@ -2,9 +2,8 @@ SUMMARY = "aml hdcp firmware loading service"
 LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../${AML_META_LAYER}/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
-FILESEXTRAPATHS_prepend_tm2 := "${THISDIR}/files/tm2:"
-
-SRC_URI = "file://load_hdcp2.2_firmware.service"
+SRC_URI_append = "file://load_hdcp2.2_firmware_tx22.service "
+SRC_URI_append = "file://load_hdcp2.2_firmware_rx22.service "
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -21,7 +20,11 @@ do_install() {
     install -d ${D}/${systemd_unitdir}/system
     touch ${D}/lib/firmware/hdcp/firmware.le
     if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
-        install -D -m 0644 ${S}/load_hdcp2.2_firmware.service ${D}${systemd_unitdir}/system/load_hdcp2.2_firmware.service
+        if [ "${@bb.utils.contains("DISTRO_FEATURES", "amlogic-tv", "yes", "no", d)}" = "yes"  ]; then
+            install -D -m 0644 ${S}/load_hdcp2.2_firmware_rx22.service ${D}${systemd_unitdir}/system/load_hdcp2.2_firmware.service
+        else
+            install -D -m 0644 ${S}/load_hdcp2.2_firmware_tx22.service ${D}${systemd_unitdir}/system/load_hdcp2.2_firmware.service
+        fi
     fi
 }
 
