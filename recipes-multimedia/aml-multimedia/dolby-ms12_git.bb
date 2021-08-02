@@ -24,6 +24,8 @@ do_install() {
 
 }
 
+FILES_SOLIBSDEV = ""
+
 FILES_${PN} += "${libdir}/*.so ${bindir}/*"
 #FILES_${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
 INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"
