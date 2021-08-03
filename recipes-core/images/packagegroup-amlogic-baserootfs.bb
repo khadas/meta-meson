@@ -100,7 +100,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'westeros', \
         'westeros westeros-soc-drm westeros-sink', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
-        'wpeframework wpeframework-ui thunder-services aml-launcher', '', d)} \
+        'wpeframework wpeframework-ui thunder-services', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'cobalt', \
         'cobalt-plugin aml-cobalt-starboard  dolby-ms12 aml-audio-hal', '', d)} \
     aml-provision \
@@ -113,4 +113,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'bluetooth-mgr bluetooth-core', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amazon-plugin', \
         'amazon-prime-plugin amazon-prime-src', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-launcher', \
+        'aml-launcher libhtmllocal htmllocal-plugin', '', d)} \
     "
