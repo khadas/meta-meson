@@ -8,7 +8,7 @@ FILESEXTRAPATHS_preppend := "${THISDIR}/files/:"
 #SRC_URI += " file://0001-playready-add-headers-for-build-1-1.patch;patchdir=${WORKDIR}/git"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/multimedia/libmediadrm/playready-bin')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/playready-bin')}"
 
 #SRCREV="bb62070629f62c580b32cdfe2cfaa3928611d6f3"
 #use head version, ?= conditonal operator can be control revision in external rdk-next.conf like configuration file
