@@ -21,6 +21,5 @@ BBLAYERS ?= " \
   ##OEROOT##/meta-python2 \
   ##OEROOT##/meta-meson \
   ##OEROOT##/meta-thunder \
-  ##OEROOT##/meta-aml-netflix \
   "
 
