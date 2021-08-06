@@ -48,8 +48,10 @@ SRCREV_FORMAT = "bl2_bl30_src_ao_bl31_bl31-1.3_bl32-3.8_bl33_fip"
 PR = "r1"
 PV = "v2019.01+git${SRCPV}"
 
+PATH_append = ":${STAGING_DIR_NATIVE}/gcc-linaro-aarch64-elf/bin"
 PATH_append = ":${STAGING_DIR_NATIVE}/riscv-none-gcc/bin"
 #DEPENDS_append = "optee-scripts-native optee-userspace-securebl32"
+DEPENDS_append = "gcc-linaro-aarch64-elf-native "
 DEPENDS_append = "vim-native zip-native"
 DEPENDS_append = " riscv-none-gcc-native "
 
@@ -63,8 +65,7 @@ do_compile () {
     cp -f fip/mk .
     export BUILD_FOLDER=${S}/build/
     export PYTHONPATH="${STAGING_DIR_NATIVE}/usr/lib/python2.7/site-packages/"
-    export CROSS_COMPILE=${TARGET_PREFIX}
-    export KCFLAGS="--sysroot=${PKG_CONFIG_SYSROOT_DIR}"
+    export CROSS_COMPILE=aarch64-elf-
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
     LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG}
