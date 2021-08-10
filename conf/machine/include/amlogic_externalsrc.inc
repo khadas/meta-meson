@@ -2,6 +2,7 @@
 SRCTREECOVEREDTASKS ?= "do_unpack do_fetch"
 INHERIT += "externalsrc"
 
+EXTERNALSRC_pn-vmx-sdk-rel = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/vmx/sdk-rel' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/vmx/sdk-rel')) else ''}"
 EXTERNALSRC_pn-aml-audio-hal = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal')) else ''}"
 EXTERNALSRC_pn-aml-dvbaudioutils = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal')) else ''}"
 EXTERNALSRC_pn-aml-audio-service = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/hal_audio_service' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/hal_audio_service')) else ''}"
