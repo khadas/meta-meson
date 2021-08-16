@@ -19,11 +19,17 @@ DISABLE_STATIC = ""
 
 SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
-SRC_URI = " git://${AML_GIT_ROOT}/platform/external/ffmpeg-aml;protocol=${AML_GIT_PROTOCOL};branch=n-amlogic"
+#SRC_URI = " git://${AML_GIT_ROOT}/platform/external/ffmpeg-aml;protocol=${AML_GIT_PROTOCOL};branch=n-amlogic"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
-SRC_URI_append = " file://0001-do-not-install-pkgconfig.patch;patch=1;"
-SRC_URI_append = " file://0002-do-remove-config-headfile.patch;patch=2;"
+#SRC_URI_append = " file://0001-do-not-install-pkgconfig.patch;patch=1;"
+#SRC_URI_append = " file://0002-do-remove-config-headfile.patch;patch=2;"
+
+do_process_patches() {
+    #apply the patches in the src code
+    patch -p1 -d ${S} <  ${THISDIR}/files/0001-do-not-install-pkgconfig.patch
+    patch -p1 -d ${S} <  ${THISDIR}/files/0002-do-remove-config-headfile.patch
+}
 
 
 EXTRA_FFCONF = " \
@@ -102,6 +108,7 @@ do_strip() {
     ${STRIP} -s ${D}${libdir}/libffmpeg-vendor.so
 }
 
+addtask do_process_patches before do_configure
 addtask strip
 
 FILES_${PN} = "${bindir}/ffmpeg-vendor"
