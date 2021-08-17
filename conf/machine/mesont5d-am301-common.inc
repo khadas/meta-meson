@@ -1,9 +1,3 @@
-#@TYPE: Machine
-#@NAME: meson
-
-#@DESCRIPTION: Machine configuration for meson systems
-
-include conf/machine/include/mesont5d_5.4.inc
 
 PREFERRED_PROVIDER_virtual/mesa = "libgles-eabihf-dvalin-wayland-drm"
 PREFERRED_PROVIDER_virtual/mesa-gl = "libgles-eabihf-dvalin-wayland-drm"
@@ -26,10 +20,8 @@ MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
         optee-linux-driver \
         "
 
-KERNEL_DEVICETREE = "t5d_t950x4_am311_linux_1g.dtb t5d_reva_t950x4_am311_linux_1g.dtb t5d_t950x4_am311_linux_512m.dtb t5d_reva_t950x4_am311_linux_512m.dtb"
-UBOOT_MACHINE = "t5d_am311_v1"
-KERNEL_MODULE_AUTOLOAD += " dnlp_alg_64 "
-KERNEL_MODULE_AUTOLOAD += " mxl661_fe_64 rt710_fe_64 "
+KERNEL_DEVICETREE = "t5d_t950d4_am301_linux_1.5g.dtb t5d_reva_t950d4_am301_linux_1.5g.dtb t5d_t950d4_am301_linux_1g.dtb t5d_reva_t950d4_am301_linux_1g.dtb"
+UBOOT_MACHINE = "t5d_am301_v1"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-dummy_codec"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-aml_t9015"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-aml_codec_tl1_acodec"
@@ -76,7 +68,7 @@ PREFERRED_VERSION_wayland-protocol = "1.18.0"
 
 PREFERRED_VERSION_tinyalsa = "1.1.1"
 
-OVERRIDES .= ":am311:t5d:onepass"
+OVERRIDES .= ":am301:t5d:onepass"
 MACHINEOVERRIDES .= ":client"
 PREFERRED_PROVIDER_widevine = "aml-mediadrm-widevine"
 
@@ -106,7 +98,7 @@ XZ_COMPRESSION_LEVEL ?= "-e -M 50% -9"
 #PREFERRED_PROVIDER_libgudev = "${@base_conditional('PREFERRED_VERSION_systemd', '1:216%', 'systemd', 'libgudev', d)}"
 
 DISTRO_FEATURES_remove = "weston"
-DISTRO_FEATURES_append = " westeros enable_icrypto_openssl rdkshell safec one-rdk no-rdk-deps aml-thunder cobalt"
+DISTRO_FEATURES_append = " westeros enable_icrypto_openssl rdkshell safec one-rdk no-rdk-deps aml-thunder cobalt aml-launcher"
 DISTRO_FEATURES_append = " tts"
 
 BBMASK += "meta-meson/recipes-multimedia/gst-aml-plugins/gst-plugin-aml-vsink_1.0.bb"

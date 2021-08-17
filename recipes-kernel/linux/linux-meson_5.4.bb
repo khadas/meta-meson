@@ -49,11 +49,14 @@ KBUILD_DEFCONFIG_sc2 = "meson64_a64_R_defconfig"
 KBUILD_DEFCONFIG_tm2 = "meson64_a64_R_defconfig"
 KBUILD_DEFCONFIG_t5d = "meson64_a64_R_defconfig"
 KBUILD_DEFCONFIG_s4 = "meson64_a64_R_defconfig"
+KBUILD_DEFCONFIG_kernel32 = "meson64_a32_defconfig"
 
 GKI_DEFCONFIG = "meson64_gki_module_config"
 #T7 did not use GKI yet.
 GKI_DEFCONFIG_t7 = ""
 GKI_DEFCONFIG_p1 = ""
+#Force NO GKI for 32bit kernel
+GKI_DEFCONFIG_kernel32 = ""
 
 gki_module_compile () {
   oe_runmake -C ${STAGING_KERNEL_DIR}/${1} CC="${KERNEL_CC}" LD="${KERNEL_LD}" O=${B} M=${1} KERNEL_SRC=${S}

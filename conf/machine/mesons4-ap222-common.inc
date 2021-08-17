@@ -1,9 +1,3 @@
-#@TYPE: Machine
-#@NAME: meson
-
-#@DESCRIPTION: Machine configuration for meson systems
-
-include conf/machine/include/mesons4.inc
 
 PREFERRED_PROVIDER_virtual/mesa = "libgles-eabihf-dvalin-wayland-drm"
 PREFERRED_PROVIDER_virtual/mesa-gl = "libgles-eabihf-dvalin-wayland-drm"
