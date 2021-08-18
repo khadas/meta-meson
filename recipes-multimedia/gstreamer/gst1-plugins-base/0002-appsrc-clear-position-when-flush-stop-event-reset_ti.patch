@@ -1,0 +1,86 @@
+From 860cd8062ecadf7194760993568016e4613c130d Mon Sep 17 00:00:00 2001
+From: "yongchun.li" <yongchun.li@amlogic.com>
+Date: Mon, 29 Mar 2021 21:17:39 -0700
+Subject: [PATCH] appsrc: clear position when flush-stop event reset_time flag set
+
+On flush-stop event, if the reset time flag is true. reset the
+current positions
+---
+Index: gst-plugins-base-1.16.3/gst-libs/gst/app/gstappsrc.c
+===================================================================
+--- gst-plugins-base-1.16.3.orig/gst-libs/gst/app/gstappsrc.c
++++ gst-plugins-base-1.16.3/gst-libs/gst/app/gstappsrc.c
+@@ -157,6 +157,7 @@ struct _GstAppSrcPrivate
+ 
+   gboolean flushing;
+   gboolean started;
++  gboolean reset_pos;
+   gboolean is_eos;
+   guint64 queued_bytes;
+   guint64 offset;
+@@ -614,6 +615,7 @@ gst_app_src_init (GstAppSrc * appsrc)
+   priv->max_latency = DEFAULT_PROP_MAX_LATENCY;
+   priv->emit_signals = DEFAULT_PROP_EMIT_SIGNALS;
+   priv->min_percent = DEFAULT_PROP_MIN_PERCENT;
++  priv->reset_pos = FALSE;
+ 
+   gst_base_src_set_live (GST_BASE_SRC (appsrc), DEFAULT_PROP_IS_LIVE);
+ }
+@@ -834,12 +836,18 @@ gst_app_src_send_event (GstElement * ele
+ {
+   GstAppSrc *appsrc = GST_APP_SRC_CAST (element);
+   GstAppSrcPrivate *priv = appsrc->priv;
++  gboolean reset_time;
+ 
+   switch (GST_EVENT_TYPE (event)) {
+     case GST_EVENT_FLUSH_STOP:
++      gst_event_parse_flush_stop (event, &reset_time);
+       g_mutex_lock (&priv->mutex);
+       gst_app_src_flush_queued (appsrc, TRUE);
++      if (reset_time)
++          priv->reset_pos = TRUE;
+       g_mutex_unlock (&priv->mutex);
++      GST_DEBUG_OBJECT (appsrc, " Receive flush stop reset %u",
++          priv->reset_pos);
+       break;
+     default:
+       break;
+@@ -1219,6 +1227,20 @@ gst_app_src_create (GstBaseSrc * bsrc, g
+     }
+   }
+ 
++  if (priv->reset_pos) {
++    /* Seamless segment update */
++    GstClockTime reset_time = 0;
++    GST_DEBUG_OBJECT (appsrc,
++        "Reset position from start %" GST_TIME_FORMAT " pos %" GST_TIME_FORMAT,
++        GST_TIME_ARGS (bsrc->segment.start),
++        GST_TIME_ARGS (bsrc->segment.position));
++
++    gst_base_src_new_seamless_segment (bsrc,
++        reset_time, -1, reset_time);
++
++    priv->reset_pos = FALSE;
++  }
++
+   while (TRUE) {
+     /* return data as long as we have some */
+     if (!gst_queue_array_is_empty (priv->queue)) {
+@@ -2211,12 +2233,17 @@ gst_app_src_event (GstBaseSrc * src, Gst
+ {
+   GstAppSrc *appsrc = GST_APP_SRC_CAST (src);
+   GstAppSrcPrivate *priv = appsrc->priv;
++  gboolean reset_time;
+ 
+   switch (GST_EVENT_TYPE (event)) {
+     case GST_EVENT_FLUSH_STOP:
++      gst_event_parse_flush_stop (event, &reset_time);
+       g_mutex_lock (&priv->mutex);
+       priv->is_eos = FALSE;
++      if (reset_time)
++          priv->reset_pos = TRUE;
+       g_mutex_unlock (&priv->mutex);
++      GST_DEBUG_OBJECT (appsrc, "Event flush_stop reset %u", priv->reset_pos);
+       break;
+     default:
+       break;
