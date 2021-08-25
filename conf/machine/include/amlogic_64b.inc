@@ -27,6 +27,7 @@ DISTROOVERRIDES .= ":dunfell"
 
 include conf/include/bbmasks-amlogic-platform.inc
 PREFERRED_VERSION_cmake-native= "3.8.2"
+PREFERRED_VERSION_amazon-prime-src = "2.3"
 
 #DISTRO_FEATURES_append = " amazon-plugin-prebuilt amazon-plugin"
 
