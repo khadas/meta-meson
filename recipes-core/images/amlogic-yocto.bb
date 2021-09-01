@@ -21,10 +21,6 @@ IMAGE_INSTALL += " \
 MACHINE_IMAGE_NAME ?= "${PN}"
 IMAGE_FEATURES_remove = " read-only-rootfs"
 
-#ROOTFS max in KB
-# 4096K overhead
-#IMAGE_ROOTFS_SIZE_u212 = "256000"
-
 VIRTUAL-RUNTIME_dev_manager = "busybox"
 
 DEPENDS_${PN} = " android-tools-native"
@@ -33,7 +29,7 @@ PACKAGE_INSTALL += "base-files netbase ${VIRTUAL-RUNTIME_base-utils} ${VIRTUAL-R
 
 IMAGE_LINGUAS = ""
 
-IMAGE_ROOTFS_SIZE = "8192"
+IMAGE_ROOTFS_SIZE = "1048576"
 IMAGE_ROOTFS_EXTRA_SPACE = "0"
 KERNEL_BOOTARGS = "root=/dev/system rootfstype=ext4"
 
