@@ -1,0 +1,42 @@
+From 456e8e0f01afc39bb015f579bf6a2840e4b89fbc Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Fri, 17 Sep 2021 14:16:26 +0800
+Subject: [PATCH] gst-plugins-good-1.16.3: add dtse case in qtdemux [1/1]
+
+PD#SWPL-59311
+
+Problem:
+no dtse case in qtdemux which makes dtse audio chunks as samples,
+then calculate pts abnormal
+
+Solution:
+add dtse case in qtdemux and do not treat dtse chunks as samples
+
+Verify:
+AP222
+
+Change-Id: I84b3794bdf1c041b45e003a619f1a13c7b76d2fe
+---
+ qtdemux.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index dc76413..e94a80f 100644
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -15329,6 +15329,12 @@ qtdemux_audio_caps (GstQTDemux * qtdemux, QtDemuxStream * stream,
+           "framed", G_TYPE_BOOLEAN, TRUE, NULL);
+       entry->sampled = TRUE;
+       break;
++    case GST_MAKE_FOURCC ('d', 't', 's', 'e'): // DTS Low Bit Rate (LBR)
++      _codec ("DTS LBR audio");
++      caps = gst_caps_new_simple ("audio/x-dts",
++          "framed", G_TYPE_BOOLEAN, TRUE, NULL);
++      entry->sampled = TRUE;
++      break;
+     case FOURCC_MAC3:
+       _codec ("MACE-3");
+       caps = gst_caps_new_simple ("audio/x-mace",
+-- 
+2.32.0
+
