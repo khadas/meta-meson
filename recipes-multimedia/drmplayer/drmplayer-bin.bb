@@ -23,8 +23,8 @@ DEPENDS += "aml-dvb aml-mediahal-sdk optee-userspace aml-secmem liblog aml-mp-sd
 EXTRA_OEMAKE=" STAGING_DIR=${STAGING_DIR_TARGET} \
                  TARGET_DIR=${D} \
                  "
-ARM_TARGET="arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 ="aarch64.lp64."
+ARM_TARGET = "arm.aapcs-linux.hard"
+ARM_TARGET_aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
 do_install() {

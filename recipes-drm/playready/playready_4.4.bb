@@ -15,6 +15,9 @@ SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/lib
 #use head version, ?= conditonal operator can be control revision in external rdk-next.conf like configuration file
 SRCREV ?= "${AUTOREV}"
 
+ARM_TARGET = "arm.aapcs-linux.hard"
+ARM_TARGET_aarch64 = "aarch64.lp64."
+
 S = "${WORKDIR}/git"
 
 PATCHTOOL="git"
@@ -32,8 +35,8 @@ do_install () {
 
     install -m 0644 ${S}/prebuilt-v4.4/noarch/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz
     install -m 0644 ${S}/prebuilt-v4.4/noarch/pkgconfig/playready.pc ${D}/usr/lib/pkgconfig
-    install -m 0644 ${S}/prebuilt-v4.4/arm.aapcs-linux.hard/libplayready-4.4.so ${D}/usr/lib
-    install -m 0755 ${S}/prebuilt-v4.4/arm.aapcs-linux.hard/prtest ${D}/usr/bin
+    install -m 0644 ${S}/prebuilt-v4.4/${ARM_TARGET}/libplayready-4.4.so ${D}/usr/lib
+    install -m 0755 ${S}/prebuilt-v4.4/${ARM_TARGET}/prtest ${D}/usr/bin
     ln -s libplayready-4.4.so ${D}/usr/lib/libplayready.so
     ln -s libplayready-4.4.so ${D}/usr/lib/libplayready44pk.so
     ln -s libplayready-4.4.so ${D}/usr/lib/libplayready44pritee.so

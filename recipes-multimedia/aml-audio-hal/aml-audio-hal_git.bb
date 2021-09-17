@@ -24,6 +24,7 @@ TARGET_CFLAGS += "-fPIC"
 PACKAGECONFIG_append_sc2 += "dtv"
 PACKAGECONFIG_append_s4 += "dtv"
 PACKAGECONFIG_append_t5d += "dtv"
+PACKAGECONFIG_append_t3 += "dtv"
 PACKAGECONFIG[dtv] = "-DUSE_DTV=ON,-DUSE_DTV=OFF,"
 
 PACKAGECONFIG += "msync"

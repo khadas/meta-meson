@@ -13,7 +13,7 @@ SRCREV ?= "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 ARM_TARGET = "arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 ="aarch64.lp64."
+ARM_TARGET_aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
 do_install() {

@@ -20,6 +20,7 @@ SOC_FAMILY_t7 = "t7"
 SOC_FAMILY_p1 = "p1"
 SOC_FAMILY_s4 = "s4"
 SOC_FAMILY_t5d = "t5d"
+SOC_FAMILY_t3 = "t3"
 
 SOC_BOARD = "default"
 SOC_BOARD_ab301 = "ab301"

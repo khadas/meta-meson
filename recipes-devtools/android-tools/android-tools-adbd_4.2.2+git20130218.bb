@@ -82,6 +82,9 @@ do_install(){
     mesont7*)
         sed 's@ff400000.dwc2_a@fdd00000.crgudc2@' -i ${D}/etc/adb_udc_file
     ;;
+    mesont3*)
+        sed 's@ff400000.dwc2_a@fdf00000.dwc2_a@' -i ${D}/etc/adb_udc_file
+    ;;
     mesont5d*)
         echo "Using default"
     ;;

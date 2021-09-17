@@ -21,7 +21,9 @@ S = "${WORKDIR}/git"
 DEPENDS = "optee-userspace aml-secmem aml-mediahal-sdk"
 RDEPENDS_${PN} = "libamavutils"
 inherit autotools pkgconfig
-ARM_TARGET="arm.aapcs-linux.hard"
+
+ARM_TARGET = "arm.aapcs-linux.hard"
+ARM_TARGET_aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
 def get_widevine_version(datastore):

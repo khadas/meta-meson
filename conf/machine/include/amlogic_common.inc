@@ -27,6 +27,7 @@ TDK_VERSION_p1 = "v3.8"
 TDK_VERSION_sc2 = "v3.8/dev/S905X4"
 TDK_VERSION_t7 = "v3.8/dev/A311D2"
 TDK_VERSION_s4 = "v3.8/dev/S905Y4"
+TDK_VERSION_t3 = "v3.8/dev/T965D4"
 
 AML_GIT_ROOT ?= "git.myamlogic.com"
 AML_GIT_PROTOCOL ?= "git"
