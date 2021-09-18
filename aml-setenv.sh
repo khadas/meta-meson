@@ -109,6 +109,7 @@ function lunch()
 {
 	if [ -n "$TARGET_MACHINE" ]; then
 		MACHINE=$TARGET_MACHINE source $MESON_PATH/oe-init-build-env-meson $BUILD_DIR
+	fi
     if [ "$OPENLINUX_BUILD" = "1" ];then
         cat >> conf/local.conf <<EOF
 #Force OpenLinux Access
@@ -196,7 +197,7 @@ EOF
 	  echo "${file%%.*}"
 	  fi
 	done
-	fi
+
 	# Copy <manifest>.conf file to auto.conf for revision lock
 	if [ -L ./../.repo/manifest.xml ] ; then
 	  MANIFEST="$(basename `readlink -f ./../.repo/manifest.xml ` | cut -d '.' -f 1)"
