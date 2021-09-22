@@ -30,5 +30,8 @@ do_install() {
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/wifi.service ${D}${systemd_unitdir}/system
 
+    if [ "${@bb.utils.contains("DISTRO_FEATURES", "aml-w1", "true", "false", d)}" ]; then
+        sed -i '/\/usr\/bin\/wifi_power/a ExecStart=\/sbin\/modprobe vlsicomm conf_path=\/etc\/wifi\/w1' ${D}${systemd_unitdir}/system/wifi.service
+    fi
 }
 
