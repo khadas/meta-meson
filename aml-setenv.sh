@@ -194,6 +194,10 @@ EOF
 	if [ -f "./../.repo/manifests/${MANIFEST}.conf" ]; then
 	  cp ./../.repo/manifests/${MANIFEST}.conf ./conf/auto.conf
 	fi
+
+    if [ -f "$MESON_ROOT_PATH/yocto-release-info" ]; then
+        cat $MESON_ROOT_PATH/yocto-release-info  >> conf/auto.conf
+    fi
 }
 
 function function_stuff()
