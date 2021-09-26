@@ -7,5 +7,5 @@ SRC_URI_append = "file://0005-add-sinput-for-vdin.patch "
 SRC_URI_append = "file://0006-add-more-condition-to-select-stream-in-qtdemux.patch "
 SRC_URI_append = "file://0007-dont-treat-ac4-chunks-as-samples.patch "
 SRC_URI_append = "file://0008-add-audio-dtse-case-in-qtdemux.patch "
-
+SRC_URI_append = "file://0009-qtdemux-switch-AV-stream-by-pts.patch "
 
