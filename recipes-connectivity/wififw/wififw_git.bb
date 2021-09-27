@@ -1,6 +1,7 @@
 SUMMARY = "Wifi firmware"
 SECTION = "base"
 LICENSE = "GPLv2"
+LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/amlogic/wifi.git;protocol=${AML_GIT_PROTOCOL};branch=n-amlogic"
 
@@ -12,7 +13,6 @@ PV = "git${SRCPV}"
 
 inherit pkgconfig
 
-do_populate_lic[noexec] = "1"
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 

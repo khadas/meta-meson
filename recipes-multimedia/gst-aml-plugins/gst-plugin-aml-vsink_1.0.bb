@@ -15,7 +15,7 @@ PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/"
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
-inherit autotools pkgconfig distro_features_check
+inherit autotools pkgconfig features_check
 
 do_configure_append() {
   #Special patch

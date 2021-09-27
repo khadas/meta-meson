@@ -11,7 +11,6 @@ SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
-do_populate_lic[noexec] = "1"
 
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"

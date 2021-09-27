@@ -2,8 +2,8 @@ inherit image
 SDKEXTCLASS ?= "${@['populate_sdk', 'populate_sdk_ext']['linux' in d.getVar("SDK_OS", True)]}"
 inherit ${SDKEXTCLASS}
 
-DEPENDS_${PN}_append = " android-tools-native"
-DEPENDS_${PN}_append = "${@bb.utils.contains("DISTRO_FEATURES", "FIT", " u-boot-tools-native dtc-native", "" ,d)}"
+DEPENDS_append = " android-tools-native"
+DEPENDS_append = "${@bb.utils.contains("DISTRO_FEATURES", "FIT", " u-boot-tools-native dtc-native", "" ,d)}"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 SRC_URI += " file://boot-template.its"

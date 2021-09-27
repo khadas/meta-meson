@@ -2,6 +2,7 @@ inherit module
 
 SUMMARY = "Qualcomm 6174 driver"
 LICENSE = "GPLv2"
+LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/wifi/qualcomm/drivers/qca6174.git;protocol=${AML_GIT_PROTOCOL};branch=o-amlogic"
 #SRC_URI += "file://0001-fix-firmware-path.patch"
@@ -14,7 +15,6 @@ SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/hardw
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
-do_populate_lic[noexec] = "1"
 do_configure[noexec] = "1"
 
 #COMPATIBLE_MACHINE="(mesonsc2_5.4*|mesons4*)"

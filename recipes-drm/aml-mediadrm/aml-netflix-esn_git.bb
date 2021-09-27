@@ -1,6 +1,6 @@
 DESCRIPTION = "amlogic netflix esn bin"
 
-LICENSE = "Proprietary"
+LICENSE = "CLOSED"
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 do_configure[noexec] = "1"

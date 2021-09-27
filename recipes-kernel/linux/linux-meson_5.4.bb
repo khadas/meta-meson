@@ -1,7 +1,7 @@
 inherit kernel
 require linux-meson.inc
 
-LIC_FILES_CHKSUM = "file://${THISDIR}/../../license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
+LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
 
 #We still need patch even in external src mode
 SRCTREECOVEREDTASKS_remove = "do_patch"

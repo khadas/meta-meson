@@ -18,7 +18,7 @@ RDEPENDS_${PN} += "aml-mediadrm-widevine aml-secmem"
 S = "${WORKDIR}/git/gst-aml-drm-plugins-1.0"
 
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
-inherit autotools pkgconfig distro_features_check
+inherit autotools pkgconfig features_check
 FILES_${PN} += "/usr/lib/gstreamer-1.0/*"
 INSANE_SKIP_${PN} = "ldflags dev-so "
 INHIBIT_PACKAGE_STRIP = "1"

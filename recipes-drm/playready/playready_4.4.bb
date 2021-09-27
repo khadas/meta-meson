@@ -50,4 +50,4 @@ FILES_${PN} += "${libdir}/*"
 
 FILES_SOLIBSDEV = ""
 
-INSANE_SKIP_${PN} = "ldflags dev-so"
+INSANE_SKIP_${PN} = "ldflags dev-so already-stripped"

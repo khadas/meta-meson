@@ -1,13 +1,12 @@
 SUMMARY = "aml hdcp firmware loading service"
 LICENSE = "AMLOGIC"
-LIC_FILES_CHKSUM = "file://${COREBASE}/../${AML_META_LAYER}/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
+LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 SRC_URI_append = "file://load_hdcp2.2_firmware_tx22.service "
 SRC_URI_append = "file://load_hdcp2.2_firmware_rx22.service "
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
-do_populate_lic[noexec] = "1"
 
 S = "${WORKDIR}"
 

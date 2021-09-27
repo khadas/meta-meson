@@ -32,3 +32,4 @@ do_install() {
 
 FILES_${PN} = "${libdir}/* ${bindir}/* ${includedir}/* /lib/teetz/*"
 FILES_${PN}-dev = "${includedir}/* "
+INSANE_SKIP_${PN} = "already-stripped"

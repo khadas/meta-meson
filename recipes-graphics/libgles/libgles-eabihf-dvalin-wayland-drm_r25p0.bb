@@ -1,6 +1,6 @@
 DESCRIPTION = "libGLES with wayland for 32bit Mali dvalin (Drm)"
 
-LICENSE = "Proprietary"
+LICENSE = "CLOSED"
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
 do_configure[noexec] = "1"
@@ -93,4 +93,4 @@ do_install() {
 
 FILES_${PN} += "${libdir}/*.so"
 FILES_${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
-INSANE_SKIP_${PN} = "ldflags dev-so"
+INSANE_SKIP_${PN} = "ldflags dev-so already-stripped"

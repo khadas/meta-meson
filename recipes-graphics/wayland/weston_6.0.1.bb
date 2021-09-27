@@ -32,7 +32,7 @@ SRC_URI[sha256sum] = "bf2f6d5aae2e11cabb6bd69a76bcf9edb084f8c3e14ca769bea7234a51
 
 UPSTREAM_CHECK_URI = "https://wayland.freedesktop.org/releases.html"
 
-inherit autotools pkgconfig useradd distro_features_check
+inherit autotools pkgconfig useradd features_check
 # depends on virtual/egl
 REQUIRED_DISTRO_FEATURES = "opengl"
 

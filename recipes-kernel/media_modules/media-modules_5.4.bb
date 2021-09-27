@@ -2,7 +2,7 @@ inherit module
 
 SUMMARY = "Amlogic media driver"
 LICENSE = "GPLv2"
-LIC_FILES_CHKSUM = "file://${THISDIR}/../../license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
+LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
 
 MBRANCH = "amlogic-5.4-dev"
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/amlogic/media_modules.git;protocol=${AML_GIT_PROTOCOL};branch=${MBRANCH};"
@@ -11,7 +11,7 @@ MBRANCH = "amlogic-5.4-dev"
 MDIR = "media_modules"
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-5.4/amlogic/${MDIR}')}"
 SRCREV ?= "${AUTOREV}"
-PV = "git${SRCPV}"
+PV ?= "git${SRCPV}"
 
 #COMPATIBLE_MACHINE="(mesontm2_5.4*|mesonsc2_5.4*|mesont5d_5.4*|mesont7_*|mesons4*)"
 

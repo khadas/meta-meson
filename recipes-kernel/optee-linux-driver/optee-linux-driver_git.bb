@@ -5,7 +5,7 @@ include ../../recipes-shared/optee.inc
 
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
-do_populate_lic[noexec] = "1"
+
 do_configure[noexec] = "1"
 
 do_install() {

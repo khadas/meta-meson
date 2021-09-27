@@ -20,7 +20,7 @@ do_install() {
 	sed -i 's,@LOCALSTATEDIR@,${localstatedir},g' ${D}${bindir}/weston-start
 }
 
-inherit allarch update-rc.d distro_features_check systemd
+inherit allarch update-rc.d features_check systemd
 
 # rdepends on weston which depends on virtual/egl
 REQUIRED_DISTRO_FEATURES = "opengl"

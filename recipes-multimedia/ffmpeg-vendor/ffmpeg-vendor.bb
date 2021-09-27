@@ -4,7 +4,7 @@ LICENSE = "CLOSED"
 PV = "1"
 PR = "r0"
 
-INSANE_SKIP_${PN} += " ldflags"
+INSANE_SKIP_${PN} += " ldflags already-stripped"
 INSANE_SKIP_${PN}-dev += "dev-elf"
 EXTRA_OEMAKE = "STAGING_DIR=${STAGING_DIR_TARGET} \
 		  TARGET_DIR=${D} "

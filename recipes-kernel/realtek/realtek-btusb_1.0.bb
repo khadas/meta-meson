@@ -2,13 +2,13 @@ inherit module
 
 SUMMARY = "Realtek bluetooth driver"
 LICENSE = "GPLv2"
+LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/realtek/bluetooth.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
-do_populate_lic[noexec] = "1"
 do_configure[noexec] = "1"
 
 do_install() {
