@@ -128,6 +128,19 @@ BBLAYERS =+ "${MESON_ROOT_PATH}/meta-aml-netflix"
 EOF
     fi
 
+    if [ -d ${MESON_ROOT_PATH}/meta-security ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-security[^-]') -eq 0 ]; then
+            cat >> conf/bblayers.conf <<EOF
+BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-security"
+EOF
+    fi
+
+# Add meta-perl only if not already present.
+    if [ -d ${MESON_ROOT_PATH}/meta-openembedded/meta-perl ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-perl[^-]') -eq 0 ]; then
+        cat >> conf/bblayers.conf <<EOF
+BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-openembedded/meta-perl"
+EOF
+    fi
+
     if [ -n "$(echo $TARGET_MACHINE | grep -- lib32)" ]; then
       NEED_A6432_SUPPORT=y
     fi

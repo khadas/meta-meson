@@ -11,6 +11,9 @@ ROOT_RWDEVICE="/dev/data"
 MOUNT="/bin/mount"
 UMOUNT="/bin/umount"
 FIRMWARE=""
+VENDOR_DEVICE="/dev/vendor"
+DM_VERITY_STATUS="disabled"
+DM_DEV_COUNT=0
 
 # Copied from initramfs-framework. The core of this script probably should be
 # turned into initramfs-framework modules to reduce duplication.
@@ -190,6 +193,31 @@ data_ext4_handle() {
 	fi
 }
 
+dm_verity_setup() {
+    echo "setup dm-verity for ${1} partition(${2}) mount to ${3}"
+    if [ -f /usr/share/${1}-dm-verity.env ]; then
+        . /usr/share/${1}-dm-verity.env
+        veritysetup --data-block-size=${DATA_BLOCK_SIZE} --hash-offset=${DATA_SIZE} \
+            create ${1} ${2} ${2} ${ROOT_HASH}
+        if [ $? = 0 ]; then
+            if [ "${3}" != "none" ]; then
+                #mount -o ro /dev/mapper/${1} ${3}
+                mount -o ro /dev/dm-${DM_DEV_COUNT} ${3}
+            else
+                echo "skip mounting ${2}"
+            fi
+            DM_VERITY_STATUS="enabled"
+            DM_DEV_COUNT=$((DM_DEV_COUNT+1))
+        else
+            echo "dm-verity fails with return code $?"
+            DM_VERITY_STATUS="disabled"
+        fi
+    else
+        echo "Cannot find root hash in initramfs"
+        DM_VERITY_STATUS="disabled"
+    fi
+}
+
 # Try to mount the root image read-write and then boot it up.
 # This function distinguishes between a read-only image and a read-write image.
 # In the former case (typically an iso), it tries to make a union mount if possible.
@@ -205,9 +233,14 @@ mount_and_boot() {
     fi
 	if [ "$ROOT_DEVICE" != "" ];
 	then
-    	if ! mount -o ro,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
-		fatal "Could not mount rootfs device"
-    	fi
+		dm_verity_setup system ${ROOT_DEVICE} ${ROOT_MOUNT}
+		dm_verity_setup vendor ${VENDOR_DEVICE} none
+		echo "dm-verity is $DM_VERITY_STATUS"
+		if [ "$DM_VERITY_STATUS" = "disabled" ]; then
+			if ! mount -o ro,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
+				fatal "Could not mount rootfs device"
+			fi
+		fi
 	fi
 
 	if [ "${FIRMWARE}" != "" ]; then

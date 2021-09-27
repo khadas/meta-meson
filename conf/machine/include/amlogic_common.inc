@@ -55,3 +55,13 @@ HOSTTOOLS_NONFATAL += "bc cc c++ bison"
 DISABLE_STATIC_pn-libevent = ""
 
 AML_RDK_PREBUILT_SITE ?= "http://10.18.11.97/firmware/image/linux-distro/Public/YOCTO/prebuilt/"
+# For dm-verity
+IMAGE_CLASSES += "image_types aml-dm-verity-img"
+
+# Sytem partition
+DM_VERITY_IMAGE = "${@bb.utils.contains('MULTTILIBS', 'multilib:lib32', 'lib32-amlogic-yocto', 'amlogic-yocto', d)}"
+# vendor partition
+VENDOR_DM_VERITY_IMAGE = "vendor-image"
+
+DM_VERITY_IMAGE_TYPE = "ext4"
+STAGING_VERITY_DIR = "${DEPLOY_DIR_IMAGE}"

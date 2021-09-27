@@ -23,6 +23,8 @@ IMAGE_INSTALL_append = "\
 #                    ${CORE_IMAGE_EXTRA_INSTALL} \
 #                    "
 
+IMAGE_INSTALL_append = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' cryptsetup lvm2-udevrules ', '', d)}"
+
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 
 python __anonymous () {
@@ -83,3 +85,26 @@ do_bundle_initramfs_dtb[nostamp] = "1"
 do_rootfs[depends] += "android-tools-native:do_populate_sysroot"
 do_rootfs[depends] += "${@bb.utils.contains("DISTRO_FEATURES", "FIT", " u-boot-tools-native:do_populate_sysroot dtc-native:do_populate_sysroot", "" ,d)}"
 IMAGE_ROOTFS_EXTRA_SPACE_append = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", " + 4096", "" ,d)}"
+
+deploy_verity_hash() {
+    if [ -f ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env ]; then
+        bbwarn "install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+            ${IMAGE_ROOTFS}/${datadir}/system-dm-verity.env"
+        install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+            ${IMAGE_ROOTFS}/${datadir}/system-dm-verity.env
+    else
+        bberror "Cannot find ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env"
+    fi
+
+    if [ -f ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env ]; then
+        bbwarn " install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+            ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env"
+        install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+            ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env
+    else
+        bberror "Cannot find ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env"
+    fi
+}
+do_rootfs[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', '${DM_VERITY_IMAGE}:do_image_${DM_VERITY_IMAGE_TYPE}', '', d)}"
+do_rootfs[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', '${VENDOR_DM_VERITY_IMAGE}:do_image_${DM_VERITY_IMAGE_TYPE}', '', d)}"
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'deploy_verity_hash;', '', d)}"

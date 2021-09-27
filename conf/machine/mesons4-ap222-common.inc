@@ -109,3 +109,6 @@ BBMASK += "meta-meson/recipes-multimedia/gst-aml-plugins/gst-plugin-aml-vsink_1.
 BBMASK += "meta-aml-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
 RDEPENDS_packagegroup-amlogic-baserootfs_remove = "gst-plugin-aml-vsink"
 WIDEVINE_VERSION = "16"
+# dm-verity
+#DISTRO_FEATURES_append = " dm-verity"
+#DISTRO_FEATURES_NATIVE_append = " dm-verity"
