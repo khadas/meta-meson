@@ -8,8 +8,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #For common patches
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/mediahal-sdk')}"
 
-DEPENDS += "aml-audio-hal aml-audio-service"
-RDEPENDS_${PN} += "aml-audio-service"
+DEPENDS += "aml-audio-hal aml-audio-service libdrm-meson wayland"
+RDEPENDS_${PN} += "aml-audio-service libdrm-meson"
 
 #do_compile[noexec] = "1"
 
@@ -41,6 +41,7 @@ do_install() {
     install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_resman.so ${D}/usr/lib
     install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_tsplayer.so ${D}/usr/lib
     install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_videodec.so ${D}/usr/lib
+    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_mediasync.so ${D}/usr/lib
     install -d -m 0755 ${D}/usr/bin
     install -D -m 0755 ${S}/example/AmTsPlayerExample/AmTsPlayerExample ${D}/usr/bin
 }
