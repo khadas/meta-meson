@@ -83,6 +83,7 @@ EXTERNALSRC_pn-wpeframework-ocdm-playready = "${@'${MESON_ROOT_PATH}/aml-comp/th
 EXTERNALSRC_pn-wpeframework-ocdm-widevine = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/OCDM-widevine' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/OCDM-widevine')) else ''}"
 EXTERNALSRC_pn-aml-hdcp = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp')) else ''}"
 EXTERNALSRC_pn-aucpu-fw = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aucpu_fw' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aucpu_fw')) else ''}"
+EXTERNALSRC_pn-wfd-hdcp = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/libwfd_hdcp-bin' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/libwfd_hdcp-bin')) else ''}"
 EXTERNALSRC_pn-wifi-amlogic = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-drmplayer-bin = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/drmplayer-bin/prebuilt' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/drmplayer-bin/prebuilt')) else ''}"
 EXTERNALSRC_pn-aml-netflix-esn = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm')) else ''}"
