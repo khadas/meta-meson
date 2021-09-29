@@ -1,0 +1,50 @@
+From 6a7e3d6812fc4e0aad27157e727c05bb770d2325 Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Tue, 28 Sep 2021 11:20:33 +0800
+Subject: [PATCH] gstreamer1.0-plugins-bad: add new registration id 0x44545348 
+                          in tsdmux for dts audio[1/1]
+
+PD#SWPL-60057
+
+Problem:
+tsdemux cannot recognize new registration id 0x44545348
+
+Solution:
+add new registration id 0x44545348 in tsdemux
+
+Verify:
+AP222
+
+Change-Id: I6245bbf91d0c034a1a80e4371088d0f41a7ef81c
+---
+ gst/mpegtsdemux/gstmpegdesc.h | 1 +
+ gst/mpegtsdemux/tsdemux.c     | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/gst/mpegtsdemux/gstmpegdesc.h b/gst/mpegtsdemux/gstmpegdesc.h
+index e4e6743..0e66daf 100644
+--- a/gst/mpegtsdemux/gstmpegdesc.h
++++ b/gst/mpegtsdemux/gstmpegdesc.h
+@@ -224,6 +224,7 @@
+ #define DRF_ID_DTS1       0x44545331
+ #define DRF_ID_DTS2       0x44545332
+ #define DRF_ID_DTS3       0x44545333
++#define DRF_ID_DTS4       0x44545348
+ #define DRF_ID_S302M      0x42535344
+ #define DRF_ID_TSHV       0x54534856
+ #define DRF_ID_AC3        0x41432d33
+diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
+index 49f5649..770b925 100644
+--- a/gst/mpegtsdemux/tsdemux.c
++++ b/gst/mpegtsdemux/tsdemux.c
+@@ -1261,6 +1261,7 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+         case DRF_ID_DTS1:
+         case DRF_ID_DTS2:
+         case DRF_ID_DTS3:
++        case DRF_ID_DTS4:
+           /* SMPTE registered DTS */
+           is_private = TRUE;
+           caps = gst_caps_new_empty_simple ("audio/x-dts");
+-- 
+2.32.0
+
