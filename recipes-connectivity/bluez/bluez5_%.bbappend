@@ -25,7 +25,7 @@ do_install_append(){
     else
         echo "MACHINE_ARCH is ${MACHINE_ARCH}"
         case ${MACHINE_ARCH} in
-        mesons4*)
+        mesonsc2* | mesons4*)
             sed -i '/Debug=0/a Device=qca' ${D}${sysconfdir}/bluetooth/main.conf
         ;;
         mesont5d*)
