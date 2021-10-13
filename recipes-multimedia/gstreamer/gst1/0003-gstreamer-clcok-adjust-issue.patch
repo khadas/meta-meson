@@ -1,0 +1,17 @@
+Index: 0001-gstreamer-add-poll-api.patch
+=============================================================
+--- gstreamer-1.16.3.orig/gst/gstclock.c	2021-10-11 17:22:13.483079523 +0800
++++ gstreamer-1.16.3/gst/gstclock.c	2021-10-11 17:23:52.455498588 +0800
+@@ -971,7 +971,11 @@
+       cnum, cdenom);
+ 
+   /* make sure the time is increasing */
+-  priv->last_time = MAX (ret, priv->last_time);
++  if(priv->last_time == GST_CLOCK_TIME_NONE){
++    priv->last_time = ret;
++  }else{
++    priv->last_time = MAX (ret, priv->last_time);
++  }
+ 
+   return priv->last_time;
+ }
