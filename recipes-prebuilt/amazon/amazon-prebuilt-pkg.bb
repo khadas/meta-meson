@@ -10,14 +10,17 @@ SRC_URI = "${@' '.join(['file://' + f + ';subdir=ipk' \
 
 S = "${WORKDIR}/ipk"
 
-DEPENDS += "wpeframework-interfaces wpeframework-clientlibraries wpeframework \
-            gst-aml-drm-plugins gstreamer1.0 gstreamer1.0-plugins-base \
-            jpeg"
+RDEPENDS_${PN} = "libstdc++ libjpeg-turbo libpng glib-2.0 \
+    aml-platformserver \
+    gst-aml-drm-plugins gstreamer1.0 libgstapp-1.0 \
+    libcrypto playready \
+    westeros wpeframework wpeframework-interfaces \
+    "
 
 
 FILES_${PN}-dev = "${includedir}/"
-FILES_${PN} += "${libdir}/"
+FILES_${PN} = "/"
 
-INSANE_SKIP_${PN} += "dev-so"
+INSANE_SKIP_${PN}:append = " file-rdeps dev-so files-invalid"
 
 do_unpack[depends] += "xz-native:do_populate_sysroot"

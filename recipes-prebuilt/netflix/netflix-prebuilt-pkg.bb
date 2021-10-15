@@ -10,24 +10,17 @@ SRC_URI = "${@' '.join(['file://' + f + ';subdir=ipk' \
 
 S = "${WORKDIR}/ipk"
 
-#This is for netflix-aml
-DEPENDS += "aml-audio-service aml-netflix-esn c-ares cjson curl elfutils \
-            expat fdk-aac freetype glib-2.0 gst-aml-drm-plugins gstreamer1.0 \
-            gstreamer1.0-plugins-base harfbuzz icu jpeg \
-            lcms libdwarf libmng libnl libogg libpng libunwind libwebp nghttp2 \
-            openh264 openjpeg openssl optee-userspace playready tremor \
-            util-linux westeros wpeframework wpeframework-interfaces zlib \
-            "
+RDEPENDS_${PN} = "aml-audio-service c-ares expat fdk-aac freetype glib-2.0 \
+    gst-aml-drm-plugins gstreamer1.0 lcms libamldeviceproperty libcrypto libcurl libelf \
+    libgstapp-1.0 libgstaudio-1.0 libgstvideo-1.0 libicui18n libicuuc libjpeg-turbo \
+    libnghttp2 libnl libnl-genl libpng libssl libstdc++ libunwind libwebp \
+    optee-userspace openjpeg playready tremor westeros \
+    wpeframework wpeframework-interfaces"
 
-#This is for netflix-aml
-RDEPENDS_${PN} += " \
-            aml-audio-service nghttp2 playready thunder-services wpeframework \
-            wpeframework-interfaces aml-netflix-esn \
-            "
 
 FILES_${PN}-dev = "${includedir}/"
 #Need include everything
-FILES_${PN} += "/"
+FILES_${PN} = "/"
 
 INSANE_SKIP_${PN} += "file-rdeps dev-so"
 
