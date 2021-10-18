@@ -1,6 +1,7 @@
 require conf/machine/include/arm/arch-armv8a.inc
 include conf/machine/include/amlogic_externalsrc.inc
 include conf/machine/include/amlogic_patches.inc
+include conf/machine/include/device-properties.inc
 
 MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
         media-modules "

@@ -116,4 +116,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'amazon-prime-plugin amazon-prime-src', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-launcher', \
         'aml-launcher libhtmllocal htmllocal-plugin', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
+        'device-properties', '', d)} \
     "
