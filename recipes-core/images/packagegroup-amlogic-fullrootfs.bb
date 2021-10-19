@@ -81,7 +81,6 @@ RDEPENDS_packagegroup-amlogic-fullrootfs += " ${@bb.utils.contains('DISTRO_FEATU
                                              'gstreamer1.0-plugins-full \
                                              gstreamer1.0-plugins-good \
                                              gstreamer1.0-plugins-bad \
-                                             gstreamer1.0-plugins-ugly \
                                              gst-plugin-aml-asink \
                                              gst-plugin-aml-vsink \
                                              gst-aml-drm-plugins \
