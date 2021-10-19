@@ -1,0 +1,59 @@
+From fc65d256d41f72ad5cda101811a50fe293cf132b Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Thu, 14 Oct 2021 11:34:05 +0800
+Subject: [PATCH] gstreamer1.0-plugins-good: v4l2videodec add mpeg1/2. [1/1]
+
+PD#SWPL-56154
+
+Problem:
+did not get mpegversion 1/2 in video/mpeg caps
+
+Solution:
+using gst_structure_get_list to parse mpegversion 1/2
+
+Verify:
+AP222
+
+Change-Id: Iea6507f184910af56f2d6069b6d7330c6c550306
+---
+ sys/v4l2/gstv4l2videodec.c | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/sys/v4l2/gstv4l2videodec.c b/sys/v4l2/gstv4l2videodec.c
+index 2ee40ec..3f4135a 100644
+--- a/sys/v4l2/gstv4l2videodec.c
++++ b/sys/v4l2/gstv4l2videodec.c
+@@ -1131,6 +1131,7 @@ gst_v4l2_video_dec_set_metadata (GstStructure * s, GstV4l2VideoDecCData * cdata,
+ {
+   gchar *codec_name = NULL;
+   gchar *type_name = NULL;
++  gboolean got_value = FALSE;
+ 
+ #define SET_META(codec) \
+ G_STMT_START { \
+@@ -1143,12 +1144,17 @@ G_STMT_START { \
+     SET_META ("JPEG");
+   } else if (gst_structure_has_name (s, "video/mpeg")) {
+     gint mpegversion = 0;
+-    gst_structure_get_int (s, "mpegversion", &mpegversion);
+-
+-    if (mpegversion == 2) {
+-      SET_META ("MPEG2");
++    gint *list = NULL;
++    got_value = gst_structure_get_int (s, "mpegversion", &mpegversion);
++    if (FALSE == got_value) {
++      got_value = gst_structure_get_list (s, "mpegversion", &list);
++      if (TRUE == got_value && (1 == *list || 2 == *list)) {
++        SET_META ("MPEG2");
++      } else {
++        SET_META ("MPEG4");
++      }
+     } else {
+-      SET_META ("MPEG4");
++        SET_META ("MPEG4");
+     }
+   } else if (gst_structure_has_name (s, "video/x-h263")) {
+     SET_META ("H263");
+-- 
+2.32.0
+
