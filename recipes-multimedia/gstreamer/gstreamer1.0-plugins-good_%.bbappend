@@ -12,3 +12,4 @@ SRC_URI_append = "file://0010-modfiy-free-sequence-to-resolve-video-switch-probl
 SRC_URI_append = "file://00011-correct-dts-if-have-elst-in-qtdemux.patch "
 SRC_URI_append = "file://00012-add-v4l2av1dec-element.patch "
 SRC_URI_append = "file://00013-add-v4l2mpeg2dec-element.patch "
+SRC_URI_append = "file://00014-add-v4l2-aml-vdec-h.patch "
