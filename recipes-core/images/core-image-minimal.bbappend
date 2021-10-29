@@ -13,6 +13,7 @@ IMAGE_INSTALL = "udev busybox"
 IMAGE_INSTALL_append = "\
                     initramfs-meson-boot \
                     e2fsprogs \
+                    aml-ubootenv \
                    "
 
 #IMAGE_INSTALL_append_aarch64 = "\

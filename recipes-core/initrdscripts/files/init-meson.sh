@@ -185,6 +185,13 @@ data_ext4_handle() {
 		echo -e "After formating FSTYPE of $ROOT_RWDEVICE = ${FsType} ..."
 	else
 		echo -e "FSTYPE of $ROOT_RWDEVICE is already ext4 ..."
+		FactoryReset=$(uenv get factory-reset | grep value | cut -d '[' -f2|cut -d ']' -f1)
+		if [ ${FactoryReset} == 1 ]; then
+		   echo -e "factory reset, Formating $ROOT_RWDEVICE to ext4 ..."
+		   yes 2>/dev/null | mkfs.ext4 -q -m 0 $ROOT_RWDEVICE
+		   sync
+		   uenv set factory-reset 0
+		fi
 	fi
 
 	mkdir -p /data
