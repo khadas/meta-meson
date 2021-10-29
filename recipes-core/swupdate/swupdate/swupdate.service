@@ -1,0 +1,11 @@
+[Unit]
+Description=swupdate
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=root
+ExecStart=/usr/bin/swupdate.sh
+
+[Install]
+WantedBy=multi-user.target

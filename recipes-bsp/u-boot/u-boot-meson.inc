@@ -101,6 +101,7 @@ do_deploy () {
         install ${S}/fip/u-boot.bin.sd.bin.signed ${DEPLOYDIR}/
     ;;
     "bin")
+        install ${S}/fip/u-boot.bin ${DEPLOYDIR}/
         install ${S}/fip/u-boot.bin.usb.bl2 ${DEPLOYDIR}/
         install ${S}/fip/u-boot.bin.usb.tpl ${DEPLOYDIR}/
         install ${S}/fip/u-boot.bin.sd.bin ${DEPLOYDIR}/

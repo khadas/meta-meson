@@ -1,6 +1,7 @@
 DEPENDS_append = " aml-img-packer-native"
 DEPENDS_append_onepass = " core-image-minimal"
 DEPENDS_append = " vendor-image"
+DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', ' aml-swupdate-native', '', d)}"
 
 SOC_FAMILY = "gxl"
 SOC_FAMILY_gxl = "gxl"
@@ -43,6 +44,9 @@ do_aml_pack() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'false', 'true', d)}; then
         sed -i '/vbmeta/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
     fi
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'recovery', 'false', 'true', d)}; then
+        sed -i '/recovery/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
+    fi
 
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
     ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/rootfs.ext4.img2simg
@@ -58,10 +62,22 @@ do_aml_pack() {
     fi
 
     ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/${PACK_CONF} ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
+
+    #create software.swu
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'true', 'false', d)}; then
+        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/swupdate-priv.pem ${DEPLOY_DIR_IMAGE}/
+        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/update.sh ${DEPLOY_DIR_IMAGE}/
+        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/sw_package_create.sh ${DEPLOY_DIR_IMAGE}/
+        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-emmc ${DEPLOY_DIR_IMAGE}/sw-description
+        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-emmc ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+
+        ${DEPLOY_DIR_IMAGE}/sw_package_create.sh ${DEPLOY_DIR_IMAGE}
+    fi
 }
 
 do_aml_pack[depends] += "core-image-minimal:do_image_complete "
 do_aml_pack[depends] += "vendor-image:do_image_complete "
+do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', ' recovery-image:do_image_complete', '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', ' vbmeta-image:do_compile', '', d)}"
 addtask aml_pack after do_image_complete before do_build
 do_aml_pack[nostamp] = "1"
