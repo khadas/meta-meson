@@ -18,6 +18,10 @@ S = "${WORKDIR}/git/"
 EXTRA_OECONF += "--enable-xrun-detection=yes"
 EXTRA_OECONF += "--enable-ms12=yes"
 EXTRA_OECONF += "--enable-dts=yes"
+EXTRA_OECONF += "--enable-mediasync=no"
+
+DEPENDS += "${@bb.utils.contains('EXTRA_OECONF', '--enable-mediasync=yes', 'aml-mediahal-sdk', '', d)}"
+RDEPENDS_${PN} += "${@bb.utils.contains('EXTRA_OECONF', '--enable-mediasync=yes', 'aml-mediahal-sdk', '', d)}"
 
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
 inherit autotools pkgconfig features_check
