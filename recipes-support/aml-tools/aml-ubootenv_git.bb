@@ -11,6 +11,7 @@ PV = "${SRCPV}"
 S = "${WORKDIR}/git"
 
 do_compile(){
+    ${MAKE} -C ${S}/ubootenv clean
     ${MAKE} -C ${S}/ubootenv all
 }
 
