@@ -67,6 +67,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     aml-mp-sdk \
     aml-pqserver \
     aml-ubootenv \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'vmx-sdk-rel', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', '', 'aml-hdmicec', d)} \

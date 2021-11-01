@@ -18,7 +18,7 @@ IMAGE_INSTALL_append = "\
 
 IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
             "aml-bootloader-message \
-            libconfig\
+            libconfig \
             swupdate", "", d)}"
 
 
@@ -52,7 +52,11 @@ do_rootfs_append () {
 KERNEL_BOOTARGS = ""
 
 do_bundle_initramfs_dtb() {
-    mkbootimg --kernel ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} --base 0x0 --kernel_offset 0x1080000 --cmdline "${KERNEL_BOOTARGS}" --ramdisk  ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.cpio.gz --second ${DEPLOY_DIR_IMAGE}/dtb.img --output ${DEPLOY_DIR_IMAGE}/recovery.img
+    if ${@bb.utils.contains('MULTTILIBS', 'multilib:lib32', 'true', 'false', d)}; then
+        mkbootimg --kernel ${DEPLOY_DIR_IMAGE}/Image.gz --base 0x0 --kernel_offset 0x1080000 --cmdline "${KERNEL_BOOTARGS}" --ramdisk  ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.cpio.gz --second ${DEPLOY_DIR_IMAGE}/dtb.img --output ${DEPLOY_DIR_IMAGE}/recovery.img
+    else
+        mkbootimg --kernel ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} --base 0x0 --kernel_offset 0x1080000 --cmdline "${KERNEL_BOOTARGS}" --ramdisk  ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.cpio.gz --second ${DEPLOY_DIR_IMAGE}/dtb.img --output ${DEPLOY_DIR_IMAGE}/recovery.img
+    fi
 }
 
 addtask bundle_initramfs_dtb before do_image_complete after do_image_cpio do_unpack
