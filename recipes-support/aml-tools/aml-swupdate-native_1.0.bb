@@ -8,8 +8,10 @@ include hosttools.inc
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
-SOC_FAMILY = "s4"
+SOC_FAMILY = "TBD"
+SOC_FAMILY_s4 = "s4"
 SOC_FAMILY_t5d = "t5d"
+SOC_FAMILY_sc2 = "sc2"
 
 PR = "r1"
 
