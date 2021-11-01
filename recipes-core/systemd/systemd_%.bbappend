@@ -11,4 +11,5 @@ install -m 0644 ${WORKDIR}/70-keyboard.hwdb ${D}/lib/udev/hwdb.d/70-keyboard.hwd
 install -d ${D}/etc/systemd/network
 install -m 0644 ${WORKDIR}/network/20-ethernet.network ${D}/etc/systemd/network
 install -m 0644 ${WORKDIR}/network/21-wlan.network ${D}/etc/systemd/network
+sed -i '/HandlePowerKey/c\HandlePowerKey=ignore' ${D}/etc/systemd/logind.conf
 }
