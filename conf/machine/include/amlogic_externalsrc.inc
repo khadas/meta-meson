@@ -12,6 +12,7 @@ EXTERNALSRC_pn-optee-video-firmware = "${@'${MESON_ROOT_PATH}/aml-comp/multimedi
 EXTERNALSRC_pn-aml-uvm-test = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/v4l2-uvm-test' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/v4l2-uvm-test')) else ''}"
 EXTERNALSRC_pn-android-tools-logcat = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-liblog = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
+EXTERNALSRC_pn-libamldeviceproperty = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-libatrace = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-aml-ubootenv = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-aml-bootloader-message = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
