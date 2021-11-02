@@ -1,27 +1,24 @@
-From 8a7dd63fc0907150a427b84bb4d8b36857b8a6b1 Mon Sep 17 00:00:00 2001
+From 1e0a90440de6ac2caff3da7c0353d2feaa0bd91c Mon Sep 17 00:00:00 2001
 From: "sheng.liu" <sheng.liu@amlogic.com>
-Date: Sat, 9 Oct 2021 12:17:49 +0800
-Subject: [PATCH] gstreamer1.0-plugins-good: correct dts if have elst in
- qtdemux [1/1]
+Date: Tue, 2 Nov 2021 19:07:22 +0800
+Subject: [PATCH] gstreamer1.0-plugins-good: adjust dts when elst exist [1/1]
 
-PD#SWPL-60613
+PD#TV-42728
 
 Problem:
-there is elst atom which lead the pts start from non-zero
+because of elst, audio pts is not correct
 
 Solution:
-adjust dts refer to elst
+adjust dts when elst exist.
 
 Verify:
 AP222
-
-Change-Id: Ie27d90eee01dc13a203a0e6bcaf8bdaa30f34097
 ---
- gst/isomp4/qtdemux.c | 38 +++++++++++++++++++++++++++++++++-----
- 1 file changed, 33 insertions(+), 5 deletions(-)
+ gst/isomp4/qtdemux.c | 47 +++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 42 insertions(+), 5 deletions(-)
 
 diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
-index c6724aa..a795dc2 100644
+index c6724aa..3ac8a01 100644
 --- a/gst/isomp4/qtdemux.c
 +++ b/gst/isomp4/qtdemux.c
 @@ -453,6 +453,8 @@ struct _QtDemuxStream
@@ -29,7 +26,7 @@ index c6724aa..a795dc2 100644
  
    gint ref_count;               /* atomic */
 +
-+  guint64 min_corrected_dts;
++  guint64 min_corrected_dts;  
  };
  
  /* Contains properties and cryptographic info for a set of samples from a
@@ -49,15 +46,24 @@ index c6724aa..a795dc2 100644
    *keyframe = QTSAMPLE_KEYFRAME (stream, sample);
  
    return TRUE;
-@@ -9550,13 +9559,21 @@ done2:
+@@ -9550,13 +9559,30 @@ done2:
        stts_time = stream->stts_time;
  
        for (j = stream->stts_sample_index; j < stts_samples; j++) {
-+
-+        if ((stream->subtype == FOURCC_vide)
-+         && (stream->min_corrected_dts != G_MAXUINT64))
++        if (stream->min_corrected_dts != G_MAXUINT64)
 +        {
-+          cur->timestamp = stts_time - stream->min_corrected_dts;
++          guint64 next_timestamp = 0;
++          cur->timestamp = (guint64)stts_time - stream->min_corrected_dts;
++          next_timestamp = cur->timestamp + (guint64) stts_duration;
++
++          if ((gint64) cur->timestamp < 0
++           && (gint64) next_timestamp > 0)
++          {
++            stream->min_corrected_dts = (guint64) stts_time + (guint64) stts_duration;
++            cur->timestamp = stts_time - stream->min_corrected_dts;
++            GST_DEBUG_OBJECT (qtdemux, "dts is invalid, adjust min_corrected_dts: %lld, new dts: %lld",
++                              stream->min_corrected_dts, cur->timestamp);
++          }
 +        }
 +        else
 +        {
@@ -75,7 +81,7 @@ index c6724aa..a795dc2 100644
  
          /* avoid 32-bit wrap-around,
           * but still mind possible 'negative' duration */
-@@ -9685,6 +9702,13 @@ ctts:
+@@ -9685,6 +9711,13 @@ ctts:
  
        for (j = stream->ctts_sample_index; j < ctts_count; j++) {
          cur->pts_offset = ctts_soffset;
@@ -89,7 +95,7 @@ index c6724aa..a795dc2 100644
          cur++;
  
          if (G_UNLIKELY (cur > last)) {
-@@ -9761,6 +9785,7 @@ qtdemux_parse_segments (GstQTDemux * qtdemux, QtDemuxStream * stream,
+@@ -9761,6 +9794,7 @@ qtdemux_parse_segments (GstQTDemux * qtdemux, QtDemuxStream * stream,
    GST_DEBUG_OBJECT (qtdemux, "looking for edit list container");
    stream->n_segments = 0;
    stream->segments = NULL;
@@ -97,7 +103,7 @@ index c6724aa..a795dc2 100644
    if ((edts = qtdemux_tree_get_child_by_type (trak, FOURCC_edts))) {
      GNode *elst;
      gint n_segments;
-@@ -9821,7 +9846,10 @@ qtdemux_parse_segments (GstQTDemux * qtdemux, QtDemuxStream * stream,
+@@ -9821,7 +9855,10 @@ qtdemux_parse_segments (GstQTDemux * qtdemux, QtDemuxStream * stream,
        }
  
        if (!empty_edit)
