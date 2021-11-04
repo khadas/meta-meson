@@ -120,3 +120,9 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
         'device-properties', '', d)} \
     "
+
+RDEPENDS_packagegroup-amlogic-baserootfs += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'amazon-prebuilt-pkg', 'amazon-prebuilt-pkg', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'cobalt-prebuilt-pkg', 'cobalt-prebuilt-pkg', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'netflix-prebuilt-pkg', 'netflix-prebuilt-pkg', '', d)} \
+    "
