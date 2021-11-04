@@ -31,6 +31,8 @@ EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
 do_compile(){
     cd ${S}/example/AmTsPlayerExample
     oe_runmake
+    cd ${S}/example/AmTsPlayerMultiExample
+    oe_runmake
 }
 
 do_install() {
@@ -44,6 +46,7 @@ do_install() {
     install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_mediasync.so ${D}/usr/lib
     install -d -m 0755 ${D}/usr/bin
     install -D -m 0755 ${S}/example/AmTsPlayerExample/AmTsPlayerExample ${D}/usr/bin
+    install -D -m 0755 ${S}/example/AmTsPlayerMultiExample/AmTsPlayerMultiExample ${D}/usr/bin
 }
 
 
