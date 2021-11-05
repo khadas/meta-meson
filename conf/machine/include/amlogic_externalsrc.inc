@@ -67,6 +67,7 @@ EXTERNALSRC_pn-aml-cas-hal = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/cas-hal
 EXTERNALSRC_pn-vendor-files = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/vendor' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/vendor')) else ''}"
 EXTERNALSRC_pn-tuner-prebuilt = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/target' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/target')) else ''}"
 EXTERNALSRC_pn-pq-prebuilt = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/target' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/target')) else ''}"
+EXTERNALSRC_pn-dtvkit-release-prebuilt = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/dtvkit-release' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/dtvkit-release')) else ''}"
 EXTERNALSRC_pn-aml-img-packer-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools')) else ''}"
 EXTERNALSRC_pn-aml-hosttools-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools')) else ''}"
 EXTERNALSRC_pn-aml-swupdate-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools')) else ''}"
