@@ -68,6 +68,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     aml-pqserver \
     aml-ubootenv \
     simulate-key \
+    vulkan-loader \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'vmx-sdk-rel', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \

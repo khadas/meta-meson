@@ -50,6 +50,10 @@ PREFERRED_VERSION_tinyalsa = "1.1.1"
 #Only support amlogic widevine
 PREFERRED_PROVIDER_widevine = "aml-mediadrm-widevine"
 
+#for vulkan
+PREFERRED_VERSION_vulkan-headers = "1.2.196"
+PREFERRED_VERSION_vulkan-loader = "1.2.196"
+
 WARN_QA_append = "ldflags installed-vs-shipped already-stripped pkgvarcheck"
 ERROR_QA_remove = "ldflags installed-vs-shipped already-stripped pkgvarcheck"
 
