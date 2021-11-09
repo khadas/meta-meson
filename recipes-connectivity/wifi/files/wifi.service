@@ -18,6 +18,7 @@
 ##########################################################################
 [Unit]
 Description=Wifi Dnl802.11 interface
+Before=systemd-networkd.service
 
 
 #PathExists=!/sys/class/net/${WIFI_INTERFACE}
@@ -31,7 +32,7 @@ RemainAfterExit=yeS
 #we need insmod wlan.ko explicitly here
 ExecStart=/bin/touch /etc/wifi/rtk_station_mode
 ExecStart=/usr/bin/wifi_power 1
-ExecStart=/bin/sleep 5
+ExecStart=/bin/sleep 1
 ExecStart=/usr/sbin/wpa_supplicant -u -B -Dnl80211 -iwlan0 -c /etc/wpa_supplicant.conf
 #ExecStart=/sbin/udhcpc -T 1 -b -iwlan0 &
 ExecStop=/sbin/ifconfig wlan0 down
