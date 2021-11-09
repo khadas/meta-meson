@@ -16,6 +16,7 @@ EXTERNALSRC_pn-libamldeviceproperty = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/am
 EXTERNALSRC_pn-libatrace = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-aml-ubootenv = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-aml-bootloader-message = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
+EXTERNALSRC_pn-simulate-key = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib')) else ''}"
 EXTERNALSRC_pn-qca6174 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/qualcomm/drivers/qca6174' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/qualcomm/drivers/qca6174')) else ''}"
 EXTERNALSRC_pn-aml-wifi-w1 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/amlogic/drivers/w1' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/amlogic/drivers/w1')) else ''}"
 EXTERNALSRC_pn-aml-bt-w1 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/amlogic' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/amlogic')) else ''}"
