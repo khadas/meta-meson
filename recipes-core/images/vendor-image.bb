@@ -1,7 +1,8 @@
 IMAGE_FEATURES = ""
-PACKAGE_INSTALL = "vendor-files"
+PACKAGE_INSTALL = "vendor-files ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'refpolicy', '', d)}"
 export IMAGE_BASENAME = "vendor-image"
 IMAGE_LINGUAS = ""
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'policycoreutils-native', '', d)}"
 
 LICENSE = "MIT"
 
@@ -12,7 +13,7 @@ inherit core-image
 
 IMAGE_ROOTFS_SIZE = "327680"
 IMAGE_ROOTFS_EXTRA_SPACE = "0"
-IMAGE_PREPROCESS_COMMAND += "remove_folder;create_dolbyms12_link;"
+IMAGE_PREPROCESS_COMMAND += "remove_folder;create_dolbyms12_link;selinux_set_labels;"
 
 remove_folder() {
     rm -rf ${IMAGE_ROOTFS}/var
@@ -28,6 +29,21 @@ remove_folder() {
 create_dolbyms12_link() {
     mkdir -p ${IMAGE_ROOTFS}/lib
     ln -sf /tmp/ds/0x4d_0x5331_0x32.so ${IMAGE_ROOTFS}/lib/libdolbyms12.so 
+}
+
+selinux_set_labels () {
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'true', 'false', d)}; then
+        POL_TYPE=$(sed -n -e "s&^SELINUXTYPE[[:space:]]*=[[:space:]]*\([0-9A-Za-z_]\+\)&\1&p" ${IMAGE_ROOTFS}/${sysconfdir}/selinux/config)
+        if ! setfiles -m -r ${IMAGE_ROOTFS} ${IMAGE_ROOTFS}/${sysconfdir}/selinux/${POL_TYPE}/contexts/files/file_contexts ${IMAGE_ROOTFS}
+        then
+            echo WARNING: Unable to set filesystem context, setfiles / restorecon must be run on the live image.
+            touch ${IMAGE_ROOTFS}/.autorelabel
+            exit 0
+        fi
+
+        rm -rf ${IMAGE_ROOTFS}/usr
+        rm -rf ${IMAGE_ROOTFS}/etc/selinux
+    fi
 }
 
 # For dm-verity

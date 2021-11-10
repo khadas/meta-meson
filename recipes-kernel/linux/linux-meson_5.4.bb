@@ -19,6 +19,9 @@ SRC_URI_append_t5d = " file://t5d.cfg"
 SRC_URI_append_t3 = " file://t3.cfg"
 SRC_URI_append_sc2 = " file://sc2.cfg"
 
+# Enable selinux support in the kernel if the feature is enabled
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.cfg', '', d)}"
+
 #SRC_URI_append = " file://meson.scc \
 #            file://meson.cfg \
 #            file://meson-user-config.cfg \

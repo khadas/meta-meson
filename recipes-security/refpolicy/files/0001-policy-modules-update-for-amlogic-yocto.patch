@@ -1,0 +1,1099 @@
+From 55bdebf6d9ad758fbd3866946a852741f2391b49 Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Mon, 29 Nov 2021 12:36:20 +0800
+Subject: [PATCH] policy/modules: update for amlogic yocto
+
+Change-Id: Ie09b9c36589801c9981cde50add7e62615ef6657
+---
+ policy/modules/admin/alsa.te              |  3 +
+ policy/modules/kernel/devices.if          | 18 ++++++
+ policy/modules/kernel/files.fc            | 20 +++++++
+ policy/modules/kernel/files.if            | 73 +++++++++++++++++++++++
+ policy/modules/kernel/files.te            | 18 ++++++
+ policy/modules/roles/sysadm.if            | 18 ++++++
+ policy/modules/roles/sysadm.te            |  9 +++
+ policy/modules/services/avahi.te          |  4 ++
+ policy/modules/services/bluetooth.te      |  6 ++
+ policy/modules/services/dbus.te           |  4 ++
+ policy/modules/services/dnsmasq.te        | 10 ++++
+ policy/modules/services/networkmanager.te |  5 ++
+ policy/modules/services/ntp.te            |  4 ++
+ policy/modules/services/rpcbind.te        |  1 +
+ policy/modules/system/authlogin.te        |  6 ++
+ policy/modules/system/getty.te            |  6 ++
+ policy/modules/system/init.if             | 57 ++++++++++++++++++
+ policy/modules/system/init.te             |  4 ++
+ policy/modules/system/locallogin.te       |  4 ++
+ policy/modules/system/logging.if          |  1 +
+ policy/modules/system/logging.te          | 19 +++++-
+ policy/modules/system/modutils.te         | 14 ++++-
+ policy/modules/system/mount.te            |  6 ++
+ policy/modules/system/systemd.if          | 19 ++++++
+ policy/modules/system/systemd.te          | 54 +++++++++++++++++
+ policy/modules/system/udev.te             |  2 +
+ 26 files changed, 383 insertions(+), 2 deletions(-)
+
+diff --git a/policy/modules/admin/alsa.te b/policy/modules/admin/alsa.te
+index 09d590add..c6dcfa8cb 100644
+--- a/policy/modules/admin/alsa.te
++++ b/policy/modules/admin/alsa.te
+@@ -78,6 +78,7 @@ allow alsa_t alsa_var_lock_t:file manage_file_perms;
+ files_lock_filetrans(alsa_t, alsa_var_lock_t, file)
+ 
+ kernel_read_system_state(alsa_t)
++kernel_use_fds(alsa_t)
+ 
+ corecmd_exec_bin(alsa_t)
+ 
+@@ -90,6 +91,8 @@ dev_write_sound(alsa_t)
+ 
+ files_read_usr_files(alsa_t)
+ files_search_var_lib(alsa_t)
++files_map_usr_files(alsa_t)
++files_map_etc_files(alsa_t)
+ 
+ fs_getattr_tmpfs(alsa_t)
+ 
+diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
+index 406b29796..d41a3e1b0 100644
+--- a/policy/modules/kernel/devices.if
++++ b/policy/modules/kernel/devices.if
+@@ -5567,3 +5567,21 @@ interface(`dev_unconfined',`
+ 
+ 	typeattribute $1 devices_unconfined_type;
+ ')
++
++########################################
++## <summary>
++##	Read and write the tee device (/dev/tee*).
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_rw_tee',`
++	gen_require(`
++		type tee_device_t;
++	')
++
++	allow $1 tee_device_t:chr_file { read write };
++')
+diff --git a/policy/modules/kernel/files.fc b/policy/modules/kernel/files.fc
+index f69900945..dacd11edf 100644
+--- a/policy/modules/kernel/files.fc
++++ b/policy/modules/kernel/files.fc
+@@ -274,3 +274,23 @@ ifndef(`distro_redhat',`
+ /var/tmp/systemd-private-[^/]+/tmp	-d	gen_context(system_u:object_r:tmp_t,s0-mls_systemhigh)
+ /var/tmp/systemd-private-[^/]+/tmp/.*	<<none>>
+ /var/tmp/vi\.recover	-d	gen_context(system_u:object_r:tmp_t,s0)
++
++# /data
++/data		-d	gen_context(system_u:object_r:usr_t,s0)
++/data(/.*)?		gen_context(system_u:object_r:usr_t,s0)
++/data/lost\+found	-d	gen_context(system_u:object_r:lost_found_t,mls_systemhigh)
++/data/lost\+found/.*		<<none>>
++
++# /vendor
++/vendor		-d	gen_context(system_u:object_r:vendor_t,s0)
++/vendor/etc(/.*)?	gen_context(system_u:object_r:etc_t,s0)
++/vendor/lib(/.*)?	gen_context(system_u:object_r:lib_t,s0)
++/vendor/lost\+found	-d	gen_context(system_u:object_r:lost_found_t,mls_systemhigh)
++/vendor/lost\+found/.*		<<none>>
++
++# /tee
++/tee		-d	gen_context(system_u:object_r:tee_t,s0)
++/tee(/.*)?		gen_context(system_u:object_r:tee_t,s0)
++
++# /machineid_t
++/etc/machine-id		gen_context(system_u:object_r:machineid_t,s0)
+diff --git a/policy/modules/kernel/files.if b/policy/modules/kernel/files.if
+index ad19738b3..9429709f6 100644
+--- a/policy/modules/kernel/files.if
++++ b/policy/modules/kernel/files.if
+@@ -7779,3 +7779,76 @@ interface(`files_unconfined',`
+ 
+ 	typeattribute $1 files_unconfined_type;
+ ')
++
++########################################
++## <summary>
++##	Mount a filesystem on the
++##	configfs directories.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_mounton_configfs',`
++	gen_require(`
++		type configfs_t;
++	')
++
++	allow $1 configfs_t:dir mounton;
++')
++
++########################################
++## <summary>
++##	open and read /etc/machine-id file
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_machineid_read',`
++	gen_require(`
++		type machineid_t;
++	')
++
++	allow $1 machineid_t:file { open read };
++')
++
++########################################
++## <summary>
++##	Search the /vendor directory.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_vendor_search',`
++	gen_require(`
++		type vendor_t;
++	')
++
++	search_dirs_pattern($1, vendor_t, vendor_t)
++')
++
++########################################
++## <summary>
++##	Get attributes of the /vendor directory.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_getattr_vendor_dirs',`
++	gen_require(`
++		type vendor_t;
++	')
++
++	allow $1 vendor_t:dir getattr;
++')
+diff --git a/policy/modules/kernel/files.te b/policy/modules/kernel/files.te
+index efa03289d..7a0be4f0e 100644
+--- a/policy/modules/kernel/files.te
++++ b/policy/modules/kernel/files.te
+@@ -241,3 +241,21 @@ allow files_unconfined_type file_type:filesystem { mount remount unmount getattr
+ tunable_policy(`allow_execmod',`
+ 	allow files_unconfined_type file_type:file execmod;
+ ')
++
++#
++# vendor_t is the type for the vendor directories.
++#
++type vendor_t;
++files_type(vendor_t)
++
++#
++# tee_t is the type for the tee directories.
++#
++type tee_t;
++files_type(tee_t)
++
++#
++# machineid_t is the type for the machine-id.
++#
++type machineid_t;
++files_type(machineid_t)
+diff --git a/policy/modules/roles/sysadm.if b/policy/modules/roles/sysadm.if
+index 5c2871842..d85b07dc9 100644
+--- a/policy/modules/roles/sysadm.if
++++ b/policy/modules/roles/sysadm.if
+@@ -246,3 +246,21 @@ interface(`sysadm_rw_pipes',`
+ 
+ 	allow $1 sysadm_t:fifo_file rw_fifo_file_perms;
+ ')
++
++########################################
++## <summary>
++##	Allow the specified domain process transition
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`sysadm_userdomain_transition',`
++	gen_require(`
++		type sysadm_t;
++	')
++
++	allow $1 sysadm_t:process transition;
++')
+diff --git a/policy/modules/roles/sysadm.te b/policy/modules/roles/sysadm.te
+index ac5239d83..5a16f8e85 100644
+--- a/policy/modules/roles/sysadm.te
++++ b/policy/modules/roles/sysadm.te
+@@ -53,9 +53,18 @@ ubac_fd_exempt(sysadm_t)
+ 
+ init_exec(sysadm_t)
+ init_admin(sysadm_t)
++init_stream_connect_script(sysadm_t)
+ 
+ selinux_read_policy(sysadm_t)
+ 
++allow sysadm_t self:bpf { prog_load prog_run };
++allow sysadm_t self:capability audit_write;
++allow sysadm_t self:system reload;
++
++init_pgm_entrypoint(sysadm_t)
++init_rw_inherited_stream_socket(sysadm_t)
++kernel_use_fds(sysadm_t)
++
+ # Add/remove user home directories
+ userdom_manage_user_home_dirs(sysadm_t)
+ userdom_home_filetrans_user_home_dir(sysadm_t)
+diff --git a/policy/modules/services/avahi.te b/policy/modules/services/avahi.te
+index 5994ff3d5..fe343a2c2 100644
+--- a/policy/modules/services/avahi.te
++++ b/policy/modules/services/avahi.te
+@@ -34,6 +34,7 @@ allow avahi_t self:fifo_file rw_fifo_file_perms;
+ allow avahi_t self:unix_stream_socket { accept connectto listen };
+ allow avahi_t self:tcp_socket { accept listen };
+ allow avahi_t self:packet_socket create_socket_perms;
++allow avahi_t initrc_t:unix_dgram_socket sendto;
+ 
+ manage_dirs_pattern(avahi_t, avahi_var_lib_t, avahi_var_lib_t)
+ manage_files_pattern(avahi_t, avahi_var_lib_t, avahi_var_lib_t)
+@@ -49,6 +50,7 @@ kernel_read_kernel_sysctls(avahi_t)
+ kernel_read_network_state(avahi_t)
+ kernel_read_system_state(avahi_t)
+ kernel_request_load_module(avahi_t)
++kernel_use_fds(avahi_t)
+ 
+ corecmd_exec_bin(avahi_t)
+ corecmd_exec_shell(avahi_t)
+@@ -77,6 +79,8 @@ domain_use_interactive_fds(avahi_t)
+ files_read_etc_runtime_files(avahi_t)
+ files_read_usr_files(avahi_t)
+ files_watch_etc_dirs(avahi_t)
++files_map_usr_files(avahi_t)
++files_map_etc_files(avahi_t)
+ 
+ auth_use_nsswitch(avahi_t)
+ 
+diff --git a/policy/modules/services/bluetooth.te b/policy/modules/services/bluetooth.te
+index 63e50aeda..4529642b1 100644
+--- a/policy/modules/services/bluetooth.te
++++ b/policy/modules/services/bluetooth.te
+@@ -61,6 +61,8 @@ allow bluetooth_t self:unix_stream_socket { accept connectto listen };
+ allow bluetooth_t self:tcp_socket { accept listen };
+ allow bluetooth_t self:netlink_kobject_uevent_socket create_socket_perms;
+ allow bluetooth_t self:bluetooth_socket create_stream_socket_perms;
++allow bluetooth_t self:alg_socket { bind create };
++allow bluetooth_t initrc_t:unix_dgram_socket sendto;
+ 
+ read_files_pattern(bluetooth_t, bluetooth_conf_t, bluetooth_conf_t)
+ 
+@@ -93,6 +95,7 @@ kernel_read_system_state(bluetooth_t)
+ kernel_read_network_state(bluetooth_t)
+ kernel_request_load_module(bluetooth_t)
+ kernel_search_debugfs(bluetooth_t)
++kernel_use_fds(bluetooth_t)
+ 
+ corecmd_exec_bin(bluetooth_t)
+ corecmd_exec_shell(bluetooth_t)
+@@ -109,6 +112,9 @@ domain_dontaudit_search_all_domains_state(bluetooth_t)
+ 
+ files_read_etc_runtime_files(bluetooth_t)
+ files_read_usr_files(bluetooth_t)
++files_map_usr_files(bluetooth_t)
++files_rw_usr_dirs(bluetooth_t)
++files_manage_usr_files(bluetooth_t)
+ 
+ fs_getattr_all_fs(bluetooth_t)
+ fs_search_auto_mountpoints(bluetooth_t)
+diff --git a/policy/modules/services/dbus.te b/policy/modules/services/dbus.te
+index 8ae5c8d93..5fedab5ec 100644
+--- a/policy/modules/services/dbus.te
++++ b/policy/modules/services/dbus.te
+@@ -77,6 +77,7 @@ allow system_dbusd_t self:fifo_file rw_fifo_file_perms;
+ allow system_dbusd_t self:dbus { send_msg acquire_svc };
+ allow system_dbusd_t self:unix_stream_socket { accept connectto listen };
+ allow system_dbusd_t self:netlink_selinux_socket { create bind read };
++allow system_dbusd_t initrc_t:unix_dgram_socket sendto;
+ 
+ allow system_dbusd_t dbusd_etc_t:dir { list_dir_perms watch };
+ read_files_pattern(system_dbusd_t, dbusd_etc_t, dbusd_etc_t)
+@@ -98,6 +99,7 @@ can_exec(system_dbusd_t, dbusd_exec_t)
+ kernel_read_crypto_sysctls(system_dbusd_t)
+ kernel_read_system_state(system_dbusd_t)
+ kernel_read_kernel_sysctls(system_dbusd_t)
++kernel_use_fds(system_dbusd_t)
+ 
+ corecmd_list_bin(system_dbusd_t)
+ corecmd_read_bin_pipes(system_dbusd_t)
+@@ -119,6 +121,8 @@ fs_list_inotifyfs(system_dbusd_t)
+ fs_search_auto_mountpoints(system_dbusd_t)
+ fs_search_cgroup_dirs(system_dbusd_t)
+ fs_dontaudit_list_nfs(system_dbusd_t)
++files_map_etc_files(system_dbusd_t)
++files_map_usr_files(system_dbusd_t)
+ 
+ mls_fd_use_all_levels(system_dbusd_t)
+ mls_rangetrans_target(system_dbusd_t)
+diff --git a/policy/modules/services/dnsmasq.te b/policy/modules/services/dnsmasq.te
+index 61d4abde0..bfb957f14 100644
+--- a/policy/modules/services/dnsmasq.te
++++ b/policy/modules/services/dnsmasq.te
+@@ -39,10 +39,14 @@ allow dnsmasq_t self:fifo_file rw_fifo_file_perms;
+ allow dnsmasq_t self:tcp_socket { accept listen };
+ allow dnsmasq_t self:packet_socket create_socket_perms;
+ allow dnsmasq_t self:rawip_socket create_socket_perms;
++allow dnsmasq_t initrc_t:unix_dgram_socket sendto;
+ 
+ allow dnsmasq_t dnsmasq_etc_t:dir list_dir_perms;
+ allow dnsmasq_t dnsmasq_etc_t:file read_file_perms;
+ 
++systemd_read_resolved_runtime(dnsmasq_t)
++systemd_watch_resolved_runtime(dnsmasq_t)
++
+ manage_files_pattern(dnsmasq_t, dnsmasq_lease_t, dnsmasq_lease_t)
+ files_var_lib_filetrans(dnsmasq_t, dnsmasq_lease_t, file)
+ 
+@@ -60,6 +64,7 @@ kernel_read_net_sysctls(dnsmasq_t)
+ kernel_read_network_state(dnsmasq_t)
+ kernel_read_system_state(dnsmasq_t)
+ kernel_request_load_module(dnsmasq_t)
++kernel_use_fds(dnsmasq_t)
+ 
+ corecmd_exec_shell(dnsmasq_t)
+ 
+@@ -85,6 +90,11 @@ domain_use_interactive_fds(dnsmasq_t)
+ 
+ files_read_etc_runtime_files(dnsmasq_t)
+ files_watch_etc_dirs(dnsmasq_t)
++files_map_etc_files(dnsmasq_t)
++files_map_usr_files(dnsmasq_t)
++files_read_usr_files(dnsmasq_t)
++files_watch_usr_dirs(dnsmasq_t)
++files_getattr_usr_files(dnsmasq_t)
+ 
+ fs_getattr_all_fs(dnsmasq_t)
+ fs_search_auto_mountpoints(dnsmasq_t)
+diff --git a/policy/modules/services/networkmanager.te b/policy/modules/services/networkmanager.te
+index ce48909dd..0566a6919 100644
+--- a/policy/modules/services/networkmanager.te
++++ b/policy/modules/services/networkmanager.te
+@@ -60,8 +60,10 @@ allow NetworkManager_t self:socket create_socket_perms;
+ allow NetworkManager_t self:alg_socket { accept bind create read setopt write };
+ # ICMPv6 router solicitation/advertisement
+ allow NetworkManager_t self:rawip_socket { create setopt getattr write read };
++allow NetworkManager_t tmp_t:sock_file write;
+ 
+ allow NetworkManager_t wpa_cli_t:unix_dgram_socket sendto;
++allow NetworkManager_t initrc_t:unix_dgram_socket sendto;
+ 
+ allow NetworkManager_t NetworkManager_etc_t:dir list_dir_perms;
+ allow NetworkManager_t NetworkManager_etc_t:file read_file_perms;
+@@ -101,6 +103,7 @@ kernel_read_vm_overcommit_sysctl(NetworkManager_t)
+ kernel_request_load_module(NetworkManager_t)
+ kernel_read_debugfs(NetworkManager_t)
+ kernel_rw_net_sysctls(NetworkManager_t)
++kernel_use_fds(NetworkManager_t)
+ 
+ corenet_all_recvfrom_netlabel(NetworkManager_t)
+ corenet_tcp_sendrecv_generic_if(NetworkManager_t)
+@@ -144,6 +147,8 @@ domain_read_all_domains_state(NetworkManager_t)
+ # /etc/resolv.conf is a symlink written by NM
+ files_manage_etc_symlinks(NetworkManager_t)
+ files_read_etc_runtime_files(NetworkManager_t)
++files_map_etc_files(NetworkManager_t)
++files_map_usr_files(NetworkManager_t)
+ files_read_usr_files(NetworkManager_t)
+ files_read_usr_src_files(NetworkManager_t)
+ 
+diff --git a/policy/modules/services/ntp.te b/policy/modules/services/ntp.te
+index 8886cb3bf..c42258f50 100644
+--- a/policy/modules/services/ntp.te
++++ b/policy/modules/services/ntp.te
+@@ -95,6 +95,7 @@ kernel_read_kernel_sysctls(ntpd_t)
+ kernel_read_system_state(ntpd_t)
+ kernel_read_network_state(ntpd_t)
+ kernel_request_load_module(ntpd_t)
++kernel_use_fds(ntpd_t)
+ 
+ corenet_all_recvfrom_netlabel(ntpd_t)
+ corenet_udp_sendrecv_generic_if(ntpd_t)
+@@ -121,6 +122,9 @@ files_read_usr_files(ntpd_t)
+ files_list_var_lib(ntpd_t)
+ files_watch_root_dirs(ntpd_t)
+ files_watch_runtime_dirs(ntpd_t)
++files_watch_usr_dirs(ntpd_t)
++files_map_usr_files(ntpd_t)
++files_manage_usr_files(ntpd_t)
+ 
+ fs_getattr_all_fs(ntpd_t)
+ fs_search_auto_mountpoints(ntpd_t)
+diff --git a/policy/modules/services/rpcbind.te b/policy/modules/services/rpcbind.te
+index 3cc85a8d5..808f8904f 100644
+--- a/policy/modules/services/rpcbind.te
++++ b/policy/modules/services/rpcbind.te
+@@ -45,6 +45,7 @@ files_var_lib_filetrans(rpcbind_t, rpcbind_var_lib_t, { file dir sock_file })
+ kernel_read_system_state(rpcbind_t)
+ kernel_read_network_state(rpcbind_t)
+ kernel_request_load_module(rpcbind_t)
++kernel_use_fds(rpcbind_t)
+ 
+ corenet_all_recvfrom_netlabel(rpcbind_t)
+ corenet_tcp_sendrecv_generic_if(rpcbind_t)
+diff --git a/policy/modules/system/authlogin.te b/policy/modules/system/authlogin.te
+index e999fa798..e579a3b87 100644
+--- a/policy/modules/system/authlogin.te
++++ b/policy/modules/system/authlogin.te
+@@ -104,6 +104,7 @@ allow chkpwd_t shadow_t:file { read_file_perms map };
+ files_list_etc(chkpwd_t)
+ 
+ kernel_read_crypto_sysctls(chkpwd_t)
++kernel_use_fds(chkpwd_t)
+ 
+ domain_dontaudit_use_interactive_fds(chkpwd_t)
+ 
+@@ -112,6 +113,11 @@ dev_read_urand(chkpwd_t)
+ dev_search_sysfs(chkpwd_t)
+ 
+ files_read_etc_files(chkpwd_t)
++files_map_etc_files(chkpwd_t)
++files_map_usr_files(chkpwd_t)
++files_read_usr_files(chkpwd_t)
++files_getattr_usr_files(chkpwd_t)
++
+ # for nscd
+ files_dontaudit_search_var(chkpwd_t)
+ 
+diff --git a/policy/modules/system/getty.te b/policy/modules/system/getty.te
+index 39e27e5f1..7bd8528ef 100644
+--- a/policy/modules/system/getty.te
++++ b/policy/modules/system/getty.te
+@@ -36,6 +36,7 @@ allow getty_t self:capability { chown dac_override fowner fsetid setgid sys_admi
+ dontaudit getty_t self:capability sys_tty_config;
+ allow getty_t self:process { getpgid getsession setpgid signal_perms };
+ allow getty_t self:fifo_file rw_fifo_file_perms;
++allow getty_t initrc_t:unix_dgram_socket sendto;
+ 
+ read_files_pattern(getty_t, getty_conf_t, getty_conf_t)
+ read_lnk_files_pattern(getty_t, getty_conf_t, getty_conf_t)
+@@ -56,6 +57,7 @@ allow getty_t getty_tmp_t:dir manage_dir_perms;
+ files_tmp_filetrans(getty_t, getty_tmp_t, { file dir })
+ 
+ kernel_read_system_state(getty_t)
++kernel_use_fds(getty_t)
+ 
+ # these two needed for receiving faxes
+ corecmd_exec_bin(getty_t)
+@@ -67,6 +69,10 @@ files_read_etc_runtime_files(getty_t)
+ files_read_etc_files(getty_t)
+ files_search_spool(getty_t)
+ fs_search_tmpfs(getty_t)
++files_map_etc_files(getty_t)
++files_map_usr_files(getty_t)
++files_read_usr_files(getty_t)
++files_getattr_usr_files(getty_t)
+ 
+ fs_search_auto_mountpoints(getty_t)
+ # for error condition handling
+diff --git a/policy/modules/system/init.if b/policy/modules/system/init.if
+index ab24b5d9b..162e24831 100644
+--- a/policy/modules/system/init.if
++++ b/policy/modules/system/init.if
+@@ -2619,6 +2619,63 @@ interface(`init_dbus_chat_script',`
+ 	allow initrc_t $1:dbus send_msg;
+ ')
+ 
++########################################
++## <summary>
++##	Allow the specified domain to read/write to
++##	init scripts with a netlink domain uevent sockets.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_rw_kobject_uevent_sockets',`
++	gen_require(`
++		type initrc_t;
++	')
++
++	allow $1 initrc_t:netlink_kobject_uevent_socket rw_socket_perms;
++')
++
++########################################
++## <summary>
++##	Allow the specified domain to read/write to
++##	init scripts with a netlink domain route sockets.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_rw_routing_sockets',`
++	gen_require(`
++		type initrc_t;
++	')
++
++	allow $1 initrc_t:netlink_route_socket rw_socket_perms;
++')
++
++########################################
++## <summary>
++##	Allow the specified domain to read/write to
++##	init scripts with a unix domain dgram sockets.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`init_rw_dgram_sockets',`
++	gen_require(`
++		type initrc_t;
++	')
++
++	allow $1 initrc_t:unix_dgram_socket rw_socket_perms;
++')
++
+ ########################################
+ ## <summary>
+ ##	Read and write the init script pty.
+diff --git a/policy/modules/system/init.te b/policy/modules/system/init.te
+index feed5af5f..4d3700f54 100644
+--- a/policy/modules/system/init.te
++++ b/policy/modules/system/init.te
+@@ -165,6 +165,8 @@ files_runtime_filetrans(init_t, initctl_t, fifo_file)
+ # Modify utmp.
+ allow init_t initrc_runtime_t:file { rw_file_perms setattr };
+ 
++sysadm_userdomain_transition(init_t)
++
+ kernel_read_system_state(init_t)
+ kernel_share_state(init_t)
+ kernel_dontaudit_search_unlabeled(init_t)
+@@ -609,6 +611,8 @@ allow initrc_t self:unix_stream_socket { create listen accept ioctl read getattr
+ allow initrc_t self:tcp_socket create_stream_socket_perms;
+ allow initrc_t self:udp_socket create_socket_perms;
+ allow initrc_t self:fifo_file rw_fifo_file_perms;
++allow initrc_t self:binder { call set_context_mgr transfer };
++allow initrc_t self:process { execmem execstack };
+ 
+ allow initrc_t initrc_devpts_t:chr_file rw_term_perms;
+ term_create_pty(initrc_t, initrc_devpts_t)
+diff --git a/policy/modules/system/locallogin.te b/policy/modules/system/locallogin.te
+index f629b0040..cc417dac3 100644
+--- a/policy/modules/system/locallogin.te
++++ b/policy/modules/system/locallogin.te
+@@ -47,6 +47,7 @@ allow local_login_t self:sem create_sem_perms;
+ allow local_login_t self:msgq create_msgq_perms;
+ allow local_login_t self:msg { send receive };
+ allow local_login_t self:key { search write link };
++allow local_login_t initrc_t:unix_dgram_socket sendto;
+ 
+ allow local_login_t local_login_lock_t:file manage_file_perms;
+ files_lock_filetrans(local_login_t, local_login_lock_t, file)
+@@ -59,6 +60,7 @@ kernel_read_system_state(local_login_t)
+ kernel_read_kernel_sysctls(local_login_t)
+ kernel_search_key(local_login_t)
+ kernel_link_key(local_login_t)
++kernel_use_fds(local_login_t)
+ 
+ corecmd_list_bin(local_login_t)
+ # cjp: these are probably not needed:
+@@ -102,6 +104,8 @@ files_read_world_readable_pipes(local_login_t)
+ files_read_world_readable_sockets(local_login_t)
+ # for when /var/mail is a symlink
+ files_read_var_symlinks(local_login_t)
++files_map_etc_files(local_login_t)
++files_map_usr_files(local_login_t)
+ 
+ fs_search_auto_mountpoints(local_login_t)
+ 
+diff --git a/policy/modules/system/logging.if b/policy/modules/system/logging.if
+index e3cbe4f1a..43cbf5c27 100644
+--- a/policy/modules/system/logging.if
++++ b/policy/modules/system/logging.if
+@@ -661,6 +661,7 @@ interface(`logging_send_syslog_msg',`
+ 	')
+ 
+ 	allow $1 devlog_t:sock_file write_sock_file_perms;
++	allow $1 syslogd_runtime_t:sock_file write_sock_file_perms;
+ 
+ 	# systemd journal socket is in /run/systemd/journal/dev-log
+ 	init_search_run($1)
+diff --git a/policy/modules/system/logging.te b/policy/modules/system/logging.te
+index c22613c0b..43486381b 100644
+--- a/policy/modules/system/logging.te
++++ b/policy/modules/system/logging.te
+@@ -117,6 +117,7 @@ files_read_etc_files(auditctl_t)
+ kernel_read_kernel_sysctls(auditctl_t)
+ kernel_read_proc_symlinks(auditctl_t)
+ kernel_setsched(auditctl_t)
++kernel_use_fds(auditctl_t)
+ 
+ domain_read_all_domains_state(auditctl_t)
+ domain_use_interactive_fds(auditctl_t)
+@@ -172,6 +173,7 @@ kernel_read_kernel_sysctls(auditd_t)
+ # Needs to be able to run dispatcher.  see /etc/audit/auditd.conf
+ # Probably want a transition, and a new auditd_helper app
+ kernel_read_system_state(auditd_t)
++kernel_use_fds(auditd_t)
+ 
+ dev_read_sysfs(auditd_t)
+ 
+@@ -198,6 +200,7 @@ domain_use_interactive_fds(auditd_t)
+ 
+ files_read_etc_files(auditd_t)
+ files_list_usr(auditd_t)
++files_map_etc_files(auditd_t)
+ 
+ init_telinit(auditd_t)
+ 
+@@ -262,6 +265,7 @@ manage_sock_files_pattern(audisp_t, audisp_runtime_t, audisp_runtime_t)
+ files_runtime_filetrans(audisp_t, audisp_runtime_t, sock_file)
+ 
+ kernel_read_system_state(audisp_t)
++kernel_use_fds(audisp_t)
+ 
+ corecmd_exec_bin(audisp_t)
+ corecmd_exec_shell(audisp_t)
+@@ -271,6 +275,9 @@ domain_use_interactive_fds(audisp_t)
+ files_map_etc_files(audisp_t)
+ files_read_etc_files(audisp_t)
+ files_read_etc_runtime_files(audisp_t)
++files_getattr_usr_files(audisp_t)
++files_map_usr_files(audisp_t)
++files_read_usr_files(audisp_t)
+ 
+ mls_file_write_all_levels(audisp_t)
+ 
+@@ -326,6 +333,7 @@ sysnet_dns_name_resolve(audisp_remote_t)
+ allow klogd_t self:capability sys_admin;
+ dontaudit klogd_t self:capability { sys_resource sys_tty_config };
+ allow klogd_t self:process signal_perms;
++allow klogd_t bin_t:file { map read execute };
+ 
+ manage_dirs_pattern(klogd_t, klogd_tmp_t, klogd_tmp_t)
+ manage_files_pattern(klogd_t, klogd_tmp_t, klogd_tmp_t)
+@@ -340,8 +348,12 @@ kernel_read_kernel_sysctls(klogd_t)
+ # Control syslog and console logging
+ kernel_clear_ring_buffer(klogd_t)
+ kernel_change_ring_buffer_level(klogd_t)
++kernel_use_fds(klogd_t)
+ 
+ files_read_kernel_symbol_table(klogd_t)
++files_map_usr_files(klogd_t)
++files_read_usr_files(klogd_t)
++files_getattr_usr_files(klogd_t)
+ 
+ dev_read_raw_memory_cond(klogd_t, allow_raw_memory_access)
+ dev_read_sysfs(klogd_t)
+@@ -401,6 +413,7 @@ allow syslogd_t self:unix_dgram_socket sendto;
+ allow syslogd_t self:fifo_file rw_fifo_file_perms;
+ allow syslogd_t self:udp_socket create_socket_perms;
+ allow syslogd_t self:tcp_socket create_stream_socket_perms;
++allow syslogd_t initrc_t:unix_dgram_socket sendto;
+ 
+ allow syslogd_t syslog_conf_t:file read_file_perms;
+ allow syslogd_t syslog_conf_t:dir list_dir_perms;
+@@ -436,8 +449,10 @@ files_search_var_lib(syslogd_t)
+ 
+ # manage runtime files
+ allow syslogd_t syslogd_runtime_t:dir create_dir_perms;
+-allow syslogd_t syslogd_runtime_t:sock_file { create setattr unlink };
++allow syslogd_t syslogd_runtime_t:sock_file { create setattr unlink write };
+ allow syslogd_t syslogd_runtime_t:file map;
++allow syslogd_t bin_t:file { map read execute };
++
+ manage_files_pattern(syslogd_t, syslogd_runtime_t, syslogd_runtime_t)
+ files_runtime_filetrans(syslogd_t, syslogd_runtime_t, file)
+ fs_search_tmpfs(syslogd_t)
+@@ -495,6 +510,8 @@ files_read_etc_files(syslogd_t)
+ files_read_usr_files(syslogd_t)
+ files_read_var_files(syslogd_t)
+ files_read_etc_runtime_files(syslogd_t)
++files_map_usr_files(syslogd_t)
++files_machineid_read(syslogd_t)
+ # /initrd is not umounted before minilog starts
+ files_read_kernel_symbol_table(syslogd_t)
+ files_var_lib_filetrans(syslogd_t, syslogd_var_lib_t, { file dir })
+diff --git a/policy/modules/system/modutils.te b/policy/modules/system/modutils.te
+index 8fd009742..6177a11e2 100644
+--- a/policy/modules/system/modutils.te
++++ b/policy/modules/system/modutils.te
+@@ -33,7 +33,7 @@ ifdef(`init_systemd',`
+ # insmod local policy
+ #
+ 
+-allow kmod_t self:capability { dac_override net_raw sys_nice sys_tty_config };
++allow kmod_t self:capability { dac_override net_raw sys_nice sys_tty_config dac_read_search };
+ allow kmod_t self:process { execmem sigchld sigkill sigstop signull signal };
+ # for the radeon/amdgpu modules
+ dontaudit kmod_t self:capability sys_admin;
+@@ -41,6 +41,10 @@ dontaudit kmod_t self:capability sys_admin;
+ allow kmod_t self:udp_socket create_socket_perms;
+ allow kmod_t self:rawip_socket create_socket_perms;
+ 
++allow kmod_t initrc_t:file read;
++allow kmod_t initrc_t:tcp_socket { read write };
++allow kmod_t initrc_t:udp_socket { read write };
++
+ # Read module config and dependency information
+ list_dirs_pattern(kmod_t, modules_conf_t, modules_conf_t)
+ read_files_pattern(kmod_t, modules_conf_t, modules_conf_t)
+@@ -83,6 +87,8 @@ dev_rw_agp(kmod_t)
+ dev_read_sound(kmod_t)
+ dev_write_sound(kmod_t)
+ dev_rw_acpi_bios(kmod_t)
++dev_rw_generic_chr_files(kmod_t)
++dev_rw_tee(kmod_t)
+ 
+ domain_signal_all_domains(kmod_t)
+ domain_use_interactive_fds(kmod_t)
+@@ -92,12 +98,14 @@ files_read_kernel_symbol_table(kmod_t)
+ files_read_etc_runtime_files(kmod_t)
+ files_read_etc_files(kmod_t)
+ files_read_usr_files(kmod_t)
++files_map_usr_files(kmod_t)
+ files_exec_etc_files(kmod_t)
+ files_search_tmp(kmod_t)
+ # for nscd:
+ files_dontaudit_search_runtime(kmod_t)
+ # to manage modules.dep
+ files_manage_kernel_modules(kmod_t)
++files_manage_usr_files(kmod_t)
+ 
+ fs_getattr_xattr_fs(kmod_t)
+ fs_dontaudit_use_tmpfs_chr_dev(kmod_t)
+@@ -107,6 +115,10 @@ init_rw_initctl(kmod_t)
+ init_use_fds(kmod_t)
+ init_use_script_fds(kmod_t)
+ init_use_script_ptys(kmod_t)
++init_rw_script_stream_sockets(kmod_t)
++init_rw_kobject_uevent_sockets(kmod_t)
++init_rw_routing_sockets(kmod_t)
++init_rw_dgram_sockets(kmod_t)
+ 
+ logging_send_syslog_msg(kmod_t)
+ logging_search_logs(kmod_t)
+diff --git a/policy/modules/system/mount.te b/policy/modules/system/mount.te
+index 5bb4fe631..035cec44f 100644
+--- a/policy/modules/system/mount.te
++++ b/policy/modules/system/mount.te
+@@ -53,6 +53,8 @@ can_exec(mount_t, mount_exec_t)
+ 
+ files_tmp_filetrans(mount_t, mount_tmp_t, { file dir })
+ 
++fs_manage_configfs_dirs(mount_t)
++
+ manage_dirs_pattern(mount_t, mount_runtime_t, mount_runtime_t)
+ manage_files_pattern(mount_t, mount_runtime_t, mount_runtime_t)
+ rw_files_pattern(mount_t, mount_runtime_t, mount_runtime_t)
+@@ -66,6 +68,7 @@ kernel_dontaudit_write_debugfs_dirs(mount_t)
+ kernel_dontaudit_write_proc_dirs(mount_t)
+ # To load binfmt_misc kernel module
+ kernel_request_load_module(mount_t)
++kernel_use_fds(mount_t)
+ 
+ # required for mount.smbfs
+ corecmd_exec_bin(mount_t)
+@@ -79,6 +82,7 @@ dev_rw_loop_control(mount_t)
+ dev_dontaudit_getattr_all_chr_files(mount_t)
+ dev_dontaudit_getattr_memory_dev(mount_t)
+ dev_getattr_sound_dev(mount_t)
++dev_getattr_generic_blk_files(mount_t)
+ # Early devtmpfs, before udev relabel
+ dev_dontaudit_rw_generic_chr_files(mount_t)
+ 
+@@ -99,6 +103,8 @@ files_read_usr_files(mount_t)
+ files_list_all_mountpoints(mount_t)
+ files_dontaudit_write_all_mountpoints(mount_t)
+ files_dontaudit_setattr_all_mountpoints(mount_t)
++files_map_usr_files(mount_t)
++files_mounton_configfs(mount_t)
+ 
+ fs_getattr_xattr_fs(mount_t)
+ fs_getattr_tmpfs(mount_t)
+diff --git a/policy/modules/system/systemd.if b/policy/modules/system/systemd.if
+index b81300835..e93257ce2 100644
+--- a/policy/modules/system/systemd.if
++++ b/policy/modules/system/systemd.if
+@@ -1079,6 +1079,25 @@ interface(`systemd_read_resolved_runtime',`
+ 	read_files_pattern($1, systemd_resolved_runtime_t, systemd_resolved_runtime_t)
+ ')
+ 
++#######################################
++## <summary>
++##  Allow domain to read and Watch read resolv.conf file
++##  generated by systemd_resolved
++## </summary>
++## <param name="domain">
++## <summary>
++##  domain allowed access
++## </summary>
++## </param>
++#
++interface(`systemd_watch_resolved_runtime',`
++	gen_require(`
++		type systemd_resolved_runtime_t;
++	')
++
++	allow $1 systemd_resolved_runtime_t:dir { read watch };
++')
++
+ #######################################
+ ## <summary>
+ ##  Allow domain to getattr on .updated file (generated by systemd-update-done
+diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
+index 7e573645b..f0102358b 100644
+--- a/policy/modules/system/systemd.te
++++ b/policy/modules/system/systemd.te
+@@ -362,6 +362,8 @@ seutil_search_default_contexts(systemd_coredump_t)
+ #
+ 
+ allow systemd_generator_t self:fifo_file rw_fifo_file_perms;
++allow systemd_generator_t self:process setfscreate;
++allow systemd_generator_t self:capability dac_override;
+ 
+ corecmd_getattr_bin_files(systemd_generator_t)
+ 
+@@ -375,6 +377,7 @@ files_list_boot(systemd_generator_t)
+ files_read_boot_files(systemd_generator_t)
+ files_search_all_mountpoints(systemd_generator_t)
+ files_list_usr(systemd_generator_t)
++files_getattr_vendor_dirs(systemd_generator_t)
+ 
+ fs_list_efivars(systemd_generator_t)
+ fs_getattr_xattr_fs(systemd_generator_t)
+@@ -422,10 +425,14 @@ optional_policy(`
+ allow systemd_hostnamed_t self:capability sys_admin;
+ 
+ kernel_read_kernel_sysctls(systemd_hostnamed_t)
++kernel_use_fds(systemd_hostnamed_t)
+ 
+ dev_read_sysfs(systemd_hostnamed_t)
+ 
+ files_read_etc_files(systemd_hostnamed_t)
++files_read_usr_files(systemd_hostnamed_t)
++files_getattr_usr_files(systemd_hostnamed_t)
++files_map_usr_files(systemd_hostnamed_t)
+ 
+ seutil_read_file_contexts(systemd_hostnamed_t)
+ 
+@@ -519,6 +526,7 @@ init_var_lib_filetrans(systemd_logind_t, systemd_logind_var_lib_t, dir)
+ manage_fifo_files_pattern(systemd_logind_t, systemd_logind_runtime_t, systemd_logind_runtime_t)
+ manage_files_pattern(systemd_logind_t, systemd_logind_runtime_t, systemd_logind_runtime_t)
+ allow systemd_logind_t systemd_logind_runtime_t:dir manage_dir_perms;
++allow systemd_logind_t initrc_runtime_t:file watch;
+ 
+ manage_dirs_pattern(systemd_logind_t, systemd_logind_inhibit_runtime_t, systemd_logind_inhibit_runtime_t)
+ manage_files_pattern(systemd_logind_t, systemd_logind_inhibit_runtime_t, systemd_logind_inhibit_runtime_t)
+@@ -530,6 +538,7 @@ allow systemd_logind_t systemd_sessions_runtime_t:file manage_file_perms;
+ allow systemd_logind_t systemd_sessions_runtime_t:fifo_file manage_fifo_file_perms;
+ 
+ kernel_read_kernel_sysctls(systemd_logind_t)
++kernel_use_fds(systemd_logind_t)
+ 
+ dev_getattr_dri_dev(systemd_logind_t)
+ dev_getattr_generic_usb_dev(systemd_logind_t)
+@@ -552,6 +561,11 @@ domain_obj_id_change_exemption(systemd_logind_t)
+ 
+ files_read_etc_files(systemd_logind_t)
+ files_search_runtime(systemd_logind_t)
++files_map_etc_files(systemd_logind_t)
++files_map_usr_files(systemd_logind_t)
++files_read_usr_files(systemd_logind_t)
++files_getattr_usr_files(systemd_logind_t)
++files_manage_etc_runtime_files(systemd_logind_t)
+ 
+ fs_getattr_cgroup(systemd_logind_t)
+ fs_getattr_tmpfs(systemd_logind_t)
+@@ -729,10 +743,13 @@ optional_policy(`
+ kernel_load_module(systemd_modules_load_t)
+ kernel_read_kernel_sysctls(systemd_modules_load_t)
+ kernel_request_load_module(systemd_modules_load_t)
++kernel_use_fds(systemd_modules_load_t)
++kernel_search_debugfs(systemd_modules_load_t)
+ 
+ dev_read_sysfs(systemd_modules_load_t)
+ 
+ files_read_etc_files(systemd_modules_load_t)
++files_vendor_search(systemd_modules_load_t)
+ 
+ modutils_read_module_config(systemd_modules_load_t)
+ modutils_read_module_deps(systemd_modules_load_t)
+@@ -767,6 +784,7 @@ kernel_read_kernel_sysctls(systemd_networkd_t)
+ kernel_read_network_state(systemd_networkd_t)
+ kernel_request_load_module(systemd_networkd_t)
+ kernel_rw_net_sysctls(systemd_networkd_t)
++kernel_use_fds(systemd_networkd_t)
+ 
+ corecmd_bin_entry_type(systemd_networkd_t)
+ corecmd_exec_bin(systemd_networkd_t)
+@@ -784,6 +802,11 @@ dev_write_kmsg(systemd_networkd_t)
+ files_read_etc_files(systemd_networkd_t)
+ files_watch_runtime_dirs(systemd_networkd_t)
+ files_watch_root_dirs(systemd_networkd_t)
++files_map_etc_files(systemd_networkd_t)
++files_map_usr_files(systemd_networkd_t)
++files_read_usr_files(systemd_networkd_t)
++files_getattr_usr_files(systemd_networkd_t)
++files_machineid_read(systemd_networkd_t)
+ 
+ auth_use_nsswitch(systemd_networkd_t)
+ 
+@@ -1049,12 +1072,18 @@ manage_files_pattern(systemd_rfkill_t, systemd_rfkill_var_lib_t, systemd_rfkill_
+ init_var_lib_filetrans(systemd_rfkill_t, systemd_rfkill_var_lib_t, dir)
+ 
+ kernel_read_kernel_sysctls(systemd_rfkill_t)
++kernel_use_fds(systemd_rfkill_t)
+ 
+ dev_read_sysfs(systemd_rfkill_t)
+ dev_rw_wireless(systemd_rfkill_t)
+ 
+ # Allow reading /etc/udev/udev.conf
+ files_read_etc_files(systemd_rfkill_t)
++files_rw_usr_dirs(systemd_rfkill_t)
++files_map_usr_files(systemd_rfkill_t)
++files_read_usr_files(systemd_rfkill_t)
++files_getattr_usr_files(systemd_rfkill_t)
++files_manage_usr_files(systemd_rfkill_t)
+ 
+ # Allow reading /run/udev/data/+rfkill:rfkill0
+ udev_read_runtime_files(systemd_rfkill_t)
+@@ -1082,6 +1111,7 @@ dev_read_sysfs(systemd_resolved_t)
+ kernel_read_crypto_sysctls(systemd_resolved_t)
+ kernel_read_kernel_sysctls(systemd_resolved_t)
+ kernel_read_net_sysctls(systemd_resolved_t)
++kernel_use_fds(systemd_resolved_t)
+ 
+ corenet_tcp_bind_generic_node(systemd_resolved_t)
+ corenet_tcp_bind_dns_port(systemd_resolved_t)
+@@ -1094,6 +1124,11 @@ auth_use_nsswitch(systemd_resolved_t)
+ 
+ files_watch_root_dirs(systemd_resolved_t)
+ files_watch_runtime_dirs(systemd_resolved_t)
++files_map_etc_files(systemd_resolved_t)
++files_map_usr_files(systemd_resolved_t)
++files_read_usr_files(systemd_resolved_t)
++files_getattr_usr_files(systemd_resolved_t)
++fs_search_tmpfs(systemd_resolved_t)
+ 
+ init_dgram_send(systemd_resolved_t)
+ 
+@@ -1122,6 +1157,11 @@ allow systemd_sessions_t systemd_sessions_runtime_t:file manage_file_perms;
+ files_runtime_filetrans(systemd_sessions_t, systemd_sessions_runtime_t, file)
+ 
+ kernel_read_kernel_sysctls(systemd_sessions_t)
++kernel_use_fds(systemd_sessions_t)
++
++files_map_usr_files(systemd_sessions_t)
++files_read_usr_files(systemd_sessions_t)
++files_getattr_usr_files(systemd_sessions_t)
+ 
+ selinux_get_enforce_mode(systemd_sessions_t)
+ selinux_get_fs_mount(systemd_sessions_t)
+@@ -1145,8 +1185,10 @@ allow systemd_sysusers_t self:process setfscreate;
+ allow systemd_sysusers_t self:unix_dgram_socket sendto;
+ 
+ files_manage_etc_files(systemd_sysusers_t)
++files_map_etc_files(systemd_sysusers_t)
+ 
+ kernel_read_kernel_sysctls(systemd_sysusers_t)
++kernel_use_fds(systemd_sysusers_t)
+ 
+ auth_manage_shadow(systemd_sysusers_t)
+ auth_etc_filetrans_shadow(systemd_sysusers_t)
+@@ -1181,6 +1223,7 @@ allow systemd_tmpfiles_t systemd_tmpfiles_conf_type:file read_file_perms;
+ kernel_getattr_proc(systemd_tmpfiles_t)
+ kernel_read_kernel_sysctls(systemd_tmpfiles_t)
+ kernel_read_network_state(systemd_tmpfiles_t)
++kernel_use_fds(systemd_tmpfiles_t)
+ 
+ dev_getattr_fs(systemd_tmpfiles_t)
+ dev_manage_all_dev_nodes(systemd_tmpfiles_t)
+@@ -1209,6 +1252,7 @@ files_relabel_var_lib_dirs(systemd_tmpfiles_t)
+ files_relabelfrom_home(systemd_tmpfiles_t)
+ files_relabelto_home(systemd_tmpfiles_t)
+ files_relabelto_etc_dirs(systemd_tmpfiles_t)
++files_map_etc_files(systemd_tmpfiles_t)
+ 
+ files_manage_non_auth_files(systemd_tmpfiles_t)
+ files_relabel_non_auth_files(systemd_tmpfiles_t)
+@@ -1311,6 +1355,12 @@ files_etc_filetrans(systemd_update_done_t, systemd_update_run_t, file)
+ files_var_filetrans(systemd_update_done_t, systemd_update_run_t, file)
+ 
+ kernel_read_kernel_sysctls(systemd_update_done_t)
++kernel_use_fds(systemd_update_done_t)
++
++files_map_usr_files(systemd_update_done_t)
++files_getattr_usr_files(systemd_update_done_t)
++files_rw_usr_dirs(systemd_update_done_t)
++files_manage_usr_files(systemd_update_done_t)
+ 
+ seutil_read_file_contexts(systemd_update_done_t)
+ 
+@@ -1396,6 +1446,9 @@ allow systemd_user_runtime_dir_t self:process setfscreate;
+ domain_obj_id_change_exemption(systemd_user_runtime_dir_t)
+ 
+ files_read_etc_files(systemd_user_runtime_dir_t)
++files_map_usr_files(systemd_user_runtime_dir_t)
++files_read_usr_files(systemd_user_runtime_dir_t)
++files_getattr_usr_files(systemd_user_runtime_dir_t)
+ 
+ fs_mount_tmpfs(systemd_user_runtime_dir_t)
+ fs_getattr_tmpfs(systemd_user_runtime_dir_t)
+@@ -1404,6 +1457,7 @@ fs_unmount_tmpfs(systemd_user_runtime_dir_t)
+ fs_relabelfrom_tmpfs_dirs(systemd_user_runtime_dir_t)
+ 
+ kernel_read_kernel_sysctls(systemd_user_runtime_dir_t)
++kernel_use_fds(systemd_user_runtime_dir_t)
+ 
+ selinux_get_enforce_mode(systemd_user_runtime_dir_t)
+ 
+diff --git a/policy/modules/system/udev.te b/policy/modules/system/udev.te
+index e483d63d3..02ce2e8c9 100644
+--- a/policy/modules/system/udev.te
++++ b/policy/modules/system/udev.te
+@@ -170,6 +170,7 @@ init_start_all_units(udev_t)
+ init_stop_all_units(udev_t)
+ # for hdparm init script run by udev
+ init_get_script_status(udev_t)
++init_start_system(udev_t)
+ 
+ logging_search_logs(udev_t)
+ logging_send_syslog_msg(udev_t)
+@@ -422,6 +423,7 @@ init_read_state(udevadm_t)
+ 
+ kernel_read_kernel_sysctls(udevadm_t)
+ kernel_read_system_state(udevadm_t)
++kernel_use_fds(udevadm_t)
+ 
+ seutil_read_file_contexts(udevadm_t)
+ 
+-- 
+2.29.0
+

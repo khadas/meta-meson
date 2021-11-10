@@ -14,6 +14,7 @@ IMAGE_INSTALL_append = "\
                     initramfs-meson-boot \
                     e2fsprogs \
                     aml-ubootenv \
+                    ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'policycoreutils-setfiles', '', d)} \
                    "
 
 #IMAGE_INSTALL_append_aarch64 = "\

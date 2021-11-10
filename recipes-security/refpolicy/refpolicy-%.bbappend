@@ -1,0 +1,6 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+
+SRC_URI += " \
+        file://0001-access_vectors-Permission-nlmsg_readpriv-in-class-ne.patch \
+        file://0001-policy-modules-update-for-amlogic-yocto.patch \
+        "

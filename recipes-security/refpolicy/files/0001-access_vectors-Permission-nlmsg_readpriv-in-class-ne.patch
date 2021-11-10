@@ -1,0 +1,26 @@
+From 84004bc1892521145c29b86bd415983847fedf60 Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Fri, 26 Nov 2021 10:35:38 +0800
+Subject: [PATCH] access_vectors: Permission nlmsg_readpriv in class
+ netlink_route_socket
+
+Change-Id: Ifce51b81bb6adfba5ad1b7f54fb1860e948ef4eb
+---
+ policy/flask/access_vectors | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/policy/flask/access_vectors b/policy/flask/access_vectors
+index a9aceb46f..f07da28b4 100644
+--- a/policy/flask/access_vectors
++++ b/policy/flask/access_vectors
+@@ -597,6 +597,7 @@ inherits socket
+ {
+ 	nlmsg_read
+ 	nlmsg_write
++	nlmsg_readpriv
+ }
+ 
+ class obsolete_netlink_firewall_socket
+-- 
+2.29.0
+
