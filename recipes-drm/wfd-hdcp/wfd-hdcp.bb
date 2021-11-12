@@ -26,12 +26,12 @@ do_populate_lic[noexec] = "1"
 #}
 do_install () {
 	mkdir -p ${D}/usr/bin
-	mkdir -p ${D}/usr/lib
+	mkdir -p ${D}${libdir}
 	mkdir -p ${D}/lib/teetz
 	mkdir -p ${D}/usr/include/wfd_hdcp
 
     install -m 0644 ${S}/prebuilt/noarch/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz
-    install -m 0644 ${S}/prebuilt/${ARM_TARGET}/libwfd_hdcp.so ${D}/usr/lib
+    install -m 0644 ${S}/prebuilt/${ARM_TARGET}/libwfd_hdcp.so ${D}${libdir}
     install -m 0755 ${S}/prebuilt/${ARM_TARGET}/hdcp_rx_test ${D}/usr/bin
     install -m 0755 ${S}/prebuilt/${ARM_TARGET}/hdcp_tx_test ${D}/usr/bin
     cp -rf ${S}/prebuilt/noarch/include/* ${D}/usr/include/wfd_hdcp/

@@ -30,7 +30,7 @@ do_configure_append() {
   cp ${STAGING_DIR_TARGET}/usr/include/libdrm_meson/drm_fourcc.h ${STAGING_DIR_TARGET}/usr/include/
 }
 
-FILES_${PN} += "/usr/lib/gstreamer-1.0/*"
+FILES_${PN} += "${libdir}/gstreamer-1.0/*"
 INSANE_SKIP_${PN} = "ldflags dev-so "
 INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_SYSROOT_STRIP = "1"

@@ -29,17 +29,17 @@ do_populate_lic[noexec] = "1"
 #}
 do_install () {
 	mkdir -p ${D}/usr/bin
-	mkdir -p ${D}/usr/lib/pkgconfig
+	mkdir -p ${D}${libdir}/pkgconfig
 	mkdir -p ${D}/lib/teetz
 	mkdir -p ${D}/usr/include/playready
 
     install -m 0644 ${S}/prebuilt-v4.4/noarch/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz
-    install -m 0644 ${S}/prebuilt-v4.4/noarch/pkgconfig/playready.pc ${D}/usr/lib/pkgconfig
-    install -m 0644 ${S}/prebuilt-v4.4/${ARM_TARGET}/libplayready-4.4.so ${D}/usr/lib
+    install -m 0644 ${S}/prebuilt-v4.4/noarch/pkgconfig/playready.pc ${D}${libdir}/pkgconfig
+    install -m 0644 ${S}/prebuilt-v4.4/${ARM_TARGET}/libplayready-4.4.so ${D}${libdir}
     install -m 0755 ${S}/prebuilt-v4.4/${ARM_TARGET}/prtest ${D}/usr/bin
-    ln -s libplayready-4.4.so ${D}/usr/lib/libplayready.so
-    ln -s libplayready-4.4.so ${D}/usr/lib/libplayready44pk.so
-    ln -s libplayready-4.4.so ${D}/usr/lib/libplayready44pritee.so
+    ln -s libplayready-4.4.so ${D}${libdir}/libplayready.so
+    ln -s libplayready-4.4.so ${D}${libdir}/libplayready44pk.so
+    ln -s libplayready-4.4.so ${D}${libdir}/libplayready44pritee.so
     cp -rf ${S}/prebuilt-v4.4/noarch/include/* ${D}/usr/include/playready/
     ln -s playready ${D}/usr/include/playready4.4
 }

@@ -34,7 +34,7 @@ do_compile() {
     oe_runmake  -C ${S} all
 }
 do_install() {
-        install -d ${D}/usr/lib
+        install -d ${D}${libdir}
         install -d ${D}/usr/bin
         install -d ${D}/usr/include
         install -d ${D}/usr/include/hardware
@@ -50,7 +50,7 @@ do_install() {
         install -m 755 -D ${S}/speaker_delay ${D}/usr/bin/
         install -m 755 -D ${S}/start_arc ${D}/usr/bin/
         install -m 755 -D ${S}/test_arc ${D}/usr/bin/
-        install -m 644 -D ${S}/libaudio_client.so -t ${D}/usr/lib/
+        install -m 644 -D ${S}/libaudio_client.so -t ${D}${libdir}
         install -m 644 -D ${S}/include/audio_if_client.h -t ${D}/usr/include
         install -m 644 -D ${S}/include/audio_if.h -t ${D}/usr/include
         for f in ${S}/include/hardware/*.h; do \

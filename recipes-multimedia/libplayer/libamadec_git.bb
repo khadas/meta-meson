@@ -59,29 +59,29 @@ do_compile () {
 
 do_install () {
 
-	install -d ${D}/usr/lib
+	install -d ${D}${libdir}
 	install -d ${D}${includedir}
 	install -d ${D}${includedir}/amports
    # if [ "${@bb.utils.contains("DISTRO_FEATURES", "amlogic-dvb", "yes", "no", d)}" = "yes"   ]; then
         install -m 0644 ${S}/amadec/include/*.h ${D}${includedir}
 	install -m 0644 ${S}/amcodec/include/amports/*.h ${D}${includedir}/amports
-	install -m 0644 -D ${S}/amadec/libamadec.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/amadec/libamadec_hal.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/libmad/libammad-aml.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/libadpcm/libadpcm-aml.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/libamr/libamr-aml.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/libape/libape-aml.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/libcook/libcook-aml.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/libfaad/libfaad-aml.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/libflac/libflac-aml.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/liblpcm/liblibpcm_wfd.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/libraac/libraac-aml.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/libpcm/libpcm-aml.so ${D}/usr/lib/
-        install -m 0644 -D ${S}/audio_codec/libopus/libopus-aml.so ${D}/usr/lib/
+	install -m 0644 -D ${S}/amadec/libamadec.so ${D}${libdir}
+        install -m 0644 -D ${S}/amadec/libamadec_hal.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/libmad/libammad-aml.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/libadpcm/libadpcm-aml.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/libamr/libamr-aml.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/libape/libape-aml.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/libcook/libcook-aml.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/libfaad/libfaad-aml.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/libflac/libflac-aml.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/liblpcm/liblibpcm_wfd.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/libraac/libraac-aml.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/libpcm/libpcm-aml.so ${D}${libdir}
+        install -m 0644 -D ${S}/audio_codec/libopus/libopus-aml.so ${D}${libdir}
     #fi
 }
 
-FILES_${PN} = " /usr/lib/* "
+FILES_${PN} = " ${libdir}/* "
 FILES_${PN}-dev = "/usr/include/*"
 
 INSANE_SKIP_${PN} = "dev-elf dev-so"

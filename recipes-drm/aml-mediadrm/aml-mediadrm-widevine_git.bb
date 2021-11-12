@@ -36,15 +36,15 @@ WIDEVINE_VER = "${@get_widevine_version(d)}"
 do_install() {
 
     install -d -m 0755 ${D}/lib/teetz
-    install -d -m 0755 ${D}/usr/lib
+    install -d -m 0755 ${D}${libdir}
     install -d -m 0755 ${D}/usr/bin
     install -d -m 0755 ${D}/usr/include
 
     install -D -m 0755 ${S}/widevine-bin/${WIDEVINE_VER}/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
     install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${TA_TARGET}/include/*.h ${D}${includedir}/
 
-    install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${ARM_TARGET}/libwidevine_ce_cdm_shared.so ${D}/usr/lib
-    install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${ARM_TARGET}/liboemcrypto.so ${D}/usr/lib
+    install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${ARM_TARGET}/libwidevine_ce_cdm_shared.so ${D}${libdir}
+    install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${ARM_TARGET}/liboemcrypto.so ${D}${libdir}
     install -D -m 0755 ${S}/widevine-bin/${WIDEVINE_VER}/${ARM_TARGET}/widevine_ce_cdm_unittest ${D}/usr/bin
 }
 FILES_${PN} += "${libdir}/*.so /lib/teetz/* ${bindir}/*"

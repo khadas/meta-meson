@@ -31,7 +31,11 @@ do_install() {
    install -d ${D}${includedir}
 
     cd ${S}
-    oe_runmake  install
+#    oe_runmake  install
+    install -m 0644 ${S}/libpqclient.so ${D}${libdir}
+    install -m 0644 ${S}/libpq.so ${D}${libdir}
+    install -m 755 ${S}/pqservice ${D}/usr/bin/
+    install -m 755 ${S}/pqtest ${D}/usr/bin/
     install -m 0644 ${S}/client/include/*.h ${D}${includedir}
     if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
         install -D -m 0644 ${WORKDIR}/pqserver.service ${D}${systemd_unitdir}/system/pqserver.service

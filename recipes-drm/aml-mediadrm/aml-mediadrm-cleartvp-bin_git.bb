@@ -17,13 +17,13 @@ ARM_TARGET_aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
 do_install() {
-    install -d -m 0755 ${D}/usr/lib
+    install -d -m 0755 ${D}${libdir}
     install -d -m 0755 ${D}/usr/include
     install -d -m 0755 ${D}/lib/teetz
 
     install -D -m 0755 ${S}/cleartvp-bin/prebuilt/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
     install -D -m 0644 ${S}/cleartvp-bin/prebuilt/${TA_TARGET}/include/*.h ${D}/usr/include
-    install -D -m 0644 ${S}/cleartvp-bin/prebuilt/${ARM_TARGET}/libclearTVP_ca.so ${D}/usr/lib
+    install -D -m 0644 ${S}/cleartvp-bin/prebuilt/${ARM_TARGET}/libclearTVP_ca.so ${D}${libdir}
 }
 
 FILES_${PN} = "${libdir}/* ${includedir}/* /lib/teetz/*"

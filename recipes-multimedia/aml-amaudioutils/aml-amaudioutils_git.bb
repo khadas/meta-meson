@@ -34,13 +34,13 @@ do_compile() {
 }
 
 do_install() {
-    install -d ${D}/usr/lib
+    install -d ${D}${libdir}
     install -d ${D}/usr/include/audio_utils
     install -d ${D}/usr/include/audio_utils/spdif
     install -d ${D}/usr/include/IpcBuffer
 
-  	install -m 644 -D ${S}/libamaudioutils.so ${D}/usr/lib
-    install -m 644 -D ${S}/libcutils.so ${D}/usr/lib
+  	install -m 644 -D ${S}/libamaudioutils.so ${D}${libdir}
+    install -m 644 -D ${S}/libcutils.so ${D}${libdir}
 	install -m 644 ${S}/include/audio_utils/*.h ${D}/usr/include/audio_utils
 	install -m 644 ${S}/include/audio_utils/spdif/*.h ${D}/usr/include/audio_utils/spdif
 	install -m 644 ${S}/include/IpcBuffer/*.h ${D}/usr/include/IpcBuffer/

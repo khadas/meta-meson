@@ -21,14 +21,14 @@ do_compile () {
 }
 
 do_install () {
-    install -d ${D}/usr/lib
+    install -d ${D}${libdir}
     install -d ${D}/usr/include/
-    install -m 0644 -D ${S}/dtv_audio_utils/libdvbaudioutils.so ${D}/usr/lib/libdvbaudioutils.so
+    install -m 0644 -D ${S}/dtv_audio_utils/libdvbaudioutils.so ${D}${libdir}
     install -m 0644 ${S}/dtv_audio_utils/sync/*.h ${D}/usr/include
     #lib32-aml-dvb-999-r0 do_prepare_recipe_sysroot: The file /usr/include/audio_dtv_ad.h is installed by both lib32-aml-dvbaudioutils and lib32-libamadec, aborting
     #install -m 0644 ${S}/dtv_audio_utils/audio_read_api/*.h ${D}/usr/include
     install -m 0644 ${S}/dtv_audio_utils/audio_read_api/audio_es.h ${D}/usr/include
-    install -m 0644 -D ${S}/amadec/libaudamadec.so ${D}/usr/lib/libaudamadec.so
+    install -m 0644 -D ${S}/amadec/libaudamadec.so ${D}${libdir}
 }
 
 S="${WORKDIR}/git"

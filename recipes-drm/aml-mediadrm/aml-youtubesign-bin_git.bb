@@ -20,11 +20,11 @@ ARM_TARGET_aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
 do_install_append() {
-    install -d -m 0755 ${D}/usr/lib
+    install -d -m 0755 ${D}${libdir}
     install -d -m 0755 ${D}/usr/include
     install -d -m 0755 ${D}/lib/teetz
     install -D -m 0755 ${S}/youtubesign-bin/prebuilt/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
-    install -D -m 0644 ${S}/youtubesign-bin/prebuilt/${ARM_TARGET}/*.so ${D}//usr/lib/
+    install -D -m 0644 ${S}/youtubesign-bin/prebuilt/${ARM_TARGET}/*.so ${D}${libdir}
     install -D -m 0644 ${S}/youtubesign-bin/prebuilt/noarch/include/* ${D}/usr/include/
 }
 

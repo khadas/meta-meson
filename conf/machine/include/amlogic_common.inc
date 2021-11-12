@@ -30,6 +30,9 @@ TDK_VERSION_t7 = "v3.8/dev/A311D2"
 TDK_VERSION_s4 = "v3.8/dev/S905Y4"
 TDK_VERSION_t3 = "v3.8/dev/T965D4"
 
+#Widevine Version
+WIDEVINE_VERSION = "16"
+
 AML_GIT_ROOT ?= "git.myamlogic.com"
 AML_GIT_PROTOCOL ?= "git"
 AML_GIT_ROOT_YOCTO_SUFFIX ?= "/yocto"
@@ -42,6 +45,10 @@ CONNECTIVITY_CHECK_URIS = "https://www.bing.com/"
 
 LINUXLIBCVERSION ?= "5.4%"
 PREFERRED_VERSION_libdrm = "2.4.100"
+PREFERRED_VERSION_tinyalsa = "1.1.1"
+
+#Only support amlogic widevine
+PREFERRED_PROVIDER_widevine = "aml-mediadrm-widevine"
 
 WARN_QA_append = "ldflags installed-vs-shipped already-stripped pkgvarcheck"
 ERROR_QA_remove = "ldflags installed-vs-shipped already-stripped pkgvarcheck"
@@ -66,3 +73,26 @@ VENDOR_DM_VERITY_IMAGE = "vendor-image"
 
 DM_VERITY_IMAGE_TYPE = "ext4"
 STAGING_VERITY_DIR = "${DEPLOY_DIR_IMAGE}"
+
+#Common part
+BBMASK += "meta-aml-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
+
+VOLATILE_BINDS = "/var/volatile/www /www\n"
+VOLATILE_BINDS_append = "/var/volatile/resolv.conf /etc/resolv.conf\n"
+VOLATILE_BINDS_append = "/var/volatile/asound.conf /etc/asound.conf\n"
+VOLATILE_BINDS_append = "/var/volatile/resolv.dnsmasq /etc/resolv.dnsmasq\n"
+VOLATILE_BINDS_append = "/var/volatile/hosts /etc/hosts\n"
+VOLATILE_BINDS_append = "/var/volatile/hostname /etc/hostname\n"
+VOLATILE_BINDS_append = "/var/volatile/dhcp_static_hosts /etc/dhcp_static_hosts\n"
+VOLATILE_BINDS_append = "/var/volatile/cron /var/spool/cron\n"
+VOLATILE_BINDS_append_hybrid = "/tmp/snmpd.conf /etc/snmp/snmpd.conf\n"
+VOLATILE_BINDS_append_client = "/tmp/timesyncd.conf /etc/systemd/timesyncd.conf\n"
+VOLATILE_BINDS_append_hybrid = "/tmp/udhcpc.vendor_specific /etc/udhcpc.vendor_specific\n"
+VOLATILE_BINDS_append = "/tmp/dibbler /etc/dibbler\n"
+VOLATILE_BINDS_append = "/var/volatile/xupnp /etc/xupnp\n"
+VOLATILE_BINDS_append = "/tmp/samhain /var/samhain\n"
+
+XZ_COMPRESSION_LEVEL ?= "-e -M 50% -9"
+
+VIRTUAL-RUNTIME_init_manager ?= "systemd"
+VIRTUAL-RUNTIME_initscripts ?= "systemd-compat-units"

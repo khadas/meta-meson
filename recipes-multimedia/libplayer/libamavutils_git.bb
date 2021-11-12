@@ -23,13 +23,13 @@ do_compile () {
 
 do_install () {
 
-	install -d ${D}/usr/lib
+	install -d ${D}${libdir}
 	install -d ${D}${includedir}
     install -m 0644 ${S}/amavutils/include/*.h ${D}${includedir}
-    install -m 0644 -D ${S}/amavutils/libamavutils.so ${D}/usr/lib/libamavutils.so
+    install -m 0644 -D ${S}/amavutils/libamavutils.so ${D}${libdir}
 }
 
-FILES_${PN} = " /usr/lib/* "
+FILES_${PN} = " ${libdir}/* "
 FILES_${PN}-dev = "/usr/include/*"
 
 INSANE_SKIP_${PN} = "dev-elf dev-so"

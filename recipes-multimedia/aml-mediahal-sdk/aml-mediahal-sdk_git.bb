@@ -36,14 +36,14 @@ do_compile(){
 }
 
 do_install() {
-    install -d -m 0755 ${D}/usr/lib
+    install -d -m 0755 ${D}${libdir}
     install -d -m 0755 ${D}/usr/include
 
     install -D -m 0644 ${S}/prebuilt/${TA_TARGET}/include/*.h ${D}/usr/include
-    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_resman.so ${D}/usr/lib
-    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_tsplayer.so ${D}/usr/lib
-    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_videodec.so ${D}/usr/lib
-    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_mediasync.so ${D}/usr/lib
+    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_resman.so ${D}${libdir}
+    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_tsplayer.so ${D}${libdir}
+    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_videodec.so ${D}${libdir}
+    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_mediasync.so ${D}${libdir}
     install -d -m 0755 ${D}/usr/bin
     install -D -m 0755 ${S}/example/AmTsPlayerExample/AmTsPlayerExample ${D}/usr/bin
     install -D -m 0755 ${S}/example/AmTsPlayerMultiExample/AmTsPlayerMultiExample ${D}/usr/bin

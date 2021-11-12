@@ -1,5 +1,4 @@
 DEFAULTTUNE = "armv7athf-neon"
-#PREFERRED_PROVIDER_virtual/westeros-soc = "westeros-soc-drm"
 
 #PREFERRED_PROVIDER_virtual/devicesettings-hal = "devicesettings-hal-amlogic"
 #PREFERRED_PROVIDER_virtual/closedcaption-hal = "closedcaption-hal-amlogic"
@@ -13,7 +12,6 @@ VIRTUAL-RUNTIME_alsa-state ?= "alsa-states"
 # append drm(wayland drm backend)
 DISTRO_FEATURES_append = " drm gles2"
 #DISTRO_FEATURES_append = " wpeframework"
-DISTRO_FEATURES_append = " opencdm"
 DISTRO_FEATURES_append = " clearkey"
 #DISTRO_FEATURES_remove = " rdkbrowser2"
 #WPELauncher is not used any more.WPEFramework now as a launcher
@@ -28,9 +26,4 @@ DISTROOVERRIDES .= ":dunfell"
 
 include conf/include/bbmasks-amlogic-platform.inc
 PREFERRED_VERSION_cmake-native= "3.16.5"
-PREFERRED_VERSION_amazon-prime-src = "3.0"
 
-#DISTRO_FEATURES_append = " amazon-plugin-prebuilt amazon-plugin"
-
-DISTRO_FEATURES_append = " amazon-plugin"
-BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'amazon-plugin', '','|meta-rdk-amazon|amazon-prime-.*', d)}"
