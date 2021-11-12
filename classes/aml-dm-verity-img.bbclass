@@ -41,15 +41,15 @@ verity_setup() {
     if [ -f $INPUT ]; then
         # Read block size for types "ext2/3/4"
         if [ "$TYPE" = "ext4" -o "$TYPE" = "ext3" -o "$TYPE" = "ext2" ]; then
-            bbwarn "`dumpe2fs $INPUT | grep -i "block size"  | tee $DUMPE2FS_LOG`"
+            bbnote "`dumpe2fs $INPUT | grep -i "block size"  | tee $DUMPE2FS_LOG`"
             BLOCK_SIZE=`cat $DUMPE2FS_LOG | tr -d ' \t' | awk '{split($0, a, ":"); print a[2]}'`
         fi
         if [ $BLOCK_SIZE = 4096 -o $BLOCK_SIZE = 2048 -o $BLOCK_SIZE = 1024 ]; then
             # If block size is valid, set --data-block-size to it
-            bbwarn "`veritysetup --debug --data-block-size=$BLOCK_SIZE --hash-offset=$SIZE format $INPUT $INPUT | tee $VERITYSETUP_LOG`"
+            bbnote "`veritysetup --debug --data-block-size=$BLOCK_SIZE --hash-offset=$SIZE format $INPUT $INPUT | tee $VERITYSETUP_LOG`"
         else
             # Otherwise, default block size will be 4096
-            bbwarn "`veritysetup --debug --hash-offset=$SIZE format $INPUT $INPUT | tee $VERITYSETUP_LOG`"
+            bbnote "`veritysetup --debug --hash-offset=$SIZE format $INPUT $INPUT | tee $VERITYSETUP_LOG`"
         fi
     else
         bberror "Cannot find $INPUT"

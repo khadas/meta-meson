@@ -89,7 +89,7 @@ IMAGE_ROOTFS_EXTRA_SPACE_append = "${@bb.utils.contains("DISTRO_FEATURES", "syst
 
 deploy_verity_hash() {
     if [ -f ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env ]; then
-        bbwarn "install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+        bbnote "install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
             ${IMAGE_ROOTFS}/${datadir}/system-dm-verity.env"
         install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
             ${IMAGE_ROOTFS}/${datadir}/system-dm-verity.env
@@ -98,7 +98,7 @@ deploy_verity_hash() {
     fi
 
     if [ -f ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env ]; then
-        bbwarn " install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+        bbnote " install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
             ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env"
         install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
             ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env
