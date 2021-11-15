@@ -18,41 +18,32 @@ DEFCONFIG_ARRAY=($(pushd $MESON_PATH/conf/machine 2>&1 >> /dev/null; find -name 
 
 DEFCONFIG_ARRAY_LEN=${#DEFCONFIG_ARRAY[@]}
 
-i=0
-while [[ $i -lt $DEFCONFIG_ARRAY_LEN ]]
-do
-	let i++
-done
-
 function choose_info()
 {
 	echo
 	echo "You're building on Linux"
 	echo "Lunch menu...pick a combo:"
-	i=0
-	while [[ $i -lt $DEFCONFIG_ARRAY_LEN ]]
+	i=1
+	for f in "${DEFCONFIG_ARRAY[@]}";
 	do
-		echo -e "$((${i}+1)).\t${DEFCONFIG_ARRAY[$i]}"
+		echo -e "${i}.\t${f}"
 		let i++
 	done
 	echo
 }
 
-function get_index() {
+function check_answer() {
 	if [ $# -eq 0 ]; then
-		return 0
+		return 1
 	fi
 
-	i=0
-	while [[ $i -lt $DEFCONFIG_ARRAY_LEN ]]
+	for f in "${DEFCONFIG_ARRAY[@]}";
 	do
-		if [ $1 = "${DEFCONFIG_ARRAY[$i]}" ]; then
-			let i++
-			return ${i}
+		if [ $1 = "${f}" ]; then
+			return 0
 		fi
-		let i++
 	done
-	return 0
+	return 1
 }
 
 function choose_type()
@@ -81,18 +72,15 @@ function choose_type()
 		if [ -n "`echo $ANSWER | sed -n '/^[0-9][0-9]*$/p'`" ]; then
 			if [ $ANSWER -le $DEFCONFIG_ARRAY_LEN ] && [ $ANSWER -gt 0 ]; then
 				index=$((${ANSWER}-1))
-				TARGET_MACHINE=${DEFCONFIG_ARRAY[$index]}
+				TARGET_MACHINE=${DEFCONFIG_ARRAY[@]:${index}:1}
 			else
 				echo
 				echo "number not in range. Please try again."
 				echo
 			fi
 		else
-			get_index $ANSWER
-			ANSWER=$?
-			if [ $ANSWER -gt 0 ]; then
-				index=$((${ANSWER}-1))
-				TARGET_MACHINE=${DEFCONFIG_ARRAY[$index]}
+			if check_answer $ANSWER; then
+				TARGET_MACHINE=$ANSWER
 			else
 				echo
 				echo "I didn't understand your response.  Please try again."
