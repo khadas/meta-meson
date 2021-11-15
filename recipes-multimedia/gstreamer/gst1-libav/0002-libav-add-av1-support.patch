@@ -1,0 +1,39 @@
+From b8f3fd114084276e4f09fc48aa63f860c7e886fd Mon Sep 17 00:00:00 2001
+From: "kenan.liu" <kenan.liu@amlogic.com>
+Date: Wed, 8 Dec 2021 10:40:44 +0800
+Subject: [PATCH] libav: add av1 support [1/1]
+
+PD#SWPL-65563
+
+Problem:
+av1 video demux fail
+
+Solution:
+add get caps flow for av1
+
+Verify:
+AP222
+---
+ ext/libav/gstavcodecmap.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/ext/libav/gstavcodecmap.c b/ext/libav/gstavcodecmap.c
+index d21d18c..f011c71 100755
+--- a/ext/libav/gstavcodecmap.c
++++ b/ext/libav/gstavcodecmap.c
+@@ -1401,6 +1401,12 @@ gst_ffmpeg_codecid_to_caps (enum AVCodecID codec_id,
+           NULL);
+       break;
+ 
++    case AV_CODEC_ID_AV1:
++      caps =
++          gst_ff_vid_caps_new (context, NULL, codec_id, encode, "video/x-av1",
++          NULL);
++      break;
++
+     case AV_CODEC_ID_THEORA:
+       caps =
+           gst_ff_vid_caps_new (context, NULL, codec_id, encode,
+-- 
+2.32.0
+
