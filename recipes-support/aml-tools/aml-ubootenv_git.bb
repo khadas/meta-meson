@@ -9,10 +9,10 @@ SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git"
+B = "${WORKDIR}/build"
 
 do_compile(){
-    ${MAKE} -C ${S}/ubootenv clean
-    ${MAKE} -C ${S}/ubootenv all
+    ${MAKE} -C ${S}/ubootenv all OUT_DIR=${B}
 }
 
 do_install() {
@@ -20,8 +20,8 @@ do_install() {
     install -d ${D}${libdir}
     install -d ${D}${bindir}
     install -m 0644 ${S}/ubootenv/ubootenv.h ${D}${includedir}
-    install -m 0644 ${S}/ubootenv/libubootenv.a ${D}${libdir}
-    install -m 0755 ${S}/ubootenv/uenv ${D}${bindir}
+    install -m 0644 ${B}/libubootenv.a ${D}${libdir}
+    install -m 0755 ${B}/uenv ${D}${bindir}
 }
 
 FILES_${PN} = "${libdir}/* ${bindir}/*"
