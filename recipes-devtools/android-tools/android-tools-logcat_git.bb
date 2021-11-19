@@ -22,7 +22,7 @@ SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic
 S = "${WORKDIR}/git/"
 
 do_compile(){
-    ${MAKE} -C ${S}/logcat
+    ${MAKE} -C ${S}/logcat STAGING_DIR=TBD
 }
 
 do_install(){

@@ -31,7 +31,7 @@ TA_TARGET="noarch"
 
 do_compile() {
     cd ${S}
-    oe_runmake all
+    oe_runmake all TARGET_DIR=TBD
 }
 do_install() {
     install -d ${D}${libdir}
