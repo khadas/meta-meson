@@ -69,3 +69,20 @@ DISTRO_FEATURES_append = "${EXTRA_BLUETOOTH_STUFF}"
 # dm-verity
 #DISTRO_FEATURES_append = " dm-verity"
 #DISTRO_FEATURES_NATIVE_append = " dm-verity"
+
+# For YouTube Cert. Now it's for 2022
+DEVICE_PROPERTY_FIRMWARE_VERSION = "1.0.0"
+DEVICE_PROPERTY_MODEL_NAME = "OTT-4K-Ref"
+DEVICE_PROPERTY_OPERATOR_NAME = "SDKRelease"
+DEVICE_PROPERTY_CERT_SCOPE = "amlogic-2022-amlogicottref4k2022"
+DEVICE_PROPERTY_DIALSERVER_NAME="AmlogicOTT-AP222"
+# YouTube define device type
+# BDP:   Blu-Ray Player
+# GAME:  Game Console
+# OTT:   Over-The-Top Device
+# STB:   Set-Top-Box, which includes a tuner and demodulator
+# TV:    Television Set
+DEVICE_PROPERTY_YOUTUBE_DEVICE_TYPE = "OTT"
+DEVICE_PROPERTY_CHIPSET_MODEL_NUM = "S905Y4"
+DEVICE_PROPERTY_MODEL_YEAR = "2022"
+# End For YouTube
