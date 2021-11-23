@@ -70,9 +70,19 @@ gki_module_install () {
 
 do_compile_append () {
   if [ -n "${GKI_DEFCONFIG}" ]; then
+    rm -f ${STAGING_KERNEL_DIR}/gki_ext_module_config
+    rm -f ${STAGING_KERNEL_DIR}/gki_ext_module_predefine
+
     #Note, gki_ext_module_config/gki_ext_module_predefine will be used by all kernel module build
-    ${WORKDIR}/gki-read_ext_module_config.sh ${S}/arch/arm64/configs/${GKI_DEFCONFIG} > ${STAGING_KERNEL_DIR}/gki_ext_module_config
-    ${WORKDIR}/gki-read_ext_module_predefine.sh ${S}/arch/arm64/configs/${GKI_DEFCONFIG} > ${STAGING_KERNEL_DIR}/gki_ext_module_predefine
+    if [ -f ${S}/arch/arm64/configs/${GKI_DEFCONFIG} ]; then
+      ${WORKDIR}/gki-read_ext_module_config.sh ${S}/arch/arm64/configs/${GKI_DEFCONFIG} >> ${STAGING_KERNEL_DIR}/gki_ext_module_config
+      ${WORKDIR}/gki-read_ext_module_predefine.sh ${S}/arch/arm64/configs/${GKI_DEFCONFIG} >> ${STAGING_KERNEL_DIR}/gki_ext_module_predefine
+    fi
+
+    if [ -f ${WORKDIR}/${GKI_DEFCONFIG_ADDON} ]; then
+      ${WORKDIR}/gki-read_ext_module_config.sh ${WORKDIR}/${GKI_DEFCONFIG_ADDON}  >> ${STAGING_KERNEL_DIR}/gki_ext_module_config
+      ${WORKDIR}/gki-read_ext_module_predefine.sh ${WORKDIR}/${GKI_DEFCONFIG_ADDON} >> ${STAGING_KERNEL_DIR}/gki_ext_module_predefine
+    fi
 
     export GKI_EXT_MODULE_CONFIG="$(cat ${STAGING_KERNEL_DIR}/gki_ext_module_config)"
     export GKI_EXT_MODULE_PREDEFINE="$(cat ${STAGING_KERNEL_DIR}/gki_ext_module_predefine)"
