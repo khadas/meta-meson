@@ -1,0 +1,11 @@
+[Unit]
+Description=Sandbox setup service
+Before=wpeframework.service
+After=wifi.service audioserver.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sandbox-setup
+
+[Install]
+WantedBy=multi-user.target

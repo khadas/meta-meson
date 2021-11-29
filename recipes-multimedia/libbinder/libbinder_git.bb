@@ -13,6 +13,7 @@ PV = "${SRCPV}"
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_commonlib;protocol=${AML_GIT_PROTOCOL};branch=master;"
 SRC_URI += "file://LICENSE-2.0.txt"
 SRC_URI += "file://binder.service"
+SRC_URI += "file://binder.sh"
 
 #For common patches
 #SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/aml_commonlib')}"
@@ -41,6 +42,15 @@ do_install(){
     install -m 0644 ${S}/include/binder/* ${D}${includedir}/binder
     install -m 0644 ${S}/include/utils/* ${D}${includedir}/utils
     install -m 0644 ${WORKDIR}/binder.service ${D}/${systemd_unitdir}/system
+    install -m 0755 ${WORKDIR}/binder.sh ${D}/${bindir}
+}
+
+do_install_append(){
+    if ${@bb.utils.contains("DISTRO_FEATURES", "system-user", "true", "false", d)}
+    then
+        sed -i '/ln -sf/a\chmod g+rw /dev/binder' ${D}/${bindir}/binder.sh
+        sed -i '/ln -sf/a\chgrp system /dev/binder' ${D}/${bindir}/binder.sh
+    fi
 }
 
 SYSTEMD_SERVICE_${PN} = "binder.service"

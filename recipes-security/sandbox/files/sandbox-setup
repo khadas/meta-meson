@@ -1,0 +1,47 @@
+#!/bin/sh
+
+export XDG_RUNTIME_DIR=/run/user/0
+GROUP_SYSTEM=system
+GROUP_SESSION=session
+
+chgrp $GROUP_SESSION /opt
+chmod g+rw /opt
+
+mkdir -p /opt/amazonPrime/
+chgrp $GROUP_SESSION /opt/amazonPrime/
+chmod g+rw /opt/amazonPrime/
+
+mkdir -p /tmp/amazonPrime/
+chgrp $GROUP_SESSION /tmp/amazonPrime/
+chmod g+rw /tmp/amazonPrime/
+
+chgrp $GROUP_SYSTEM /data
+chmod g+rw /data
+chgrp $GROUP_SYSTEM /run
+chmod g+rw /run
+
+chgrp -R $GROUP_SESSION /run/wpa_supplicant/
+chmod -R g+rw /run/wpa_supplicant/
+
+chgrp $GROUP_SESSION /dev/shm/AudioServiceShmem
+chmod g+rw /dev/shm/AudioServiceShmem
+chgrp $GROUP_SESSION /opt/audio_socket
+chmod g+rw /opt/audio_socket
+
+chgrp -R $GROUP_SYSTEM /dev/v4l/
+chmod -R g+rw /dev/v4l/
+
+chgrp -R $GROUP_SYSTEM /sys/module/drm/parameters/
+chmod -R g+rw /sys/module/drm/parameters/
+chgrp -R $GROUP_SYSTEM /sys/module/aml_drm/parameters/
+chmod -R g+rw /sys/module/aml_drm/parameters/
+
+while [ ! -S $XDG_RUNTIME_DIR/bus ]; do
+    usleep 1000
+done
+chgrp $GROUP_SESSION $XDG_RUNTIME_DIR
+chmod 770 $XDG_RUNTIME_DIR
+chgrp $GROUP_SYSTEM $XDG_RUNTIME_DIR/bus
+
+chgrp -R $GROUP_SESSION $XDG_RUNTIME_DIR/systemd
+chmod -R g+rw $XDG_RUNTIME_DIR/systemd

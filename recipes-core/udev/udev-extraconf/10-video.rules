@@ -1,0 +1,16 @@
+KERNEL=="ion", GROUP="session", MODE="660"
+KERNEL=="secmem", GROUP="session", MODE="660"
+
+KERNEL=="ionvideo", GROUP="video", MODE="660"
+KERNEL=="dri/card0", GROUP="video", MODE="660"
+KERNEL=="v4lvideo", GROUP="video", MODE="660"
+KERNEL=="aml_msync", GROUP="video", MODE="660"
+KERNEL=="avsync_s0", GROUP="video", MODE="660"
+KERNEL=="video_composer.0", GROUP="video", MODE="660"
+KERNEL=="video_composer.1", GROUP="video", MODE="660"
+KERNEL=="videotunnel", GROUP="video", MODE="660"
+KERNEL=="amresource_mgr", GROUP="video", MODE="660"
+
+KERNEL=="tee0", GROUP="system", MODE="660"
+KERNEL=="tee_comm_hdcp", GROUP="system", MODE="660"
+KERNEL=="teepriv0", GROUP="system", MODE="660"
