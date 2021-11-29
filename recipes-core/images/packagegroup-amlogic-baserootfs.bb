@@ -81,6 +81,10 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'tee-supplicant', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-video-firmware', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'widevine', 'aml-mediadrm-widevine', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-libjpeg', 'libjpeg', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-libmultienc', 'libmultienc libge2d libion', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-libvpcodec', 'libvpcodec h264bitstream', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-libvphevcodec', 'libvphevcodec libge2d libion', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gstreamer1', \
         'gstreamer1.0-plugins-good \
         gstreamer1.0-plugins-bad \
