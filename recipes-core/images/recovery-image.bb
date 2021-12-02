@@ -70,3 +70,14 @@ do_bundle_initramfs_dtb[nostamp] = "1"
 
 do_rootfs[depends] += "android-tools-native:do_populate_sysroot"
 IMAGE_ROOTFS_EXTRA_SPACE_append = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", " + 4096", "" ,d)}"
+
+ROOTFS_POSTPROCESS_COMMAND += "delete_unused_items_from_fstab; "
+
+#if dm-verity is enabled, mount /vendor(/dev/dm-1) will be failed, and recovery can not boot up
+delete_unused_items_from_fstab(){
+    if [ -e ${IMAGE_ROOTFS}/etc/fstab ];then
+        sed -i '/\/vendor/ d' ${IMAGE_ROOTFS}/etc/fstab
+        sed -i '/\/tee/ d' ${IMAGE_ROOTFS}/etc/fstab
+        sed -i '/\/factory/ d' ${IMAGE_ROOTFS}/etc/fstab
+    fi
+}

@@ -87,21 +87,6 @@ STAGING_VERITY_DIR = "${DEPLOY_DIR_IMAGE}"
 #Common part
 BBMASK += "meta-aml-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
 
-VOLATILE_BINDS = "/var/volatile/www /www\n"
-VOLATILE_BINDS_append = "/var/volatile/resolv.conf /etc/resolv.conf\n"
-VOLATILE_BINDS_append = "/var/volatile/asound.conf /etc/asound.conf\n"
-VOLATILE_BINDS_append = "/var/volatile/resolv.dnsmasq /etc/resolv.dnsmasq\n"
-VOLATILE_BINDS_append = "/var/volatile/hosts /etc/hosts\n"
-VOLATILE_BINDS_append = "/var/volatile/hostname /etc/hostname\n"
-VOLATILE_BINDS_append = "/var/volatile/dhcp_static_hosts /etc/dhcp_static_hosts\n"
-VOLATILE_BINDS_append = "/var/volatile/cron /var/spool/cron\n"
-VOLATILE_BINDS_append_hybrid = "/tmp/snmpd.conf /etc/snmp/snmpd.conf\n"
-VOLATILE_BINDS_append_client = "/tmp/timesyncd.conf /etc/systemd/timesyncd.conf\n"
-VOLATILE_BINDS_append_hybrid = "/tmp/udhcpc.vendor_specific /etc/udhcpc.vendor_specific\n"
-VOLATILE_BINDS_append = "/tmp/dibbler /etc/dibbler\n"
-VOLATILE_BINDS_append = "/var/volatile/xupnp /etc/xupnp\n"
-VOLATILE_BINDS_append = "/tmp/samhain /var/samhain\n"
-
 XZ_COMPRESSION_LEVEL ?= "-e -M 50% -9"
 
 VIRTUAL-RUNTIME_init_manager ?= "systemd"

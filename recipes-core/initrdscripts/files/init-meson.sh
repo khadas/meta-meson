@@ -86,19 +86,45 @@ read_args() {
     done
 }
 
+#on read-only rootfs, .autorelabel can not be deleted, so move this file under /data, in this situation,
+#if do factory reset, selinux relabel will happen again
 selinux_relabel() {
-    if [ -f ${ROOT_MOUNT}/.autorelabel ]; then
-        echo "selinux relabel"
-        chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data
-        chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/
-        chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/machine-id
-        chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /lost+found
+    if [ -e $ROOT_MOUNT/read-only ]; then
+        if [ ! -e $ROOT_MOUNT/data/.autorelabel ];then
+            echo "selinux relabel"
+            touch $ROOT_MOUNT/data/.autorelabel
+            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data
+            #chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/
+            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data/etc/machine-id
+            #chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /lost+found
+            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data/.autorelabel
+        fi
+    else
+        if [ -f ${ROOT_MOUNT}/.autorelabel ]; then
+            echo "selinux relabel"
+            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data
+            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/
+            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/machine-id
+            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /lost+found
 
-        rm ${ROOT_MOUNT}/.autorelabel
+            rm ${ROOT_MOUNT}/.autorelabel
+        fi
     fi
 }
 
 check_set_machine_id() {
+    if [ -e $ROOT_MOUNT/read-only ]; then
+        if [ ! -e ${ROOT_MOUNT}/data/etc/machine-id ];then
+            mkdir -p $ROOT_MOUNT/data/etc
+            if [ -f  ${ROOT_MOUNT}/etc/machine-id ]; then
+                cp ${ROOT_MOUNT}/etc/machine-id $ROOT_MOUNT/data/etc/
+            else
+                touch $ROOT_MOUNT/data/etc/machine-id
+            fi
+        fi
+        mount --bind $ROOT_MOUNT/data/etc/machine-id ${ROOT_MOUNT}/etc/machine-id
+    fi
+
     if [ -f  ${ROOT_MOUNT}/etc/machine-id ]; then
         mid=$(cat ${ROOT_MOUNT}/etc/machine-id)
     fi
@@ -232,8 +258,8 @@ data_ext4_handle() {
 		fi
 	fi
 
-	mkdir -p /data
-	if ! mount -t ext4 -o rw,noatime,nodiratime $ROOT_RWDEVICE /data ; then
+	[ ! -d $1 ]&&mkdir -p $1
+	if ! mount -t ext4 -o rw,noatime,nodiratime $ROOT_RWDEVICE $1 ; then
 		fatal "Could not mount $ROOT_RWDEVICE"
 	fi
 }
@@ -299,8 +325,10 @@ else
 	fi
 fi
 
-    if touch $ROOT_MOUNT/bin 2>/dev/null; then
+    if touch $ROOT_MOUNT/bin 2>/dev/null || [ -e $ROOT_MOUNT/read-only ]; then
 		# The root image is read-write, directly boot it up.
+        echo "read-only, skip overlay"
+		data_ext4_handle $ROOT_MOUNT/data
 		boot_root
     fi
 
@@ -322,11 +350,12 @@ fi
 		rm -rf $ROOT_ROMOUNT
 		fatal "Could not move rootfs mount point"
 	    else
-		if [ "${root_fstype}" = "ubifs" ]; then
-		data_ubi_handle
-		else
-		data_ext4_handle
-		fi
+        echo "mount overlay"
+        if [ "${root_fstype}" = "ubifs" ]; then
+            data_ubi_handle
+        else
+            data_ext4_handle /data
+        fi
 		mkdir -p $ROOT_RWMOUNT/upperdir $ROOT_RWMOUNT/work
 		mount -t overlay overlay -o "lowerdir=$ROOT_ROMOUNT,upperdir=$ROOT_RWMOUNT/upperdir,workdir=$ROOT_RWMOUNT/work" $ROOT_MOUNT
 		mkdir -p ${ROOT_MOUNT}/$ROOT_ROMOUNT $ROOT_MOUNT/data

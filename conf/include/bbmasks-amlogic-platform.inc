@@ -6,3 +6,6 @@ BBMASK += "meta-thunder/meta-rdk-bsp-amlogic/recipes-extended/amazon-prime-src/a
 BBMASK .= "|meta-security/recipes-core/busybox"
 # Don't need kernel patch for dm-verity(enabled by default)
 BBMASK .= "|meta-security/recipes-kernel/linux/"
+
+BBMASK .= "${@bb.utils.contains('READONLY', 'y', '', '|meta-meson/recipes-core/volatile-binds/volatile-binds.bb', d)}"
+BBMASK .= "${@bb.utils.contains('READONLY', 'y', '', '|meta-thunder/meta-rdk-bsp-amlogic/recipes-extended/volatile-binds/volatile-binds.bbappend', d)}"

@@ -110,3 +110,46 @@ create_version_file[vardepsexclude] += "DATETIME"
 create_version_file[vardepsexclude] += "BB_TASKDEPDATA"
 
 ROOTFS_POSTPROCESS_COMMAND += "version_hook; "
+ROOTFS_POSTPROCESS_COMMAND += "create_extra_folder; "
+
+create_extra_folder(){
+    if [ ! -d ${IMAGE_ROOTFS}/tee ];then
+        mkdir -p ${IMAGE_ROOTFS}/tee
+    fi
+
+    if [ ! -d ${IMAGE_ROOTFS}/data ];then
+        mkdir -p ${IMAGE_ROOTFS}/data
+    fi
+}
+
+process_for_read_only_rootfs(){
+    kernel_version=$(ls ${IMAGE_ROOTFS}/lib/modules/)
+
+    if [ ! -f ${IMAGE_ROOTFS}/etc/wifi/rtk_station_mode ];then
+        touch ${IMAGE_ROOTFS}/etc/wifi/rtk_station_mode
+    fi
+
+    if [ ! -f ${IMAGE_ROOTFS}/processing_graph_dot.txt ];then
+        touch ${IMAGE_ROOTFS}/processing_graph_dot.txt
+    fi
+
+
+    if [ ! -f ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22 ];then
+        touch ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22
+        chmod +x ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22
+    fi
+
+    if [ ! -f ${IMAGE_ROOTFS}/lib/modules/$kernel_version/kernel/media/dovi.ko ];then
+        touch ${IMAGE_ROOTFS}/lib/modules/$kernel_version/kernel/media/dovi.ko
+    fi
+
+    if [ -f ${IMAGE_ROOTFS}/${systemd_unitdir}/system/data-lib-modules-kernelVersionAmlogic-kernel-media-dovi.ko.service ];then
+        sed -i "s/kernelVersionAmlogic/$kernel_version/g" ${IMAGE_ROOTFS}/${systemd_unitdir}/system/data-lib-modules-kernelVersionAmlogic-kernel-media-dovi.ko.service
+    fi
+
+    if [ -f ${IMAGE_ROOTFS}/.autorelabel ];then
+        rm -f ${IMAGE_ROOTFS}/.autorelabel
+    fi
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('READONLY', 'y', 'process_for_read_only_rootfs; ', '', d)}"

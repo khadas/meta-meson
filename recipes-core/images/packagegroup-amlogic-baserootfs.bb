@@ -152,6 +152,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'aml-dial', '', d)} \
     tzdata \
     tzcode \
+    format-partitions \
     "
 
 RDEPENDS_packagegroup-amlogic-baserootfs += " \

@@ -12,10 +12,14 @@ S = "${WORKDIR}"
 do_install() {
         install -m 0755 ${WORKDIR}/init-meson.sh ${D}/init
         install -d ${D}/dev
+        if [ "${READONLY}" = "y" ];then
+            touch ${D}/read-only
+        fi
         mknod -m 622 ${D}/dev/console c 5 1
 }
 
 FILES_${PN} += " /init /dev "
+FILES_${PN} += "${@bb.utils.contains('READONLY', 'y', ' /read-only', '', d)}"
 
 # Due to kernel dependency
 PACKAGE_ARCH = "${MACHINE_ARCH}"
