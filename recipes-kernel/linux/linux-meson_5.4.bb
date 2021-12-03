@@ -80,6 +80,8 @@ do_compile_append () {
     fi
 
     if [ -f ${WORKDIR}/${GKI_DEFCONFIG_ADDON} ]; then
+      echo -n " " >> ${STAGING_KERNEL_DIR}/gki_ext_module_config
+      echo -n " " >> ${STAGING_KERNEL_DIR}/gki_ext_module_predefine
       ${WORKDIR}/gki-read_ext_module_config.sh ${WORKDIR}/${GKI_DEFCONFIG_ADDON}  >> ${STAGING_KERNEL_DIR}/gki_ext_module_config
       ${WORKDIR}/gki-read_ext_module_predefine.sh ${WORKDIR}/${GKI_DEFCONFIG_ADDON} >> ${STAGING_KERNEL_DIR}/gki_ext_module_predefine
     fi

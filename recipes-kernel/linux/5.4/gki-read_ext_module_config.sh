@@ -7,5 +7,5 @@ do
     ALL_LINE="$ALL_LINE"" ""$LINE"
   fi
 done < $1
-echo $ALL_LINE
+echo -n $ALL_LINE
 
