@@ -1,0 +1,60 @@
+From ead4c24ad70003bd65d3123528f6e20d086fedaa Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Wed, 8 Dec 2021 16:33:39 +0800
+Subject: [PATCH] policy/modules: for mount vendor device
+
+Change-Id: Iae7f5ec7ffcc71507fab25dd310de1c7e443255a
+---
+ policy/modules/kernel/files.if | 18 ++++++++++++++++++
+ policy/modules/system/mount.te |  2 ++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/policy/modules/kernel/files.if b/policy/modules/kernel/files.if
+index 9429709f6..e335f1f89 100644
+--- a/policy/modules/kernel/files.if
++++ b/policy/modules/kernel/files.if
+@@ -7852,3 +7852,21 @@ interface(`files_getattr_vendor_dirs',`
+ 
+ 	allow $1 vendor_t:dir getattr;
+ ')
++
++########################################
++## <summary>
++##	Mount on the vendor directory
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_mounton_vendor',`
++	gen_require(`
++		type vendor_t;
++	')
++
++	allow $1 vendor_t:dir mounton;
++')
+diff --git a/policy/modules/system/mount.te b/policy/modules/system/mount.te
+index 035cec44f..2a3f6c62a 100644
+--- a/policy/modules/system/mount.te
++++ b/policy/modules/system/mount.te
+@@ -85,6 +85,7 @@ dev_getattr_sound_dev(mount_t)
+ dev_getattr_generic_blk_files(mount_t)
+ # Early devtmpfs, before udev relabel
+ dev_dontaudit_rw_generic_chr_files(mount_t)
++dev_rw_generic_blk_files(mount_t)
+ 
+ domain_use_interactive_fds(mount_t)
+ 
+@@ -105,6 +106,7 @@ files_dontaudit_write_all_mountpoints(mount_t)
+ files_dontaudit_setattr_all_mountpoints(mount_t)
+ files_map_usr_files(mount_t)
+ files_mounton_configfs(mount_t)
++files_mounton_vendor(mount_t)
+ 
+ fs_getattr_xattr_fs(mount_t)
+ fs_getattr_tmpfs(mount_t)
+-- 
+2.29.0
+
