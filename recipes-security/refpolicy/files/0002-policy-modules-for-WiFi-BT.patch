@@ -1,0 +1,74 @@
+From 719c8eb28a253829946aebd157906363978bf965 Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Tue, 7 Dec 2021 10:51:34 +0800
+Subject: [PATCH] policy/modules: for WiFi/BT
+
+Change-Id: Id3b2d620228275af0a13ff0c698bc574fed6455c
+---
+ policy/modules/kernel/devices.if          | 18 ++++++++++++++++++
+ policy/modules/services/bluetooth.te      |  3 ++-
+ policy/modules/services/networkmanager.te |  1 +
+ 3 files changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
+index d41a3e1b0..07f57c02a 100644
+--- a/policy/modules/kernel/devices.if
++++ b/policy/modules/kernel/devices.if
+@@ -5585,3 +5585,21 @@ interface(`dev_rw_tee',`
+ 
+ 	allow $1 tee_device_t:chr_file { read write };
+ ')
++
++########################################
++## <summary>
++##	Create, delete, read, and write the uhid device.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`dev_manage_uhid_chr_file',`
++	gen_require(`
++		type uhid_device_t;
++	')
++
++	manage_chr_files_pattern($1, uhid_device_t, uhid_device_t)
++')
+diff --git a/policy/modules/services/bluetooth.te b/policy/modules/services/bluetooth.te
+index 4529642b1..4850f25ef 100644
+--- a/policy/modules/services/bluetooth.te
++++ b/policy/modules/services/bluetooth.te
+@@ -61,7 +61,7 @@ allow bluetooth_t self:unix_stream_socket { accept connectto listen };
+ allow bluetooth_t self:tcp_socket { accept listen };
+ allow bluetooth_t self:netlink_kobject_uevent_socket create_socket_perms;
+ allow bluetooth_t self:bluetooth_socket create_stream_socket_perms;
+-allow bluetooth_t self:alg_socket { bind create };
++allow bluetooth_t self:alg_socket { bind create setopt accept write read };
+ allow bluetooth_t initrc_t:unix_dgram_socket sendto;
+ 
+ read_files_pattern(bluetooth_t, bluetooth_conf_t, bluetooth_conf_t)
+@@ -106,6 +106,7 @@ dev_rw_generic_usb_dev(bluetooth_t)
+ dev_read_urand(bluetooth_t)
+ dev_rw_input_dev(bluetooth_t)
+ dev_rw_wireless(bluetooth_t)
++dev_manage_uhid_chr_file(bluetooth_t)
+ 
+ domain_use_interactive_fds(bluetooth_t)
+ domain_dontaudit_search_all_domains_state(bluetooth_t)
+diff --git a/policy/modules/services/networkmanager.te b/policy/modules/services/networkmanager.te
+index 0566a6919..45578db5a 100644
+--- a/policy/modules/services/networkmanager.te
++++ b/policy/modules/services/networkmanager.te
+@@ -151,6 +151,7 @@ files_map_etc_files(NetworkManager_t)
+ files_map_usr_files(NetworkManager_t)
+ files_read_usr_files(NetworkManager_t)
+ files_read_usr_src_files(NetworkManager_t)
++files_manage_etc_files(NetworkManager_t)
+ 
+ fs_getattr_all_fs(NetworkManager_t)
+ fs_search_auto_mountpoints(NetworkManager_t)
+-- 
+2.29.0
+
