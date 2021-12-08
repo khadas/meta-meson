@@ -117,6 +117,12 @@ BBLAYERS =+ "${MESON_ROOT_PATH}/meta-aml-netflix"
 EOF
     fi
 
+    if [ -d ${MESON_ROOT_PATH}/meta-selinux ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-selinux[^-]') -eq 0 ]; then
+            cat >> conf/bblayers.conf <<EOF
+BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-selinux"
+EOF
+    fi
+
     if [ -d ${MESON_ROOT_PATH}/meta-security ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-security[^-]') -eq 0 ]; then
             cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-security"

@@ -58,6 +58,11 @@ DISTRO_FEATURES_append = " aml-cas "
 DISTRO_FEATURES_append = " recovery "
 DISTRO_FEATURES_append = " swupdate "
 
+# enable selinux
+DISTRO_FEATURES_append = " acl xattr pam selinux"
+# set the policy
+PREFERRED_PROVIDER_virtual/refpolicy ?= "refpolicy-standard"
+DEFAULT_ENFORCING = "permissive"
 
 OVERRIDES .= ":ap222:s4:onepass"
 MACHINEOVERRIDES .= ":client"

@@ -81,6 +81,18 @@ read_args() {
     done
 }
 
+selinux_relabel() {
+    if [ -f ${ROOT_MOUNT}/.autorelabel ]; then
+        echo "selinux relabel"
+        chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data
+        chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/
+        chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/machine-id
+        chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /lost+found
+
+        rm ${ROOT_MOUNT}/.autorelabel
+    fi
+}
+
 boot_root() {
     # Watches the udev event queue, and exits if all current events are handled
     udevadm settle
@@ -98,6 +110,8 @@ boot_root() {
     mount -n --move /proc ${ROOT_MOUNT}/proc
     mount -n --move /sys ${ROOT_MOUNT}/sys
     mount -n --move /dev ${ROOT_MOUNT}/dev
+
+    selinux_relabel
 
     cd $ROOT_MOUNT
 

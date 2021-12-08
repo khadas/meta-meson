@@ -2,7 +2,8 @@ SUMMARY = "Amlogic Yocto Image"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-inherit core-image
+IMAGECLASS ?= " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'selinux-image', 'core-image', d)} "
+inherit ${IMAGECLASS}
 
 IMAGE_FSTYPES = "ext4"
 
@@ -16,6 +17,7 @@ IMAGE_FEATURES += "tools-debug "
 IMAGE_INSTALL += " \
     packagegroup-amlogic-baserootfs \
     gdb \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'packagegroup-core-selinux auditd', '', d)} \
     "
 
 MACHINE_IMAGE_NAME ?= "${PN}"
