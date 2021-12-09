@@ -133,3 +133,9 @@ RDEPENDS_packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'cobalt-prebuilt-pkg', 'cobalt-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'netflix-prebuilt-pkg', 'netflix-prebuilt-pkg', '', d)} \
     "
+
+#For Nagra CAS
+RDEPENDS_packagegroup-amlogic-baserootfs += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk', '', d)} \
+    "
+
