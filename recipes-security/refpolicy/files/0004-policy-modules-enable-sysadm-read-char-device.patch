@@ -1,0 +1,25 @@
+From 481a307f7550d9d8699c8dcd4c09b4d633d6278f Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Thu, 9 Dec 2021 17:32:14 +0800
+Subject: [PATCH] policy/modules: enable sysadm read char device
+
+Change-Id: I5854f2bc52f0732ec983c0f64c1bc088e18d0e57
+---
+ policy/modules/roles/sysadm.te | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/policy/modules/roles/sysadm.te b/policy/modules/roles/sysadm.te
+index 5a16f8e85..ba006eb26 100644
+--- a/policy/modules/roles/sysadm.te
++++ b/policy/modules/roles/sysadm.te
+@@ -39,6 +39,7 @@ corenet_ib_access_unlabeled_pkeys(sysadm_t)
+ corenet_ib_manage_subnet_unlabeled_endports(sysadm_t)
+ 
+ dev_read_kmsg(sysadm_t)
++dev_read_generic_chr_files(sysadm_t)
+ 
+ mls_process_read_all_levels(sysadm_t)
+ 
+-- 
+2.29.0
+
