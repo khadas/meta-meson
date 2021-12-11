@@ -1,3 +1,11 @@
+do_install_append () {
+  if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
+    sed -i '/\/usr\/bin\/resize/ s/^/#/' ${D}${sysconfdir}/profile
+    echo "export PAGER=/bin/cat" >> ${D}${sysconfdir}/profile
+    echo "export SYSTEMD_PAGER=/bin/cat" >> ${D}${sysconfdir}/profile
+  fi
+}
+
 do_install_append_sc2 () {
     mkdir -p ${D}/vendor
     mkdir -p ${D}/factory
@@ -77,7 +85,7 @@ do_install_append_p1 () {
     cat >> ${D}${sysconfdir}/fstab <<EOF
  /dev/vendor            /vendor                    auto       defaults              0  0
  /dev/factory           /factory                   auto       defaults              0  0
-EOF 
+EOF
 }
 FILES_${PN}_append_p1 = " /vendor/* /factory/* "
 dirs755_append_p1 = " /vendor /factory "
