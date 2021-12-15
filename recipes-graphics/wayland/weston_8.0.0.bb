@@ -10,8 +10,9 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
            file://weston.desktop \
            file://xwayland.weston-start \
            file://0001-8.0.0-weston-launch-Provide-a-default-version-that-doesn-t.patch \ 
-		   file://0002-8.0.0-Enable-Connector-by-priority.patch \
+           file://0002-8.0.0-Enable-Connector-by-priority.patch \
            file://0007-cursor-hide-cursor-be-for-have-point-motion-after-we.patch \
+           file://0017-8.0.0-add-video-fence.patch \
 		   "
 
 SRC_URI[md5sum] = "53e4810d852df0601d01fd986a5b22b3"
