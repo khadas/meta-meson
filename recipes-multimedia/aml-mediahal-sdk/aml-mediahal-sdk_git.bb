@@ -44,6 +44,7 @@ do_install() {
     install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_tsplayer.so ${D}${libdir}
     install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_videodec.so ${D}${libdir}
     install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_mediasync.so ${D}${libdir}
+    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_videorender.so ${D}${libdir}
     install -d -m 0755 ${D}/usr/bin
     install -D -m 0755 ${S}/example/AmTsPlayerExample/AmTsPlayerExample ${D}/usr/bin
     install -D -m 0755 ${S}/example/AmTsPlayerMultiExample/AmTsPlayerMultiExample ${D}/usr/bin
