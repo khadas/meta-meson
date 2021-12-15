@@ -23,6 +23,7 @@ EXTERNALSRC_pn-aml-wifi-w1 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/w
 EXTERNALSRC_pn-aml-bt-w1 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/amlogic' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/amlogic')) else ''}"
 EXTERNALSRC_pn-rtk8723bu = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723bu' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723bu')) else ''}"
 EXTERNALSRC_pn-rtk8723du = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723du' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8723du')) else ''}"
+EXTERNALSRC_pn-rtk8822cu = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8822cu' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/wifi/realtek/drivers/8822cu')) else ''}"
 EXTERNALSRC_pn-realtek-btusb = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/realtek' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/realtek')) else ''}"
 EXTERNALSRC_pn-realtek-btuart = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/realtek' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/realtek')) else ''}"
 EXTERNALSRC_pn-realtek-hciattach = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/realtek' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/realtek')) else ''}"

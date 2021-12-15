@@ -65,6 +65,7 @@ BL32_SOC_FAMILY_txlx = "txlx"
 BL32_SOC_FAMILY_sm2 = "g12a"
 BL32_SOC_FAMILY_tm2 = "tm2"
 BL32_SOC_FAMILY_t5d = "t5d"
+BL32_SOC_FAMILY_t5w = "t5w"
 BL32_SOC_FAMILY_t3 = "t3"
 
 PATH_append = ":${STAGING_DIR_NATIVE}/gcc-linaro-aarch64-elf/bin"
@@ -87,14 +88,18 @@ do_compile () {
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
     if ${@bb.utils.contains('DISTRO_FEATURES','secure-u-boot','true','false',d)}; then
-        mkdir -p ${S}/bl32/bin/${BL32_SOC_FAMILY}/
-        ${STAGING_DIR_NATIVE}/tdk/scripts/pack_kpub.py \
-            --rsk=${STAGING_DIR_NATIVE}/tdk/keys/root_rsa_pub_key.pem \
-            --rek=${STAGING_DIR_NATIVE}/tdk/keys/root_aes_key.bin \
-            --in=${STAGING_DIR_TARGET}/usr/share/tdk/secureos/${BL32_SOC_FAMILY}/bl32.img \
-            --out=${S}/bl32/bin/${BL32_SOC_FAMILY}/bl32.img
+        if [ "${BL32_SOC_FAMILY}" = "t5d" ];then
+            mkdir -p ${S}/bl32/bin/${BL32_SOC_FAMILY}/
+            ${STAGING_DIR_NATIVE}/tdk/scripts/pack_kpub.py \
+                --rsk=${STAGING_DIR_NATIVE}/tdk/keys/root_rsa_pub_key.pem \
+                --rek=${STAGING_DIR_NATIVE}/tdk/keys/root_aes_key.bin \
+                --in=${STAGING_DIR_TARGET}/usr/share/tdk/secureos/${BL32_SOC_FAMILY}/bl32.img \
+                --out=${S}/bl32/bin/${BL32_SOC_FAMILY}/bl32.img
 
-        LDFLAGS= ./mk ${UBOOT_TYPE%_config} --bl32 bl32/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
+            LDFLAGS= ./mk ${UBOOT_TYPE%_config} --bl32 bl32/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
+        else
+            LDFLAGS= ./mk ${UBOOT_TYPE%_config} --bl32 bl32_3.8/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
+        fi
     else
         LDFLAGS= ./mk ${UBOOT_TYPE%_config}
     fi

@@ -15,6 +15,7 @@ SOC_FAMILY_t7 = "t7"
 SOC_FAMILY_p1 = "p1"
 SOC_FAMILY_s4 = "s4"
 SOC_FAMILY_t5d = "t5d"
+SOC_FAMILY_t5w = "t5w"
 SOC_FAMILY_t3 = "t3"
 
 PACK_CONF = "${@bb.utils.contains('DISTRO_FEATURES','absystem','aml_upgrade_package_ab.conf','aml_upgrade_package.conf', d)}"
