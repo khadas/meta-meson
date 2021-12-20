@@ -69,6 +69,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     aml-libdvr \
     aml-mp-sdk \
     aml-pqserver \
+    aml-subtitleserver \
     aml-ubootenv \
     aml-utils-simulate-key \
     vulkan-loader \
