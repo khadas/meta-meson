@@ -6,4 +6,5 @@ SRC_URI += " \
         file://0002-policy-modules-for-WiFi-BT.patch \
         file://0003-policy-modules-for-mount-vendor-device.patch \
         file://0004-policy-modules-enable-sysadm-read-char-device.patch \
+        file://0005-policy-modules-enable-sysadm-watch-journal-files.patch \
         "

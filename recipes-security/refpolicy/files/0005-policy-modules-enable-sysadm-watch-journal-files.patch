@@ -1,0 +1,55 @@
+From 89db3935221405c689ba807bac45dca12c1204f8 Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Mon, 20 Dec 2021 09:40:02 +0800
+Subject: [PATCH] policy/modules: enable sysadm watch journal files
+
+Change-Id: I74063db39f671468e460d55d4315a6e916b01855
+---
+ policy/modules/roles/sysadm.te   |  1 +
+ policy/modules/system/systemd.if | 18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/policy/modules/roles/sysadm.te b/policy/modules/roles/sysadm.te
+index ba006eb26..9c55dd77c 100644
+--- a/policy/modules/roles/sysadm.te
++++ b/policy/modules/roles/sysadm.te
+@@ -65,6 +65,7 @@ allow sysadm_t self:system reload;
+ init_pgm_entrypoint(sysadm_t)
+ init_rw_inherited_stream_socket(sysadm_t)
+ kernel_use_fds(sysadm_t)
++systemd_watch_journal_files(sysadm_t)
+ 
+ # Add/remove user home directories
+ userdom_manage_user_home_dirs(sysadm_t)
+diff --git a/policy/modules/system/systemd.if b/policy/modules/system/systemd.if
+index e93257ce2..5dbd5999f 100644
+--- a/policy/modules/system/systemd.if
++++ b/policy/modules/system/systemd.if
+@@ -639,6 +639,24 @@ interface(`systemd_relabelto_journal_files',`
+ 	allow $1 systemd_journal_t:file relabelto_file_perms;
+ ')
+ 
++########################################
++## <summary>
++##      Allow domain to watch systemd_journal_t files
++## </summary>
++## <param name="domain">
++##      <summary>
++##      Domain allowed access.
++##      </summary>
++## </param>
++#
++interface(`systemd_watch_journal_files',`
++	gen_require(`
++		type systemd_journal_t;
++	')
++
++	allow $1 systemd_journal_t:dir watch;
++')
++
+ ########################################
+ ## <summary>
+ ##	Allow domain to read systemd_networkd_t unit files
+-- 
+2.29.0
+
