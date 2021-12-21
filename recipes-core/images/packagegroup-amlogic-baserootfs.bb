@@ -32,6 +32,8 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     e2fsprogs-e2fsck \
     e2fsprogs-mke2fs \
     e2fsprogs-tune2fs \
+    fuse-exfat \
+    exfat-utils \
     glib-2.0 \
     gnutls \
     jansson \
