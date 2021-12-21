@@ -34,6 +34,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     e2fsprogs-tune2fs \
     fuse-exfat \
     exfat-utils \
+    ntfs-3g \
     glib-2.0 \
     gnutls \
     jansson \
