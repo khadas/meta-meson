@@ -105,6 +105,16 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         dvalin-dmaexport \
         fbscripts \
         ', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'qt5', \
+        'qtbase \
+        qtwebkit \
+        qtwayland \
+        qtquickcontrols2 \
+        qtdeclarative \
+        qtxmlpatterns \
+        fontconfig \
+        openssl \
+        ', '', d)} \
     pulseaudio \
     ffmpeg \
     libopus \
