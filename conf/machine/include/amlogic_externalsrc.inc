@@ -45,6 +45,7 @@ EXTERNALSRC_pn-aml-youtubesign-bin = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia
 EXTERNALSRC_pn-aml-mediadrm-cleartvp-bin = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/')) else ''}"
 EXTERNALSRC_pn-gst-plugin-aml-asink = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-asink' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-asink')) else ''}"
 EXTERNALSRC_pn-gst-plugin-aml-vsink = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-vsink' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-vsink')) else ''}"
+EXTERNALSRC_pn-gst-plugin-video-sink = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-video-sink' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-video-sink')) else ''}"
 EXTERNALSRC_pn-gst-plugin-aml-picsink = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-picsink' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-picsink')) else ''}"
 EXTERNALSRC_pn-gst-aml-drm-plugins = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-aml-drm-plugins1/gst-aml-drm-plugins-1.0' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-aml-drm-plugins1/gst-aml-drm-plugins-1.0')) else ''}"
 EXTERNALSRC_pn-dvalin = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/arm/gpu' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/arm/gpu')) else ''}"
