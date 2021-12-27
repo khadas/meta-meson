@@ -30,26 +30,26 @@ SOC_BOARD_ah232 = "ah232"
 
 PR = "r3"
 
-S= "${WORKDIR}/git"
+S= "${WORKDIR}/git/aml-img-packer"
 
 do_install () {
     install -d ${D}${bindir}/aml-img-packer/
     install -d ${D}${bindir}/aml-img-packer/${SOC_FAMILY}/logo_img_files
-    install -m 0755 ${S}/aml-image-packer/aml_image_v2_packer_new ${D}${bindir}/aml-img-packer/
-    install -m 0644 ${S}/aml-image-packer/aml_sdc_burn.ini ${D}${bindir}/aml-img-packer/
-    install -m 0755 ${S}/aml-image-packer/img2simg ${D}${bindir}/aml-img-packer/
-    install -m 0755 ${S}/aml-image-packer/ext2simg ${D}${bindir}/aml-img-packer/
-    install -m 0755 ${S}/aml-image-packer/res_packer ${D}${bindir}/aml-img-packer/
-    cd ${S}/aml-image-packer/${SOC_FAMILY}
+    install -m 0755 ${S}/aml_image_v2_packer_new ${D}${bindir}/aml-img-packer/
+    install -m 0644 ${S}/aml_sdc_burn.ini ${D}${bindir}/aml-img-packer/
+    install -m 0755 ${S}/img2simg ${D}${bindir}/aml-img-packer/
+    install -m 0755 ${S}/ext2simg ${D}${bindir}/aml-img-packer/
+    install -m 0755 ${S}/res_packer ${D}${bindir}/aml-img-packer/
+    cd ${S}/${SOC_FAMILY}
     for file in $(find -maxdepth 1 -type f); do
             install -m 0644 -D ${file} ${D}${bindir}/aml-img-packer/${SOC_FAMILY}/${file}
         done
-    cd ${S}/aml-image-packer/${SOC_FAMILY}/logo_img_files
+    cd ${S}/${SOC_FAMILY}/logo_img_files
     for file in $(find -maxdepth 1 -type f); do
             install -m 0644 -D ${file} ${D}${bindir}/aml-img-packer/${SOC_FAMILY}/logo_img_files/${file}
     done
-    if [ -e ${S}/aml-image-packer/${SOC_FAMILY}/logo_img_files/${SOC_BOARD}/bootup.bmp ] ; then
-        install -m 0644 -D ${S}/aml-image-packer/${SOC_FAMILY}/logo_img_files/${SOC_BOARD}/bootup.bmp ${D}${bindir}/aml-img-packer/${SOC_FAMILY}/logo_img_files/bootup.bmp
+    if [ -e ${S}/${SOC_FAMILY}/logo_img_files/${SOC_BOARD}/bootup.bmp ] ; then
+        install -m 0644 -D ${S}/${SOC_FAMILY}/logo_img_files/${SOC_BOARD}/bootup.bmp ${D}${bindir}/aml-img-packer/${SOC_FAMILY}/logo_img_files/bootup.bmp
     fi
 }
 FILES_${PN} = "${bindir}/aml-img-packer/*"

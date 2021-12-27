@@ -8,18 +8,18 @@ DEPENDS += "zlib"
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/git/ubootenv"
 B = "${WORKDIR}/build"
 
 do_compile(){
-    ${MAKE} -C ${S}/ubootenv all OUT_DIR=${B}
+    ${MAKE} -C ${S} all OUT_DIR=${B}
 }
 
 do_install() {
     install -d ${D}${includedir}
     install -d ${D}${libdir}
     install -d ${D}${bindir}
-    install -m 0644 ${S}/ubootenv/ubootenv.h ${D}${includedir}
+    install -m 0644 ${S}/ubootenv.h ${D}${includedir}
     install -m 0644 ${B}/libubootenv.a ${D}${libdir}
     install -m 0755 ${B}/uenv ${D}${bindir}
 }

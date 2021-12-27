@@ -7,7 +7,7 @@ S = "${WORKDIR}"
 inherit pkgconfig
 
 DEPENDS := "zlib openssl"
-RDEPENDS_${PN} += "usb-monitor "
+RDEPENDS_${PN} += "aml-utils-usb-monitor "
 
 #FILESEXTRAPATHS_prepend := "${WORKDIR}/debian/patches:"
 

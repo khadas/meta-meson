@@ -16,14 +16,14 @@ SOC_FAMILY_sc2 = "sc2"
 
 PR = "r1"
 
-S= "${WORKDIR}/git"
+S= "${WORKDIR}/git/aml-swupdate"
 
 do_install () {
 	install -d ${D}${bindir}/aml-swupdate/
-	install -m 0644 ${S}/aml-swupdate/swupdate-priv.pem ${D}${bindir}/aml-swupdate/
-	install -m 0755 ${S}/aml-swupdate/update.sh ${D}${bindir}/aml-swupdate/
-	install -m 0755 ${S}/aml-swupdate/sw_package_create.sh ${D}${bindir}/aml-swupdate/
-	cd ${S}/aml-swupdate/${SOC_FAMILY}
+	install -m 0644 ${S}/swupdate-priv.pem ${D}${bindir}/aml-swupdate/
+	install -m 0755 ${S}/update.sh ${D}${bindir}/aml-swupdate/
+	install -m 0755 ${S}/sw_package_create.sh ${D}${bindir}/aml-swupdate/
+	cd ${S}/${SOC_FAMILY}
 	for file in $(find -maxdepth 1 -type f); do
 		install -m 0644 -D ${file} ${D}${bindir}/aml-swupdate/${SOC_FAMILY}/${file}
 	done

@@ -7,13 +7,13 @@ LICENSE = "CLOSED"
 SRCREV = "${AUTOREV}"
 PV = "${SRCPV}"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/git/rtk_hciattach"
 
 do_compile(){
-    ${MAKE} -C ${S}/rtk_hciattach CC='${CC}'
+    ${MAKE} -C ${S} CC='${CC}'
 }
 
 do_install() {
     install -d ${D}${bindir}
-    install -m 0755 ${S}/rtk_hciattach/rtk_hciattach ${D}${bindir}
+    install -m 0755 ${S}/rtk_hciattach ${D}${bindir}
 }

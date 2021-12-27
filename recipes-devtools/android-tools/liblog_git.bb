@@ -17,20 +17,20 @@ SRC_URI += "file://LICENSE-2.0"
 #For common patches
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
 
-S = "${WORKDIR}/git/"
+S = "${WORKDIR}/git/liblog"
 
 #do_package_qa[noexec] = "1"
 
 do_compile(){
-    ${MAKE} -C ${S}/liblog
+    ${MAKE} -C ${S}
 }
 
 do_install(){
     install -d ${D}${libdir}
     install -d ${D}${includedir}
-    install -m 0644 ${S}/liblog/liblog.so ${D}${libdir}
-    #install -m 0644 ${S}/liblog/lib/* ${D}${libdir}
-    cp -ra ${S}/liblog/include/* ${D}${includedir}
+    install -m 0644 ${S}/liblog.so ${D}${libdir}
+    #install -m 0644 ${S}/lib/* ${D}${libdir}
+    cp -ra ${S}/include/* ${D}${includedir}
 }
 
 FILES_${PN} = "${libdir}/* ${bindir}/*"

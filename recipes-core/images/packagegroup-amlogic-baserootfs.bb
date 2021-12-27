@@ -69,7 +69,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     aml-mp-sdk \
     aml-pqserver \
     aml-ubootenv \
-    simulate-key \
+    aml-utils-simulate-key \
     vulkan-loader \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'vmx-sdk-rel', '', d)} \

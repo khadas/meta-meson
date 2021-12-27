@@ -8,17 +8,17 @@ DEPENDS += "zlib"
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-S = "${WORKDIR}/git"
+S = "${WORKDIR}/git/bootloader_message"
 
 do_compile(){
-    ${MAKE} -C ${S}/bootloader_message all
+    ${MAKE} -C ${S} all
 }
 
 do_install() {
     install -d ${D}${libdir}
     install -d ${D}${bindir}
-    install -m 0644 ${S}/bootloader_message/libbootloader_message.a ${D}${libdir}
-    install -m 0755 ${S}/bootloader_message/urlmisc ${D}${bindir}
+    install -m 0644 ${S}/libbootloader_message.a ${D}${libdir}
+    install -m 0755 ${S}/urlmisc ${D}${bindir}
 }
 
 FILES_${PN} = "${libdir}/* ${bindir}/*"
