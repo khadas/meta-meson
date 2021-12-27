@@ -74,8 +74,8 @@ DEPENDS_append = "gcc-linaro-aarch64-elf-native "
 DEPENDS_append = "optee-scripts-native optee-userspace-securebl32"
 DEPENDS_append = " riscv-none-gcc-native "
 
-DEPENDS_append = " coreutils-native python-native python-pycrypto-native "
-inherit pythonnative
+DEPENDS_append = " coreutils-native python3-native python3-pycryptodomex-native "
+inherit python3native
 export BL30_ARG = ""
 export BL2_ARG = ""
 
@@ -83,7 +83,7 @@ do_compile () {
     cd ${S}
     cp -f fip/mk .
     export BUILD_FOLDER=${S}/build/
-    export PYTHONPATH="${STAGING_DIR_NATIVE}/usr/lib/python2.7/site-packages/"
+    export PYTHONPATH="${STAGING_DIR_NATIVE}/usr/lib/python3.8/site-packages/"
     export CROSS_COMPILE=aarch64-elf-
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
