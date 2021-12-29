@@ -53,6 +53,7 @@ EXTERNALSRC_pn-dvalin-dmaexport = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-
 EXTERNALSRC_pn-meson-display = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/meson_display/display_framework' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/meson_display/display_framework')) else ''}"
 EXTERNALSRC_pn-libdrm-meson = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/libdrm_amlogic/meson' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/libdrm_amlogic')) else ''}"
 EXTERNALSRC_pn-libgles-eabihf-dvalin-wayland-drm = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/meson_mali' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/meson_mali')) else ''}"
+EXTERNALSRC_pn-libgles-eabihf-gondul-wayland-drm = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/meson_mali' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/meson_mali')) else ''}"
 EXTERNALSRC_pn-linux-meson = "${@'${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/kernel/aml-5.4')) else ''}"
 EXTERNALSRC_pn-u-boot = "${@'${MESON_ROOT_PATH}/aml-comp/uboot' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/uboot')) else ''}"
 EXTERNALSRC_pn-media-modules = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/media_modules' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/media_modules')) else ''}"
