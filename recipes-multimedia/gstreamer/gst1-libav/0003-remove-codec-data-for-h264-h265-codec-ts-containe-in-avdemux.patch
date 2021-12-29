@@ -1,0 +1,46 @@
+From 14b1a28fb4c6fc3d2b4465e73e8f57c992b4f969 Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Wed, 29 Dec 2021 17:18:27 +0800
+Subject: [PATCH] gstreamer1.0-libav: remove codec_data for ts container  [1/1]
+
+PD#SWPL-65563
+
+Problem:
+Ffmpeg will create extra_data for h265 codec
+The extra_data only contains the vps sps pps nalu and no header data
+Like hvcc atom
+H265parser will parse the extra_data like hvcc atom and got wrong
+Because this extra_data created by ffmpeg only contains the vps sps pps
+nalu
+
+Solution:
+remove codec_data for ts container, h264 and h265 codec
+
+Verify:
+AP222
+---
+ ext/libav/gstavdemux.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+index 7b27b29..0edc5e2 100644
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -964,6 +964,14 @@ gst_ffmpegdemux_get_stream (GstFFMpegDemux * demux, AVStream * avstream)
+   caps = gst_ffmpeg_codecid_to_caps (ctx->codec_id, ctx, TRUE);
+   if (caps == NULL)
+     goto unknown_caps;
++  else if (!strcmp(demux->context->iformat->name, "mpegts")
++       && (AV_CODEC_ID_H264 == ctx->codec_id || AV_CODEC_ID_HEVC == ctx->codec_id))
++      {
++        GstStructure *structure;
++        structure =  gst_caps_get_structure (caps, 0);
++        gst_structure_remove_field (structure, "codec_data");
++        GST_DEBUG_OBJECT (demux, "After remove codec_data, caps %" GST_PTR_FORMAT, caps);
++      }
+ 
+   /* stream is known now */
+   stream->unknown = FALSE;
+-- 
+2.32.0
+
