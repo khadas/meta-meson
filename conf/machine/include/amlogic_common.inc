@@ -105,3 +105,6 @@ KERNEL_MODULE_AUTOLOAD += "gpio_keypad adc_keypad reg_access"
 
 # set bootup splash
 SPLASH ?= "psplash"
+
+#wpeframework system uer mode
+DISTRO_FEATURES_append = " system-user"
