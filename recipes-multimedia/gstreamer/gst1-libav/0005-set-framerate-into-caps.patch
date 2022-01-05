@@ -1,0 +1,32 @@
+diff --git a/ext/libav/gstavcodecmap.c b/ext/libav/gstavcodecmap.c
+old mode 100644
+new mode 100755
+index f011c71..732f0c4
+--- a/ext/libav/gstavcodecmap.c
++++ b/ext/libav/gstavcodecmap.c
+@@ -284,8 +284,8 @@ gst_ff_vid_caps_new (AVCodecContext * context, AVCodec * codec,
+         "width", G_TYPE_INT, context->width,
+         "height", G_TYPE_INT, context->height, NULL);
+ 
+-    num = context->time_base.den / context->ticks_per_frame;
+-    denom = context->time_base.num;
++    num = context->framerate.num;
++    denom = context->framerate.den;
+ 
+     if (!denom) {
+       GST_LOG ("invalid framerate: %d/0, -> %d/1", num, num);
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+old mode 100644
+new mode 100755
+index f3cc93b..e45925c
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -951,6 +951,8 @@ gst_ffmpegdemux_get_stream (GstFFMpegDemux * demux, AVStream * avstream)
+     case AVMEDIA_TYPE_VIDEO:
+       templ = oclass->videosrctempl;
+       num = demux->videopads++;
++      ctx->framerate.num = avstream->r_frame_rate.num;
++      ctx->framerate.den = avstream->r_frame_rate.den;
+       break;
+     case AVMEDIA_TYPE_AUDIO:
+       templ = oclass->audiosrctempl;
