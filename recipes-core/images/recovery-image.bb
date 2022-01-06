@@ -13,6 +13,9 @@ IMAGE_INSTALL = "udev busybox"
 IMAGE_INSTALL_append = "\
                     initramfs-recovery \
                     e2fsprogs \
+                    fuse-exfat \
+                    exfat-utils \
+                    ntfs-3g \
                     systemd \
                    "
 
