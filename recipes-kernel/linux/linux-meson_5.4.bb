@@ -48,19 +48,12 @@ KERNEL_IMAGETYPE = "Image"
 KCONFIG_MODE = "alldefconfig"
 
 S = "${WORKDIR}/git"
-KBUILD_DEFCONFIG_t7 = "meson64_a64_P_defconfig"
+KBUILD_DEFCONFIG = "meson64_a64_R_defconfig"
 KBUILD_DEFCONFIG_p1 = "meson64_a64_P_defconfig"
-KBUILD_DEFCONFIG_sc2 = "meson64_a64_R_defconfig"
-KBUILD_DEFCONFIG_tm2 = "meson64_a64_R_defconfig"
-KBUILD_DEFCONFIG_t5d = "meson64_a64_R_defconfig"
-KBUILD_DEFCONFIG_t5w = "meson64_a64_R_defconfig"
-KBUILD_DEFCONFIG_t3 = "meson64_a64_R_defconfig"
-KBUILD_DEFCONFIG_s4 = "meson64_a64_R_defconfig"
 KBUILD_DEFCONFIG_kernel32 = "meson64_a32_defconfig"
 
 GKI_DEFCONFIG = "meson64_gki_module_config"
-#T7 did not use GKI yet.
-GKI_DEFCONFIG_t7 = ""
+#p1 did not use GKI yet.
 GKI_DEFCONFIG_p1 = ""
 #Force NO GKI for 32bit kernel
 GKI_DEFCONFIG_kernel32 = ""
