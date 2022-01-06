@@ -1,0 +1,62 @@
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index a425ae4..7351531 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -114,6 +114,8 @@ struct dma_buf_export_sync_file {
+ #define FRAME_PREV (1)
+ #define FRAME_FREE (2)
+ static struct weston_buffer* video_buffer_release[FRAMES_RELEASE];
++static bool release_cur = false;
++static bool release_pre = false;
+ static int video_fence( struct weston_buffer *buffer);
+ static void buffer_send_release(struct weston_buffer_reference *ref);
+ static bool is_video_buffer(struct weston_buffer *buffer);
+@@ -2233,6 +2235,8 @@ weston_surface_destroy(struct weston_surface *surface)
+         video_buffer_release[FRAME_FREE]=NULL;
+         video_buffer_release[FRAME_PREV]=NULL;
+         video_buffer_release[FRAME_CURR]=NULL;
++        release_cur = false;
++        release_pre = false;
+     }
+ 	free(surface);
+ }
+@@ -2402,26 +2406,34 @@ static void buffer_send_release(struct weston_buffer_reference *ref)
+         video_buffer_release[FRAME_FREE] = video_buffer_release[FRAME_PREV];
+         video_buffer_release[FRAME_PREV] = video_buffer_release[FRAME_CURR];
+         video_buffer_release[FRAME_CURR] = ref->buffer;
+-
+-        if(video_buffer_release[FRAME_FREE]!=NULL)
++        if(video_buffer_release[FRAME_FREE]!=NULL && release_pre == false )
+         {
+             //no matter get fence or not,send release anyway
+             wl_buffer_send_release(video_buffer_release[FRAME_FREE]->resource);
+         }
+-        if(video_buffer_release[FRAME_PREV]!=NULL) {
++        if(video_buffer_release[FRAME_PREV]!=NULL && release_cur == true) {
++            release_pre = true;
++        }
++        if(video_buffer_release[FRAME_PREV]!=NULL && release_cur == false) {
+             fence_rc = video_fence(video_buffer_release[FRAME_PREV]);
+             if(fence_rc ==1) {
+                 wl_buffer_send_release(video_buffer_release[FRAME_PREV]->resource);
++                release_pre = true;
++            } else {
++                release_pre = false;
+             }
+         }
+         if(video_buffer_release[FRAME_CURR]!=NULL) {
+-            fence_rc = -1;      
++            fence_rc = -1;
+             fence_rc = video_fence(video_buffer_release[FRAME_CURR]);
+             if(fence_rc ==1) {
+                 wl_buffer_send_release(video_buffer_release[FRAME_CURR]->resource);
++                release_cur = true;
++            } else {
++                release_cur = false;
+             }
+         }
+-    } 
++    }
+ }
+ static void
+ weston_buffer_release_reference_handle_destroy(struct wl_listener *listener,
