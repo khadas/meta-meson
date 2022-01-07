@@ -94,6 +94,7 @@ EXTERNALSRC_pn-aml-hdcp = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp' 
 EXTERNALSRC_pn-aucpu-fw = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aucpu_fw' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aucpu_fw')) else ''}"
 EXTERNALSRC_pn-wfd-hdcp = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/libwfd_hdcp-bin' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/libwfd_hdcp-bin')) else ''}"
 EXTERNALSRC_pn-drmplayer-bin = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/drmplayer-bin/prebuilt' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/drmplayer-bin/prebuilt')) else ''}"
+EXTERNALSRC_pn-iptv-middlewave-bin = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/iptv-middlewave-bin/prebuilt' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/iptv-middlewave-bin/prebuilt')) else ''}"
 EXTERNALSRC_pn-aml-netflix-esn = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm')) else ''}"
 EXTERNALSRC_pn-netflix-aml = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/netflix' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/netflix')) else ''}"
 EXTERNALSRC_pn-netflix-prebuilt-dep = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/netflix' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/netflix')) else ''}"
