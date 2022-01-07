@@ -151,3 +151,5 @@ EXTERNALSRC_pn-aml-launcher = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlog
 EXTERNALSRC_pn-youtube-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/thunder-services/Cobalt' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/thunder-services/Cobalt')) else ''}"
 EXTERNALSRC_pn-amazon-prime-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/amazon-plugin' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/amazon-plugin')) else ''}"
 EXTERNALSRC_pn-arka = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/arka' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/arka')) else ''}"
+EXTERNALSRC_pn-aml-iptv-firmware = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_iptv_firmware' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_iptv_firmware')) else ''}"
+EXTERNALSRC_pn-ffmpeg-ctc = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg_ctc' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg_ctc')) else ''}"

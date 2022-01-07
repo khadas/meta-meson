@@ -71,6 +71,7 @@ IMAGE_INSTALL += " \
     aml-audio-hal \
     aml-mp-sdk \
     dtvkit-release-prebuilt \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-iptv', 'aml-iptv-firmware ffmpeg-ctc', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace tee-supplicant optee-video-firmware aml-provision', '', d)} \
