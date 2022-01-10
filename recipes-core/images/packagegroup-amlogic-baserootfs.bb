@@ -144,6 +144,8 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'aml-launcher libhtmllocal htmllocal-plugin', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
         'device-properties', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
+        'aml-dial', '', d)} \
     tzdata \
     tzcode \
     "

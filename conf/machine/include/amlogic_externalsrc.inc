@@ -102,6 +102,7 @@ EXTERNALSRC_pn-wpeframework-plugin-netflix = "${@'${MESON_ROOT_PATH}/aml-comp/th
 EXTERNALSRC_pn-wpeframework-plugin-amltts = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/wpe-plugin-tts' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/wpe-plugin-tts')) else ''}"
 EXTERNALSRC_pn-devicesettings-hal = "${@['', '${MESON_ROOT_PATH}/aml-comp/thirdparty/Devicesettings-hal'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/Devicesettings-hal')]}"
 EXTERNALSRC_pn-thunder-services = "${@['', '${MESON_ROOT_PATH}/aml-comp/thirdparty/thunder-services'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/thunder-services')]}"
+EXTERNALSRC_pn-aml-dial = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dialserver'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dialserver')]}"
 EXTERNALSRC_pn-secpu-fw-loader = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/secpu_fw_loader'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/secpu_fw_loader')]}"
 EXTERNALSRC_pn-libmultienc = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/multiEnc' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/multiEnc')) else ''}"
 EXTERNALSRC_pn-libge2d = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libge2d' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libge2d/')) else ''}"
