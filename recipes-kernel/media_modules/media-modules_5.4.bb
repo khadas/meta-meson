@@ -100,8 +100,8 @@ KERNEL_MODULE_AUTOLOAD += "amvdec_ports"
 #KERNEL_MODULE_AUTOLOAD += "vpu"
 KERNEL_MODULE_AUTOLOAD += "encoder"
 
-KERNEL_MODULE_AUTOLOAD_append_t3 = "jpegenc amvenc_multi"
-KERNEL_MODULE_AUTOLOAD_append_t7 = "jpegenc amvenc_multi"
+KERNEL_MODULE_AUTOLOAD_append_t3 = " jpegenc amvenc_multi"
+KERNEL_MODULE_AUTOLOAD_append_t7 = " jpegenc amvenc_multi"
 
 KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
 module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"
