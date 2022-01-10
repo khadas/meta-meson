@@ -114,3 +114,4 @@ EXTERNALSRC_pn-libvpcodec = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/am
 EXTERNALSRC_pn-libvphevcodec = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/h265' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/h265')) else ''}"
 EXTERNALSRC_pn-libjpeg = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/jpeg' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/jpeg')) else ''}"
 EXTERNALSRC_pn-mfrlib-amlogic = "${@['', '${MESON_ROOT_PATH}/aml-comp/thirdparty/Mfrlib'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/Mfrlib')]}"
+EXTERNALSRC_pn-aml-platformserver = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_platformserver'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_platformserver')]}"
