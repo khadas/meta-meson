@@ -98,6 +98,18 @@ EOF
 FILES_${PN}_append_t3 = " /vendor/* /factory/* "
 dirs755_append_t3 = " /vendor /factory "
 
+#/*-----------------------T7----------------------------------*/
+do_install_append_t7 () {
+    mkdir -p ${D}/vendor
+    mkdir -p ${D}/factory
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/vendor            /vendor                    auto       defaults              0  0
+ /dev/factory           /factory                   auto       defaults              0  0
+EOF
+}
+FILES_${PN}_append_t7 = " /vendor/* /factory/* "
+dirs755_append_t7 = " /vendor /factory "
+
 #/*-----------------------p1 pxp--------------------------------------*/
 do_install_append_p1 () {
     mkdir -p ${D}/vendor

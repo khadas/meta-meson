@@ -23,7 +23,6 @@ MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
 
 KERNEL_DEVICETREE = "t5w_t962d4_at301_linux.dtb"
 UBOOT_MACHINE = "t5w_at301_v1"
-SERIAL_CONSOLES = "115200;ttyS0"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-dummy_codec"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-aml_t9015"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-aml_codec_tl1_acodec"
