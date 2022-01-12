@@ -5,6 +5,8 @@ After=tee-supplicant.service
 [Service]
 User=root
 Environment="AUDIO_SERVER_SOCKET=unix:///run/audio_socket"
+#the bigger the value, the less log output, default is zero
+Environment="AML_AVSYNC_DEBUG_LEVEL=2"
 #vendor-image.bb will take action 'mkdir -p /vendor/lib; ln -sf /tmp/ds/0x4d_0x5331_0x32.so /vendor/lib/libdolbyms12.so'
 ExecStartPre=-/bin/bash -c "mkdir -p /tmp/ds;touch /tmp/dms12.lock; /usr/bin/dolby_fw_dms12 /usr/lib/libdolbyms12.so /tmp/ds/0x4d_0x5331_0x32.so"
 ExecStart=/usr/bin/audio_server
