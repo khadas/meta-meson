@@ -221,15 +221,15 @@ Blue_start()
 			break
 		fi
 	done
-	
+
 	if [ $cnt -eq 0 ];then
 		echo "hci0 bring up failed!!!"
 		exit 0
 	fi
-	
-        hci0_rfkill
-        
-	grep -Insr "debug=1" $configure_file > /dev/null
+
+	hci0_rfkill
+
+	grep -iq "debug=1" $configure_file > /dev/null
 	if [ $? -eq 0 ]; then
 		hcidump -w /etc/bluetooth/btsnoop.cfa &
 	fi
