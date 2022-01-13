@@ -9,7 +9,7 @@ PREFERRED_PROVIDER_virtual/libgl = "libgles-eabihf-dvalin-wayland-drm"
 PREFERRED_PROVIDER_virtual/libgles1 = "libgles-eabihf-dvalin-wayland-drm"
 PREFERRED_PROVIDER_virtual/libgles2 = "libgles-eabihf-dvalin-wayland-drm"
 
-MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
+MACHINE_EXTRA_RRECOMMENDS += " \
         rtk8822cu \
         realtek-btusb \
         realtek-btuart \
