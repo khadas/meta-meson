@@ -14,6 +14,7 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
            file://0007-cursor-hide-cursor-be-for-have-point-motion-after-we.patch \
            file://0017-8.0.0-add-video-fence.patch \
 		   file://0018-avoid_buffer_release_twice.patch \
+           file://0006-8.0.0-video-plane-src-axis-should-match-the-real.patch \
 		   "
 
 SRC_URI[md5sum] = "53e4810d852df0601d01fd986a5b22b3"

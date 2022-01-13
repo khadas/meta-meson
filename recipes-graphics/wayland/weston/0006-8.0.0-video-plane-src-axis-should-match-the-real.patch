@@ -1,0 +1,58 @@
+From 51b1bc033b8c1d9b63792bc83c130ee2cb90b95b Mon Sep 17 00:00:00 2001
+From: Ao Xu <ao.xu@amlogic.com>
+Date: Mon, 30 Aug 2021 15:44:20 +0800
+Subject: [PATCH] backend-drm: video plane src axis should match the real axis
+
+---
+ libweston/backend-drm/drm-internal.h  | 2 ++
+ libweston/backend-drm/kms.c           | 4 ++++
+ libweston/backend-drm/state-helpers.c | 5 ++++-
+ 3 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
+index 9ff6d2b..74da27d 100644
+--- a/libweston/backend-drm/drm-internal.h
++++ b/libweston/backend-drm/drm-internal.h
+@@ -458,6 +458,8 @@ struct drm_plane {
+ 
+ 	struct wl_list link;
+ 
++	bool is_video_plane;
++
+ 	struct {
+ 		uint32_t format;
+ 		uint32_t count_modifiers;
+diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
+index 192435c..9067c2d 100644
+--- a/libweston/backend-drm/kms.c
++++ b/libweston/backend-drm/kms.c
+@@ -484,6 +484,10 @@ drm_plane_populate_formats(struct drm_plane *plane, const drmModePlane *kplane,
+ 		plane->formats[i].format = blob_formats[i];
+ 		plane->formats[i].modifiers = modifiers;
+ 		plane->formats[i].count_modifiers = count_modifiers;
++
++		if (plane->formats[i].format == DRM_FORMAT_NV12 ||
++		    plane->formats[i].format == DRM_FORMAT_NV21)
++			plane->is_video_plane = true;
+ 	}
+ 
+ 	drmModeFreePropertyBlob(blob);
+diff --git a/libweston/backend-drm/state-helpers.c b/libweston/backend-drm/state-helpers.c
+index c8fac79..3f31171 100644
+--- a/libweston/backend-drm/state-helpers.c
++++ b/libweston/backend-drm/state-helpers.c
+@@ -223,7 +223,10 @@ drm_plane_state_coords_for_view(struct drm_plane_state *state,
+ 	/* Now calculate the source rectangle, by finding the extents of the
+ 	 * view, and working backwards to source co-ordinates. */
+ 	pixman_region32_init(&src_rect);
+-	pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
++	if (state->plane->is_video_plane)
++		src_rect = ev->transform.boundingbox;
++	else
++		pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
+ 				  &output->base.region);
+ 	box = pixman_region32_extents(&src_rect);
+ 	weston_view_from_global_float(ev, box->x1, box->y1, &sxf1, &syf1);
+-- 
+2.28.0
+
