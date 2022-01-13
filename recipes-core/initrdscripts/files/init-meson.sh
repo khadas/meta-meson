@@ -41,7 +41,6 @@ early_setup() {
 
     mkdir -p /run
     mkdir -p /var/run
-    mkdir -p /opt
 
     $_UDEV_DAEMON --daemon
     udevadm trigger --action=add

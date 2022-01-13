@@ -25,8 +25,8 @@ chmod -R g+rw /run/wpa_supplicant/
 
 chgrp $GROUP_SESSION /dev/shm/AudioServiceShmem
 chmod g+rw /dev/shm/AudioServiceShmem
-chgrp $GROUP_SESSION /opt/audio_socket
-chmod g+rw /opt/audio_socket
+chgrp $GROUP_SESSION /run/audio_socket
+chmod g+rw /run/audio_socket
 
 chgrp -R $GROUP_SYSTEM /dev/v4l/
 chmod -R g+rw /dev/v4l/
