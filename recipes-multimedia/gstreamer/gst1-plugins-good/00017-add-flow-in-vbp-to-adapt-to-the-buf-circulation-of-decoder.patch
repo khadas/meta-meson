@@ -1,0 +1,181 @@
+diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
+index a50cb26..7620e52 100644
+--- a/sys/v4l2/gstv4l2bufferpool.c
++++ b/sys/v4l2/gstv4l2bufferpool.c
+@@ -69,6 +69,10 @@ enum _GstV4l2BufferPoolAcquireFlags
+ static void gst_v4l2_buffer_pool_release_buffer (GstBufferPool * bpool,
+     GstBuffer * buffer);
+ 
++#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++static gboolean gst_v4l2_buffer_pool_release_buffer_aml_patch (GstBufferPool * bpool);
++#endif
++
+ static gboolean
+ gst_v4l2_is_buffer_valid (GstBuffer * buffer, GstV4l2MemoryGroup ** out_group)
+ {
+@@ -727,6 +731,9 @@ gst_v4l2_buffer_pool_streamoff (GstV4l2BufferPool * pool)
+ 
+       g_atomic_int_add (&pool->num_queued, -1);
+     }
++#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++    pool->read_to_free_bufs[i] = NULL;
++#endif
+   }
+ }
+ 
+@@ -1089,6 +1096,9 @@ gst_v4l2_buffer_pool_poll (GstV4l2BufferPool * pool, gboolean wait)
+ 
+ again:
+   ret = gst_poll_wait (pool->poll, timeout);
++#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++  GST_DEBUG_OBJECT (pool, "amlmodbuf poll timeout:%lld, ret:%d, errno:%d", timeout, ret, errno);
++#endif
+   if (G_UNLIKELY (ret < 0)) {
+     switch (errno) {
+       case EBUSY:
+@@ -1111,7 +1121,19 @@ again:
+     goto select_error;
+ 
+   if (ret == 0)
+-    goto no_buffers;
++  {
++#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++    if((pool->obj->type == V4L2_BUF_TYPE_VIDEO_CAPTURE || pool->obj->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) &&
++       pool->obj->mode == GST_V4L2_IO_DMABUF_IMPORT)
++    {
++        GST_DEBUG_OBJECT (pool, "amlmodbuf can't get buffer in capture obj dmaimport mode, try release buf from other pool");
++        gst_v4l2_buffer_pool_release_buffer_aml_patch((GstBufferPool *)pool);
++        goto again;
++    }
++    else
++#endif
++        goto no_buffers;
++  }
+ 
+ done:
+   return GST_FLOW_OK;
+@@ -1455,10 +1477,16 @@ gst_v4l2_buffer_pool_acquire_buffer (GstBufferPool * bpool, GstBuffer ** buffer,
+         case GST_V4L2_IO_USERPTR:
+         case GST_V4L2_IO_DMABUF_IMPORT:
+         {
++#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++          GST_DEBUG_OBJECT (pool, "amlmodbuf return free buf before acquire buf");
++          gst_v4l2_buffer_pool_release_buffer_aml_patch(bpool);
++          ret = gst_v4l2_buffer_pool_dequeue (pool, buffer, FALSE);
++#else
+           /* just dequeue a buffer, we basically use the queue of v4l2 as the
+            * storage for our buffers. This function does poll first so we can
+            * interrupt it fine. */
+           ret = gst_v4l2_buffer_pool_dequeue (pool, buffer, TRUE);
++#endif
+           break;
+         }
+         default:
+@@ -1540,6 +1568,16 @@ gst_v4l2_buffer_pool_release_buffer (GstBufferPool * bpool, GstBuffer * buffer)
+             GstFlowReturn ret = GST_FLOW_OK;
+ 
+             gst_v4l2_allocator_reset_group (pool->vallocator, group);
++
++#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++            GST_DEBUG_OBJECT (pool, "amlmodbuf trace in add flow with buf:%p index:%d", buffer, group->buffer.index);
++            pool->read_to_free_bufs[group->buffer.index] = buffer;
++            if(gst_v4l2_buffer_pool_release_buffer_aml_patch(bpool))
++            {
++                GST_DEBUG_OBJECT (pool, "amlmodbuf execute aml code logic, skip the following flow");
++                return;
++            }
++#endif
+             /* queue back in the device */
+             if (pool->other_pool)
+               ret = gst_v4l2_buffer_pool_prepare_buffer (pool, buffer, NULL);
+@@ -1620,6 +1658,67 @@ gst_v4l2_buffer_pool_release_buffer (GstBufferPool * bpool, GstBuffer * buffer)
+   }
+ }
+ 
++#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++static gboolean
++gst_v4l2_buffer_pool_release_buffer_aml_patch (GstBufferPool * bpool)
++{
++    GstFlowReturn ret = GST_FLOW_OK;
++    GstV4l2BufferPool *pool = GST_V4L2_BUFFER_POOL (bpool);
++    GstBufferPoolClass *pclass = GST_BUFFER_POOL_CLASS (parent_class);
++    GstV4l2Object *obj = pool->obj;
++
++    if (obj->mode == GST_V4L2_IO_DMABUF_IMPORT && pool->other_pool)
++    {
++        GstBuffer * src = NULL;
++        GstBufferPoolAcquireParams params;
++
++        memset(&params, 0, sizeof(GstBufferPoolAcquireParams));
++        params.flags = GST_BUFFER_POOL_ACQUIRE_FLAG_DONTWAIT;
++        GST_DEBUG_OBJECT (pool, "amlmodbuf trace in aml release buf flow");
++        while (gst_buffer_pool_acquire_buffer (pool->other_pool, &src, &params) != GST_FLOW_ERROR && src != NULL)
++        {
++            gint i=0;
++
++            GST_DEBUG_OBJECT (pool, "amlmodbuf acquire buf:%p form other pool", src);
++            for (; i < VIDEO_MAX_FRAME; i++)
++            {
++                GST_DEBUG_OBJECT (pool, "amlmodbuf check index:%d", i);
++                if (pool->read_to_free_bufs[i])
++                {
++                    GstFlowReturn isvalid = GST_FLOW_OK;
++                    GstV4l2MemoryGroup *tmp_group = NULL;
++
++                    ret = gst_v4l2_buffer_pool_import_dmabuf (pool, pool->read_to_free_bufs[i], src);
++                    gst_buffer_unref (src);
++                    src = NULL;
++                    isvalid = gst_v4l2_is_buffer_valid (pool->read_to_free_bufs[i], &tmp_group);
++                    if ((ret != GST_FLOW_OK && isvalid) || gst_v4l2_buffer_pool_qbuf (pool, pool->read_to_free_bufs[i], tmp_group) != GST_FLOW_OK)
++                    {
++                        GST_DEBUG_OBJECT (pool, "amlmodbuf go into error flow");
++                        pclass->release_buffer (bpool, pool->read_to_free_bufs[i]);
++                    }
++                    pool->read_to_free_bufs[i] = NULL;
++                    GST_DEBUG_OBJECT (pool, "amlmodbuf queued buf:%d, into v4l2 bp", i);
++                    break;
++                }
++            }
++            if (i == VIDEO_MAX_FRAME)
++            {
++                GST_DEBUG_OBJECT (pool, "amlmodbuf all buf in v4l2 pool has been queued to v4l2, unref drmbp buf:%p", src);
++                gst_buffer_unref (src);
++                src = NULL;
++                // gst_buffer_pool_release_buffer(pool->other_pool, src);
++                return TRUE;
++
++            }
++        }
++        GST_DEBUG_OBJECT (pool, "amlmodbuf can't get free buf in other pool currently,next time release buf will try again");
++        return TRUE;
++    }
++    return FALSE;
++}
++#endif
++
+ static void
+ gst_v4l2_buffer_pool_dispose (GObject * object)
+ {
+diff --git a/sys/v4l2/gstv4l2bufferpool.h b/sys/v4l2/gstv4l2bufferpool.h
+index a48e30d..f5fa8e9 100644
+--- a/sys/v4l2/gstv4l2bufferpool.h
++++ b/sys/v4l2/gstv4l2bufferpool.h
+@@ -55,6 +55,8 @@ G_BEGIN_DECLS
+  * occure for mem-2-mem devices. */
+ #define GST_V4L2_FLOW_SOURCE_CHANGE GST_FLOW_CUSTOM_SUCCESS_2
+ 
++// #define GST_AML_SPEC_FLOW_FOR_VBP 1
++
+ struct _GstV4l2BufferPool
+ {
+   GstBufferPool parent;
+@@ -90,6 +92,9 @@ struct _GstV4l2BufferPool
+   gboolean flushing;
+ 
+   GstBuffer *buffers[VIDEO_MAX_FRAME];
++#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++  GstBuffer *read_to_free_bufs[VIDEO_MAX_FRAME];
++#endif
+ 
+   /* signal handlers */
+   gulong group_released_handler;
