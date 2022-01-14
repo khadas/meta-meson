@@ -1,0 +1,25 @@
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 3d5dd87..76295f2 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -491,6 +491,20 @@ gst_v4l2_object_new (GstElement * element,
+    */
+   v4l2object = g_new0 (GstV4l2Object, 1);
+ 
++  if((V4L2_BUF_TYPE_VIDEO_CAPTURE == type || V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE == type))
++  {
++    const char *default_mode = getenv ("GST_DEFAULT_V4L2_BUF_MODE");
++    GST_DEBUG ("amlmodbuf GST_AML_DEFAULT_V4L2_BUF_MODE:%s", default_mode);
++    if(default_mode)
++    {
++      if (strcmp (default_mode, "DMA_BUF_IMPORT") == 0)
++        v4l2object->req_mode = GST_V4L2_IO_DMABUF_IMPORT;
++      else if(strcmp (default_mode, "DMA_BUF") == 0)
++        v4l2object->req_mode = GST_V4L2_IO_DMABUF; 
++      GST_DEBUG ("amlmodbuf set default buf default_mode:%d", v4l2object->req_mode);
++    }
++  }
++
+   v4l2object->type = type;
+   v4l2object->formats = NULL;
+ 
