@@ -1,7 +1,7 @@
 SUMMARY = "amlogic playready"
 LICENSE = "CLOSED"
-DEPENDS = "optee-userspace bzip2 libxml2 aml-secmem aml-mediahal-sdk"
-RDEPENDS_${PN} = "libbz2"
+DEPENDS = "optee-userspace bzip2 libxml2 aml-secmem aml-mediahal-sdk curl"
+RDEPENDS_${PN} = "libbz2 curl"
 
 FILESEXTRAPATHS_preppend := "${THISDIR}/files/:"
 
@@ -37,6 +37,7 @@ do_install () {
     install -m 0644 ${S}/prebuilt-v4.4/noarch/pkgconfig/playready.pc ${D}${libdir}/pkgconfig
     install -m 0644 ${S}/prebuilt-v4.4/${ARM_TARGET}/libplayready-4.4.so ${D}${libdir}
     install -m 0755 ${S}/prebuilt-v4.4/${ARM_TARGET}/prtest ${D}/usr/bin
+    install -m 0755 ${S}/prebuilt-v4.4/${ARM_TARGET}/pritee_test ${D}/usr/bin
     ln -s libplayready-4.4.so ${D}${libdir}/libplayready.so
     ln -s libplayready-4.4.so ${D}${libdir}/libplayready44pk.so
     ln -s libplayready-4.4.so ${D}${libdir}/libplayready44pritee.so
