@@ -65,6 +65,10 @@ MEDIA_CONFIGS_append_t7 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_MULTI=m \
                  "
+MEDIA_CONFIGS_append_sc2 = "\
+                 CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
+                 "
+
 S = "${WORKDIR}/git"
 EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M="${S}/drivers" EXTRA_CFLAGS="$(cat ${STAGING_KERNEL_DIR}/gki_ext_module_predefine || true)" ${MEDIA_CONFIGS} modules'
 
@@ -102,6 +106,7 @@ KERNEL_MODULE_AUTOLOAD += "encoder"
 
 KERNEL_MODULE_AUTOLOAD_append_t3 = " jpegenc amvenc_multi"
 KERNEL_MODULE_AUTOLOAD_append_t7 = " jpegenc amvenc_multi"
+KERNEL_MODULE_AUTOLOAD_append_sc2 = " jpegenc vpu"
 
 KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
 module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"
