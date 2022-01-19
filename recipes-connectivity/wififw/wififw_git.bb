@@ -22,7 +22,6 @@ PACKAGES =+ "${PN}-ap6181 \
              ${PN}-ap6493 \
              ${PN}-ap6398 \
              ${PN}-ap6330 \
-             ${PN}-ath10k \
              ${PN}-bcm40181 \
              ${PN}-bcm40183 \
              ${PN}-ap62x2 \
@@ -39,8 +38,8 @@ PACKAGES =+ "${PN}-ap6181 \
 
 do_install() {
 	mkdir -p ${D}${sysconfdir}/bluetooth/
-	mkdir -p ${D}${sysconfdir}/wifi/6181/
 #ap6181
+	mkdir -p ${D}${sysconfdir}/wifi/6181/
 	install -D -m 0644 ${S}/bcm_ampak/config/AP6181/Wi-Fi/*.bin ${D}${sysconfdir}/wifi/6181/
 	install -D -m 0644 ${S}/bcm_ampak/config/AP6181/Wi-Fi/nvram_ap6181.txt ${D}${sysconfdir}/wifi/6181/
 #ap6210
@@ -71,12 +70,6 @@ do_install() {
 	mkdir -p ${D}${sysconfdir}/wifi/6256/
 	install -D -m 0644 ${S}/bcm_ampak/config/AP6256/Wi-Fi/*.bin ${D}${sysconfdir}/wifi/6256/
 	install -D -m 0644 ${S}/bcm_ampak/config/AP6256/Wi-Fi/nvram_ap6256.txt ${D}${sysconfdir}/wifi/6256/
-
-#ath10k
-	mkdir -p ${D}/lib/firmware/ath10k/QCA6174/hw3.0/
-	mkdir -p ${D}/lib/firmware/ath10k/QCA9888/hw2.0/
-	install -D -m 0644 ${S}/qcom/config/ath10k/QCA6174/hw3.0/*.bin ${D}/lib/firmware/ath10k/QCA6174/hw3.0/
-	install -D -m 0644 ${S}/qcom/config/ath10k/QCA9888/hw2.0/*.bin ${D}/lib/firmware/ath10k/QCA9888/hw2.0/
 #bcm40181
 	mkdir -p ${D}${sysconfdir}/wifi/40181/
 	install -D -m 0644 ${S}/bcm_ampak/config/40181/*.bin ${D}${sysconfdir}/wifi/40181/
@@ -132,8 +125,8 @@ do_install() {
 	mkdir -p ${D}${base_libdir}/firmware/qca_bt/
 	install -D -m 0644 ${S}/qcom/config/qca6174/wifi/*.bin ${D}${sysconfdir}/wifi/qca6174/
 	install -D -m 0644 ${S}/qcom/config/qca6174/wifi/wlan/* ${D}${sysconfdir}/wifi/qca6174/wlan/
-	install -D -m 0644 ${S}/qcom/config/qca6174/bt_bluez/* ${D}${sysconfdir}/bluetooth/qca6174/
-	install -D -m 0644 ${S}/qcom/config/qca6174/bt_bluez/* ${D}${base_libdir}/firmware/qca_bt/
+	install -D -m 0644 ${S}/qcom/config/qca6174/bt/* ${D}${sysconfdir}/bluetooth/qca6174/
+	install -D -m 0644 ${S}/qcom/config/qca6174/bt/* ${D}${base_libdir}/firmware/qca_bt/
 }
 
 FILES_${PN}-ap6181 = "\
@@ -160,10 +153,6 @@ FILES_${PN}-ap6398 = "\
 FILES_${PN}-ap6330 = "\
                 ${sysconfdir}/wifi/6330/* \
                 ${sysconfdir}/bluetooth/bcm40183b2.hcd"
-
-FILES_${PN}-ath10k = "\
-                lib/firmware/ath10k/QCA6174/hw3.0/*.bin \
-                lib/firmware/ath10k/QCA9888/hw2.0/*.bin"
 
 FILES_${PN}-bcm40181 = "\
                 ${sysconfdir}/wifi/40181/*"
