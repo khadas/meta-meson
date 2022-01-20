@@ -206,6 +206,14 @@ EOF
     if [ -f "$MESON_ROOT_PATH/yocto-release-info" ]; then
         cat $MESON_ROOT_PATH/yocto-release-info  >> conf/auto.conf
     fi
+
+    #By default, bitbake 4 CPU for parallel build
+    sed -i '/^PARALLEL_MAKE = /d' conf/local.conf
+    sed -i '/^BB_NUMBER_THREADS = /d' conf/local.conf
+    if [ "$BITBAKE_FULLSPEED_BUILD" != "1" ]; then
+        sed -i '1i\PARALLEL_MAKE = "-j 4"' conf/local.conf
+        sed -i '1i\BB_NUMBER_THREADS = "4"' conf/local.conf
+    fi
 }
 
 function function_stuff()
