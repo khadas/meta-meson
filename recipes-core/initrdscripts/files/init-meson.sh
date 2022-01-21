@@ -14,6 +14,7 @@ FIRMWARE=""
 VENDOR_DEVICE="/dev/vendor"
 DM_VERITY_STATUS="disabled"
 DM_DEV_COUNT=0
+root_fstype="ext4"
 
 # Copied from initramfs-framework. The core of this script probably should be
 # turned into initramfs-framework modules to reduce duplication.
@@ -54,6 +55,7 @@ read_args() {
             root=*)
                 ROOT_DEVICE=$optarg ;;
             rootfstype=*)
+                root_fstype=$optarg
                 modprobe $optarg 2> /dev/null ;;
             LABEL=*)
                 label=$optarg ;;
@@ -247,11 +249,17 @@ mount_and_boot() {
     mkdir $ROOT_MOUNT
     mknod /dev/loop0 b 7 0 2>/dev/null
 
+if [ "${root_fstype}" = "ubifs" ]; then
+    ubi_rootfs_mount
+    ubi_vendor_attach
+else
     if [ "${FIRMWARE}" != "" ];
     then
         ROOT_DEVICE="/dev/mmcblk1p1"
-        wait_for_device
     fi
+
+    wait_for_device
+
 	if [ "$ROOT_DEVICE" != "" ];
 	then
 		dm_verity_setup system ${ROOT_DEVICE} ${ROOT_MOUNT}
@@ -267,6 +275,7 @@ mount_and_boot() {
 	if [ "${FIRMWARE}" != "" ]; then
 		format_and_install
 	fi
+fi
 
     if touch $ROOT_MOUNT/bin 2>/dev/null; then
 		# The root image is read-write, directly boot it up.
@@ -291,7 +300,11 @@ mount_and_boot() {
 		rm -rf $ROOT_ROMOUNT
 		fatal "Could not move rootfs mount point"
 	    else
+		if [ "${root_fstype}" = "ubifs" ]; then
+		data_ubi_handle
+		else
 		data_ext4_handle
+		fi
 		mkdir -p $ROOT_RWMOUNT/upperdir $ROOT_RWMOUNT/work
 		mount -t overlay overlay -o "lowerdir=$ROOT_ROMOUNT,upperdir=$ROOT_RWMOUNT/upperdir,workdir=$ROOT_RWMOUNT/work" $ROOT_MOUNT
 		mkdir -p ${ROOT_MOUNT}/$ROOT_ROMOUNT $ROOT_MOUNT/data
@@ -321,5 +334,55 @@ mount_and_boot() {
     boot_root
 }
 
-wait_for_device
+ubi_rootfs_mount()
+{
+    system_mtd_number=$(cat /proc/mtd | grep  -E "system" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+    ubiattach /dev/ubi_ctrl -m ${system_mtd_number}
+
+    if ! mount -t ubifs -o ro $ROOT_DEVICE $ROOT_MOUNT ; then
+        fatal "Could not mount $ROOT_DEVICE"
+    fi
+}
+
+ubi_vendor_attach()
+{
+    vendor_mtd_number=$(cat /proc/mtd | grep  -E "vendor" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+    ubiattach /dev/ubi_ctrl -m ${vendor_mtd_number}
+}
+
+data_ubi_handle()
+{
+  data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+
+  if ! uenv get factory-reset | grep -q 'value:\[1\]'; then
+    mount | grep 'data' && echo "Already mounted" && return 0
+    #mount dir create
+    if [ ! -d "/data" ]
+    then
+      mkdir /data
+    fi
+
+    # sure ubi vol exist or not
+    ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
+    if [ -c "/dev/ubi2_0" ]
+    then
+      data_vol_name=`cat /sys/class/ubi/ubi2_0/name`
+      if [ "${data_vol_name}" = "data" ]
+      then
+        mount -t ubifs /dev/ubi2_0 /data
+        return 0
+      fi
+    fi
+  else
+    uenv set factory-reset 0
+  fi
+
+  #mount data
+  ubidetach -p /dev/mtd${data_mtd_number}
+  ubiformat -y /dev/mtd${data_mtd_number}
+  ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
+  ubimkvol /dev/ubi2 -m -N data
+  mount -t ubifs /dev/ubi2_0 /data
+}
+
 mount_and_boot

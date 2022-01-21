@@ -51,6 +51,12 @@ do_aml_pack() {
     fi
 
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
+
+if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
+    cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ubi ${DEPLOY_DIR_IMAGE}/rootfs.ubi
+    cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubi ${DEPLOY_DIR_IMAGE}/vendor.ubi
+    ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_nand.conf ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
+else
     ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/rootfs.ext4.img2simg
     ${DEPLOY_DIR_IMAGE}/ext2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/system.img
 
@@ -75,6 +81,7 @@ do_aml_pack() {
 
         ${DEPLOY_DIR_IMAGE}/sw_package_create.sh ${DEPLOY_DIR_IMAGE}
     fi
+fi
 }
 
 do_aml_pack[depends] += "core-image-minimal:do_image_complete "

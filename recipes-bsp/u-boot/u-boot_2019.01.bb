@@ -60,6 +60,9 @@ DEPENDS_append = " coreutils-native python-native python-pycrypto-native "
 export BL30_ARG = ""
 export BL2_ARG = ""
 
+BL32_SOC_FAMILY_s4 = "s4/s905y4"
+BL32_ARG = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '--bl32 bl32_3.8/bin/${BL32_SOC_FAMILY}/blob-bl32.nand.bin.signed', '', d)}"
+
 #VMX UBOOT PATH depends on SoC
 VMX_UBOOT_PATH = "TBD"
 VMX_UBOOT_PATH_s4 = "s905y4"
@@ -79,7 +82,7 @@ do_compile () {
     export CROSS_COMPILE=aarch64-elf-
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
-    LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG}
+    LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG}
     cp -rf build/* fip/
 }
 

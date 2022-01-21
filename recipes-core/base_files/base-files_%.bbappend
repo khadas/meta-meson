@@ -30,6 +30,12 @@ do_install_append_s4 () {
     mkdir -p ${D}/vendor
     mkdir -p ${D}/factory
 
+if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/ubi1_0            /vendor                    auto       defaults              0  0
+ /dev/mtdblock7         /factory                   yaffs2     defaults              0  0
+EOF
+else
     # if dm-verity is enabled, mount /dev/mapper/vendor(/dev/dm-1) as ro
     if ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'true', 'false', d)}; then
     cat >> ${D}${sysconfdir}/fstab <<EOF
@@ -42,6 +48,7 @@ EOF
  /dev/factory           /factory                   auto       defaults              0  0
 EOF
     fi
+fi
 }
 FILES_${PN}_append_s4 = " /vendor/* /factory/* "
 dirs755_append_s4 = " /vendor /factory "

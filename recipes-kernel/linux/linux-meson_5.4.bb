@@ -21,6 +21,9 @@ SRC_URI_append_t3 = " file://t3.cfg"
 SRC_URI_append_sc2 = " file://sc2.cfg"
 SRC_URI_append_tm2 = " file://tm2.cfg"
 
+# add support nand
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'file://nand.cfg', '', d)}"
+
 # Enable selinux support in the kernel if the feature is enabled
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.cfg', '', d)}"
 

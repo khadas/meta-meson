@@ -7,7 +7,12 @@ DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'policycoreutils-
 LICENSE = "MIT"
 
 # don't actually generate an image, just the artifacts needed for one
-IMAGE_FSTYPES = "ext4"
+IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'ubi', 'ext4', d)}"
+
+#UBI
+UBI_VOLNAME = "vendor"
+MKUBIFS_ARGS = "-F -m 4096 -e 253952 -c 60"
+UBINIZE_ARGS = "-m 4096 -p 256KiB -s 4096 -O 4096"
 
 inherit core-image
 

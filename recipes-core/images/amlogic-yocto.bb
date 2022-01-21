@@ -5,7 +5,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 IMAGECLASS ?= " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'selinux-image', 'core-image', d)} "
 inherit ${IMAGECLASS}
 
-IMAGE_FSTYPES = "ext4"
+IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'ubi', 'ext4', d)}"
 
 require aml-package.inc
 
@@ -33,6 +33,11 @@ IMAGE_LINGUAS = ""
 
 #reduce this value to reserve space for DM-verity/AVB meta-data at the end of partition(64M)
 IMAGE_ROOTFS_SIZE = "983040"
+
+#UBI
+UBI_VOLNAME = "system"
+MKUBIFS_ARGS = "-F -m 4096 -e 253952 -c 1120"
+UBINIZE_ARGS = "-m 4096 -p 256KiB -s 4096 -O 4096"
 
 IMAGE_ROOTFS_EXTRA_SPACE = "0"
 KERNEL_BOOTARGS = "root=/dev/system rootfstype=ext4"

@@ -15,6 +15,7 @@ IMAGE_INSTALL_append = "\
                     e2fsprogs \
                     aml-ubootenv \
                     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'policycoreutils-setfiles', '', d)} \
+                    ${@bb.utils.contains("DISTRO_FEATURES", "nand", "mtd-utils-ubifs", "", d)} \
                    "
 
 #IMAGE_INSTALL_append_aarch64 = "\
@@ -54,7 +55,7 @@ do_rootfs_append () {
     shutil.rmtree(bootdir, True)
 }
 
-KERNEL_BOOTARGS = "root=/dev/system rootfstype=ext4"
+KERNEL_BOOTARGS = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'root=/dev/ubi0_0 rootfstype=ubifs', 'root=/dev/system rootfstype=ext4', d)}"
 
 do_bundle_initramfs_dtb() {
   #Handle FIT feature here
