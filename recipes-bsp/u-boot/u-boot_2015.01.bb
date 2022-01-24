@@ -75,6 +75,8 @@ DEPENDS_append = "optee-scripts-native optee-userspace-securebl32"
 DEPENDS_append = " riscv-none-gcc-native "
 
 DEPENDS_append = " coreutils-native python3-native python3-pycryptodomex-native "
+DEPENDS_t5w_append = " ninja-native "
+
 inherit python3native
 export BL30_ARG = ""
 export BL2_ARG = ""
