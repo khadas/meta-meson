@@ -1,0 +1,29 @@
+From 5ac03ebf2fd747b91dfa205dc4060b43199e917c Mon Sep 17 00:00:00 2001
+From: "fei.deng" <fei.deng@amlogic.com>
+Date: Wed, 26 Jan 2022 15:37:09 +0800
+Subject: [PATCH] qtdemux fix f4v pts error
+
+Change-Id: I5ac741cb5f0be1d796d7c23e5908f48f6ff80aa4
+---
+ gst/isomp4/qtdemux.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+ mode change 100644 => 100755 gst/isomp4/qtdemux.c
+
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+old mode 100644
+new mode 100755
+index 50434da..5736521
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -9271,7 +9271,7 @@ qtdemux_stbl_init (GstQTDemux * qtdemux, QtDemuxStream * stream, GNode * stbl)
+         offset = gst_byte_reader_get_int32_be_unchecked (&stream->ctts);
+         /* HACK: if sample_offset is larger than 2 * duration, ignore the box.
+          * slightly inaccurate PTS could be more usable than corrupted one */
+-        if (G_UNLIKELY ((ABS (offset) / 2) > stream->duration)) {
++        if (G_UNLIKELY ((ABS (offset) * 2) > stream->duration)) {
+           GST_WARNING_OBJECT (qtdemux,
+               "Ignore corrupted ctts, sample_offset %" G_GINT32_FORMAT
+               " larger than duration %" G_GUINT64_FORMAT,
+-- 
+2.32.0
+
