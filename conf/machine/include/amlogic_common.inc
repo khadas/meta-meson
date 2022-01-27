@@ -65,7 +65,7 @@ DEBUG_PREFIX_MAP = "-fdebug-prefix-map=${WORKDIR}=/usr/src/debug/${PN}/${EXTENDP
                     -fdebug-prefix-map=${STAGING_DIR_NATIVE}= \
                     "
 
-HOSTTOOLS_NONFATAL += "bc cc c++ bison"
+HOSTTOOLS_NONFATAL += "bc cc c++ bison repo python"
 
 DISABLE_STATIC_pn-libevent = ""
 
