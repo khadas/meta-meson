@@ -3,7 +3,7 @@ DEPENDS_append_onepass = " core-image-minimal"
 DEPENDS_append = " vendor-image"
 DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', ' aml-swupdate-native', '', d)}"
 
-SOC_FAMILY = "gxl"
+SOC_FAMILY = "TBD"
 SOC_FAMILY_gxl = "gxl"
 SOC_FAMILY_axg = "axg"
 SOC_FAMILY_txlx = "txlx"
@@ -17,6 +17,7 @@ SOC_FAMILY_s4 = "s4"
 SOC_FAMILY_t5d = "t5d"
 SOC_FAMILY_t5w = "t5w"
 SOC_FAMILY_t3 = "t3"
+SOC_FAMILY_a213y = "a213y"
 
 PACK_CONF = "${@bb.utils.contains('DISTRO_FEATURES','absystem','aml_upgrade_package_ab.conf','aml_upgrade_package.conf', d)}"
 

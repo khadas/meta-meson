@@ -8,7 +8,7 @@ include hosttools.inc
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
-SOC_FAMILY = "gxl"
+SOC_FAMILY = "TBD"
 SOC_FAMILY_gxl = "gxl"
 SOC_FAMILY_axg = "axg"
 SOC_FAMILY_txlx = "txlx"
@@ -22,6 +22,7 @@ SOC_FAMILY_s4 = "s4"
 SOC_FAMILY_t5d = "t5d"
 SOC_FAMILY_t5w = "t5w"
 SOC_FAMILY_t3 = "t3"
+SOC_FAMILY_a213y = "a213y"
 
 SOC_BOARD = "default"
 SOC_BOARD_ab301 = "ab301"

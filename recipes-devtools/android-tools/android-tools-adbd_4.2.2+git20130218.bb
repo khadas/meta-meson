@@ -73,6 +73,9 @@ do_install(){
     install -m 0644 ${S}/adbd.service ${D}/${systemd_unitdir}/system
     echo "MACHINE_ARCH is ${MACHINE_ARCH}"
     case ${MACHINE_ARCH} in
+    mesona213y*)
+        sed 's@ff400000.dwc2_a@c9040000.dwc2_a@' -i ${D}/etc/adb_udc_file
+    ;;
     mesonc1*)
         sed 's@ff400000.dwc2_a@ff500000.dwc2_a@' -i ${D}/etc/adb_udc_file
     ;;
