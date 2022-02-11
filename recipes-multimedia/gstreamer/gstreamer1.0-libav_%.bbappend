@@ -5,3 +5,4 @@ SRC_URI_append = "file://0003-remove-codec-data-for-h264-h265-codec-ts-containe-
 SRC_URI_append = "file://0004-increase-the-MAX_STREAMS-from-20-to-40.patch "
 SRC_URI_append = "file://0005-set-framerate-into-caps.patch "
 SRC_URI_append = "file://0006-fix_SWPL-70157_tsdemux.patch "
+SRC_URI_append = "file://0007-fix_SWPL-70094_avi_codecdata.patch "
