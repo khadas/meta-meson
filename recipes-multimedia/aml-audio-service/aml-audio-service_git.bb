@@ -62,12 +62,17 @@ do_install() {
         done
     if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
         install -D -m 0644 ${WORKDIR}/audioserver.service ${D}${systemd_unitdir}/system/audioserver.service
+        install -d ${D}/etc/systemd/system.conf.d
+        cat << EOF > ${D}/etc/systemd/system.conf.d/audioserver.conf
+[Manager]
+DefaultEnvironment=AUDIO_SERVER_SOCKET=unix:///run/audio_socket
+EOF
     fi
 
 }
 
 SYSTEMD_SERVICE_${PN} = "audioserver.service "
-FILES_${PN} = "${libdir}/* ${bindir}/audio_server"
+FILES_${PN} = "${libdir}/* ${bindir}/audio_server /etc/systemd/system.conf.d/* "
 FILES_${PN}-testapps = "\
                         ${bindir}/audio_client_test \
                         ${bindir}/audio_client_test_ac3 \
