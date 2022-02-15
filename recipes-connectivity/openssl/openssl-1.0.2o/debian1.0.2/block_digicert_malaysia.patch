@@ -1,0 +1,28 @@
+Date: Thu, 20 Sep 2018 12:58:47 -0400
+From: 3aba2ebea891e0711fd389a9d7fec0fd40810a42 Apr 14 16:26:28 2015
+Subject: pdate openssl
+Source: OPENSOURCE
+License: Apache-2.0
+Upstream-Status: Backport [debian]
+Signed-off-by: Raphael Geissert <geissert@debian.org>
+
+
+Index: openssl-1.0.2~beta1/crypto/x509/x509_vfy.c
+===================================================================
+--- openssl-1.0.2~beta1.orig/crypto/x509/x509_vfy.c	2014-02-25 00:16:12.488028844 +0100
++++ openssl-1.0.2~beta1/crypto/x509/x509_vfy.c	2014-02-25 00:16:12.484028929 +0100
+@@ -964,10 +964,11 @@
+ 	for (i = sk_X509_num(ctx->chain) - 1; i >= 0; i--)
+ 		{
+ 		x = sk_X509_value(ctx->chain, i);
+-		/* Mark DigiNotar certificates as revoked, no matter
+-		 * where in the chain they are.
++		/* Mark certificates containing the following names as
++		 * revoked, no matter where in the chain they are.
+ 		 */
+-		if (x->name && strstr(x->name, "DigiNotar"))
++		if (x->name && (strstr(x->name, "DigiNotar") ||
++			strstr(x->name, "Digicert Sdn. Bhd.")))
+ 			{
+ 			ctx->error = X509_V_ERR_CERT_REVOKED;
+ 			ctx->error_depth = i;

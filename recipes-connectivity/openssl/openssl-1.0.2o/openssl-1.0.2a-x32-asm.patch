@@ -1,0 +1,30 @@
+Date: Thu, 20 Sep 2018 12:58:47 -0400
+From: 3aba2ebea891e0711fd389a9d7fec0fd40810a42 Apr 14 16:26:28 2015
+Subject: [PATCH] crypto: use bigint in x86-64 perl
+Source: OPENSOURCE
+License: OpenSSL
+Upstream-Status: Pending
+Signed-off-by: Cristian Iorga <cristian.iorga@intel.com>
+
+---
+ crypto/perlasm/x86_64-xlate.pl | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/crypto/perlasm/x86_64-xlate.pl b/crypto/perlasm/x86_64-xlate.pl
+index aae8288..0bf9774 100755
+--- a/crypto/perlasm/x86_64-xlate.pl
++++ b/crypto/perlasm/x86_64-xlate.pl
+@@ -195,6 +195,10 @@ my %globals;
+     sub out {
+     	my $self = shift;
+ 
++	# When building on x32 ABIs, the expanded hex value might be too
++	# big to fit into 32bits.  Enable transparent 64bit support here
++	# so we can safely print it out.
++	use bigint;
+ 	if ($gas) {
+ 	    # Solaris /usr/ccs/bin/as can't handle multiplications
+ 	    # in $self->{value}
+-- 
+2.3.3
+
