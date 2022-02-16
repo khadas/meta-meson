@@ -1,0 +1,28 @@
+diff --git a/protocol/wayland.xml b/protocol/wayland.xml
+old mode 100644
+new mode 100755
+index b1c930d..28f1611
+--- a/protocol/wayland.xml
++++ b/protocol/wayland.xml
+@@ -1659,6 +1659,21 @@
+       <arg name="y" type="int" summary="buffer-local y coordinate"/>
+       <arg name="width" type="int" summary="width of damage rectangle"/>
+       <arg name="height" type="int" summary="height of damage rectangle"/>
++    </request>
++	<request name="set_pts">
++      <description summary="set pts value for av sync">
++    This request sets an pts value for current surface.
++    The value is the display time of current frame.
++    Pts is double-buffered state, see wl_surface.commit.
++    wl_surface.set_pts changes the pending pts value.
++    wl_surface.commit copies the pending buffer scale to the current one.
++    Otherwise, the pending and current values are never changed.
++    The purpose of this request is to allow clients to set pts value to server.
++    Server will use pts for AV sync process.
++    The 64-bit value pts combines from pts_hi and pts_lo
++      </description>
++      <arg name="pts_hi" type="uint" summary="high 32 bits of frame pts"/>
++      <arg name="pts_lo" type="uint" summary="low 32 bits of frame pts"/>
+     </request>
+    </interface>
+ 

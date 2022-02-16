@@ -9,13 +9,14 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
            file://weston.png \
            file://weston.desktop \
            file://xwayland.weston-start \
-           file://0001-8.0.0-weston-launch-Provide-a-default-version-that-doesn-t.patch \ 
+           file://0001-8.0.0-weston-launch-Provide-a-default-version-that-doesn-t.patch \
            file://0002-8.0.0-Enable-Connector-by-priority.patch \
            file://0007-cursor-hide-cursor-be-for-have-point-motion-after-we.patch \
            file://0017-8.0.0-add-video-fence.patch \
-		   file://0018-avoid_buffer_release_twice.patch \
+           file://0018-avoid_buffer_release_twice.patch \
            file://0006-8.0.0-video-plane-src-axis-should-match-the-real.patch \
-		   "
+           file://0019-add-system-time-display.patch \
+           "
 
 SRC_URI[md5sum] = "53e4810d852df0601d01fd986a5b22b3"
 SRC_URI[sha256sum] = "7518b49b2eaa1c3091f24671bdcc124fd49fc8f1af51161927afa4329c027848"

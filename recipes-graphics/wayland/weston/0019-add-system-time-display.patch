@@ -1,0 +1,599 @@
+diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
+index b5975c9..9609c14 100755
+--- a/include/libweston/libweston.h
++++ b/include/libweston/libweston.h
+@@ -44,6 +44,7 @@ extern "C" {
+ #include <libweston/matrix.h>
+ #include <libweston/zalloc.h>
+ #define MESON_VIDEO_PLAN_SUPPORT 1
++#define SURFACE_QUEUE_CAPACITY 10
+ struct weston_geometry {
+ 	int32_t x, y;
+ 	int32_t width, height;
+@@ -1116,6 +1117,16 @@ struct weston_compositor {
+ 	struct weston_log_scope *timeline;
+ 
+ 	struct content_protection *content_protection;
++	struct wl_event_source *commit_timer;
++	int queueSize;
++	int queueCapacity;
++	void* commit_queue;
++	struct wl_event_source *commit_timer_sub;
++	int queueSizeSub;
++	int queueCapacitySub;
++	void* commit_queue_sub;
++	void* commit_state_queue;
++	void* cur_surface;
+ };
+ 
+ struct weston_buffer {
+@@ -1130,6 +1141,7 @@ struct weston_buffer {
+ 	int32_t width, height;
+ 	uint32_t busy_count;
+ 	int y_inverted;
++	uint64_t pts;
+ };
+ 
+ struct weston_buffer_reference {
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index e0b1cbd..3fd7da1 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -486,6 +486,36 @@ drm_waitvblank_pipe(struct drm_output *output)
+ 	else
+ 		return 0;
+ }
++static int
++drm_get_next_repaint_time(struct weston_output *output_base, uint64_t* next_repaint, uint64_t* refresh_interval)
++{
++	int ret = -1;
++	uint64_t frametime = 0;
++	uint64_t refresh_nsec = 0;
++	struct drm_output *output = to_drm_output(output_base);
++	struct drm_backend *backend =
++		to_drm_backend(output_base->compositor);
++	if (!output_base || !next_repaint || !refresh_interval) {
++		return ret;
++		weston_log("\n invalid input %s\n",__func__);
++	}
++	drmVBlank vbl = {
++		.request.type = DRM_VBLANK_RELATIVE,
++		.request.sequence = 0,
++		.request.signal = 0,
++	};
++	vbl.request.type |= drm_waitvblank_pipe(output);
++	ret = drmWaitVBlank(backend->drm.fd, &vbl);
++	if ((ret == 0) && (vbl.reply.tval_sec > 0 || vbl.reply.tval_usec > 0)) {
++		frametime = vbl.reply.tval_sec * 1000000LL + vbl.reply.tval_usec;
++		refresh_nsec =
++			millihz_to_nsec(output->base.current_mode->refresh);
++		*next_repaint = frametime + refresh_nsec/1000;
++		*refresh_interval = refresh_nsec/1000;
++		ret = 0;
++	}
++	return ret;
++}
+ 
+ static int
+ drm_output_start_repaint_loop(struct weston_output *output_base)
+@@ -2887,6 +2917,7 @@ drm_backend_create(struct weston_compositor *compositor,
+ 	b->base.create_output = drm_output_create;
+ 	b->base.device_changed = drm_device_changed;
+ 	b->base.can_scanout_dmabuf = drm_can_scanout_dmabuf;
++	b->base.get_next_repaint_time = drm_get_next_repaint_time;
+ 
+ 	weston_setup_vt_switch_bindings(compositor);
+ 
+diff --git a/libweston/backend.h b/libweston/backend.h
+index ff10b36..52726e4 100644
+--- a/libweston/backend.h
++++ b/libweston/backend.h
+@@ -107,6 +107,8 @@ struct weston_backend {
+ 	 */
+ 	bool (*can_scanout_dmabuf)(struct weston_compositor *compositor,
+ 				   struct linux_dmabuf_buffer *buffer);
++
++	int (*get_next_repaint_time)(struct weston_output *output_base, uint64_t* next_repaint, uint64_t* refresh_interval);
+ };
+ 
+ /* weston_head */
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 7351531..d748fa0 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -130,8 +130,20 @@ weston_output_transform_scale_init(struct weston_output *output,
+ static void
+ weston_compositor_build_view_list(struct weston_compositor *compositor);
+ 
+-static char *
+-weston_output_create_heads_string(struct weston_output *output);
++static char *weston_output_create_heads_string(struct weston_output *output);
++static void weston_surface_commit(struct weston_surface *surface);
++static void push_surface_to_queue( struct weston_surface* surafce);
++static struct weston_surface* pop_surface_from_queue(struct weston_compositor *compositor);
++static int commit_timer_handler(void *data);
++static uint64_t getCuerrntTimeMillis();
++static int commit_timer_handler_sub(void *data);
++static void weston_subsurface_commit(struct weston_subsurface *sub);
++static void push_sub_surface_to_queue( struct weston_subsurface* sub);
++static struct weston_subsurface* pop_sub_surface_from_queue(struct weston_compositor *compositor);
++static void weston_subsurface_parent_commit(struct weston_subsurface *sub,
++				int parent_is_synchronized);
++
++
+ 
+ /** Send wl_output events for mode and scale changes
+  *
+@@ -611,6 +623,7 @@ weston_surface_create(struct weston_compositor *compositor)
+     video_buffer_release[FRAME_PREV] = NULL;
+     video_buffer_release[FRAME_FREE] = NULL;
+ #endif
++    surface->compositor->queueSize = 0;
+ 	return surface;
+ }
+ 
+@@ -2313,40 +2326,39 @@ weston_buffer_reference_handle_destroy(struct wl_listener *listener,
+ }
+ static int video_fence( struct weston_buffer *buffer)
+ {
+-    struct linux_dmabuf_buffer *dmabuf = NULL;
+-    int dmabuffd = -1; 
+-    int rc = -1;
+-    
+-    if (buffer) {
+-        dmabuf = linux_dmabuf_buffer_get(buffer->resource);
+-    } else {    
+-        weston_log("\n buffer is NULL!\n");
+-        return rc;
+-    }
+-    if(dmabuf){
+-        dmabuffd = dmabuf->attributes.fd[0];
+-    } else {
+-        weston_log("dmabuf is NULL!\n");
+-    }
+-    struct dma_buf_export_sync_file dma_fence;
+-    memset(&dma_fence,0,sizeof(struct dma_buf_export_sync_file));
+-    if(dmabuffd <= 0){
+-        weston_log("dmabuffd <= 0 return!\n");
+-        return rc;
+-    }
+-    dma_fence.flags |= DMA_BUF_SYNC_READ;
+-    rc = ioctl(dmabuffd, DMA_BUF_IOCTL_EXPORT_SYNC_FILE, &dma_fence);
+-    if (!rc && dma_fence.fd >= 0) {
+-        struct pollfd pfd;
+-        pfd.fd= dma_fence.fd;
+-        pfd.events= POLLIN;
+-        pfd.revents= 0;
+-        rc= poll( &pfd, 1, 0);
+-    }
+-    close( dma_fence.fd );
+-    dma_fence.fd= -1;
+-    // rc==1 means buffer can release safe
+-    return rc;
++	struct linux_dmabuf_buffer *dmabuf = NULL;
++	int dmabuffd = -1;
++	int rc = -1;
++	if (buffer) {
++		dmabuf = linux_dmabuf_buffer_get(buffer->resource);
++	} else {
++		weston_log("\n buffer is NULL!\n");
++		return rc;
++	}
++	if(dmabuf) {
++		dmabuffd = dmabuf->attributes.fd[0];
++	} else {
++		weston_log("dmabuf is NULL!\n");
++	}
++	struct dma_buf_export_sync_file dma_fence;
++	memset(&dma_fence,0,sizeof(struct dma_buf_export_sync_file));
++	if(dmabuffd <= 0) {
++		weston_log("dmabuffd <= 0 return!\n");
++		return rc;
++	}
++	dma_fence.flags |= DMA_BUF_SYNC_READ;
++	rc = ioctl(dmabuffd, DMA_BUF_IOCTL_EXPORT_SYNC_FILE, &dma_fence);
++	if (!rc && dma_fence.fd >= 0) {
++		struct pollfd pfd;
++		pfd.fd= dma_fence.fd;
++		pfd.events= POLLIN;
++		pfd.revents= 0;
++		rc= poll( &pfd, 1, 0);
++		close( dma_fence.fd );
++		dma_fence.fd= -1;
++	}
++	// rc==1 means buffer can release safe
++	return rc;
+ }
+ static bool is_video_buffer(struct weston_buffer *buffer)
+ {
+@@ -3004,7 +3016,32 @@ output_repaint_timer_arm(struct weston_compositor *compositor)
+ 
+ 	wl_event_source_timer_update(compositor->repaint_timer, msec_to_next);
+ }
+-
++static int commit_timer_handler_sub(void *data)
++{
++	struct weston_compositor *compositor = data;
++	struct weston_subsurface* commit_surafce_sub = NULL;
++	commit_surafce_sub = pop_sub_surface_from_queue(compositor);
++	if ( commit_surafce_sub) {
++		weston_subsurface_commit(commit_surafce_sub);
++		free(commit_surafce_sub);
++		commit_surafce_sub = NULL;
++	}
++	return 1;
++}
++static int commit_timer_handler(void *data)
++{
++	struct weston_compositor *compositor = data;
++	struct weston_surface* commit_surface = NULL;
++	if (commit_surface) {
++		weston_surface_commit(commit_surface);
++		struct weston_subsurface *sub = NULL;
++		wl_list_for_each(sub, &commit_surface->subsurface_list, parent_link) {
++		if (sub->surface != commit_surface)
++			weston_subsurface_parent_commit(sub, 0);
++		}
++	}
++	return 1;
++}
+ static int
+ output_repaint_timer_handler(void *data)
+ {
+@@ -3800,6 +3837,244 @@ static void
+ weston_subsurface_parent_commit(struct weston_subsurface *sub,
+ 				int parent_is_synchronized);
+ 
++static uint64_t getCuerrntTimeMillis()
++{
++	struct timespec t;
++	t.tv_sec = t.tv_nsec = 0;
++	clock_gettime(CLOCK_MONOTONIC,&t);
++	uint64_t mono_ns = ((uint64_t)(t.tv_sec))*1000000000LL + t.tv_nsec;
++	weston_log("\nmono_ns_sec:%d,t.tv_nsec:%d \n",t.tv_sec, t.tv_nsec);
++	return mono_ns/1000LL;
++}
++
++static void push_sub_surface_to_queue( struct weston_subsurface* sub)
++{
++	if (sub->surface->compositor ) {
++		if (sub->surface->compositor->queueSizeSub +1 > sub->surface->compositor->queueCapacitySub ) {
++			int orgCapacity= sub->surface->compositor->queueCapacitySub;
++			int newCapacity= 2*sub->surface->compositor->queueCapacitySub + 1;
++			struct weston_subsurface *newQueue= 
++			(struct weston_subsurface*)calloc( newCapacity, sizeof(struct weston_subsurface) );
++			if ( newQueue ) {
++				struct weston_subsurface *toFree= sub->surface->compositor->commit_queue_sub;
++				memcpy( newQueue, sub->surface->compositor->commit_queue_sub,
++							sub->surface->compositor->queueSizeSub*sizeof(struct weston_subsurface) );
++
++				sub->surface->compositor->commit_queue_sub= newQueue;
++				sub->surface->compositor->queueCapacitySub= newCapacity;
++				weston_log("\n expand queue capacity from %d to %d", orgCapacity, newCapacity);
++				free( toFree );
++			}
++			else {
++				weston_log("\n queue full: no memory to expand, dropping frame");
++				return;
++			}
++			struct weston_surface_state *newStateQueue=
++					(struct weston_surface_state*)calloc( newCapacity, sizeof(struct weston_surface_state) );
++			if ( newStateQueue ) {
++					struct weston_surface_state *toFreeState= sub->surface->compositor->commit_state_queue;
++					memcpy( newStateQueue, sub->surface->compositor->commit_state_queue,
++							sub->surface->compositor->queueSizeSub*sizeof(struct weston_surface_state) );
++
++					sub->surface->compositor->commit_state_queue= newStateQueue;
++					sub->surface->compositor->queueCapacitySub= newCapacity;
++					weston_log("\n expand queue capacity from %d to %d", orgCapacity, newCapacity);
++					free( toFreeState );
++			} else {
++					weston_log("\n queue full: no memory to expand, dropping frame");
++					return;
++			}
++		}
++		struct weston_subsurface* sub_surface_queue = sub->surface->compositor->commit_queue_sub;
++		struct weston_surface_state* surface_state_queue = sub->surface->compositor->commit_state_queue;
++		int size = sub->surface->compositor->queueSizeSub;
++		sub_surface_queue[size] = *sub;
++		surface_state_queue[size] = sub->surface->pending;
++		sub->surface->compositor->queueSizeSub++;
++	}
++}
++static struct weston_subsurface* pop_sub_surface_from_queue(struct weston_compositor *compositor)
++{
++	struct weston_subsurface* pop_surface_sub = NULL;
++	struct weston_surface* pop_surface = NULL;
++	struct weston_output *output = NULL;
++	struct weston_buffer *buffer_drop = NULL;
++	uint64_t pts = 0;
++	uint32_t expired_count = 0;
++
++	if(compositor->queueSizeSub < 1) {
++		weston_log("\n no surface in surface queue, return!!!\n");
++		return NULL;
++	}
++	struct weston_subsurface* surafce_queue_sub = compositor->commit_queue_sub;
++	struct weston_surface_state* surface_state_queue = compositor->commit_state_queue;
++
++	uint64_t next_repaint_time = 0;
++	uint64_t refresh_interval = 0;
++	int ret = -1;
++	wl_list_for_each(output, &compositor->output_list, link) {
++			ret = compositor->backend->get_next_repaint_time(output, &next_repaint_time, &refresh_interval);
++			if (ret==0)
++				break;
++	}
++	if (next_repaint_time == 0) {
++		weston_log("\n invalid next_repaint_time, commit now!!!\n");
++		goto out;
++	}
++       next_repaint_time = next_repaint_time + 32000;
++	/*for (int i=0; i<compositor->queueSizeSub; i++ ) {
++		pts = surface_state_queue[i].buffer->pts;
++		if (pts == 0) {
++			weston_log("\n pts == 0 commit now\n");
++			goto out;
++		}
++		if (pts < next_repaint_time)
++			expired_count++;
++		else
++			break;
++	}
++	if (expired_count > 1) {
++		for (int k=0; k<expired_count-1; k++ ) {
++			buffer_drop = surface_state_queue[k].buffer;
++			//to do:send event to clinet
++		}
++		compositor->queueSizeSub = compositor->queueSizeSub - (expired_count-1);
++		for (int j=0; j<compositor->queueSizeSub; j++ ) {
++			surafce_queue_sub[j] = surafce_queue_sub[j+expired_count-1];
++			surface_state_queue[j] = surface_state_queue[j+expired_count-1];
++		}
++	}*/
++	if(compositor->queueSizeSub < 1) {
++		weston_log("\n no surface in surface queue, return!!!\n");
++		return NULL;
++	}
++
++	pts =surface_state_queue[0].buffer->pts;
++	if (pts >= (next_repaint_time + refresh_interval)) {
++		wl_event_source_timer_update(compositor->commit_timer_sub, refresh_interval/1000);
++		return NULL;
++	}
++out:
++	pop_surface_sub = calloc(1, sizeof(struct weston_subsurface));
++	if (!pop_surface_sub) {
++		weston_log("\n alloc fail return!!!\n");
++		return NULL;
++	}
++	memcpy(pop_surface_sub, compositor->commit_queue_sub, sizeof(struct weston_subsurface));
++	pop_surface_sub->surface->pending = surface_state_queue[0];
++
++	if (compositor->queueSizeSub > 1) {
++		for (int j=0; j<compositor->queueSizeSub-1; j++ ) {
++			surafce_queue_sub[j] = surafce_queue_sub[j+1];
++			surface_state_queue[j] = surface_state_queue[j+1];
++		}
++	}
++	--compositor->queueSizeSub;
++	if (compositor->queueSizeSub > 0)
++		wl_event_source_timer_update(compositor->commit_timer_sub, refresh_interval/1000);
++
++	return pop_surface_sub;
++}
++
++static void push_surface_to_queue( struct weston_surface* surface)
++{
++	if (surface->compositor ) {
++		if ( surface->compositor->queueSize +1 > surface->compositor->queueCapacity )
++		{
++			int orgCapacity= surface->compositor->queueCapacity;
++			int newCapacity= 2*surface->compositor->queueCapacity+1;
++			struct weston_surface_state *newQueue =
++					(struct weston_surface_state*)calloc( newCapacity, sizeof(struct weston_surface_state) );
++			if ( newQueue ) {
++				struct weston_surface_state *toFree= surface->compositor->commit_queue;
++				memcpy( newQueue, surface->compositor->commit_queue,
++						surface->compositor->queueSize*sizeof(struct weston_surface_state) );
++				surface->compositor->commit_queue= newQueue;
++				surface->compositor->queueCapacity= newCapacity;
++				weston_log("\n expand queue capacity from %d to %d", orgCapacity, newCapacity);
++				free( toFree );
++			} else {
++				weston_log("vfm queue full: no memory to expand, dropping frame");
++				return;
++			}
++		}
++		struct weston_surface_state* surface_state_queue = surface->compositor->commit_queue;
++		surface_state_queue[surface->compositor->queueSize++] = surface->pending;
++		surface->compositor->cur_surface = surface;
++	}
++}
++
++static struct weston_surface* pop_surface_from_queue(struct weston_compositor *compositor)
++{
++	struct weston_surface* pop_surface = NULL;
++	struct weston_surface_state* surface_state_queue = compositor->commit_queue;
++	uint64_t next_repaint_time = 0;
++	uint64_t refresh_interval = 0;
++	uint64_t pts = 0;
++	int ret = -1;
++	int expired_count = 0;
++	struct weston_output *output = NULL;
++	struct weston_buffer *buffer_drop = NULL;
++	if(compositor->queueSize < 1) {
++		weston_log("\n no surface in surface queue, return!!!\n");
++		return NULL;
++	}
++	wl_list_for_each(output, &compositor->output_list, link) {
++			ret = compositor->backend->get_next_repaint_time(output, &next_repaint_time, &refresh_interval);
++			if (ret==0)
++				break;
++	}
++	if (next_repaint_time == 0) {
++		weston_log("\n invalid next_repaint_time, commit now!!!\n");
++		goto out;
++	}
++
++	for (int i=0; i<compositor->queueSize; i++ ) {
++		pts = surface_state_queue[i].buffer->pts;
++		if (pts == 0) {
++			weston_log("\n pts == 0 commit now\n");
++			goto out;
++		}
++		if (pts < next_repaint_time)
++			expired_count++;
++		else
++			break;
++	}
++	if (expired_count > 0) {
++		for (int k=0; k<expired_count; k++ ) {
++			buffer_drop = surface_state_queue[k].buffer;
++			//if (buffer_release->resource)
++				//wl_buffer_send_release(buffer_release->resource);
++		}
++		compositor->queueSize = compositor->queueSize - expired_count;
++		for (int j=0; j<compositor->queueSize; j++ ) {
++			surface_state_queue[j] = surface_state_queue[j+expired_count];
++		}
++	}
++	if(compositor->queueSize < 1) {
++		weston_log("\n no surface in surface queue, return!!!\n");
++		return NULL;
++	}
++
++	pts =surface_state_queue[0].buffer->pts;
++	if (pts >= (next_repaint_time + refresh_interval)) {
++		wl_event_source_timer_update(compositor->commit_timer, refresh_interval/1000);
++		return NULL;
++	}
++out:
++	pop_surface = compositor->cur_surface;
++	pop_surface->pending = surface_state_queue[0];
++    if (compositor->queueSize > 1) {
++		for (int j=0; j<compositor->queueSize-1; j++ ) {
++			surface_state_queue[j] = surface_state_queue[j+1];
++		}
++	}
++	--compositor->queueSize;
++	if (compositor->queueSize > 0)
++		wl_event_source_timer_update(compositor->commit_timer, refresh_interval/1000);
++
++	return pop_surface;
++}
+ static void
+ surface_commit(struct wl_client *client, struct wl_resource *resource)
+ {
+@@ -3867,15 +4142,28 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
+ 	}
+ 
+ 	if (sub) {
+-		weston_subsurface_commit(sub);
++		if(sub->surface
++			&& sub->surface->pending.buffer
++			&& sub->surface->pending.buffer->pts) {
++			push_sub_surface_to_queue(sub);
++			wl_event_source_timer_update(surface->compositor->commit_timer_sub, 1);
++		}  else {
++			weston_subsurface_commit(sub);
++		}
+ 		return;
+ 	}
+ 
+-	weston_surface_commit(surface);
+-
+-	wl_list_for_each(sub, &surface->subsurface_list, parent_link) {
++	if (surface
++		&& surface->pending.buffer
++		&& surface->pending.buffer->pts) {
++		push_surface_to_queue(surface);
++		wl_event_source_timer_update(surface->compositor->commit_timer, 1);
++	} else {
++		weston_surface_commit(surface);
++		wl_list_for_each(sub, &surface->subsurface_list, parent_link) {
+ 		if (sub->surface != surface)
+ 			weston_subsurface_parent_commit(sub, 0);
++		}
+ 	}
+ }
+ 
+@@ -3918,6 +4206,18 @@ surface_set_buffer_scale(struct wl_client *client,
+ 	surface->pending.buffer_viewport.changed = 1;
+ }
+ 
++static void
++surface_set_pts(struct wl_client *client,
++				 struct wl_resource *resource,
++				 uint32_t pts_hi, uint32_t pts_lo)
++{
++	struct weston_surface *surface = wl_resource_get_user_data(resource);
++	if (surface && surface->pending.buffer) {
++		surface->pending.buffer->pts = ((uint64_t)pts_hi << 32) | pts_lo;
++	} else {
++		weston_log("\n surface_set_pts invalie input\n");
++	}
++}
+ static const struct wl_surface_interface surface_interface = {
+ 	surface_destroy,
+ 	surface_attach,
+@@ -3928,7 +4228,8 @@ static const struct wl_surface_interface surface_interface = {
+ 	surface_commit,
+ 	surface_set_buffer_transform,
+ 	surface_set_buffer_scale,
+-	surface_damage_buffer
++	surface_damage_buffer,
++	surface_set_pts
+ };
+ 
+ static void
+@@ -4706,7 +5007,7 @@ weston_subsurface_create(uint32_t id, struct weston_surface *surface,
+ 	weston_surface_state_init(&sub->cached);
+ 	sub->cached_buffer_ref.buffer = NULL;
+ 	sub->synchronized = 1;
+-
++    surface->compositor->queueSizeSub = 0;
+ 	return sub;
+ }
+ 
+@@ -7474,6 +7775,27 @@ weston_compositor_create(struct wl_display *display,
+ 
+ 	loop = wl_display_get_event_loop(ec->wl_display);
+ 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
++
++	ec->commit_queue = (struct weston_surface*)calloc( SURFACE_QUEUE_CAPACITY, sizeof(struct weston_surface) );
++	if ( !ec->commit_queue ) {
++		weston_log("No memory for vfm frame queue (capacity %d)", SURFACE_QUEUE_CAPACITY);
++	}
++	ec->queueCapacity= SURFACE_QUEUE_CAPACITY;
++	ec->queueSize= 0;
++	ec->commit_timer = wl_event_loop_add_timer(loop, commit_timer_handler, ec);
++
++	ec->commit_state_queue =  ec->commit_queue_sub = (struct weston_surface_state*)calloc( SURFACE_QUEUE_CAPACITY, sizeof(struct weston_surface_state) );
++	if ( !ec->commit_state_queue ) {
++		weston_log("No memory for vfm frame queue (capacity %d)", SURFACE_QUEUE_CAPACITY);
++	}
++	ec->commit_queue_sub = (struct weston_subsurface*)calloc( SURFACE_QUEUE_CAPACITY, sizeof(struct weston_subsurface) );
++	if ( !ec->commit_queue_sub ) {
++		weston_log("No memory for vfm frame queue (capacity %d)", SURFACE_QUEUE_CAPACITY);
++	}
++	ec->queueCapacitySub= SURFACE_QUEUE_CAPACITY;
++	ec->queueSizeSub= 0;
++	ec->commit_timer_sub = wl_event_loop_add_timer(loop, commit_timer_handler_sub, ec);
++
+ 	ec->repaint_timer =
+ 		wl_event_loop_add_timer(loop, output_repaint_timer_handler,
+ 					ec);
+@@ -7869,6 +8191,12 @@ weston_compositor_tear_down(struct weston_compositor *compositor)
+ 
+ 	weston_compositor_log_scope_destroy(compositor->timeline);
+ 	compositor->timeline = NULL;
++    if (compositor->commit_queue)
++		free(compositor->commit_queue);
++	if (compositor->commit_queue_sub)
++		free(compositor->commit_queue_sub);
++	if (compositor->commit_state_queue)
++		free(compositor->commit_state_queue);
+ }
+ 
+ /** Destroys the compositor.

@@ -15,6 +15,7 @@ DEPENDS = "expat libxml2 libffi wayland-native"
 SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
 	    file://fixpathinpcfiles.patch \
         file://0001-configure-add-option-to-disable-tests.patch \
+		file://0003-8-0-add-pts-setting-request.patch \
            "
 #        file://0002-Revert-build-wire-up-wayland-egl-because-it-conflict.patch
 SRC_URI[md5sum] = "d91f970aea11fd549eae023d06f91af3"
