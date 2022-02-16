@@ -60,6 +60,7 @@ DEPENDS_append = " coreutils-native python-native python-pycrypto-native "
 export BL30_ARG = ""
 export BL2_ARG = ""
 
+BL32_SOC_FAMILY = "TBD"
 BL32_SOC_FAMILY_s4 = "s4/s905y4"
 BL32_ARG = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '--bl32 bl32_3.8/bin/${BL32_SOC_FAMILY}/blob-bl32.nand.bin.signed', '', d)}"
 
