@@ -33,6 +33,15 @@ do_install_append(){
         ;;
         esac
     fi
+
+    case ${MACHINE_ARCH} in
+    mesona213y*)
+        sed -i '/Debug=0/a TTY=/dev/ttyS2' ${D}${sysconfdir}/bluetooth/main.conf
+    ;;
+    *)
+        sed -i '/Debug=0/a TTY=/dev/ttyS1' ${D}${sysconfdir}/bluetooth/main.conf
+    ;;
+    esac
 }
 
 FILES_${PN} += "${bindir}/*"

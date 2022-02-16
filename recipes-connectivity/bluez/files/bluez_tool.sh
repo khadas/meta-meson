@@ -26,6 +26,20 @@ function get_device_from_conf()
 	fi
 }
 
+function get_tty_from_conf()
+{
+	if [ -f $configure_file ]; then
+		str=`grep "TTY=" $configure_file`
+		if [ ! $str = "" ]; then
+			tty=`echo $str | awk -F = '{print $2}'`
+		else
+			echo No TTY defined in configuration file
+		fi
+	else
+		echo "No configuration file"
+	fi
+}
+
 function set_btname()
 {
 	name_file=/etc/wifi/ap_name
@@ -70,7 +84,7 @@ realtek_bt_init()
 	else
 		modprobe rtk_btuart
 		usleep 500000
-		rtk_hciattach -n -s 115200 /dev/ttyS1 rtk_h5 &
+		rtk_hciattach -n -s 115200 "$tty" rtk_h5 &
 	fi
 }
 
@@ -78,14 +92,14 @@ qca_bt_init()
 {
 	modprobe hci_uart
 	usleep 300000
-	hciattach -s 115200 /dev/ttyS1 qca 2> /dev/null
+	hciattach -s 115200 "$tty" qca 2> /dev/null
 }
 
 aml_bt_init()
 {
 	modprobe sdio_bt
 	usleep 200000
-	hciattach -s 115200 /dev/ttyS1 aml &> /dev/null
+	hciattach -s 115200 "$tty" aml &> /dev/null
 	usleep 100000
 }
 
@@ -264,6 +278,12 @@ if [ $3 ];then
 	device=$3
 else
 	get_device_from_conf
+fi
+
+if [ $4 ];then
+	tty=$4
+else
+	get_tty_from_conf
 fi
 
 case "$1" in
