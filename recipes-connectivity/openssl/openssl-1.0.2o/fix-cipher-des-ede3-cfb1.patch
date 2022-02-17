@@ -1,0 +1,23 @@
+Date: Thu, 20 Sep 2018 12:58:47 -0400
+From: 3aba2ebea891e0711fd389a9d7fec0fd40810a42 Apr 14 16:26:28 2015
+Subject: This patch adds the fix for one of the ciphers used in openssl, namely
+the cipher des-ede3-cfb1. Complete bug log and patch is present here:
+http://rt.openssl.org/Ticket/Display.html?id=2867
+Source: OPENSOURCE
+License: OpenSSL
+Upstream-Status: Pending
+Signed-off-by: Muhammad Shakeel <muhammad_shakeel@mentor.com>
+
+Index: openssl-1.0.2o/crypto/evp/e_des3.c
+===================================================================
+--- openssl-1.0.2o.orig/crypto/evp/e_des3.c
++++ openssl-1.0.2o/crypto/evp/e_des3.c
+@@ -214,7 +214,7 @@ static int des_ede3_cfb1_cipher(EVP_CIPH
+ 
+     if (!EVP_CIPHER_CTX_test_flags(ctx, EVP_CIPH_FLAG_LENGTH_BITS))
+             inl *= 8;
+-    for (n = 0; n < inl; ++n) {
++    for (n = 0; (n * 8) < inl; ++n) {
+         c[0] = (in[n / 8] & (1 << (7 - n % 8))) ? 0x80 : 0;
+         DES_ede3_cfb_encrypt(c, d, 1, 1,
+                              &data(ctx)->ks1, &data(ctx)->ks2,

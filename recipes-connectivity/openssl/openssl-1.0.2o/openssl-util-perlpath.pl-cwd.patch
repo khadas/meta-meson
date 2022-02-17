@@ -1,0 +1,28 @@
+Date: Thu, 20 Sep 2018 12:58:47 -0400
+From: 3aba2ebea891e0711fd389a9d7fec0fd40810a42 Apr 14 16:26:28 2015
+Subject: [PATCH] util/perlpath.pl: make it work when cwd is not in @INC
+Source: OPENSOURCE
+License: OpenSSL
+Upstream-Status: Pending
+Signed-off-by: Robert Yang <liezhi.yang@windriver.com>
+
+---
+ util/perlpath.pl | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/util/perlpath.pl b/util/perlpath.pl
+index a1f236b..5599892 100755
+--- a/util/perlpath.pl
++++ b/util/perlpath.pl
+@@ -4,6 +4,8 @@
+ # line in all scripts that rely on perl.
+ #
+ 
++BEGIN { unshift @INC, "."; }
++
+ require "find.pl";
+ 
+ $#ARGV == 0 || print STDERR "usage: perlpath newpath  (eg /usr/bin)\n";
+-- 
+2.9.0
+

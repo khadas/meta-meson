@@ -1,0 +1,25 @@
+Date: Apr 14 16:26:28 2015
+From: 3aba2ebea891e0711fd389a9d7fec0fd40810a42 Apr 14 16:26:28 2015
+Subject: [PATCH] RDKSEC-135 : update openssl
+
+        Update to openssl 1.0.2a
+Source: OPENSOURCE
+License: Apache-2.0
+Upstream-Status: [ http://git.yoctoproject.org/cgit/cgit.cgi/meta-freescale/commit/recipes-connectivity/openssl/openssl-qoriq/debian/no-symbolic.patch?h=pyro&id=67df1cdca7fe5be0513d67e6abd45b973189ecfe ]
+Signed-off-by:  Zhenhua Luo <zhenhua.luo@freescale.com>
+
+---
+
+Index: openssl-1.0.0c/Makefile.shared
+===================================================================
+--- openssl-1.0.0c.orig/Makefile.shared	2010-08-21 13:36:49.000000000 +0200
++++ openssl-1.0.0c/Makefile.shared	2010-12-12 16:13:36.000000000 +0100
+@@ -153,7 +153,7 @@
+ 	NOALLSYMSFLAGS='-Wl,--no-whole-archive'; \
+ 	SHAREDFLAGS="$(CFLAGS) $(SHARED_LDFLAGS) -shared -Wl,-Bsymbolic -Wl,-soname=$$SHLIB$$SHLIB_SOVER$$SHLIB_SUFFIX"
+ 
+-DO_GNU_APP=LDFLAGS="$(CFLAGS) -Wl,-rpath,$(LIBRPATH)"
++DO_GNU_APP=LDFLAGS="$(CFLAGS)"
+ 
+ #This is rather special.  It's a special target with which one can link
+ #applications without bothering with any features that have anything to

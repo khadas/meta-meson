@@ -1,0 +1,22 @@
+Date: Thu, 20 Sep 2018 12:58:47 -0400
+From: 3aba2ebea891e0711fd389a9d7fec0fd40810a42 Apr 14 16:26:28 2015
+Subject: avoid NULL pointer dereference in EVP_DigestInit_ex()
+Source: OPENSOURCE
+License: OpenSSL
+Upstream-Status: Pending
+Signed-off-by: Xufeng Zhang <xufeng.zhang@windriver.com>
+
+---
+Index: openssl-1.0.2h/crypto/evp/digest.c
+===================================================================
+--- openssl-1.0.2h.orig/crypto/evp/digest.c
++++ openssl-1.0.2h/crypto/evp/digest.c
+@@ -211,7 +211,7 @@ int EVP_DigestInit_ex(EVP_MD_CTX *ctx, c
+         type = ctx->digest;
+     }
+ #endif
+-    if (ctx->digest != type) {
++    if (type && (ctx->digest != type)) {
+         if (ctx->digest && ctx->digest->ctx_size) {
+             OPENSSL_free(ctx->md_data);
+             ctx->md_data = NULL;

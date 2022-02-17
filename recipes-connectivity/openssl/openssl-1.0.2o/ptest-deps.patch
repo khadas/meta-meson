@@ -1,0 +1,31 @@
+Date: Thu, 20 Sep 2018 12:58:47 -0400
+From: 3aba2ebea891e0711fd389a9d7fec0fd40810a42 Apr 14 16:26:28 2015
+Subject: Remove Makefile dependencies for test targets
+Source: OPENSOURCE
+License: OpenSSL
+Upstream-Status: Pending
+Signed-off-by: Paul Eggleton <paul.eggleton@linux.intel.com>
+
+
+Index: openssl-1.0.2/test/Makefile
+===================================================================
+--- openssl-1.0.2.orig/test/Makefile
++++ openssl-1.0.2/test/Makefile
+@@ -330,7 +330,7 @@ test_cms: ../apps/openssl$(EXE_EXT) cms-
+ 	@echo "CMS consistency test"
+ 	$(PERL) cms-test.pl
+ 
+-test_srp: $(SRPTEST)$(EXE_EXT)
++test_srp:
+ 	@echo "Test SRP"
+ 	../util/shlib_wrap.sh ./srptest
+ 
+@@ -342,7 +342,7 @@ test_v3name: $(V3NAMETEST)$(EXE_EXT)
+ 	@echo "Test X509v3_check_*"
+ 	../util/shlib_wrap.sh ./$(V3NAMETEST)
+ 
+-test_heartbeat: $(HEARTBEATTEST)$(EXE_EXT)
++test_heartbeat:
+ 	../util/shlib_wrap.sh ./$(HEARTBEATTEST)
+ 
+ test_constant_time: $(CONSTTIMETEST)$(EXE_EXT)
