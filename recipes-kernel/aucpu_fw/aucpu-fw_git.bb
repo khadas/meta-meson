@@ -23,6 +23,9 @@ do_install() {
         mesonsc2-*-ah232*)
           FWSRCDIR=S905C2
         ;;
+        mesonsc2-*-ah221*)
+          FWSRCDIR=S905C2L
+        ;;
         mesonsc2-*)
           FWSRCDIR=S905X4
         ;;
