@@ -77,7 +77,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'system-user', 'sandbox-setup', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'vmx-sdk-rel', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'aml-cas-hal aml-secdmx', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', '', 'aml-hdmicec', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-tvserver', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit', 'dtvkit-release-prebuilt', '', d)} \
@@ -158,7 +158,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs += " \
 
 #For Nagra CAS
 RDEPENDS_packagegroup-amlogic-baserootfs += " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk nagra-cashal-rel nagra-cert-prebuilt', '', d)} \
     "
 
 #Add ubifs tools
