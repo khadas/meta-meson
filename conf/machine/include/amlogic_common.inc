@@ -70,7 +70,7 @@ HOSTTOOLS_NONFATAL += "bc cc c++ bison repo python"
 
 DISABLE_STATIC_pn-libevent = ""
 
-AML_RDK_PREBUILT_SITE ?= "http://10.18.11.97/firmware/image/linux-distro/Public/YOCTO/prebuilt/"
+AML_RDK_PREBUILT_SITE ?= "http://10.18.11.6/shanghai/image/linux-distro/Public/YOCTO/prebuilt/"
 # For dm-verity
 IMAGE_CLASSES += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'image_types aml-dm-verity-img', '', d)}"
 
