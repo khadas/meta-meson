@@ -105,4 +105,4 @@ XZ_COMPRESSION_LEVEL ?= "-e -M 50% -9"
 VIRTUAL-RUNTIME_init_manager ?= "systemd"
 VIRTUAL-RUNTIME_initscripts ?= "systemd-compat-units"
 
-KERNEL_MODULE_AUTOLOAD += "gpio_keypad adc_keypad"
+KERNEL_MODULE_AUTOLOAD += "gpio_keypad adc_keypad reg_access"
