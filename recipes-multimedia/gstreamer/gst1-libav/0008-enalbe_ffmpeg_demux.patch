@@ -1,0 +1,30 @@
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+index 7ba2544..acc0022 100644
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -2090,12 +2090,7 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
+       register_typefind_func = FALSE;
+ 
+     env = getenv("ENABLE_FFMPEG_DEMUX");
+-    if ((env) && (!strcmp(env, "TRUE"))) {
+-		if(!strcmp(in_plugin->name, "mpegts"))
+-			rank = GST_RANK_NONE;
+-		else
+-            rank = GST_RANK_PRIMARY;
+-    } else {
++    if ((env) && (!atoi(env))) {
+         /* Set the rank of demuxers known to work to MARGINAL.
+          * Set demuxers for which we already have another implementation to NONE
+          * Set All others to NONE*/
+@@ -2142,6 +2137,11 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
+           rank = GST_RANK_NONE;
+           continue;
+         }
++    }else {
++        if(!strcmp(in_plugin->name, "mpegts"))
++            rank = GST_RANK_NONE;
++        else
++            rank = GST_RANK_PRIMARY;
+     }
+ 
+     /* construct the type */
