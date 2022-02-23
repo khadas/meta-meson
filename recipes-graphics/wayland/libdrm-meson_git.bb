@@ -10,7 +10,7 @@ DEPENDS += " libdrm"
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/libdrm_amlogic;protocol=${AML_GIT_PROTOCOL};branch=master;"
 
 #For common patches
-#SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/libdrm_amlogic')}"
+#SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/libdrm_amlogic')}"
 
 S = "${WORKDIR}/git/meson"
 

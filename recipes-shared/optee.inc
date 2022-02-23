@@ -11,9 +11,9 @@ PATCHTOOL= "git"
 #For common patches
 TDIR_t5d = "tdk"
 TDIR = "tdk-3.8"
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/${TDIR}', '${TDIR}')}"
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/tdk/linuxdriver', 'tdk/linuxdriver')}"
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/tdk/ta_export/keys', 'tdk/ta_export/keys')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/${TDIR}', '${TDIR}')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/tdk/linuxdriver', 'tdk/linuxdriver')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/tdk/ta_export/keys', 'tdk/ta_export/keys')}"
 
 SRCREV ?= "${AUTOREV}"
 SRCREV_FORMAT = "tdk_tdk_linuxdriver_tdk_keys"

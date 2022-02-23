@@ -9,7 +9,7 @@ DEPENDS += "alsa-lib aml-dvbaudioutils"
 RDEPENDS_${PN} += "alsa-lib"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/multimedia/libplayer/src')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libplayer/src')}"
 
 
 SRCREV ?="${AUTOREV}"

@@ -16,7 +16,7 @@ SRC_URI += "file://binder.service"
 SRC_URI += "file://binder.sh"
 
 #For common patches
-#SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/aml_commonlib')}"
+#SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
 
 S = "${WORKDIR}/git/libbinder"
 
