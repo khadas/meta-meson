@@ -8,7 +8,7 @@ RDEPENDS_${PN} = " libdrm aml-avsync libdrm-meson"
 #SRC_URI = "git://${AML_GIT_ROOT}/linux/multimedia/gst_plugin_vsink.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/multimedia/gst-plugin-vsink/', '../')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/gst-plugin-vsink/', '../')}"
 
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"

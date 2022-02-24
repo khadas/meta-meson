@@ -28,8 +28,8 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 PATCHTOOL="git"
 
 #For common patch
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/uboot/bl33/v2019', 'bl33/v2019')}"
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/uboot/fip', 'fip')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/uboot/bl33/v2019', 'bl33/v2019')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/uboot/fip', 'fip')}"
 #can not patch bl binaries due to permission issue bl binary repos
 
 do_configure[noexec] = "1"

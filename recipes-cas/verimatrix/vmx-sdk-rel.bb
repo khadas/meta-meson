@@ -4,7 +4,7 @@ LICENSE = "CLOSE"
 PV = "git${SRCPV}"
 PR = "r0"
 
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/aml-patches/vendor/vmx/sdk-rel')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/vmx/sdk-rel')}"
 
 #PN = 'verimatrix'
 SRCREV ?= "${AUTOREV}"

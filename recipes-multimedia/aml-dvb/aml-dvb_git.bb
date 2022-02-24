@@ -7,7 +7,7 @@ SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/dvb')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/dvb')}"
 DEPENDS = " aml-zvbi sqlite libamavutils libamadec alsa-lib"
 RDEPENDS_${PN} += "aml-zvbi sqlite libamavutils libamadec alsa-lib"
 

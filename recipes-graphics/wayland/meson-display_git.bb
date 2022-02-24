@@ -13,7 +13,7 @@ inherit autotools pkgconfig
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/meson_display;protocol=${AML_GIT_PROTOCOL};branch=master;"
 
 #For common patches
-#SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/meson_display')}"
+#SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/meson_display')}"
 
 S = "${WORKDIR}/git/meson-display"
 

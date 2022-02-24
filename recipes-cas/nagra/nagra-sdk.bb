@@ -7,7 +7,7 @@ PR = "r0"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 #Only enable it in OpenLinux
 #SRC_URI_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'git://${AML_GIT_ROOT_OP}/nagra-sdk-nocs.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=projects/openlinux/v3.2-rdk','', d)}"
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/aml-patches/../vendor/nagra/nagra-sdk')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/nagra/nagra-sdk')}"
 
 PN = 'nagra-sdk'
 SRCREV ?= "${AUTOREV}"

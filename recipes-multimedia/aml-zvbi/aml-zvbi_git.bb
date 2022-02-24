@@ -9,7 +9,7 @@ do_configure[noexec] = "1"
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/external/libzvbi.git;protocol=${AML_GIT_PROTOCOL};branch=ics-amlogic;name=libzvbi"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/vendor/amlogic/zvbi')}"
+SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/zvbi')}"
 
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
