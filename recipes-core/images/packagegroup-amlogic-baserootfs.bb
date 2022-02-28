@@ -163,3 +163,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs += " \
 
 #Add ubifs tools
 RDEPENDS_packagegroup-amlogic-baserootfs += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)}"
+
+#Handle no widevine case
+RDEPENDS_packagegroup-amlogic-baserootfs_remove = "${@bb.utils.contains('DISTRO_FEATURES', 'widevine', '', 'gst-aml-drm-plugins', d)}"
