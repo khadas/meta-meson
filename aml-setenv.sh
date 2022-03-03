@@ -110,6 +110,18 @@ AML_GIT_ROOT_PROTOCOL = "ssh"
 EOF
     fi
 
+    if [ "$OPENLINUX_BUILD" = "2" ];then
+        cat >> conf/local.conf <<EOF
+#Force OpenLinux Access
+AML_GIT_ROOT = "git@openlinux2.amlogic.com/yocto"
+AML_GIT_PROTOCOL = "ssh"
+AML_GIT_ROOT_YOCTO_SUFFIX = ""
+AML_GIT_ROOT_PR = "git@openlinux2.amlogic.com"
+AML_GIT_ROOT_WV = "git@openlinux2.amlogic.com/yocto"
+AML_GIT_ROOT_PROTOCOL = "ssh"
+EOF
+    fi
+
     # Add meta-aml-netflix only if a machine configuration choosed from different layer
     if [ -d ${MESON_ROOT_PATH}/meta-aml-netflix ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-aml-netflix[^-]') -eq 0 ]; then
       cat >> conf/bblayers.conf <<EOF
