@@ -21,6 +21,8 @@ SRC_URI_append_t3 = " file://t3.cfg"
 SRC_URI_append_sc2 = " file://sc2.cfg"
 SRC_URI_append_tm2 = " file://tm2.cfg"
 
+SRC_URI += "file://common.cfg"
+
 # add support nand
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'file://nand.cfg', '', d)}"
 
