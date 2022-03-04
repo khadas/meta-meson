@@ -13,6 +13,9 @@ PN = 'nagra-sdk'
 SRCREV ?= "${AUTOREV}"
 S = "${WORKDIR}/git"
 
+ARM_TARGET = "usr/lib"
+ARM_TARGET_aarch64 = "usr/lib64"
+
 do_install() {
         echo ${MACHINE}
         install -d -m 0755 ${D}/lib/teetz
@@ -30,7 +33,7 @@ do_install() {
     esac
         echo ${CHIPDIR}
     install -d -m 0755 ${D}/${libdir}
-    install -D -m 0644 ${S}/lib/ca/${libdir}/libnagra_dal.so ${D}/${libdir}
+    install -D -m 0644 ${S}/lib/ca/${ARM_TARGET}/libnagra_dal.so ${D}/${libdir}
 
     install -D -m 0644 ${S}/lib/ta/${CHIPDIR}/bc2f95bc-14b6-4445-a43c-a1796e7cac31.ta ${D}/lib/teetz
 
