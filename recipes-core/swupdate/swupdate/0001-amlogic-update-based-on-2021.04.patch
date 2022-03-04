@@ -573,7 +573,7 @@ index 534259c..75257a4 100644
  obj-$(CONFIG_REMOTE_HANDLER) += remote_handler.o
 diff --git a/handlers/ext4_handler.c b/handlers/ext4_handler.c
 new file mode 100644
-index 0000000..db09226
+index 0000000..5f566a0
 --- /dev/null
 +++ b/handlers/ext4_handler.c
 @@ -0,0 +1,318 @@
@@ -614,7 +614,7 @@ index 0000000..db09226
 +#include <unistd.h>
 +#include <errno.h>
 +
-+//#include "sparse.h"
++#include "../libsparse/sparse.h"
 + #include "handler.h"
 + #include "swupdate.h"
 + #include "util.h"
