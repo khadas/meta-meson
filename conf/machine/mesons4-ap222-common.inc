@@ -58,6 +58,7 @@ DISTRO_FEATURES_append = " aml-cas "
 #DISTRO_FEATURES_append = " AVB "
 DISTRO_FEATURES_append = " recovery "
 DISTRO_FEATURES_append = " swupdate "
+#DISTRO_FEATURES_append = " system-user "
 
 # enable selinux
 DISTRO_FEATURES_append = " acl xattr pam selinux"
