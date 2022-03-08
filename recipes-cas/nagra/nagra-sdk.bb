@@ -22,7 +22,6 @@ do_install() {
         case ${MACHINE} in
         mesonsc2*-ah232*)
           CHIPDIR=S905C2
-          install -D -m 0644 ${S}/lib/ta/${CHIPDIR}/efdfed0c-a6bd-44d3-9c64-de426fc5fb89.ta ${D}/lib/teetz
         ;;
         mesonsc2*-ah221*)
           CHIPDIR=S905C2L
@@ -36,7 +35,7 @@ do_install() {
     install -D -m 0644 ${S}/lib/ca/${ARM_TARGET}/libnagra_dal.so ${D}/${libdir}
 
     install -D -m 0644 ${S}/lib/ta/${CHIPDIR}/bc2f95bc-14b6-4445-a43c-a1796e7cac31.ta ${D}/lib/teetz
-
+    install -D -m 0644 ${S}/lib/ta/${CHIPDIR}/efdfed0c-a6bd-44d3-9c64-de426fc5fb89.ta ${D}/lib/teetz
 }
 
 FILES_${PN} = "${libdir}/* /usr/lib/* /lib/teetz/*"
