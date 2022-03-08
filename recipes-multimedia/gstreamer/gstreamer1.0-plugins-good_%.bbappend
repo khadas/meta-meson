@@ -19,3 +19,4 @@ SRC_URI_append = "file://00017-add-flow-in-vbp-to-adapt-to-the-buf-circulation-o
 SRC_URI_append = "file://00018-set-default-capture-vbp-buf-mode.patch "
 SRC_URI_append = "file://00019-qtdemux-fix-f4v-pts-error.patch "
 SRC_URI_append = "file://00020-add-systemstream-in-v4l2-sinkpad-caps-when-reg.patch "
+SRC_URI_append = "file://00021-SWPL-73078-DTS-wav.patch "
