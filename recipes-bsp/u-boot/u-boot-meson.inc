@@ -99,6 +99,7 @@ do_deploy () {
         test -f ${S}/fip/u-boot.bin.device.signed && install ${S}/fip/u-boot.bin.device.signed ${DEPLOYDIR}/
         install ${S}/fip/u-boot.bin.usb.signed ${DEPLOYDIR}/
         install ${S}/fip/u-boot.bin.sd.bin.signed ${DEPLOYDIR}/
+        test -f ${S}/fip/*-u-boot.aml.zip && install ${S}/fip/*-u-boot.aml.zip ${DEPLOYDIR}/
     ;;
     "bin")
         install ${S}/fip/u-boot.bin ${DEPLOYDIR}/
