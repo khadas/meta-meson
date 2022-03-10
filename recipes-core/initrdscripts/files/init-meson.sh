@@ -78,7 +78,7 @@ read_args() {
                         shelltimeout=30
                 else
                         shelltimeout=$optarg
-                fi 
+                fi
         esac
     done
 }
@@ -95,10 +95,21 @@ selinux_relabel() {
     fi
 }
 
+check_set_machine_id() {
+    if [ -f  ${ROOT_MOUNT}/etc/machine-id ]; then
+        mid=$(cat ${ROOT_MOUNT}/etc/machine-id)
+    fi
+    if [ -z "$mid" ]; then
+        mid=$(cat /proc/cpuinfo | grep "^Serial" | md5sum | awk '{print $1}')
+        echo $mid > ${ROOT_MOUNT}/etc/machine-id
+    fi
+}
+
 boot_root() {
     # Watches the udev event queue, and exits if all current events are handled
     udevadm settle
 
+    check_set_machine_id
     # The rootfs does not yet contain kernel modules.  Copy it!
     if [ ! -d ${ROOT_MOUNT}/lib/modules ];
     then
