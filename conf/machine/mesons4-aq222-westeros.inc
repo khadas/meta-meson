@@ -12,6 +12,7 @@ PREFERRED_PROVIDER_virtual/libgles2 = "libgles-eabihf-dvalin-wayland-drm"
 MACHINE_EXTRA_RRECOMMENDS += " \
         wififw-qca6174 \
         qca6174 \
+        pq-prebuilt \
         tuner-prebuilt \
         aucpu-fw \
         gpu \
@@ -21,6 +22,7 @@ MACHINE_EXTRA_RRECOMMENDS += " \
 KERNEL_DEVICETREE = "s4_s805x2_aq222_linux_1g.dtb"
 UBOOT_MACHINE = "s4_aq222_config"
 KERNEL_MODULE_AUTOLOAD += " cxd2856_fe_64 r836_fe_64 av2018_fe_64 "
+KERNEL_MODULE_AUTOLOAD += " hdr10_tmo_alg_64"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-dummy_codec"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-aml_t9015"
 KERNEL_MODULE_AUTOLOAD += " snd_soc"

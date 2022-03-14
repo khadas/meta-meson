@@ -12,6 +12,7 @@ PREFERRED_PROVIDER_virtual/libgles2 = "libgles-eabihf-dvalin-wayland-drm"
 MACHINE_EXTRA_RRECOMMENDS += " \
         wififw-qca6174 \
         qca6174 \
+        pq-prebuilt \
         aucpu-fw \
         gpu \
         optee-linux-driver \
