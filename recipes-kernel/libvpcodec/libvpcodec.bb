@@ -2,7 +2,7 @@ SUMMARY = "aml libvpcodec library (H264) for Amlogic HCODEC IP"
 LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
-DEPENDS += "h264bitstream"
+DEPENDS += "h264bitstream libion"
 
 SRCREV ?="${AUTOREV}"
 
