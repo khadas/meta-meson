@@ -141,6 +141,7 @@ else
     echo "can not find software.swu in data, now find usb device......"
     sleep 5
     if [ -f "/run/media/sda1/software.swu" ]; then
+        export TMPDIR=/run/media/sda1/
         if [ -f "/proc/inand" ]; then
             swupdate -l 6 -k /etc/swupdate-public.pem -i /run/media/sda1/software.swu
         else
