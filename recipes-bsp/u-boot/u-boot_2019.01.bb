@@ -76,6 +76,7 @@ NAGRA_UBOOT_PATH_ah232 = "sc2"
 NAGRA_UBOOT_PATH_ah221 = "sc2/sc2l"
 NAGRA_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', '--chip-varient nocs-jts-ap --bl32 nagra-sdk/bootloader/${NAGRA_UBOOT_PATH}/bl32/blob-bl32.bin.signed --bl31 nagra-sdk/bootloader/${NAGRA_UBOOT_PATH}/bl31/blob-bl31.bin.signed', '', d)}"
 
+CFLAGS +=" -DCONFIG_YOCTO "
 do_compile () {
     cd ${S}
     cp -f fip/mk .
