@@ -37,7 +37,7 @@ index 8bb0755..4347963 100755
 +  if (v4l2object->type == V4L2_BUF_TYPE_VIDEO_OUTPUT
 +      || v4l2object->type == V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE)
 +  {
-+    env= getenv("V4L2_SET_AMLOGIC_DW_MODE");
++    env= getenv("VENDOR_MEDIA_GST_VIDEO_SET_DW_MODE");
 +    if ( env )
 +    {
 +      int dwMode= atoi(env);
