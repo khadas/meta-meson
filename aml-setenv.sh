@@ -148,6 +148,7 @@ BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-openembedded/meta-perl"
 EOF
     fi
 
+    unset NEED_A6432_SUPPORT
     if [ -n "$(echo $TARGET_MACHINE | grep -- lib32)" ]; then
       NEED_A6432_SUPPORT=y
     fi
