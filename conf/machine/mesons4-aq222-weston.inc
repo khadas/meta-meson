@@ -13,6 +13,7 @@ MACHINE_EXTRA_RRECOMMENDS += " \
         wififw-qca6174 \
         qca6174 \
         pq-prebuilt \
+        tuner-prebuilt \
         aucpu-fw \
         gpu \
         optee-linux-driver \
