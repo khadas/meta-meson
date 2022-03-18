@@ -1,0 +1,104 @@
+diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
+index 7620e52..75a5ac8 100644
+--- a/sys/v4l2/gstv4l2bufferpool.c
++++ b/sys/v4l2/gstv4l2bufferpool.c
+@@ -69,7 +69,7 @@ enum _GstV4l2BufferPoolAcquireFlags
+ static void gst_v4l2_buffer_pool_release_buffer (GstBufferPool * bpool,
+     GstBuffer * buffer);
+ 
+-#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++#ifdef VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP
+ static gboolean gst_v4l2_buffer_pool_release_buffer_aml_patch (GstBufferPool * bpool);
+ #endif
+ 
+@@ -731,7 +731,7 @@ gst_v4l2_buffer_pool_streamoff (GstV4l2BufferPool * pool)
+ 
+       g_atomic_int_add (&pool->num_queued, -1);
+     }
+-#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++#ifdef VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP
+     pool->read_to_free_bufs[i] = NULL;
+ #endif
+   }
+@@ -1096,7 +1096,7 @@ gst_v4l2_buffer_pool_poll (GstV4l2BufferPool * pool, gboolean wait)
+ 
+ again:
+   ret = gst_poll_wait (pool->poll, timeout);
+-#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++#ifdef VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP
+   GST_DEBUG_OBJECT (pool, "amlmodbuf poll timeout:%lld, ret:%d, errno:%d", timeout, ret, errno);
+ #endif
+   if (G_UNLIKELY (ret < 0)) {
+@@ -1122,7 +1122,7 @@ again:
+ 
+   if (ret == 0)
+   {
+-#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++#ifdef VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP
+     if((pool->obj->type == V4L2_BUF_TYPE_VIDEO_CAPTURE || pool->obj->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) &&
+        pool->obj->mode == GST_V4L2_IO_DMABUF_IMPORT)
+     {
+@@ -1477,7 +1477,7 @@ gst_v4l2_buffer_pool_acquire_buffer (GstBufferPool * bpool, GstBuffer ** buffer,
+         case GST_V4L2_IO_USERPTR:
+         case GST_V4L2_IO_DMABUF_IMPORT:
+         {
+-#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++#ifdef VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP
+           GST_DEBUG_OBJECT (pool, "amlmodbuf return free buf before acquire buf");
+           gst_v4l2_buffer_pool_release_buffer_aml_patch(bpool);
+           ret = gst_v4l2_buffer_pool_dequeue (pool, buffer, FALSE);
+@@ -1569,7 +1569,7 @@ gst_v4l2_buffer_pool_release_buffer (GstBufferPool * bpool, GstBuffer * buffer)
+ 
+             gst_v4l2_allocator_reset_group (pool->vallocator, group);
+ 
+-#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++#ifdef VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP
+             GST_DEBUG_OBJECT (pool, "amlmodbuf trace in add flow with buf:%p index:%d", buffer, group->buffer.index);
+             pool->read_to_free_bufs[group->buffer.index] = buffer;
+             if(gst_v4l2_buffer_pool_release_buffer_aml_patch(bpool))
+@@ -1658,7 +1658,7 @@ gst_v4l2_buffer_pool_release_buffer (GstBufferPool * bpool, GstBuffer * buffer)
+   }
+ }
+ 
+-#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++#ifdef VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP
+ static gboolean
+ gst_v4l2_buffer_pool_release_buffer_aml_patch (GstBufferPool * bpool)
+ {
+diff --git a/sys/v4l2/gstv4l2bufferpool.h b/sys/v4l2/gstv4l2bufferpool.h
+index f5fa8e9..3dea2e4 100644
+--- a/sys/v4l2/gstv4l2bufferpool.h
++++ b/sys/v4l2/gstv4l2bufferpool.h
+@@ -55,7 +55,7 @@ G_BEGIN_DECLS
+  * occure for mem-2-mem devices. */
+ #define GST_V4L2_FLOW_SOURCE_CHANGE GST_FLOW_CUSTOM_SUCCESS_2
+ 
+-// #define GST_AML_SPEC_FLOW_FOR_VBP 1
++// #define VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP 1
+ 
+ struct _GstV4l2BufferPool
+ {
+@@ -92,7 +92,7 @@ struct _GstV4l2BufferPool
+   gboolean flushing;
+ 
+   GstBuffer *buffers[VIDEO_MAX_FRAME];
+-#ifdef GST_AML_SPEC_FLOW_FOR_VBP
++#ifdef VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP
+   GstBuffer *read_to_free_bufs[VIDEO_MAX_FRAME];
+ #endif
+ 
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 98791b6..a4d7eb4 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -493,8 +493,8 @@ gst_v4l2_object_new (GstElement * element,
+ 
+   if((V4L2_BUF_TYPE_VIDEO_CAPTURE == type || V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE == type))
+   {
+-    const char *default_mode = getenv ("GST_DEFAULT_V4L2_BUF_MODE");
+-    GST_DEBUG ("amlmodbuf GST_AML_DEFAULT_V4L2_BUF_MODE:%s", default_mode);
++    const char *default_mode = getenv ("VENDOR_MEDIA_GST_VIDEO_DEFAULT_V4L2_BUF_MODE");
++    GST_DEBUG ("amlmodbuf VENDOR_MEDIA_GST_VIDEO_DEFAULT_V4L2_BUF_MODE:%s", default_mode);
+     if(default_mode)
+     {
+       if (strcmp (default_mode, "DMA_BUF_IMPORT") == 0)
