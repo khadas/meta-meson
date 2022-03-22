@@ -1,4 +1,4 @@
-From 829b58a210c26fb91cb89c7af81e07db8bfb6af2 Mon Sep 17 00:00:00 2001
+From e141315585f11dcf4865fb890786d9905a7753e6 Mon Sep 17 00:00:00 2001
 From: Blance Tang <guofeng.tang@amlogic.com>
 Date: Wed, 20 Oct 2021 16:05:47 +0800
 Subject: [PATCH] amlogic update based on 2021.04
@@ -14,14 +14,14 @@ Subject: [PATCH] amlogic update based on 2021.04
  bootloader/none.c         |  82 ++++
  core/cpio_utils.c         |   2 +-
  core/pctl.c               |  10 +
- core/stream_interface.c   |  72 ++++
+ core/stream_interface.c   |  79 ++++
  core/swupdate.c           |  35 +-
  corelib/mtd-interface.c   | 104 +++++
  handlers/Config.in        |   8 +
  handlers/Makefile         |   1 +
  handlers/ext4_handler.c   | 318 ++++++++++++++++
  handlers/flash_handler.c  |  69 +++-
- handlers/raw_handler.c    | 200 +++++++++-
+ handlers/raw_handler.c    | 224 ++++++++++-
  handlers/ubivol_handler.c |  14 +-
  include/bootloader.h      |   2 +
  include/flash.h           |   1 +
@@ -42,7 +42,7 @@ Subject: [PATCH] amlogic update based on 2021.04
  libsparse/sparse_file.h   |  32 ++
  libsparse/sparse_format.h |  55 +++
  libsparse/sparse_read.c   | 510 +++++++++++++++++++++++++
- 32 files changed, 3775 insertions(+), 9 deletions(-)
+ 32 files changed, 3806 insertions(+), 9 deletions(-)
  create mode 100644 handlers/ext4_handler.c
  create mode 100644 libsparse/Config.in
  create mode 100644 libsparse/Makefile
@@ -213,7 +213,7 @@ index 9c2d534..b8a259b 100644
  	}
  
 diff --git a/core/stream_interface.c b/core/stream_interface.c
-index 31d0de8..9907f15 100644
+index 31d0de8..0898b6b 100644
 --- a/core/stream_interface.c
 +++ b/core/stream_interface.c
 @@ -73,6 +73,50 @@ pthread_cond_t stream_wkup = PTHREAD_COND_INITIALIZER;
@@ -308,7 +308,21 @@ index 31d0de8..9907f15 100644
  			/*
  		 	 * extract the meta data and relevant parts
  		 	 * (flash images) from the install image
-@@ -646,6 +717,7 @@ void *network_initializer(void *data)
+@@ -639,6 +710,13 @@ void *network_initializer(void *data)
+ 				} else {
+ 					notify(SUCCESS, RECOVERY_NO_ERROR, INFOLEVEL, "SWUPDATE successful !");
+ 					inst.last_install = SUCCESS;
++
++					if (get_system_type() == 0) {
++						int slot = 0;
++						get_active_slot(&slot);
++						slot = slot ? 0 : 1;
++						set_active_slot(slot);
++					}
+ 				}
+ 			}
+ 		} else {
+@@ -646,6 +724,7 @@ void *network_initializer(void *data)
  			notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "Image invalid or corrupted. Not installing ...");
  		}
  
@@ -1002,7 +1016,7 @@ index 5c11ff6..1f42e8b 100644
  	if (flash_write_image(mtdnum, img)) {
  		ERROR("I cannot copy %s into %s partition",
 diff --git a/handlers/raw_handler.c b/handlers/raw_handler.c
-index 619a2f4..39c0c37 100644
+index 619a2f4..2451c07 100644
 --- a/handlers/raw_handler.c
 +++ b/handlers/raw_handler.c
 @@ -29,10 +29,175 @@
@@ -1181,7 +1195,50 @@ index 619a2f4..39c0c37 100644
  /**
   * Handle write protection for block devices
   *
-@@ -128,11 +293,40 @@ static int install_raw_image(struct img_type *img,
+@@ -55,11 +220,34 @@ static int blkprotect(struct img_type *img, bool on)
+ 	int fd_force_ro;
+ 	struct stat sb;
+ 	char current_prot;
++	int slot = 0;
++	char device_name[128];
+ 
+ 	if (strncmp("/dev/", img->device, 5) != 0) {
+ 		return ret;
+ 	}
+ 
++//try a/b system
++if (get_active_slot(&slot)==0 && ((strcmp(img->fname, "boot.img")==0) || (strcmp(img->fname, "recovery.img")==0))) {
++	if (slot == 0) {
++		sprintf(device_name, "%s%s", img->device, "_b");
++	} else {
++		sprintf(device_name, "%s%s", img->device, "_a");
++	}
++	if (stat(device_name, &sb) == -1) {
++		TRACE("stat for device %s failed: %s", img->device, strerror(errno));
++		return ret;
++	}
++	if(!S_ISBLK(sb.st_mode)) {
++		return ret;
++	}
++
++	/* If given, traverse symlink and convert to absolute path */
++	if (realpath(device_name, abs_path) == NULL) {
++		ret = -errno;
++		goto blkprotect_out;
++	}
++} else {
+ 	if (stat(img->device, &sb) == -1) {
+ 		TRACE("stat for device %s failed: %s", img->device, strerror(errno));
+ 		return ret;
+@@ -73,6 +261,7 @@ static int blkprotect(struct img_type *img, bool on)
+ 		ret = -errno;
+ 		goto blkprotect_out;
+ 	}
++}
+ 
+ 	ret_int = asprintf(&sysfs_path, c_sys_path, abs_path + 5);  /* remove "/dev/" from device path */
+ 	if(ret_int < 0) {
+@@ -128,11 +317,40 @@ static int install_raw_image(struct img_type *img,
  	if (prot_stat < 0)
  		return prot_stat;
  
