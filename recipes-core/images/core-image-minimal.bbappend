@@ -55,7 +55,7 @@ do_rootfs_append () {
     shutil.rmtree(bootdir, True)
 }
 
-KERNEL_BOOTARGS = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'root=/dev/ubi0_0 rootfstype=ubifs', 'root=/dev/system rootfstype=ext4', d)}"
+KERNEL_BOOTARGS = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'root=/dev/ubi0_0 rootfstype=ubifs', 'rootfstype=ext4', d)}"
 
 do_bundle_initramfs_dtb() {
   #Handle FIT feature here
