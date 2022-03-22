@@ -29,6 +29,7 @@ do_install() {
 		if [ -e ${S}/etc/tvconfig/${SOC}/PQ ]; then
 			install -m 0644 -D ${S}/etc/tvconfig/${SOC}/PQ/pq.db ${D}/etc/tvconfig/pq/pq.db
 			install -m 0644 -D ${S}/etc/tvconfig/${SOC}/PQ/pq_default.ini ${D}/etc/tvconfig/pq/pq_default.ini
+			sed -i 's@/vendor/etc/@/data/persistent/@' ${D}/etc/tvconfig/pq/pq_default.ini
 			if [ -e ${S}/etc/tvconfig/${SOC}/PQ/overscan.db ]; then
 				install -m 0644 -D ${S}/etc/tvconfig/${SOC}/PQ/overscan.db ${D}/etc/tvconfig/pq/overscan.db
 			fi

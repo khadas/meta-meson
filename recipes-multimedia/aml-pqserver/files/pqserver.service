@@ -4,6 +4,7 @@ After=binder.service
 
 [Service]
 User=root
+ExecStartPre=/usr/bin/pqserver_precheck.sh
 ExecStart=/usr/bin/pqservice
 
 [Install]
