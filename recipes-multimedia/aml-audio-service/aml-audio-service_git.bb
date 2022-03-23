@@ -43,6 +43,7 @@ do_install() {
         install -m 755 -D ${S}/audio_client_test -t ${D}/usr/bin/
         install -m 755 -D ${S}/audio_client_test_ac3 ${D}/usr/bin/
         install -m 755 -D ${S}/halplay ${D}/usr/bin/
+        install -m 755 -D ${S}/hal_dump ${D}/usr/bin/
         install -m 755 -D ${S}/hal_capture ${D}/usr/bin/
         install -m 755 -D ${S}/hal_param ${D}/usr/bin/
         install -m 755 -D ${S}/master_vol ${D}/usr/bin/
@@ -77,6 +78,7 @@ FILES_${PN}-testapps = "\
                         ${bindir}/audio_client_test \
                         ${bindir}/audio_client_test_ac3 \
                         ${bindir}/halplay \
+                        ${bindir}/hal_dump \
                         ${bindir}/hal_capture \
                         ${bindir}/hal_param \
                         ${bindir}/master_vol \
