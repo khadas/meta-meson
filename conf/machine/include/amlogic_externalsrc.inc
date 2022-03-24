@@ -10,6 +10,7 @@ EXTERNALSRC_pn-aml-secdmx = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/libs
 EXTERNALSRC_pn-aml-audio-hal = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal')) else ''}"
 EXTERNALSRC_pn-aml-dvbaudioutils = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal')) else ''}"
 EXTERNALSRC_pn-aml-audio-service = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/hal_audio_service' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/hal_audio_service')) else ''}"
+EXTERNALSRC_pn-aml-audio-effect = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libaudioeffect' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libaudioeffect')) else ''}"
 EXTERNALSRC_pn-aml-amaudioutils = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_amaudioutils' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_amaudioutils')) else ''}"
 EXTERNALSRC_pn-dolby-ms12 = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/dolby_ms12_release/src' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/dolby_ms12_release/src')) else ''}"
 EXTERNALSRC_pn-optee-video-firmware = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/secfirmload/secloadbin' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/secfirmload/secloadbin')) else ''}"

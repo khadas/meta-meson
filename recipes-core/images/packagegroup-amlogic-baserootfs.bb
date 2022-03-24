@@ -131,6 +131,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'cobalt-plugin aml-cobalt-starboard', '', d)} \
     dolby-ms12 \
     aml-audio-hal \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-audio-effect', '', d)} \
     aml-provision \
     tinyalsa-tools \
     aml-audio-service aml-audio-service-testapps \

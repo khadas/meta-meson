@@ -25,6 +25,9 @@ S = "${WORKDIR}/git/"
 
 do_install() {
 	if [ -d ${S}/etc/tvconfig/${SOC} ]; then
+		if [ -e ${S}/etc/tvconfig/${SOC}/audio_effects.xml ]; then
+			install -m 0644 -D ${S}/etc/tvconfig/${SOC}/audio_effects.xml ${D}/etc/audio_effects.xml
+		fi
 		install -d ${D}/etc/tvconfig/pq
 		if [ -e ${S}/etc/tvconfig/${SOC}/PQ ]; then
 			install -m 0644 -D ${S}/etc/tvconfig/${SOC}/PQ/pq.db ${D}/etc/tvconfig/pq/pq.db
@@ -55,7 +58,7 @@ do_install() {
 	fi
 }
 
-FILES_${PN} = " /etc/tvconfig/*"
+FILES_${PN} = " /etc/*"
 FILES_${PN}_pxp = " /p1_pxp/*"
 FILES_${PN}-dev = " "
 PACKAGE_ARCH = "${MACHINE_ARCH}"
