@@ -48,6 +48,10 @@ do_aml_pack() {
     fi
     if ${@bb.utils.contains('DISTRO_FEATURES', 'recovery', 'false', 'true', d)}; then
         sed -i '/recovery/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
+    else
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'absystem', 'true', 'false', d)}; then
+            sed -i -e 's/sub_type=\"recovery\"/sub_type=\"recovery_a\"/' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
+        fi
     fi
 
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
