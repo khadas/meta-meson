@@ -33,7 +33,7 @@ do_install_append_s4 () {
 if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
     cat >> ${D}${sysconfdir}/fstab <<EOF
  /dev/ubi1_0            /vendor                    auto       defaults              0  0
- /dev/mtdblock7         /factory                   yaffs2     defaults              0  0
+ /dev/mtdblock5         /factory                   yaffs2     defaults              0  0
 EOF
 else
     # if dm-verity is enabled, mount /dev/mapper/vendor(/dev/dm-1) as ro
