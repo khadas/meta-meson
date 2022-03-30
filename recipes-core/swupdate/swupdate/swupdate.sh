@@ -140,20 +140,24 @@ else
     #wait for usb device
     echo "can not find software.swu in data, now find usb device......"
     sleep 5
-    if [ -f "/run/media/sda1/software.swu" ]; then
-        export TMPDIR=/run/media/sda1/
+    name="sda1"
+    if [ ! -e "/dev/sda1" ]; then
+        name="sda"
+    fi
+    if [ -f "/run/media/$name/software.swu" ]; then
+        export TMPDIR=/run/media/$name
         if [ -f "/proc/inand" ]; then
-            swupdate -l 6 -k /etc/swupdate-public.pem -i /run/media/sda1/software.swu
+            swupdate -l 6 -k /etc/swupdate-public.pem -i /run/media/$name/software.swu
         else
-            swupdate -l 6 -b "0 1 2 3 4 5" -k /etc/swupdate-public.pem -i /run/media/sda1/software.swu
+            swupdate -l 6 -b "0 1 2 3 4 5" -k /etc/swupdate-public.pem -i /run/media/$name/software.swu
         fi
         if [ $? != 0 ]; then
             echo "swupdate software.swu from usb failed!"
-            umount /run/media/sda1
+            umount /run/media/$name
             urlmisc clean
         else
             echo "swupdate software.swu from usb sucess!"
-            umount /run/media/sda1
+            umount /run/media/$name
             urlmisc clean
             sync
             sleep 2
@@ -165,6 +169,6 @@ else
         #execute swupdate for clear misc, no need into recovery after reboot
         swupdate
         urlmisc clean
-        umount /run/media/sda1
+        umount /run/media/$name
     fi
 fi
