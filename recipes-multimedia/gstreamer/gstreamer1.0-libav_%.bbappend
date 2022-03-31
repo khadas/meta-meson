@@ -7,3 +7,6 @@ SRC_URI_append = "file://0005-set-framerate-into-caps.patch "
 SRC_URI_append = "file://0006-fix_SWPL-70157_tsdemux.patch "
 SRC_URI_append = "file://0007-fix_SWPL-70094_avi_codecdata.patch "
 SRC_URI_append = "file://0008-enalbe_ffmpeg_demux.patch "
+SRC_URI_append = "file://0009-fix_SWPL-75485_support_ac4.patch "
+
+TARGET_CFLAGS += "-DAMFFMPEG"
