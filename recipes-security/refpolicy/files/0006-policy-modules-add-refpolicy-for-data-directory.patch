@@ -1,0 +1,624 @@
+From 71e3e38c33ce47181b24239c354b989ae9847f2d Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Thu, 7 Apr 2022 19:30:48 +0800
+Subject: [PATCH] policy/modules: add refpolicy for data directory
+
+Change-Id: I711b11b153c50300d8b2aa3aaaaf82b89bd3b7bb
+Signed-off-by: Bing Jiang <bing.jiang@amlogic.com>
+---
+ policy/modules/admin/alsa.te              |   2 +
+ policy/modules/kernel/files.fc            |   4 +-
+ policy/modules/kernel/files.if            | 163 ++++++++++++++++++++++
+ policy/modules/kernel/files.te            |   6 +
+ policy/modules/services/avahi.te          |   1 +
+ policy/modules/services/bluetooth.te      |   2 +
+ policy/modules/services/dbus.te           |   1 +
+ policy/modules/services/dnsmasq.te        |   1 +
+ policy/modules/services/networkmanager.te |   4 +
+ policy/modules/services/ntp.te            |   2 +
+ policy/modules/services/rpcbind.te        |   3 +
+ policy/modules/system/authlogin.te        |   1 +
+ policy/modules/system/getty.te            |   1 +
+ policy/modules/system/init.te             |   1 +
+ policy/modules/system/locallogin.te       |   1 +
+ policy/modules/system/logging.te          |   5 +
+ policy/modules/system/modutils.te         |   4 +
+ policy/modules/system/mount.if            |  17 +++
+ policy/modules/system/mount.te            |   3 +-
+ policy/modules/system/selinuxutil.te      |   2 +
+ policy/modules/system/systemd.te          |  20 +++
+ policy/modules/system/udev.te             |   4 +
+ 22 files changed, 245 insertions(+), 3 deletions(-)
+
+diff --git a/policy/modules/admin/alsa.te b/policy/modules/admin/alsa.te
+index c6dcfa8cb..f06da9ac9 100644
+--- a/policy/modules/admin/alsa.te
++++ b/policy/modules/admin/alsa.te
+@@ -93,6 +93,8 @@ files_read_usr_files(alsa_t)
+ files_search_var_lib(alsa_t)
+ files_map_usr_files(alsa_t)
+ files_map_etc_files(alsa_t)
++files_read_data_files(alsa_t)
++files_search_data(alsa_t)
+ 
+ fs_getattr_tmpfs(alsa_t)
+ 
+diff --git a/policy/modules/kernel/files.fc b/policy/modules/kernel/files.fc
+index dacd11edf..5ba2665a5 100644
+--- a/policy/modules/kernel/files.fc
++++ b/policy/modules/kernel/files.fc
+@@ -276,8 +276,8 @@ ifndef(`distro_redhat',`
+ /var/tmp/vi\.recover	-d	gen_context(system_u:object_r:tmp_t,s0)
+ 
+ # /data
+-/data		-d	gen_context(system_u:object_r:usr_t,s0)
+-/data(/.*)?		gen_context(system_u:object_r:usr_t,s0)
++/data		-d	gen_context(system_u:object_r:data_t,s0)
++/data(/.*)?		gen_context(system_u:object_r:data_t,s0)
+ /data/lost\+found	-d	gen_context(system_u:object_r:lost_found_t,mls_systemhigh)
+ /data/lost\+found/.*		<<none>>
+ 
+diff --git a/policy/modules/kernel/files.if b/policy/modules/kernel/files.if
+index e335f1f89..e3484540c 100644
+--- a/policy/modules/kernel/files.if
++++ b/policy/modules/kernel/files.if
+@@ -7870,3 +7870,166 @@ interface(`files_mounton_vendor',`
+ 
+ 	allow $1 vendor_t:dir mounton;
+ ')
++
++########################################
++## <summary>
++##	Get attributes of the tee directory.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_getattr_tee_dirs',`
++	gen_require(`
++		type tee_t;
++	')
++
++	allow $1 tee_t:dir getattr;
++')
++
++########################################
++## <summary>
++##	Create, read, and write data files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_manage_data_files',`
++	gen_require(`
++		type data_t;
++	')
++
++	manage_files_pattern($1, data_t, data_t)
++	allow $1 data_t:file map;
++')
++
++########################################
++## <summary>
++##	read data files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_read_data_files',`
++	gen_require(`
++		type data_t;
++	')
++
++	allow $1 data_t:file read_file_perms;
++')
++
++########################################
++## <summary>
++##	map data files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_map_data_files',`
++	gen_require(`
++		type data_t;
++	')
++
++	allow $1 data_t:file map;
++')
++
++########################################
++## <summary>
++##	Search directories in /data.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_search_data',`
++	gen_require(`
++		type data_t;
++	')
++
++	allow $1 data_t:dir search_dir_perms;
++')
++
++########################################
++## <summary>
++##	Watch /data directories
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_watch_data_dirs',`
++	gen_require(`
++		type data_t;
++	')
++
++	allow $1 data_t:dir watch;
++')
++
++########################################
++## <summary>
++##	Get attributes of the data directory.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_getattr_data_dirs',`
++	gen_require(`
++		type data_t;
++	')
++
++	allow $1 data_t:dir getattr;
++')
++
++########################################
++## <summary>
++##	attempts to write to /data dirs.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_rw_data_dirs',`
++	gen_require(`
++		type data_t;
++	')
++
++	allow $1 data_t:dir { add_name remove_name write };
++')
++
++########################################
++## <summary>
++##	Load data kernel module files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_load_data_kernel_modules',`
++	gen_require(`
++		type data_t;
++	')
++
++	allow $1 data_t:system module_load;
++')
+diff --git a/policy/modules/kernel/files.te b/policy/modules/kernel/files.te
+index 7a0be4f0e..d7e34c737 100644
+--- a/policy/modules/kernel/files.te
++++ b/policy/modules/kernel/files.te
+@@ -242,6 +242,12 @@ tunable_policy(`allow_execmod',`
+ 	allow files_unconfined_type file_type:file execmod;
+ ')
+ 
++#
++# data_t is the type for the data directories.
++#
++type data_t;
++files_type(data_t)
++
+ #
+ # vendor_t is the type for the vendor directories.
+ #
+diff --git a/policy/modules/services/avahi.te b/policy/modules/services/avahi.te
+index fe343a2c2..02fd237ad 100644
+--- a/policy/modules/services/avahi.te
++++ b/policy/modules/services/avahi.te
+@@ -81,6 +81,7 @@ files_read_usr_files(avahi_t)
+ files_watch_etc_dirs(avahi_t)
+ files_map_usr_files(avahi_t)
+ files_map_etc_files(avahi_t)
++files_manage_data_files(avahi_t)
+ 
+ auth_use_nsswitch(avahi_t)
+ 
+diff --git a/policy/modules/services/bluetooth.te b/policy/modules/services/bluetooth.te
+index 4850f25ef..f3c3f53a1 100644
+--- a/policy/modules/services/bluetooth.te
++++ b/policy/modules/services/bluetooth.te
+@@ -116,6 +116,8 @@ files_read_usr_files(bluetooth_t)
+ files_map_usr_files(bluetooth_t)
+ files_rw_usr_dirs(bluetooth_t)
+ files_manage_usr_files(bluetooth_t)
++files_manage_data_files(bluetooth_t)
++files_search_data(bluetooth_t)
+ 
+ fs_getattr_all_fs(bluetooth_t)
+ fs_search_auto_mountpoints(bluetooth_t)
+diff --git a/policy/modules/services/dbus.te b/policy/modules/services/dbus.te
+index 5fedab5ec..99767b242 100644
+--- a/policy/modules/services/dbus.te
++++ b/policy/modules/services/dbus.te
+@@ -123,6 +123,7 @@ fs_search_cgroup_dirs(system_dbusd_t)
+ fs_dontaudit_list_nfs(system_dbusd_t)
+ files_map_etc_files(system_dbusd_t)
+ files_map_usr_files(system_dbusd_t)
++files_manage_data_files(system_dbusd_t)
+ 
+ mls_fd_use_all_levels(system_dbusd_t)
+ mls_rangetrans_target(system_dbusd_t)
+diff --git a/policy/modules/services/dnsmasq.te b/policy/modules/services/dnsmasq.te
+index bfb957f14..20874e261 100644
+--- a/policy/modules/services/dnsmasq.te
++++ b/policy/modules/services/dnsmasq.te
+@@ -95,6 +95,7 @@ files_map_usr_files(dnsmasq_t)
+ files_read_usr_files(dnsmasq_t)
+ files_watch_usr_dirs(dnsmasq_t)
+ files_getattr_usr_files(dnsmasq_t)
++files_manage_data_files(dnsmasq_t)
+ 
+ fs_getattr_all_fs(dnsmasq_t)
+ fs_search_auto_mountpoints(dnsmasq_t)
+diff --git a/policy/modules/services/networkmanager.te b/policy/modules/services/networkmanager.te
+index 45578db5a..d369257f0 100644
+--- a/policy/modules/services/networkmanager.te
++++ b/policy/modules/services/networkmanager.te
+@@ -152,6 +152,10 @@ files_map_usr_files(NetworkManager_t)
+ files_read_usr_files(NetworkManager_t)
+ files_read_usr_src_files(NetworkManager_t)
+ files_manage_etc_files(NetworkManager_t)
++files_rw_usr_dirs(NetworkManager_t)
++files_manage_data_files(NetworkManager_t)
++files_search_data(NetworkManager_t)
++files_rw_data_dirs(NetworkManager_t)
+ 
+ fs_getattr_all_fs(NetworkManager_t)
+ fs_search_auto_mountpoints(NetworkManager_t)
+diff --git a/policy/modules/services/ntp.te b/policy/modules/services/ntp.te
+index c42258f50..2707801a2 100644
+--- a/policy/modules/services/ntp.te
++++ b/policy/modules/services/ntp.te
+@@ -125,6 +125,8 @@ files_watch_runtime_dirs(ntpd_t)
+ files_watch_usr_dirs(ntpd_t)
+ files_map_usr_files(ntpd_t)
+ files_manage_usr_files(ntpd_t)
++files_manage_data_files(ntpd_t)
++files_watch_data_dirs(ntpd_t)
+ 
+ fs_getattr_all_fs(ntpd_t)
+ fs_search_auto_mountpoints(ntpd_t)
+diff --git a/policy/modules/services/rpcbind.te b/policy/modules/services/rpcbind.te
+index 808f8904f..9b1a43b6c 100644
+--- a/policy/modules/services/rpcbind.te
++++ b/policy/modules/services/rpcbind.te
+@@ -67,6 +67,9 @@ dev_read_cpu_online(rpcbind_t)
+ domain_use_interactive_fds(rpcbind_t)
+ 
+ files_read_etc_runtime_files(rpcbind_t)
++files_read_usr_files(rpcbind_t)
++files_read_data_files(rpcbind_t)
++files_search_data(rpcbind_t)
+ 
+ auth_use_nsswitch(rpcbind_t)
+ 
+diff --git a/policy/modules/system/authlogin.te b/policy/modules/system/authlogin.te
+index e579a3b87..e7fbb4e09 100644
+--- a/policy/modules/system/authlogin.te
++++ b/policy/modules/system/authlogin.te
+@@ -117,6 +117,7 @@ files_map_etc_files(chkpwd_t)
+ files_map_usr_files(chkpwd_t)
+ files_read_usr_files(chkpwd_t)
+ files_getattr_usr_files(chkpwd_t)
++files_manage_data_files(chkpwd_t)
+ 
+ # for nscd
+ files_dontaudit_search_var(chkpwd_t)
+diff --git a/policy/modules/system/getty.te b/policy/modules/system/getty.te
+index 7bd8528ef..29e3dfa05 100644
+--- a/policy/modules/system/getty.te
++++ b/policy/modules/system/getty.te
+@@ -73,6 +73,7 @@ files_map_etc_files(getty_t)
+ files_map_usr_files(getty_t)
+ files_read_usr_files(getty_t)
+ files_getattr_usr_files(getty_t)
++files_manage_data_files(getty_t)
+ 
+ fs_search_auto_mountpoints(getty_t)
+ # for error condition handling
+diff --git a/policy/modules/system/init.te b/policy/modules/system/init.te
+index 4d3700f54..097f07ffb 100644
+--- a/policy/modules/system/init.te
++++ b/policy/modules/system/init.te
+@@ -436,6 +436,7 @@ ifdef(`init_systemd',`
+ 	miscfiles_watch_localization(init_t)
+ 
+ 	mount_watch_runtime_dirs(init_t)
++	mount_watch_read_runtime_files(init_t)
+ 
+ 	# systemd_socket_activated policy
+ 	mls_socket_write_all_levels(init_t)
+diff --git a/policy/modules/system/locallogin.te b/policy/modules/system/locallogin.te
+index cc417dac3..e85d24694 100644
+--- a/policy/modules/system/locallogin.te
++++ b/policy/modules/system/locallogin.te
+@@ -106,6 +106,7 @@ files_read_world_readable_sockets(local_login_t)
+ files_read_var_symlinks(local_login_t)
+ files_map_etc_files(local_login_t)
+ files_map_usr_files(local_login_t)
++files_manage_data_files(local_login_t)
+ 
+ fs_search_auto_mountpoints(local_login_t)
+ 
+diff --git a/policy/modules/system/logging.te b/policy/modules/system/logging.te
+index 43486381b..a6a7f9b4d 100644
+--- a/policy/modules/system/logging.te
++++ b/policy/modules/system/logging.te
+@@ -201,6 +201,8 @@ domain_use_interactive_fds(auditd_t)
+ files_read_etc_files(auditd_t)
+ files_list_usr(auditd_t)
+ files_map_etc_files(auditd_t)
++files_read_data_files(auditd_t)
++files_search_data(auditd_t)
+ 
+ init_telinit(auditd_t)
+ 
+@@ -278,6 +280,7 @@ files_read_etc_runtime_files(audisp_t)
+ files_getattr_usr_files(audisp_t)
+ files_map_usr_files(audisp_t)
+ files_read_usr_files(audisp_t)
++files_manage_data_files(audisp_t)
+ 
+ mls_file_write_all_levels(audisp_t)
+ 
+@@ -510,6 +513,8 @@ files_read_etc_files(syslogd_t)
+ files_read_usr_files(syslogd_t)
+ files_read_var_files(syslogd_t)
+ files_read_etc_runtime_files(syslogd_t)
++files_read_data_files(syslogd_t)
++files_search_data(syslogd_t)
+ files_map_usr_files(syslogd_t)
+ files_machineid_read(syslogd_t)
+ # /initrd is not umounted before minilog starts
+diff --git a/policy/modules/system/modutils.te b/policy/modules/system/modutils.te
+index 6177a11e2..e5cd10a00 100644
+--- a/policy/modules/system/modutils.te
++++ b/policy/modules/system/modutils.te
+@@ -106,6 +106,8 @@ files_dontaudit_search_runtime(kmod_t)
+ # to manage modules.dep
+ files_manage_kernel_modules(kmod_t)
+ files_manage_usr_files(kmod_t)
++files_manage_data_files(kmod_t)
++files_load_data_kernel_modules(kmod_t)
+ 
+ fs_getattr_xattr_fs(kmod_t)
+ fs_dontaudit_use_tmpfs_chr_dev(kmod_t)
+@@ -127,6 +129,8 @@ miscfiles_read_localization(kmod_t)
+ 
+ seutil_read_file_contexts(kmod_t)
+ 
++systemd_read_resolved_runtime(kmod_t)
++
+ userdom_use_user_terminals(kmod_t)
+ 
+ userdom_dontaudit_search_user_home_dirs(kmod_t)
+diff --git a/policy/modules/system/mount.if b/policy/modules/system/mount.if
+index 0704e388d..d98795c8a 100644
+--- a/policy/modules/system/mount.if
++++ b/policy/modules/system/mount.if
+@@ -258,3 +258,20 @@ interface(`mount_rw_runtime_files',`
+ 	rw_files_pattern($1, mount_runtime_t, mount_runtime_t)
+ ')
+ 
++########################################
++## <summary>
++##	Watch and read mount runtime files.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`mount_watch_read_runtime_files',`
++	gen_require(`
++		type mount_runtime_t;
++	')
++
++	allow $1 mount_runtime_t:file watch_reads;
++')
+diff --git a/policy/modules/system/mount.te b/policy/modules/system/mount.te
+index 2a3f6c62a..33e737d02 100644
+--- a/policy/modules/system/mount.te
++++ b/policy/modules/system/mount.te
+@@ -10,7 +10,7 @@ policy_module(mount, 1.22.2)
+ ## Allow the mount command to mount any directory or file.
+ ## </p>
+ ## </desc>
+-gen_tunable(allow_mount_anyfile, false)
++gen_tunable(allow_mount_anyfile, true)
+ 
+ attribute_role mount_roles;
+ roleattribute system_r mount_roles;
+@@ -107,6 +107,7 @@ files_dontaudit_setattr_all_mountpoints(mount_t)
+ files_map_usr_files(mount_t)
+ files_mounton_configfs(mount_t)
+ files_mounton_vendor(mount_t)
++files_map_data_files(mount_t)
+ 
+ fs_getattr_xattr_fs(mount_t)
+ fs_getattr_tmpfs(mount_t)
+diff --git a/policy/modules/system/selinuxutil.te b/policy/modules/system/selinuxutil.te
+index 09fef149b..39494f6cc 100644
+--- a/policy/modules/system/selinuxutil.te
++++ b/policy/modules/system/selinuxutil.te
+@@ -605,6 +605,8 @@ files_list_all(setfiles_t)
+ files_relabel_all_files(setfiles_t)
+ files_read_usr_symlinks(setfiles_t)
+ files_dontaudit_read_all_symlinks(setfiles_t)
++files_read_usr_files(setfiles_t)
++files_manage_data_files(setfiles_t)
+ 
+ fs_getattr_all_xattr_fs(setfiles_t)
+ fs_getattr_cgroup(setfiles_t)
+diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
+index f0102358b..4e7e0b1f7 100644
+--- a/policy/modules/system/systemd.te
++++ b/policy/modules/system/systemd.te
+@@ -378,6 +378,10 @@ files_read_boot_files(systemd_generator_t)
+ files_search_all_mountpoints(systemd_generator_t)
+ files_list_usr(systemd_generator_t)
+ files_getattr_vendor_dirs(systemd_generator_t)
++files_getattr_tee_dirs(systemd_generator_t)
++files_read_usr_files(systemd_generator_t)
++files_map_usr_files(systemd_generator_t)
++files_manage_data_files(systemd_generator_t)
+ 
+ fs_list_efivars(systemd_generator_t)
+ fs_getattr_xattr_fs(systemd_generator_t)
+@@ -400,6 +404,7 @@ kernel_read_system_state(systemd_generator_t)
+ kernel_read_kernel_sysctls(systemd_generator_t)
+ 
+ storage_raw_read_fixed_disk(systemd_generator_t)
++storage_raw_read_removable_device(systemd_generator_t)
+ 
+ systemd_log_parse_environment(systemd_generator_t)
+ 
+@@ -433,6 +438,9 @@ files_read_etc_files(systemd_hostnamed_t)
+ files_read_usr_files(systemd_hostnamed_t)
+ files_getattr_usr_files(systemd_hostnamed_t)
+ files_map_usr_files(systemd_hostnamed_t)
++files_manage_data_files(systemd_hostnamed_t)
++
++fs_search_tmpfs(systemd_hostnamed_t)
+ 
+ seutil_read_file_contexts(systemd_hostnamed_t)
+ 
+@@ -566,6 +574,7 @@ files_map_usr_files(systemd_logind_t)
+ files_read_usr_files(systemd_logind_t)
+ files_getattr_usr_files(systemd_logind_t)
+ files_manage_etc_runtime_files(systemd_logind_t)
++files_manage_data_files(systemd_logind_t)
+ 
+ fs_getattr_cgroup(systemd_logind_t)
+ fs_getattr_tmpfs(systemd_logind_t)
+@@ -750,6 +759,9 @@ dev_read_sysfs(systemd_modules_load_t)
+ 
+ files_read_etc_files(systemd_modules_load_t)
+ files_vendor_search(systemd_modules_load_t)
++files_read_usr_files(systemd_modules_load_t)
++files_read_data_files(systemd_modules_load_t)
++files_search_data(systemd_modules_load_t)
+ 
+ modutils_read_module_config(systemd_modules_load_t)
+ modutils_read_module_deps(systemd_modules_load_t)
+@@ -807,6 +819,7 @@ files_map_usr_files(systemd_networkd_t)
+ files_read_usr_files(systemd_networkd_t)
+ files_getattr_usr_files(systemd_networkd_t)
+ files_machineid_read(systemd_networkd_t)
++files_manage_data_files(systemd_networkd_t)
+ 
+ auth_use_nsswitch(systemd_networkd_t)
+ 
+@@ -1084,6 +1097,8 @@ files_map_usr_files(systemd_rfkill_t)
+ files_read_usr_files(systemd_rfkill_t)
+ files_getattr_usr_files(systemd_rfkill_t)
+ files_manage_usr_files(systemd_rfkill_t)
++files_read_data_files(systemd_rfkill_t)
++files_search_data(systemd_rfkill_t)
+ 
+ # Allow reading /run/udev/data/+rfkill:rfkill0
+ udev_read_runtime_files(systemd_rfkill_t)
+@@ -1128,6 +1143,7 @@ files_map_etc_files(systemd_resolved_t)
+ files_map_usr_files(systemd_resolved_t)
+ files_read_usr_files(systemd_resolved_t)
+ files_getattr_usr_files(systemd_resolved_t)
++files_manage_data_files(systemd_resolved_t)
+ fs_search_tmpfs(systemd_resolved_t)
+ 
+ init_dgram_send(systemd_resolved_t)
+@@ -1162,6 +1178,7 @@ kernel_use_fds(systemd_sessions_t)
+ files_map_usr_files(systemd_sessions_t)
+ files_read_usr_files(systemd_sessions_t)
+ files_getattr_usr_files(systemd_sessions_t)
++files_manage_data_files(systemd_sessions_t)
+ 
+ selinux_get_enforce_mode(systemd_sessions_t)
+ selinux_get_fs_mount(systemd_sessions_t)
+@@ -1253,6 +1270,7 @@ files_relabelfrom_home(systemd_tmpfiles_t)
+ files_relabelto_home(systemd_tmpfiles_t)
+ files_relabelto_etc_dirs(systemd_tmpfiles_t)
+ files_map_etc_files(systemd_tmpfiles_t)
++files_map_data_files(systemd_tmpfiles_t)
+ 
+ files_manage_non_auth_files(systemd_tmpfiles_t)
+ files_relabel_non_auth_files(systemd_tmpfiles_t)
+@@ -1361,6 +1379,7 @@ files_map_usr_files(systemd_update_done_t)
+ files_getattr_usr_files(systemd_update_done_t)
+ files_rw_usr_dirs(systemd_update_done_t)
+ files_manage_usr_files(systemd_update_done_t)
++files_search_data(systemd_update_done_t)
+ 
+ seutil_read_file_contexts(systemd_update_done_t)
+ 
+@@ -1455,6 +1474,7 @@ fs_getattr_tmpfs(systemd_user_runtime_dir_t)
+ fs_list_tmpfs(systemd_user_runtime_dir_t)
+ fs_unmount_tmpfs(systemd_user_runtime_dir_t)
+ fs_relabelfrom_tmpfs_dirs(systemd_user_runtime_dir_t)
++files_manage_data_files(systemd_user_runtime_dir_t)
+ 
+ kernel_read_kernel_sysctls(systemd_user_runtime_dir_t)
+ kernel_use_fds(systemd_user_runtime_dir_t)
+diff --git a/policy/modules/system/udev.te b/policy/modules/system/udev.te
+index 02ce2e8c9..8074e9ea1 100644
+--- a/policy/modules/system/udev.te
++++ b/policy/modules/system/udev.te
+@@ -415,6 +415,10 @@ dev_read_urand(udevadm_t)
+ 
+ files_read_etc_files(udevadm_t)
+ files_read_usr_files(udevadm_t)
++files_map_usr_files(udevadm_t)
++files_read_data_files(udevadm_t)
++files_search_data(udevadm_t)
++files_getattr_data_dirs(udevadm_t)
+ 
+ corecmd_search_bin(udevadm_t)
+ 
+-- 
+2.29.0
+
