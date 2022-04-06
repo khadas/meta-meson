@@ -20,6 +20,7 @@ PV ?= "2021.04+git${SRCPV}"
 inherit cml1 systemd pkgconfig
 
 SRC_URI = "git://github.com/sbabic/swupdate.git;protocol=https \
+        file://0001-network_initializer-move-cleanup_files-before-going-.patch \
         file://0001-amlogic-update-based-on-2021.04.patch \
         file://defconfig \
         file://hwrevision \

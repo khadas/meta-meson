@@ -1,0 +1,49 @@
+From 7a81a01ade1ebb71083aeee454277d244b4065cd Mon Sep 17 00:00:00 2001
+From: Dominique Martinet <dominique.martinet@atmark-techno.com>
+Date: Wed, 24 Nov 2021 09:58:06 +0900
+Subject: [PATCH] network_initializer: move cleanup_files before going IDLE
+
+with short-lived swupdate run (swupdate -i) it's possible for the main
+thread to exit before cleanup is finished, leaving orphan files behind.
+Move the cleanup before the main loop goes idle to make sure cleanup
+has had time to finish first
+
+Signed-off-by: Dominique Martinet <dominique.martinet@atmark-techno.com>
+Acked-by: Stefano Babic <sbabic@denx.de>
+---
+ core/stream_interface.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/core/stream_interface.c b/core/stream_interface.c
+index 31d0de8..1c9853d 100644
+--- a/core/stream_interface.c
++++ b/core/stream_interface.c
+@@ -653,12 +653,6 @@ void *network_initializer(void *data)
+ 		 */
+ 		software->parms = parms;
+ 
+-		pthread_mutex_lock(&stream_mutex);
+-		inst.status = IDLE;
+-		pthread_mutex_unlock(&stream_mutex);
+-		TRACE("Main thread sleep again !");
+-		notify(IDLE, RECOVERY_NO_ERROR, INFOLEVEL, "Waiting for requests...");
+-
+ 		/* release temp files we may have created */
+ 		cleanup_files(software);
+ 
+@@ -666,6 +660,12 @@ void *network_initializer(void *data)
+ 		swupdate_remove_directory(SCRIPTS_DIR_SUFFIX);
+ 		swupdate_remove_directory(DATADST_DIR_SUFFIX);
+ #endif
++
++		pthread_mutex_lock(&stream_mutex);
++		inst.status = IDLE;
++		pthread_mutex_unlock(&stream_mutex);
++		TRACE("Main thread sleep again !");
++		notify(IDLE, RECOVERY_NO_ERROR, INFOLEVEL, "Waiting for requests...");
+ 	}
+ 
+ 	pthread_exit((void *)0);
+-- 
+2.29.0
+
