@@ -22,6 +22,7 @@ inherit cml1 systemd pkgconfig
 SRC_URI = "git://github.com/sbabic/swupdate.git;protocol=https \
         file://0001-network_initializer-move-cleanup_files-before-going-.patch \
         file://0001-amlogic-update-based-on-2021.04.patch \
+        file://0002-fix-compile-warnings.patch \
         file://defconfig \
         file://hwrevision \
         file://sw-versions \

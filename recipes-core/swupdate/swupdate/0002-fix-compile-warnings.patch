@@ -1,0 +1,219 @@
+From 7f316cee9f092aacf861388bd72aa4eae9a0597b Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Fri, 8 Apr 2022 16:33:54 +0800
+Subject: [PATCH] fix compile warnings
+
+Change-Id: I9af5031adc881e9a7328c72ba3d15ac67d3914a2
+---
+ bootloader/none.c       |  2 ++
+ core/pctl.c             |  1 +
+ core/stream_interface.c |  6 +++++-
+ core/swupdate.c         |  1 +
+ handlers/ext4_handler.c | 19 ++++++++++---------
+ handlers/raw_handler.c  |  9 +++++----
+ libsparse/sparse_read.c |  2 +-
+ mongoose/mongoose.c     |  3 ++-
+ parser/parser.c         |  3 ++-
+ 9 files changed, 29 insertions(+), 17 deletions(-)
+
+diff --git a/bootloader/none.c b/bootloader/none.c
+index d3bd71a..4de39ff 100644
+--- a/bootloader/none.c
++++ b/bootloader/none.c
+@@ -50,8 +50,10 @@ int bootloader_apply_list(const char *filename)
+ 
+ #include <unistd.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <string.h>
+ #include "bootloader.h"
++#include "ubootenv.h"
+ 
+ static int env_init = 0;
+ 
+diff --git a/core/pctl.c b/core/pctl.c
+index b8a259b..f6eb404 100644
+--- a/core/pctl.c
++++ b/core/pctl.c
+@@ -24,6 +24,7 @@
+ #include <sys/wait.h>
+ #include <parselib.h>
+ #include <swupdate_settings.h>
++#include "bootloader.h"
+ 
+ #ifndef WAIT_ANY
+ #define WAIT_ANY (-1)
+diff --git a/core/stream_interface.c b/core/stream_interface.c
+index 977fb06..b64ed13 100644
+--- a/core/stream_interface.c
++++ b/core/stream_interface.c
+@@ -18,6 +18,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/socket.h>
++#include <sys/mount.h>
+ #include <ctype.h>
+ #include <fcntl.h>
+ #include <dirent.h>
+@@ -45,6 +46,7 @@
+ #include "pctl.h"
+ #include "state.h"
+ #include "bootloader.h"
++#include "bootloader_message.h"
+ 
+ #define BUFF_SIZE	 4096
+ #define PERCENT_LB_INDEX	4
+@@ -649,7 +651,9 @@ void *network_initializer(void *data)
+ 					notify(SUCCESS, RECOVERY_NO_ERROR, INFOLEVEL, "SWUPDATE download successful !, reboot...");
+ 					umount("/data");
+ 					set_recovery();
+-					system("reboot");
++					if (system("reboot") < 0) { /* It should never happen */
++					  fprintf(stdout, "Please reset the board.\n");
++					}
+ 					sleep(5);
+ 				} else {
+ 					close(inst.fd);
+diff --git a/core/swupdate.c b/core/swupdate.c
+index 0ff3ed6..84be40c 100644
+--- a/core/swupdate.c
++++ b/core/swupdate.c
+@@ -47,6 +47,7 @@
+ #include "pctl.h"
+ #include "state.h"
+ #include "bootloader.h"
++#include "bootloader_message.h"
+ 
+ #ifdef CONFIG_SYSTEMD
+ #include <systemd/sd-daemon.h>
+diff --git a/handlers/ext4_handler.c b/handlers/ext4_handler.c
+index 5f566a0..e0ad1af 100644
+--- a/handlers/ext4_handler.c
++++ b/handlers/ext4_handler.c
+@@ -36,10 +36,11 @@
+ #include <errno.h>
+ 
+ #include "../libsparse/sparse.h"
+- #include "handler.h"
+- #include "swupdate.h"
+- #include "util.h"
+- #include "sslapi.h"
++#include "swupdate.h"
++#include "handler.h"
++#include "util.h"
++#include "sslapi.h"
++#include "bootloader_message.h"
+ 
+ #define __le64 u64
+ #define __le32 u32
+@@ -136,9 +137,9 @@ typedef struct chunk_header {
+   __le32	total_sz;	/* in bytes of chunk input file including chunk header and data */
+ } chunk_header_t;
+ 
+-static char *copyBuf = NULL;
+-static char *sparseMergeBuf = NULL;
+-static int curValidSparseMergeDataLen = 0;
++//static char *copyBuf = NULL;
++//static char *sparseMergeBuf = NULL;
++//static int curValidSparseMergeDataLen = 0;
+ 
+ #define sparseErr(fmt ...) printf("Err:%s,line:%d. ", __FUNCTION__, __LINE__); printf(fmt);
+ #define sparseMsg(fmt ...) printf(fmt);
+@@ -255,8 +256,8 @@ static int install_ext4_image(struct img_type *img,
+     int ret;
+     int fdout;
+     int slot = 0;
+-    char device_name[128];
+-    int readl = 0;
++    char device_name[256];
++    //int readl = 0;
+     int len = img->size;
+     struct sparse_file *s;
+ 
+diff --git a/handlers/raw_handler.c b/handlers/raw_handler.c
+index 2451c07..9b2c434 100644
+--- a/handlers/raw_handler.c
++++ b/handlers/raw_handler.c
+@@ -28,8 +28,9 @@
+ #include "swupdate.h"
+ #include "handler.h"
+ #include "util.h"
++#include "bootloader_message.h"
+ 
+-#define ARRAY_SIZE(x)  sizeof(x)/sizeof(x[0])
++//#define ARRAY_SIZE(x)  sizeof(x)/sizeof(x[0])
+ #define EMMC_USER_PARTITION        "bootloader"
+ #define EMMC_BLK0BOOT0_PARTITION   "mmcblk0boot0"
+ #define EMMC_BLK0BOOT1_PARTITION   "mmcblk0boot1"
+@@ -48,7 +49,7 @@ enum emmcPartition {
+   BLK2BOOT1,
+ };
+ 
+-static int sEmmcPartionIndex = -1;
++//static int sEmmcPartionIndex = -1;
+ static const char *sEmmcPartionName[] = {
+   EMMC_USER_PARTITION,
+   EMMC_BLK0BOOT0_PARTITION,
+@@ -221,7 +222,7 @@ static int blkprotect(struct img_type *img, bool on)
+ 	struct stat sb;
+ 	char current_prot;
+ 	int slot = 0;
+-	char device_name[128];
++	char device_name[256];
+ 
+ 	if (strncmp("/dev/", img->device, 5) != 0) {
+ 		return ret;
+@@ -318,7 +319,7 @@ static int install_raw_image(struct img_type *img,
+ 		return prot_stat;
+ 
+ 	int slot = 0;
+-	char device_name[128];
++	char device_name[256];
+ 	// bootloader maybe need to seek 512 byte
+ 	if ((strcmp(img->fname, "u-boot.bin")==0) || (strcmp(img->fname, "u-boot.bin.signed")==0)
+ 	|| (strcmp(img->fname, "u-boot.bin.encrypt")==0)) {
+diff --git a/libsparse/sparse_read.c b/libsparse/sparse_read.c
+index 7d5cbbf..d6ba165 100644
+--- a/libsparse/sparse_read.c
++++ b/libsparse/sparse_read.c
+@@ -14,7 +14,7 @@
+  * limitations under the License.
+  */
+ 
+-#define _GNU_SOURCE
++//#define _GNU_SOURCE
+ #define _FILE_OFFSET_BITS 64
+ #define _LARGEFILE64_SOURCE 1
+ 
+diff --git a/mongoose/mongoose.c b/mongoose/mongoose.c
+index 03bfad3..33292d1 100644
+--- a/mongoose/mongoose.c
++++ b/mongoose/mongoose.c
+@@ -1366,7 +1366,8 @@ void cs_hmac_sha1(const unsigned char *key, size_t keylen,
+                   const unsigned char *data, size_t datalen,
+                   unsigned char out[20]) {
+   cs_sha1_ctx ctx;
+-  unsigned char buf1[64], buf2[64], tmp_key[20], i;
++  unsigned char buf1[64], buf2[64], tmp_key[20];
++  unsigned int i;
+ 
+   if (keylen > sizeof(buf1)) {
+     cs_sha1_init(&ctx);
+diff --git a/parser/parser.c b/parser/parser.c
+index 85241f4..7d62cb6 100644
+--- a/parser/parser.c
++++ b/parser/parser.c
+@@ -940,8 +940,9 @@ static int parser(parsertype p, void *cfg, struct swupdate_cfg *swcfg)
+ 	 */
+ 	parse_partitions(p, cfg, swcfg, L);
+ 
+-	if (L)
++	if (L) {
+ 		lua_parser_exit(L);
++	}
+ 
+ 	if (LIST_EMPTY(&swcfg->images) &&
+ 	    LIST_EMPTY(&swcfg->scripts) &&
+-- 
+2.29.0
+
