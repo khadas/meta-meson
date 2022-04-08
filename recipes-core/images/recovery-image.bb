@@ -17,11 +17,13 @@ IMAGE_INSTALL_append = "\
                     exfat-utils \
                     ntfs-3g \
                     systemd \
+                    kernel-modules \
                    "
 
 IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
             "aml-bootloader-message \
             libconfig \
+            aml-swupdate-ui \
             swupdate", "", d)}"
 
 

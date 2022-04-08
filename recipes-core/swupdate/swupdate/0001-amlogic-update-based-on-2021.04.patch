@@ -1,4 +1,4 @@
-From f0d7d6acb67155b0109e899190123c0ba653639a Mon Sep 17 00:00:00 2001
+From 3e90654bc4c4873d803922de7aa450f2b7aceb71 Mon Sep 17 00:00:00 2001
 From: Blance Tang <guofeng.tang@amlogic.com>
 Date: Wed, 20 Oct 2021 16:05:47 +0800
 Subject: [PATCH] amlogic update based on 2021.04
@@ -35,7 +35,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  libsparse/defs.h          |  23 ++
  libsparse/output_file.c   | 775 ++++++++++++++++++++++++++++++++++++++
  libsparse/output_file.h   |  42 +++
- libsparse/sparse.c        | 396 +++++++++++++++++++
+ libsparse/sparse.c        | 402 ++++++++++++++++++++
  libsparse/sparse.h        | 310 +++++++++++++++
  libsparse/sparse_crc32.c  | 110 ++++++
  libsparse/sparse_crc32.h  |  32 ++
@@ -44,7 +44,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  libsparse/sparse_file.h   |  32 ++
  libsparse/sparse_format.h |  55 +++
  libsparse/sparse_read.c   | 510 +++++++++++++++++++++++++
- 33 files changed, 3807 insertions(+), 10 deletions(-)
+ 33 files changed, 3813 insertions(+), 10 deletions(-)
  create mode 100644 handlers/ext4_handler.c
  create mode 100644 libsparse/Config.in
  create mode 100644 libsparse/Makefile
@@ -2749,10 +2749,10 @@ index 0000000..67d48cc
 +#endif
 diff --git a/libsparse/sparse.c b/libsparse/sparse.c
 new file mode 100644
-index 0000000..d60c14b
+index 0000000..8304e3b
 --- /dev/null
 +++ b/libsparse/sparse.c
-@@ -0,0 +1,396 @@
+@@ -0,0 +1,402 @@
 +/*
 + * Copyright (C) 2012 The Android Open Source Project
 + *
@@ -2782,6 +2782,7 @@ index 0000000..d60c14b
 +#include "backed_block.h"
 +#include "sparse_defs.h"
 +#include "sparse_format.h"
++#include "progress.h"
 +
 +struct sparse_file *sparse_file_new(unsigned int block_size, int64_t len)
 +{
@@ -2888,7 +2889,7 @@ index 0000000..d60c14b
 +static int write_all_blocks(struct sparse_file *s, struct output_file *out)
 +{
 +	struct backed_block *bb;
-+	unsigned int last_block = 0;
++	unsigned int last_block = 0, percent = 0, prevpercent = 0;
 +	int64_t pad;
 +	int ret = 0;
 +
@@ -2903,6 +2904,11 @@ index 0000000..d60c14b
 +			return ret;
 +		last_block = backed_block_block(bb) +
 +				DIV_ROUND_UP(backed_block_len(bb), s->block_size);
++		percent = (unsigned)(100ULL * (last_block * s->block_size) / s->len);
++		if (percent != prevpercent) {
++			prevpercent = percent;
++			swupdate_progress_update(percent);
++		}
 +	}
 +
 +	pad = s->len - (int64_t)last_block * s->block_size;
