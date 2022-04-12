@@ -1,0 +1,10 @@
+[Unit]
+Description=AML remote configuration
+
+[Service]
+User=root
+Type=oneshot
+ExecStart=/usr/bin/remotecfg -t /etc/remote/remote.tab -c /etc/remote/remote.cfg
+
+[Install]
+WantedBy=multi-user.target
