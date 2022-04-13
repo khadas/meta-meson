@@ -11,7 +11,7 @@ require aml-package.inc
 
 LICENSE = "MIT"
 
-#IMAGE_FEATURES += "splash "
+IMAGE_FEATURES += "splash "
 IMAGE_FEATURES += "tools-debug "
 
 IMAGE_INSTALL += " \

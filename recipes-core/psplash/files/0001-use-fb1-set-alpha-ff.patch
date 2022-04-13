@@ -1,0 +1,39 @@
+Index: git/psplash-fb.c
+===================================================================
+--- git.orig/psplash-fb.c
++++ git/psplash-fb.c
+@@ -385,7 +385,7 @@ psplash_fb_plot_pixel (PSplashFB    *fb,
+         break;
+       case 32:
+         *(volatile uint32_t *) (fb->bdata + off)
+-          = (red << 16) | (green << 8) | (blue);
++          = (0xff << 24) | (red << 16) | (green << 8) | (blue);
+         break;
+ 
+       case 16:
+Index: git/psplash.c
+===================================================================
+--- git.orig/psplash.c
++++ git/psplash.c
+@@ -219,7 +219,7 @@ int
+ main (int argc, char** argv) 
+ {
+   char      *rundir;
+-  int        pipe_fd, i = 0, angle = 0, fbdev_id = 0, ret = 0;
++  int        pipe_fd, i = 0, angle = 0, fbdev_id = 1, ret = 0;
+   PSplashFB *fb;
+   bool       disable_console_switch = FALSE;
+ 
+Index: git/psplash-colors.h
+===================================================================
+--- git.orig/psplash-colors.h
++++ git/psplash-colors.h
+@@ -12,7 +12,7 @@
+ #define _HAVE_PSPLASH_COLORS_H
+ 
+ /* This is the overall background color */
+-#define PSPLASH_BACKGROUND_COLOR 0xec,0xec,0xe1
++#define PSPLASH_BACKGROUND_COLOR 0x00,0x00,0x00
+ 
+ /* This is the color of any text output */
+ #define PSPLASH_TEXT_COLOR 0x6d,0x6d,0x70
