@@ -9,5 +9,6 @@ SRC_URI_append = "file://0007-fix_SWPL-70094_avi_codecdata.patch "
 SRC_URI_append = "file://0008-enalbe_ffmpeg_demux.patch "
 SRC_URI_append = "file://0009-fix_SWPL-75485_support_ac4.patch "
 SRC_URI_append = "file://0010-make-negative-pts-to-invalid.patch "
+SRC_URI_append = "file://0011-add-caps-field-to-skip-h265-parser.patch "
 
 TARGET_CFLAGS += "-DAMFFMPEG"
