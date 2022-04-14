@@ -9,6 +9,8 @@ PACKAGES = "\
     "
 
 RDEPENDS_packagegroup-amlogic-baserootfs = "\
+    cpufrequtils \
+    htop \
     toybox \
     sqlite3 \
     icu \
