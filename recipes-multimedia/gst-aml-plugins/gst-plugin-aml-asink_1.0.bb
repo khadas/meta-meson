@@ -25,6 +25,12 @@ RDEPENDS_${PN} += "${@bb.utils.contains('EXTRA_OECONF', '--enable-mediasync=yes'
 
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
 inherit autotools pkgconfig features_check
+
+do_configure_append() {
+  cd ${S}
+  bash version_config.sh
+}
+
 FILES_${PN} += "${libdir}/gstreamer-1.0/*"
 INSANE_SKIP_${PN} = "ldflags dev-so "
 INHIBIT_PACKAGE_STRIP = "1"

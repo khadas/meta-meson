@@ -13,6 +13,8 @@ S="${WORKDIR}/git/avsync-lib"
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D}"
 
 do_compile() {
+    cd ${S}
+    bash version_config.sh
     cd ${S}/src
     oe_runmake  all
 }
