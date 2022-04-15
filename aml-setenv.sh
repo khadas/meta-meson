@@ -188,12 +188,18 @@ EOF
 
     export MACHINE=$TARGET_MACHINE
     export AML_PATCH_PATH=${MESON_ROOT_PATH}/aml-patches
-    export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} AML_PATCH_PATH"
+    # Secure Boot Sign Tool
+    #export AML_SCS_SIGN_TOOL=${MESON_ROOT_PATH}/Aml_Linux_SCS_SignTool/amlogic_scs_sign_whole_pkg.bash
+    # Secure Boot config files device-keys and fw_arb.cfg
+    #export AML_SCS_SIGN_CONFIG_PATH=${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-linux-scs
+    export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} AML_PATCH_PATH AML_SCS_SIGN_TOOL AML_SCS_SIGN_CONFIG_PATH"
     echo "==========================================="
     echo
     echo "MACHINE=${TARGET_MACHINE}"
     echo "OUTPUT_DIR=${BUILD_DIR}"
     echo "AML_PATCH_PATH=${AML_PATCH_PATH}"
+    echo "AML_SCS_SIGN_TOOL=${AML_SCS_SIGN_TOOL}"
+    echo "AML_SCS_SIGN_CONFIG_PATH=${AML_SCS_SIGN_CONFIG_PATH}"
     echo
     echo "==========================================="
 

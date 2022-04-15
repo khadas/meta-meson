@@ -83,6 +83,7 @@ EXTERNALSRC_pn-dtvkit-release-prebuilt = "${@'${MESON_ROOT_PATH}/aml-comp/prebui
 EXTERNALSRC_pn-aml-img-packer-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-image-packer' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-image-packer')) else ''}"
 EXTERNALSRC_pn-aml-hosttools-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools')) else ''}"
 EXTERNALSRC_pn-aml-swupdate-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-swupdate' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-swupdate')) else ''}"
+EXTERNALSRC_pn-aml-linux-scs-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-linux-scs' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-linux-scs')) else ''}"
 EXTERNALSRC_pn-mt76x8 = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/wifi/mediatek/driver/mt76x8' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/wifi/mediatek/driver/mt76x8')) else ''}"
 EXTERNALSRC_pn-btmtkusb = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/bluetooth/mediatek/mt76xx/driver/mt76x8/usb' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/bluetooth/mediatek/mt76xx/driver/mt76x8/usb')) else ''}"
 EXTERNALSRC_pn-aml-secmem = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm')) else ''}"

@@ -2,6 +2,7 @@ DEPENDS_append = " aml-img-packer-native"
 DEPENDS_append_onepass = " core-image-minimal"
 DEPENDS_append = " vendor-image"
 DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', ' aml-swupdate-native', '', d)}"
+DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', ' aml-linux-scs-native', '', d)}"
 
 SOC_FAMILY = "TBD"
 SOC_FAMILY_gxl = "gxl"
@@ -74,6 +75,26 @@ else
     fi
 
     ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/${PACK_CONF} ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
+
+    #sign image
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'scs', 'true', 'false', d)}; then
+        cp -rf ${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/device-keys ${DEPLOY_DIR_IMAGE}/
+        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/fw_arb.cfg ${DEPLOY_DIR_IMAGE}/
+
+        if [ "${AML_SCS_SIGN_TOOL}" = "" ];then
+            AML_SCS_SIGN=${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/amlogic_scs_sign_whole_pkg.bash
+        else
+            AML_SCS_SIGN=${AML_SCS_SIGN_TOOL}
+        fi
+
+        UBOOT_TYPE="${UBOOT_MACHINE}"
+        ${AML_SCS_SIGN} --soc ${CHIPSET_NAME} \
+            --aml_key ${DEPLOY_DIR_IMAGE}/device-keys \
+            --fw_arb_cfg ${DEPLOY_DIR_IMAGE}/fw_arb.cfg \
+            --aml_img ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img \
+            --bootloader_zip ${DEPLOY_DIR_IMAGE}/${UBOOT_TYPE%_config}-u-boot.aml.zip \
+            --output ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_enc.img
+    fi
 
     #create software.swu
     if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'true', 'false', d)}; then
