@@ -1,0 +1,58 @@
+From c69b70ca9502d7ccc6daab2fdddeba16747bf024 Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Fri, 15 Apr 2022 20:56:31 +0800
+Subject: [PATCH] gst-libav:  revert cl [1/1]
+
+PD#SWPL-78795
+
+Problem:
+Some  h264 && h265 can not be playback
+
+Solution:
+Revert cl
+1. make tsdemux instead of avdemux
+2. add remove codec patch
+3. revert skip h265 && h264 parser patch
+
+Verify:
+AP212
+---
+ ext/libav/gstavdemux.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+index 8b45dbf..52db9ca 100755
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -966,6 +966,16 @@ gst_ffmpegdemux_get_stream (GstFFMpegDemux * demux, AVStream * avstream)
+   caps = gst_ffmpeg_codecid_to_caps (ctx->codec_id, ctx, TRUE);
+   if (caps == NULL)
+     goto unknown_caps;
++  else if ((!strcmp(demux->context->iformat->name, "mpegts")
++       && (AV_CODEC_ID_H264 == ctx->codec_id || AV_CODEC_ID_HEVC == ctx->codec_id))
++       || (!strcmp(demux->context->iformat->name, "avi")
++       && (AV_CODEC_ID_H264 == ctx->codec_id)))
++      {
++        GstStructure *structure;
++        structure =  gst_caps_get_structure (caps, 0);
++        gst_structure_remove_field (structure, "codec_data");
++        GST_DEBUG_OBJECT (demux, "After remove codec_data, caps %" GST_PTR_FORMAT, caps);
++      }
+ 
+   /* stream is known now */
+   stream->unknown = FALSE;
+@@ -2081,7 +2091,10 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
+ 
+     env = getenv("VENDOR_MEDIA_GST_LIBAV_ENABLE_FFMPEG");
+     if ((NULL == env) || ((env) && (atoi(env)))) {
+-        rank = GST_RANK_PRIMARY;
++  		if(!strcmp(in_plugin->name, "mpegts"))
++  			  rank = GST_RANK_NONE;
++  		else
++          rank = GST_RANK_PRIMARY;
+     } else {
+         /* Set the rank of demuxers known to work to MARGINAL.
+          * Set demuxers for which we already have another implementation to NONE
+-- 
+2.25.1
+
