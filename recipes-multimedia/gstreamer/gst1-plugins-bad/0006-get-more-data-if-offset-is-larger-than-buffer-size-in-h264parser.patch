@@ -1,0 +1,42 @@
+From 0aae73cbf20a3b21856567f2d57d7c7362bcb8ad Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Fri, 15 Apr 2022 13:35:05 +0800
+Subject: [PATCH] gst-plugins-bad: Get more data if Offset is larger than size [1/1]
+
+PD#SWPL-78513
+
+Problem:
+H265parser did not keep parsing because of assert error
+Offset is larger than size, so assert error
+
+Solution:
+Get more data if Offset is larger than size
+
+Verify:
+AP212
+---
+ gst/videoparsers/gsth264parse.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/gst/videoparsers/gsth264parse.c b/gst/videoparsers/gsth264parse.c
+index f4d82e5..6bc1cf6 100644
+--- a/gst/videoparsers/gsth264parse.c
++++ b/gst/videoparsers/gsth264parse.c
+@@ -1223,6 +1223,14 @@ gst_h264_parse_handle_frame (GstBaseParse * parse,
+   current_off = h264parse->current_off;
+   if (current_off < 0)
+     current_off = 0;
++
++  if (current_off >= size)
++  {
++      GST_DEBUG_OBJECT (h264parse, "Need more data, current_off %d, size %d",
++      current_off, size);
++      goto more;
++  }
++
+   g_assert (current_off < size);
+   GST_DEBUG_OBJECT (h264parse, "last parse position %d", current_off);
+ 
+-- 
+2.25.1
+
