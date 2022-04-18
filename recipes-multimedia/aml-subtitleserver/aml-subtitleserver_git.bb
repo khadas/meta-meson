@@ -9,14 +9,14 @@ SRC_URI +="file://subtitleserver.service"
 
 #do_configure[noexec] = "1"
 inherit autotools cmake pkgconfig systemd
-DEPENDS = " libbinder liblog aml-zvbi cairo virtual/libgles2"
+DEPENDS = " libbinder liblog aml-zvbi cairo virtual/libgles2 aml-mediahal-sdk"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_subtitleserver.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 SRC_URI +="file://subtitleserver.service"
 S="${WORKDIR}/git"
-RDEPENDS_${PN} = " liblog libbinder aml-zvbi cairo"
+RDEPENDS_${PN} = " liblog libbinder aml-zvbi cairo aml-mediahal-sdk"
 
 
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
