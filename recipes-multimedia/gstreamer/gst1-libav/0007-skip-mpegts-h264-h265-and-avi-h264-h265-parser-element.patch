@@ -1,0 +1,41 @@
+From 067deaef12def57cef026a92e273959eccc97f34 Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Tue, 19 Apr 2022 15:41:17 +0800
+Subject: [PATCH] gst-libav:  skip mpegts, avi, h264, h265 parser [1/1]
+
+PD#SWPL-78981
+
+Problem:
+When skip h264 parser, Mp4 cannot be playback
+
+Solution:
+Only skip mpegts, avi, h264, h265 parser, do not skip mp4 h264 parser
+
+Verify:
+AP212
+---
+ ext/libav/gstavdemux.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+index 8b45dbf..bd3422e 100755
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -966,6 +966,14 @@ gst_ffmpegdemux_get_stream (GstFFMpegDemux * demux, AVStream * avstream)
+   caps = gst_ffmpeg_codecid_to_caps (ctx->codec_id, ctx, TRUE);
+   if (caps == NULL)
+     goto unknown_caps;
++  else if ((!strcmp(demux->context->iformat->name, "mpegts")
++       && (AV_CODEC_ID_H264 == ctx->codec_id || AV_CODEC_ID_HEVC == ctx->codec_id))
++       || (!strcmp(demux->context->iformat->name, "avi")
++       && (AV_CODEC_ID_H264 == ctx->codec_id || AV_CODEC_ID_HEVC == ctx->codec_id)))
++      {
++        gst_caps_set_simple (caps, "parsed", G_TYPE_BOOLEAN, "true",
++            "stream-format", G_TYPE_STRING, "byte-stream", NULL);
++      }
+ 
+   /* stream is known now */
+   stream->unknown = FALSE;
+-- 
+2.25.1
+

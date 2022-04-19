@@ -11,7 +11,7 @@ diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
 index 52db9ca..17009ff 100644
 --- a/ext/libav/gstavdemux.c
 +++ b/ext/libav/gstavdemux.c
-@@ -1272,6 +1272,11 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
+@@ -1270,6 +1270,11 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
  
    gst_element_no_more_pads (GST_ELEMENT (demux));
  
