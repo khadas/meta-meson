@@ -77,12 +77,14 @@ NAGRA_UBOOT_PATH_ah221 = "sc2/s905c2l"
 NAGRA_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', '--chip-varient nocs-jts-ap --bl32 nagra-sdk/bootloader/${NAGRA_UBOOT_PATH}/bl32/blob-bl32.bin.signed --bl31 nagra-sdk/bootloader/${NAGRA_UBOOT_PATH}/bl31/blob-bl31.bin.signed', '', d)}"
 
 CFLAGS +=" -DCONFIG_YOCTO "
+KCFLAGS +=" -DCONFIG_YOCTO "
 do_compile () {
     cd ${S}
     cp -f fip/mk .
     export BUILD_FOLDER=${S}/build/
     export PYTHONPATH="${STAGING_DIR_NATIVE}/usr/lib/python2.7/site-packages/"
     export CROSS_COMPILE=aarch64-elf-
+    export KCFLAGS="${KCFLAGS}"
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
     LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG}

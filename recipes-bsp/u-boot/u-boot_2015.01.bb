@@ -81,12 +81,15 @@ inherit python3native
 export BL30_ARG = ""
 export BL2_ARG = ""
 
+CFLAGS +=" -DCONFIG_YOCTO "
+KCFLAGS +=" -DCONFIG_YOCTO "
 do_compile () {
     cd ${S}
     cp -f fip/mk .
     export BUILD_FOLDER=${S}/build/
     export PYTHONPATH="${STAGING_DIR_NATIVE}/usr/lib/python3.8/site-packages/"
     export CROSS_COMPILE=aarch64-elf-
+    export KCFLAGS="${KCFLAGS}"
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
     if ${@bb.utils.contains('DISTRO_FEATURES','secure-u-boot','true','false',d)}; then
