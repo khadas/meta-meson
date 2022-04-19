@@ -17,6 +17,10 @@ chmod g+rw /tmp/amazonPrime/
 
 chgrp $GROUP_SYSTEM /data
 chmod g+rw /data
+if [ -d /data/persistent ];then
+  chgrp $GROUP_SYSTEM /data/persistent
+  chmod g+rw /data/persistent
+fi
 chgrp $GROUP_SYSTEM /run
 chmod g+rw /run
 

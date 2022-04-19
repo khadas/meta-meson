@@ -1,7 +1,7 @@
 [Unit]
 Description=Sandbox setup service
 Before=wpeframework.service
-After=wifi.service audioserver.service
+After=wifi.service audioserver.service pqserver.service
 
 [Service]
 Type=oneshot
