@@ -1,0 +1,41 @@
+From a74bc48c04a08a146b141754ad7f8305a1675dc9 Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Wed, 20 Apr 2022 16:47:57 +0800
+Subject: [PATCH] gstreamer1.0:  do not post buffering in multiqueue [1/1]
+
+PD#SWPL-78509
+
+Problem:
+Aqueue low buffer level make pipeline pause
+Vqueue high buffer level make pipeline playing
+Alternately checking a/v queue buffer level results in frequent state switching
+Which will make Video playback not smooth
+
+Solution:
+do not post buffering in multiqueue
+
+Verify:
+AP212
+---
+ plugins/elements/gstmultiqueue.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/plugins/elements/gstmultiqueue.c b/plugins/elements/gstmultiqueue.c
+index ea48901..d4feb89 100644
+--- a/plugins/elements/gstmultiqueue.c
++++ b/plugins/elements/gstmultiqueue.c
+@@ -1211,8 +1211,9 @@ update_buffering (GstMultiQueue * mq, GstSingleQueue * sq)
+     }
+ 
+     if (is_buffering && buffering_level < mq->low_watermark) {
+-      mq->buffering = TRUE;
+-      SET_PERCENT (mq, percent);
++      // Do not post buffering because issue SWPL-78509
++      mq->buffering = FALSE;
++      // SET_PERCENT (mq, percent);
+     }
+   }
+ }
+-- 
+2.25.1
+
