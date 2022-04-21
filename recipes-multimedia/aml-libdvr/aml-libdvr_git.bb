@@ -8,8 +8,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #For common patches
 
 SRC_URI_append = "${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libdvr')}"
-DEPENDS += "aml-audio-service aml-mediahal-sdk liblog"
-RDEPENDS_${PN} += "aml-audio-service aml-mediahal-sdk liblog"
+DEPENDS += "aml-audio-service aml-mediahal-sdk liblog aml-dvb"
+RDEPENDS_${PN} += "aml-audio-service aml-mediahal-sdk liblog aml-dvb"
 
 #do_compile[noexec] = "1"
 

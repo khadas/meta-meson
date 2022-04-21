@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #For common patches
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/mediahal-sdk')}"
 
-DEPENDS += "aml-audio-hal aml-audio-service libdrm-meson wayland"
+DEPENDS += "aml-audio-service libdrm-meson wayland"
 RDEPENDS_${PN} += "aml-audio-service libdrm-meson"
 
 #do_compile[noexec] = "1"
