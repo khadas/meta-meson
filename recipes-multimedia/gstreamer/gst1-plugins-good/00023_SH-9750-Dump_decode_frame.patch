@@ -1,0 +1,135 @@
+diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
+index 75a5ac8..c13cece 100644
+--- a/sys/v4l2/gstv4l2bufferpool.c
++++ b/sys/v4l2/gstv4l2bufferpool.c
+@@ -34,6 +34,7 @@
+ #include <sys/mman.h>
+ #include <string.h>
+ #include <unistd.h>
++#include <stdio.h>
+ 
+ #include "gst/video/video.h"
+ #include "gst/video/gstvideometa.h"
+@@ -2020,6 +2021,25 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf)
+               != GST_FLOW_OK)
+             goto done;
+ 
++          if (obj->dumpframefile) {
++            FILE *pFile = fopen(obj->dumpframefile, "ab");
++            if (pFile) {
++              int n = gst_buffer_n_memory (tmp);
++              int i;
++              GstMapInfo map_info;
++              GstMemory *mem;
++
++              for (i = 0; i < n; ++i) {
++                mem = gst_buffer_peek_memory (tmp, i);
++                if (gst_memory_map (mem, &map_info, GST_MAP_READ)) {
++                  fwrite( map_info.data, map_info.size, 1, pFile);
++                  gst_memory_unmap (mem, &map_info);
++                }
++              }
++              fclose(pFile);
++            }
++          }
++
+           /* An empty buffer on capture indicates the end of stream */
+           if (gst_buffer_get_size (tmp) == 0) {
+             gst_v4l2_buffer_pool_release_buffer (bpool, tmp);
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 60adf21..6cef33c 100644
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -457,6 +457,12 @@ gst_v4l2_object_install_m2m_properties_helper (GObjectClass * gobject_class)
+       g_param_spec_boxed ("extra-controls", "Extra Controls",
+           "Extra v4l2 controls (CIDs) for the device",
+           GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
++
++  g_object_class_install_property (gobject_class, PROP_DUMP_FRAME_LOCATION,
++      g_param_spec_string ("dump-frame-location", "dump frame location",
++          "Location of the file to write decoder frames", NULL,
++          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
++
+ }
+ 
+ /* Support for 32bit off_t, this wrapper is casting off_t to gint64 */
+@@ -554,6 +560,8 @@ gst_v4l2_object_new (GstElement * element,
+   v4l2object->can_poll_device = TRUE;
+   v4l2object->tvin_port = -1;
+ 
++  v4l2object->dumpframefile = NULL;
++
+   return v4l2object;
+ }
+ 
+@@ -583,6 +591,8 @@ gst_v4l2_object_destroy (GstV4l2Object * v4l2object)
+ 
+   gst_poll_free (v4l2object->poll);
+ 
++  g_free (v4l2object->dumpframefile);
++
+   g_free (v4l2object);
+ }
+ 
+@@ -726,6 +736,10 @@ gst_v4l2_object_set_property_helper (GstV4l2Object * v4l2object,
+     case PROP_FORCE_ASPECT_RATIO:
+       v4l2object->keep_aspect = g_value_get_boolean (value);
+       break;
++    case PROP_DUMP_FRAME_LOCATION:
++      g_free (v4l2object->dumpframefile);
++      v4l2object->dumpframefile = g_value_dup_string (value);
++      break;
+     default:
+       return FALSE;
+       break;
+@@ -823,6 +837,9 @@ gst_v4l2_object_get_property_helper (GstV4l2Object * v4l2object,
+     case PROP_FORCE_ASPECT_RATIO:
+       g_value_set_boolean (value, v4l2object->keep_aspect);
+       break;
++    case PROP_DUMP_FRAME_LOCATION:
++	  g_value_set_string (value, v4l2object->dumpframefile);
++      break;
+     default:
+       return FALSE;
+       break;
+diff --git a/sys/v4l2/gstv4l2object.h b/sys/v4l2/gstv4l2object.h
+index de9ddde..b803c45 100644
+--- a/sys/v4l2/gstv4l2object.h
++++ b/sys/v4l2/gstv4l2object.h
+@@ -225,6 +225,9 @@ struct _GstV4l2Object {
+   gboolean need_wait_event;
+ 
+   guint tvin_port;
++
++  /* the file to store dumped decoder frames */
++  char *dumpframefile;
+ };
+ 
+ struct _GstV4l2ObjectClassHelper {
+@@ -249,7 +252,8 @@ GType gst_v4l2_object_get_type (void);
+     PROP_CAPTURE_IO_MODE,     \
+     PROP_EXTRA_CONTROLS,      \
+     PROP_PIXEL_ASPECT_RATIO,  \
+-    PROP_FORCE_ASPECT_RATIO
++    PROP_FORCE_ASPECT_RATIO,  \
++    PROP_DUMP_FRAME_LOCATION
+ 
+ /* create/destroy */
+ GstV4l2Object*  gst_v4l2_object_new       (GstElement * element,
+diff --git a/sys/v4l2/gstv4l2videodec.c b/sys/v4l2/gstv4l2videodec.c
+index 24dc1ba..151b8f5 100644
+--- a/sys/v4l2/gstv4l2videodec.c
++++ b/sys/v4l2/gstv4l2videodec.c
+@@ -73,6 +73,12 @@ gst_v4l2_video_dec_set_property (GObject * object,
+         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+       }
+       break;
++    case PROP_DUMP_FRAME_LOCATION:
++      if (!gst_v4l2_object_set_property_helper (self->v4l2capture,
++              prop_id, value, pspec)) {
++        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
++      }
++      break;
+ 
+       /* By default, only set on output */
+     default:
