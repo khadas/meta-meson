@@ -1,0 +1,36 @@
+From 4bc54229c64416b2e26505b6ae4c24527f97ac36 Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Thu, 21 Apr 2022 14:19:44 +0800
+Subject: [PATCH] gstreamer1.0-libav:  skip matroska,webm h264 && h265 parser
+ element [1/1]
+
+PD#SWPL-73052
+
+Problem:
+H264 parser element get error when parse codec_data
+
+Solution:
+skip matroska,webm h264 && h265 parser element because ffmpeg has parsed
+
+Verify:
+AP212
+---
+ ext/libav/gstavdemux.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+index 920d2c1..0856421 100755
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -969,6 +969,8 @@ gst_ffmpegdemux_get_stream (GstFFMpegDemux * demux, AVStream * avstream)
+   else if ((!strcmp(demux->context->iformat->name, "mpegts")
+        && (AV_CODEC_ID_H264 == ctx->codec_id || AV_CODEC_ID_HEVC == ctx->codec_id))
+        || (!strcmp(demux->context->iformat->name, "avi")
++       && (AV_CODEC_ID_H264 == ctx->codec_id || AV_CODEC_ID_HEVC == ctx->codec_id))
++       || (!strcmp(demux->context->iformat->name, "matroska,webm")
+        && (AV_CODEC_ID_H264 == ctx->codec_id || AV_CODEC_ID_HEVC == ctx->codec_id)))
+       {
+         gst_caps_set_simple (caps, "parsed", G_TYPE_BOOLEAN, "true",
+-- 
+2.25.1
+
