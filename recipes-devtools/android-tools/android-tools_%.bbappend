@@ -6,6 +6,7 @@ SRC_URI += "file://adbd.service"
 SRC_URI += "file://adbd_post.sh"
 SRC_URI += "file://adbd_prepare.sh"
 SRC_URI += "file://adb_udc_file"
+SRC_URI += "file://0001-adbd-enable-tcpip.patch;patchdir=system/core"
 
 SYSTEMD_AUTO_ENABLE = "enable"
 SYSTEMD_SERVICE_${PN} = "adbd.service"
