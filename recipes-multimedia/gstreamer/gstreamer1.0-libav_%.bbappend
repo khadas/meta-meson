@@ -8,6 +8,6 @@ SRC_URI_append = "file://0006-make-negative-pts-to-invalid.patch "
 SRC_URI_append = "file://0007-skip-mpegts-h264-h265-and-avi-h264-h265-parser-element.patch "
 SRC_URI_append = "file://0008-fix-SWPL-76313-wav-playback.patch "
 SRC_URI_append = "file://0009-skip-matroska-webm-h264-h265-parser-element.patch "
-
+SRC_URI_append = "file://0010-CB1-correct-mpeg-sink-caps.patch "
 
 TARGET_CFLAGS += "-DAMFFMPEG"

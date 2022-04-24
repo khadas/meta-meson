@@ -1,0 +1,39 @@
+From 8023b65c6a5a724c2fd7cd7bc8d8061e5fe776c5 Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Sun, 24 Apr 2022 14:20:30 +0800
+Subject: [PATCH] gstreamer1.0-libav: CB1 correct mpeg sink caps [1/1]
+
+PD#SWPL-79336
+
+Problem:
+Because mpeg sink caps not correct,
+which will make mpeg cannot be playback
+
+Solution:
+correct mpeg sink caps
+
+Verify:
+AP212
+---
+ ext/libav/gstavcodecmap.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/ext/libav/gstavcodecmap.c b/ext/libav/gstavcodecmap.c
+index 6db76f0..7cc9210 100755
+--- a/ext/libav/gstavcodecmap.c
++++ b/ext/libav/gstavcodecmap.c
+@@ -3527,9 +3527,8 @@ gst_ffmpeg_formatid_to_caps (const gchar * format_name)
+   GstCaps *caps = NULL;
+ 
+   if (!strcmp (format_name, "mpeg")) {
+-    //caps = gst_caps_new_simple ("video/mpeg",
+-    //    "systemstream", G_TYPE_BOOLEAN, TRUE, NULL);
+-    caps = gst_caps_from_string ("video/x-cdxa");
++    caps = gst_caps_new_simple ("video/mpeg",
++        "systemstream", G_TYPE_BOOLEAN, TRUE, NULL);
+   } else if (!strcmp (format_name, "mpegts")) {
+     caps = gst_caps_new_simple ("video/mpegts",
+         "systemstream", G_TYPE_BOOLEAN, TRUE, NULL);
+-- 
+2.25.1
+
