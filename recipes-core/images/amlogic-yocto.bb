@@ -32,7 +32,7 @@ PACKAGE_INSTALL += "base-files netbase ${VIRTUAL-RUNTIME_base-utils} ${VIRTUAL-R
 IMAGE_LINGUAS = ""
 
 #reduce this value to reserve space for DM-verity/AVB meta-data at the end of partition(64M)
-IMAGE_ROOTFS_SIZE = "983040"
+IMAGE_ROOTFS_SIZE = "1507328"
 
 #UBI
 UBI_VOLNAME = "system"
