@@ -63,7 +63,7 @@ function set_btname()
 	else
 		echo "create configure file"
 		echo "Name=MusicBox-$bt_name" > $configure_file
-		echo "debug=0"
+		echo "Debug=0"
 	fi
 }
 
@@ -108,7 +108,7 @@ A2DP_SINK_SERVICE()
 	echo "|--bluez a2dp-sink/hfp-hf service--|"
 	hciconfig hci0 up
 
-	grep "debug=1" $configure_file > /dev/null
+	grep "Debug=1" $configure_file > /dev/null
 	if [ $? -eq 0 ]; then
 
 	echo "|--bluez service in debug mode--|"
@@ -153,7 +153,7 @@ A2DP_SOURCE_SERVICE()
 	echo "|--bluez a2dp-source service--|"
 	hciconfig hci0 up
 
-	grep "debug=1" $configure_file > /dev/null
+	grep "Debug=1" $configure_file > /dev/null
 	if [ $? -eq 0 ]; then
 
 	echo "|--bluez service in debug mode--|"
@@ -243,7 +243,7 @@ Blue_start()
 
 	hci0_rfkill
 
-	grep -iq "debug=1" $configure_file > /dev/null
+	grep -iq "Debug=1" $configure_file > /dev/null
 	if [ $? -eq 0 ]; then
 		hcidump -w /etc/bluetooth/btsnoop.cfa &
 	fi

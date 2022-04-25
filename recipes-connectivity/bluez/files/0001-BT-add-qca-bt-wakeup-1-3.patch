@@ -1,0 +1,333 @@
+From c00a162acdbc936e982ea5d12654233bf95b9d27 Mon Sep 17 00:00:00 2001
+From: Weiguang Ruan <Weiguang.ruan@amlogic.com>
+Date: Mon, 25 Apr 2022 15:02:47 +0800
+Subject: [PATCH] BT: add qca bt wakeup [1/3]
+
+PD#SWPL-75775
+
+Problem:
+1. qca bt needs to set args whenme suspend/resume
+
+Solution:
+1. hcaittach add USR1/USR2 handler, USR1 for suspend,
+USR2 for resume.
+
+Verify:
+AP222/AH212
+
+Change-Id: Ie03791a8aed7dc7b574f9dad74d53b7356053eb5
+Signed-off-by: Weiguang Ruan <Weiguang.ruan@amlogic.com>
+---
+ Makefile.tools         |   2 +-
+ tools/hciattach.c      | 110 +++++++++++++++++++++++++++++++++++++++--
+ tools/hciattach.h      |   3 ++
+ tools/hciattach_rome.c |  68 +++++++++++++++++++++++++
+ 4 files changed, 178 insertions(+), 5 deletions(-)
+
+Index: bluez-5.55/Makefile.tools
+===================================================================
+--- bluez-5.55.orig/Makefile.tools
++++ bluez-5.55/Makefile.tools
+@@ -357,7 +357,7 @@ tools_hciattach_SOURCES = tools/hciattac
+ 						tools/hciattach_intel.c \
+ 						tools/hciattach_bcm43xx.c \
+ 						tools/hciattach_rome.c tools/hciattach_rome.h
+-tools_hciattach_LDADD = lib/libbluetooth-internal.la
++tools_hciattach_LDADD = lib/libbluetooth-internal.la -lpthread
+ 
+ tools_hciconfig_SOURCES = tools/hciconfig.c tools/csr.h tools/csr.c
+ tools_hciconfig_LDADD = lib/libbluetooth-internal.la
+Index: bluez-5.55/tools/hciattach.c
+===================================================================
+--- bluez-5.55.orig/tools/hciattach.c
++++ bluez-5.55/tools/hciattach.c
+@@ -42,10 +42,11 @@
+ #include <sys/time.h>
+ #include <sys/param.h>
+ #include <sys/ioctl.h>
+-
++#include "pthread.h"
+ #include "lib/bluetooth.h"
+ #include "lib/hci.h"
+ #include "lib/hci_lib.h"
++#include <semaphore.h>
+ 
+ #include "src/shared/tty.h"
+ 
+@@ -69,15 +70,108 @@ struct uart_t {
+ #define AMP_DEV		0x0002
+ #define ENABLE_PM	1
+ #define DISABLE_PM	0
++static int serial_fd;
++static struct uart_t *u = NULL;
++static sem_t sem;
+ 
+ static volatile sig_atomic_t __io_canceled = 0;
+ 
++static int hcipower(int fd, int enable)
++{
++	int dev_id, dd;
++	printf("%s setting hcipower to %d\n", __func__, enable);
++	if (enable == 0)
++		enable = HCIDEVDOWN;
++	else
++		enable = HCIDEVUP;
++
++	dev_id = ioctl(fd, HCIUARTGETDEVICE, 0);
++	if (dev_id < 0) {
++		perror("cannot get device id");
++		return dev_id;
++	}
++
++	dd = hci_open_dev(dev_id);
++	if (dd < 0) {
++		perror("HCI device open failed");
++		return dd;
++	}
++
++	if (ioctl(dd, enable, dev_id) < 0 && errno != EALREADY) {
++		perror("hci down:Power management failed");
++		hci_close_dev(dd);
++		return -1;
++	}
++
++	return 0;
++
++}
++
++static void qca_sig_usr(int sig)
++{
++	struct timespec ts;
++	printf("hciattach QCA-SIG-USR handler\n");
++	if (!clock_gettime(CLOCK_REALTIME, &ts)) {
++		ts.tv_sec += 2;
++		if (sem_timedwait(&sem, &ts)) {
++			perror("no suspend befrore resume event:");
++			return;
++		}
++	} else {
++		perror("clock_gettime");
++		sem_wait(&sem);
++	}
++
++	if (sig == SIGUSR1) {
++		/*suspend signal*/
++		fprintf(stderr, "suspend event\n");
++		hcipower(serial_fd, 0);
++		usleep(100000);
++		/* Restore TTY line discipline */
++		int ld = N_TTY;
++		if (ioctl(serial_fd, TIOCSETD, &ld) < 0) {
++			perror("Can't restore line discipline");
++			goto failed;
++		}
++		qca_woble_configure(serial_fd);
++		printf("qca suspend prepare work done.\n");
++	} else if (sig == SIGUSR2) {
++		/*resume signal*/
++		fprintf(stderr, "resume event\n");
++		qca_woble_stop(serial_fd);
++		usleep(100000);
++		int ld = N_HCI;
++		if (ioctl(serial_fd, TIOCSETD, &ld) < 0) {
++			perror("Can't set line discipline");
++			goto failed;
++		}
++		if (ioctl(serial_fd, HCIUARTSETPROTO, HCI_UART_H4) < 0) {
++			perror("Can't set device");
++		}
++		printf("qca resume prepare work done.\n");
++	}
++failed:
++	sem_post(&sem);
++}
++
++static void sig_usr(int sig)
++{
++	printf("hciattach SIG-USR handler %d\n", sig);
++
++	if (u == NULL)
++		return;
++	printf("u type = %s\n", u->type);
++	if (!strcmp(u->type, "qca"))
++		qca_sig_usr(sig);
++}
++
+ static void sig_hup(int sig)
+ {
+ }
+ 
+ static void sig_term(int sig)
+ {
++	fprintf(stderr, "sig_term\n");
+ 	__io_canceled = 1;
+ }
+ 
+@@ -266,7 +360,9 @@ static int ath3k_pm(int fd, struct uart_
+ 
+ static int qca(int fd, struct uart_t *u, struct termios *ti)
+ {
+-	fprintf(stderr,"qca\n");
++	if (sem_init(&sem, 0, 1))
++		perror("qca init sem:");
++
+ 	return qca_soc_init(fd, u->bdaddr);
+ }
+ 
+@@ -306,7 +402,6 @@ static int read_check(int fd, void *buf,
+ /*
+  * BCSP specific initialization
+  */
+-static int serial_fd;
+ static int bcsp_max_retries = 10;
+ 
+ static void bcsp_tshy_sig_alarm(int sig)
+@@ -1245,7 +1340,6 @@ static void usage(void)
+ 
+ int main(int argc, char *argv[])
+ {
+-	struct uart_t *u = NULL;
+ 	int detach, printpid, raw, opt, i, n, ld, err;
+ 	int to = 10;
+ 	int init_speed = 0;
+@@ -1384,6 +1478,7 @@ int main(int argc, char *argv[])
+ 	bcsp_max_retries = to;
+ 
+ 	n = init_uart(dev, u, send_break, raw);
++	serial_fd = n;
+ 	if (n < 0) {
+ 		perror("Can't initialize device");
+ 		exit(1);
+@@ -1406,6 +1501,10 @@ int main(int argc, char *argv[])
+ 	sa.sa_handler = sig_hup;
+ 	sigaction(SIGHUP, &sa, NULL);
+ 
++	sa.sa_handler = sig_usr;
++	sigaction(SIGUSR1, &sa, NULL);
++	sigaction(SIGUSR2, &sa, NULL);
++	printf("Device setup complete\n");
+ 	if (detach) {
+ 		if ((pid = fork())) {
+ 			if (printpid)
+@@ -1427,6 +1526,8 @@ int main(int argc, char *argv[])
+ 	sigdelset(&sigs, SIGTERM);
+ 	sigdelset(&sigs, SIGINT);
+ 	sigdelset(&sigs, SIGHUP);
++	sigdelset(&sigs, SIGUSR1);
++	sigdelset(&sigs, SIGUSR2);
+ 
+ 	while (!__io_canceled) {
+ 		p.revents = 0;
+@@ -1444,5 +1545,9 @@ int main(int argc, char *argv[])
+ 		exit(1);
+ 	}
+ 
++	if (!strcmp(u->type, "qca"))
++		qca_woble_configure(n);
++
++	printf("hciattatch quit.\n");
+ 	return 0;
+ }
+Index: bluez-5.55/tools/hciattach.h
+===================================================================
+--- bluez-5.55.orig/tools/hciattach.h
++++ bluez-5.55/tools/hciattach.h
+@@ -66,6 +66,9 @@ int ath3k_init(int fd, int speed, int in
+ 						struct termios *ti);
+ int ath3k_post(int fd, int pm);
+ int qca_soc_init(int fd, char *bdaddr);
++int qca_woble_configure(int fd);
++int qca_woble_stop(int fd);
++
+ int qualcomm_init(int fd, int speed, struct termios *ti, const char *bdaddr);
+ int intel_init(int fd, int init_speed, int *speed, struct termios *ti);
+ int bcm43xx_init(int fd, int def_speed, int speed, struct termios *ti,
+Index: bluez-5.55/tools/hciattach_rome.c
+===================================================================
+--- bluez-5.55.orig/tools/hciattach_rome.c
++++ bluez-5.55/tools/hciattach_rome.c
+@@ -1823,3 +1823,71 @@ download:
+ error:
+ 	return err;
+ }
++
++int qca_hci_send_cmd(int fd, unsigned char *cmd, int cmdsize, unsigned char *rsp)
++{
++		    int err = 0;
++
++		    err = write(fd, cmd, cmdsize);
++		  if (err != cmdsize) {
++			        perror("Send failed:");
++			        err = -1;
++			        goto error;
++			    }
++
++			    memset(rsp, 0, HCI_MAX_EVENT_SIZE);
++
++			    /* Wait for command complete event */
++			    err = read_hci_event(fd, rsp, HCI_MAX_EVENT_SIZE);
++		 if ( err < 0) {
++			        perror("Failed to set patch info on Controller");
++			        goto error;
++			}
++			    error:
++			        return err;
++		}
++
++int qca_woble_configure(int fd)
++{
++		unsigned char rsp[HCI_MAX_EVENT_SIZE];
++		unsigned char reset_cmd[] = {0x01, 0x03, 0x0C, 0x00};
++		unsigned char read_BD_ADDR[] = {0x01, 0x09, 0x10, 0x00};
++		unsigned char APCF_set_filtering_param[] = {0x01, 0x57, 0xFD, 0x12, 0x01, 0x00, 0x00, 0x20, 0x00, 0x00,
++			0x00, 0x00, 0xA6, 0x00, 0x00, 0x00, 0x00, 0xA6, 0x00, 0x00, 0x02, 0x00};
++		/*unsigned char APCF_config_manf_data[] = {0x01, 0x57, 0xFD, 0x23, 0x06, 0x00, 0x00, 0xff, 0xff, 0x41, 0x6d, 0x6c,
++			0x6f, 0x67, 0x69, 0x63, 0x01, 0x78, 0xc5, 0xe5, 0x9b, 0x61, 0xea, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
++			0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};*/
++		unsigned char APCF_config_manf_data[] = {0x01, 0x57, 0xFD, 0x25, 0x06, 0x00, 0x00, 0xff, 0xff, 0x41, 0x6d, 0x6c, 0x6f, 0x67,
++												 0x69, 0x63, 0x01, 0x78, 0xc5, 0xe5, 0x9b, 0x61, 0xea, 0x01, 0xff, 0xff, 0xff, 0xff,
++												 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00};
++		unsigned char APCF_enable[] = {0x01, 0x57, 0xFD, 0x02, 0x00, 0x01};
++		unsigned char le_set_evt_mask[] = {0x01, 0x01, 0x20, 0x08, 0x7F, 0x1A, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00};
++		unsigned char le_scan_param_setting[] = {0x01, 0x0b, 0x20, 0x07, 0x00, 0x10, 0x00, 0x10, 0x00, 0x00, 0x00};
++		unsigned char le_scan_enable[] = {0x01, 0x0c, 0x20, 0x02, 0x01, 0x00};
++		unsigned char host_sleep_VSC[] = {0x01, 0x6c, 0xfc, 0x01, 0x01};
++		qca_hci_send_cmd(fd, (unsigned char*)read_BD_ADDR, sizeof(read_BD_ADDR), (unsigned char*)rsp);
++		printf("%s, BT_MAC: 0x%x:%x:%x:%x:%x:%x\n", __FUNCTION__, rsp[12], rsp[11], rsp[10], rsp[9], rsp[8], rsp[7]);
++		memcpy((unsigned char*)APCF_config_manf_data+17, rsp+7, 6);
++		qca_hci_send_cmd(fd, (unsigned char*)reset_cmd, sizeof(reset_cmd), (unsigned char*)rsp);
++		qca_hci_send_cmd(fd, (unsigned char*)APCF_set_filtering_param, sizeof(APCF_set_filtering_param), (unsigned char*)rsp);
++		qca_hci_send_cmd(fd, (unsigned char*)APCF_config_manf_data, sizeof(APCF_config_manf_data), (unsigned char*)rsp);
++		qca_hci_send_cmd(fd, (unsigned char*)APCF_enable, sizeof(APCF_enable), (unsigned char*)rsp);
++		qca_hci_send_cmd(fd, (unsigned char*)le_set_evt_mask, sizeof(le_set_evt_mask), (unsigned char*)rsp);
++		qca_hci_send_cmd(fd, (unsigned char*)le_scan_param_setting, sizeof(le_scan_param_setting), (unsigned char*)rsp);
++		qca_hci_send_cmd(fd, (unsigned char*)le_scan_enable, sizeof(le_scan_enable), (unsigned char*)rsp);
++		qca_hci_send_cmd(fd, (unsigned char*)host_sleep_VSC, sizeof(host_sleep_VSC), (unsigned char*)rsp);
++		return 0;
++}
++
++int qca_woble_stop(int fd)
++{
++		unsigned char rsp[HCI_MAX_EVENT_SIZE];
++		printf("%s\n", __func__);
++		unsigned char no_host_sleep_VSC[] = {0x01, 0x6c, 0xfc, 0x01, 0x00};
++		unsigned char le_scan_disable[] = {0x01, 0x0c, 0x20, 0x02, 0x00, 0x00};
++		unsigned char reset_cmd[] = {0x01, 0x03, 0x0C, 0x00};
++		qca_hci_send_cmd(fd, (unsigned char*)reset_cmd, sizeof(reset_cmd), (unsigned char*)rsp);
++		qca_hci_send_cmd(fd, (unsigned char*)no_host_sleep_VSC, sizeof(no_host_sleep_VSC), (unsigned char*)rsp);
++		qca_hci_send_cmd(fd, (unsigned char*)le_scan_disable, sizeof(le_scan_disable), (unsigned char*)rsp);
++		return 0;
++}
+Index: bluez-5.55/src/bluetooth.service.in
+===================================================================
+--- bluez-5.55.orig/src/bluetooth.service.in
++++ bluez-5.55/src/bluetooth.service.in
+@@ -6,7 +6,7 @@ ConditionPathIsDirectory=/sys/class/blue
+ [Service]
+ Type=dbus
+ BusName=org.bluez
+-ExecStart=@pkglibexecdir@/bluetoothd
++ExecStart=@pkglibexecdir@/bluetoothd -d
+ NotifyAccess=main
+ #WatchdogSec=10
+ #Restart=on-failure

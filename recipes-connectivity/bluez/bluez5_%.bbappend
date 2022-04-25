@@ -11,6 +11,8 @@ SRC_URI += "file://bluez.service"
 SRC_URI += "file://bluez_tool.sh"
 SRC_URI += "file://0001-RDK-fix-issue-in-bluez5.55-1-1.patch"
 SRC_URI += "file://0001-bluez5-add-default_agent-3-5.patch"
+SRC_URI_append_s4  = " file://0001-BT-add-qca-bt-wakeup-1-3.patch"
+SRC_URI_append_sc2 = " file://0001-BT-add-qca-bt-wakeup-1-3.patch"
 
 do_install_append(){
     install -d ${D}${bindir}
@@ -28,20 +30,20 @@ do_install_append(){
         echo "MACHINE_ARCH is ${MACHINE_ARCH}"
         case ${MACHINE_ARCH} in
         mesonsc2* | mesons4*)
-            sed -i '/Debug=0/a Device=qca' ${D}${sysconfdir}/bluetooth/main.conf
+            sed -i '/Debug/a Device=qca' ${D}${sysconfdir}/bluetooth/main.conf
         ;;
         mesont5d* | mesont5w* | mesont3*)
-            sed -i '/Debug=0/a Device=rtk' ${D}${sysconfdir}/bluetooth/main.conf
+            sed -i '/Debug/a Device=rtk' ${D}${sysconfdir}/bluetooth/main.conf
         ;;
         esac
     fi
 
     case ${MACHINE_ARCH} in
     mesona213y*)
-        sed -i '/Debug=0/a TTY=/dev/ttyS2' ${D}${sysconfdir}/bluetooth/main.conf
+        sed -i '/Debug/a TTY=/dev/ttyS2' ${D}${sysconfdir}/bluetooth/main.conf
     ;;
     *)
-        sed -i '/Debug=0/a TTY=/dev/ttyS1' ${D}${sysconfdir}/bluetooth/main.conf
+        sed -i '/Debug/a TTY=/dev/ttyS1' ${D}${sysconfdir}/bluetooth/main.conf
     ;;
     esac
 }
