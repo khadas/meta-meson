@@ -23,6 +23,8 @@ SRC_URI_append = " file://0003-do-remove-flag-werror.patch"
 TARGET_CFLAGS += "-DAMFFMPEG"
 
 EXTRA_OECONF_append = " \
+    --disable-gpl \
+    --disable-libx264 \
     --disable-ffprobe \
     --disable-ffmpeg \
     --disable-postproc \
