@@ -22,3 +22,5 @@ SRC_URI_append = "file://00020-add-systemstream-in-v4l2-sinkpad-caps-when-reg.pa
 SRC_URI_append = "file://00021-SWPL-73078-DTS-wav.patch "
 SRC_URI_append = "file://00022-mode-gst-env-name.patch "
 SRC_URI_append = "file://00023_SH-9750-Dump_decode_frame.patch "
+SRC_URI_append = "file://00024-qtdemux-remove-support-dolby-vision-unknow-Compatibility-ID.patch "
+
