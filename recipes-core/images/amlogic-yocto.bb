@@ -20,6 +20,9 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'packagegroup-core-selinux auditd', '', d)} \
     "
 
+# unicode locale support
+IMAGE_INSTALL_append = " glibc-utils localedef"
+
 MACHINE_IMAGE_NAME ?= "${PN}"
 IMAGE_FEATURES_remove = " read-only-rootfs"
 
@@ -29,7 +32,8 @@ DEPENDS_append = " android-tools-native"
 
 PACKAGE_INSTALL += "base-files netbase ${VIRTUAL-RUNTIME_base-utils} ${VIRTUAL-RUNTIME_dev_manager} base-passwd ${ROOTFS_BOOTSTRAP_INSTALL} initramfs-meson-boot e2fsprogs "
 
-IMAGE_LINGUAS = ""
+# Linguas defined in local.conf
+#IMAGE_LINGUAS = ""
 
 #reduce this value to reserve space for DM-verity/AVB meta-data at the end of partition(64M)
 IMAGE_ROOTFS_SIZE = "1507328"
