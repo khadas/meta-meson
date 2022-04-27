@@ -1,0 +1,17 @@
+diff --git a/ext/libav/gstavcodecmap.c b/ext/libav/gstavcodecmap.c
+index 7cc9210..0022376 100644
+--- a/ext/libav/gstavcodecmap.c
++++ b/ext/libav/gstavcodecmap.c
+@@ -1930,6 +1930,12 @@ gst_ffmpeg_codecid_to_caps (enum AVCodecID codec_id,
+           NULL);
+       break;
+ 
++    case AV_CODEC_ID_PCM_BLURAY:
++      caps =
++          gst_ff_aud_caps_new (context, NULL, codec_id, encode, "audio/x-private-ts-lpcm",
++          NULL);
++      break;
++
+     case AV_CODEC_ID_PCM_ALAW:
+       caps =
+           gst_ff_aud_caps_new (context, NULL, codec_id, encode, "audio/x-alaw",
