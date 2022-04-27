@@ -14,7 +14,12 @@ if [ ! -f ${PQ_DEFAULT_DB} ]; then
     exit 1
 fi
 
-PQ_RW_PATH=$(cat ${PQ_DEFAULT_CONF} | grep pq_uiSettingDataFile_path | awk -F= '{print $2}' | xargs)
+PQ_RW_PATH=$(cat ${PQ_DEFAULT_CONF} | grep -m1 'pq_.*_path' | awk -F= '{print $2}' | xargs)
+
+if [ -z "${PQ_RW_PATH}" ]; then
+  echo "PQ DB Path not found"
+  exit 0
+fi
 
 if [ ${PQ_RW_PATH} = ${PQ_DEFAULT_PATH} ]; then
     echo "No RW path defined."
