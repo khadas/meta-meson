@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 SRCREV ?= "${AUTOREV}"
 #PV = "${SRCPV}"
 
-DEPENDS += "libdrm"
+DEPENDS += "libdrm udev"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/libdrm_amlogic;protocol=${AML_GIT_PROTOCOL};branch=master;"
 
@@ -40,6 +40,8 @@ do_install() {
   install -m 0644 ${S}/../drm_fourcc.h ${D}${includedir}/libdrm_meson
   install -m 0644 ${S}/libdrm_meson_connector.h ${D}${includedir}/libdrm_meson
   install -m 0644 ${S}/libdrm_meson_property.h ${D}${includedir}/libdrm_meson
+  install -m 0644 ${S}/meson_drm_display.h ${D}${includedir}/libdrm_meson
+  install -m 0644 ${S}/meson_drm_event.h ${D}${includedir}/libdrm_meson
 }
 
 FILES_${PN} = "${libdir}/*"
