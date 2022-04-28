@@ -1,4 +1,4 @@
-From e141315585f11dcf4865fb890786d9905a7753e6 Mon Sep 17 00:00:00 2001
+From f0d7d6acb67155b0109e899190123c0ba653639a Mon Sep 17 00:00:00 2001
 From: Blance Tang <guofeng.tang@amlogic.com>
 Date: Wed, 20 Oct 2021 16:05:47 +0800
 Subject: [PATCH] amlogic update based on 2021.04
@@ -9,6 +9,7 @@ Subject: [PATCH] amlogic update based on 2021.04
 4, Support Recovery download
 5, Support bootloader offset
 
+Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
 ---
  Makefile                  |   2 +-
  bootloader/none.c         |  82 ++++
@@ -16,6 +17,7 @@ Subject: [PATCH] amlogic update based on 2021.04
  core/pctl.c               |  10 +
  core/stream_interface.c   |  79 ++++
  core/swupdate.c           |  35 +-
+ core/util.c               |   2 +-
  corelib/mtd-interface.c   | 104 +++++
  handlers/Config.in        |   8 +
  handlers/Makefile         |   1 +
@@ -42,7 +44,7 @@ Subject: [PATCH] amlogic update based on 2021.04
  libsparse/sparse_file.h   |  32 ++
  libsparse/sparse_format.h |  55 +++
  libsparse/sparse_read.c   | 510 +++++++++++++++++++++++++
- 32 files changed, 3806 insertions(+), 9 deletions(-)
+ 33 files changed, 3807 insertions(+), 10 deletions(-)
  create mode 100644 handlers/ext4_handler.c
  create mode 100644 libsparse/Config.in
  create mode 100644 libsparse/Makefile
@@ -439,6 +441,19 @@ index d651f8e..0ff3ed6 100644
  	print_registered_handlers();
  	if (swcfg.syslog_enabled) {
  		if (syslog_init()) {
+diff --git a/core/util.c b/core/util.c
+index 7e96652..1b501bc 100644
+--- a/core/util.c
++++ b/core/util.c
+@@ -1156,7 +1156,7 @@ static bool check_free_space(int fd, long long size, char *fname)
+ 		return true;
+ 	}
+ 
+-	if (statvfs.f_bfree * statvfs.f_bsize < size) {
++	if ((unsigned long long)statvfs.f_bfree * statvfs.f_bsize < size) {
+ 		ERROR("Not enough free space to extract %s (needed %llu, got %llu)",
+ 		       fname, size, (unsigned long long)statvfs.f_bfree * statvfs.f_bsize);
+ 		return false;
 diff --git a/corelib/mtd-interface.c b/corelib/mtd-interface.c
 index 586a9ba..3c0043a 100644
 --- a/corelib/mtd-interface.c
