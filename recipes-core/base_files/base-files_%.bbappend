@@ -1,8 +1,13 @@
 do_install_append () {
   if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
-    sed -i '/\/usr\/bin\/resize/ s/^/#/' ${D}${sysconfdir}/profile
-    echo "export PAGER=/bin/cat" >> ${D}${sysconfdir}/profile
-    echo "export SYSTEMD_PAGER=/bin/cat" >> ${D}${sysconfdir}/profile
+    cat << EOF >> ${D}${sysconfdir}/profile
+# walkaround to clear resize output
+read -t 0.1 -n 10000 discard
+echo -e "\033[1K"
+# set pager
+export PAGER=/bin/cat
+export SYSTEMD_PAGER=/bin/cat
+EOF
   fi
 }
 
