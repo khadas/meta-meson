@@ -220,6 +220,10 @@ EOF
 	echo " Manifest Name = ${MANIFEST}"
 	if [ -f "./../.repo/manifests/${MANIFEST}.conf" ]; then
 	  cp ./../.repo/manifests/${MANIFEST}.conf ./conf/auto.conf
+	else
+	  echo
+	  echo -e "\033[31m Missing file $LOCAL_DIR/.repo/manifests/${MANIFEST}.conf !!!  Please check. \033[0m"
+	  echo
 	fi
 
     if [ -f "$MESON_ROOT_PATH/yocto-release-info" ]; then
