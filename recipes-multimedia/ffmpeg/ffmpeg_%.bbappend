@@ -13,12 +13,12 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
-SRC_URI = " git://${AML_GIT_ROOT}/platform/external/ffmpeg-aml;protocol=${AML_GIT_PROTOCOL};branch=s-amlogic"
+#SRC_URI = " git://${AML_GIT_ROOT}/platform/external/ffmpeg-aml;protocol=${AML_GIT_PROTOCOL};branch=s-amlogic"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
-SRC_URI_append = " file://0001-do-remove-config-headfile.patch"
-SRC_URI_append = " file://0002-do-modify-configure-for-linux.patch"
-SRC_URI_append = " file://0003-do-remove-flag-werror.patch"
+SRC_URI = " file://0001-do-remove-config-headfile.patch \
+            file://0002-do-modify-configure-for-linux.patch \
+            file://0003-do-remove-flag-werror.patch "
 
 TARGET_CFLAGS += "-DAMFFMPEG"
 
