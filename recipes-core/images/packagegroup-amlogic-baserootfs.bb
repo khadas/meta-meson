@@ -108,7 +108,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'wayland \
         weston-init \
         meson-display \
-        dvalin-dmaexport \
         fbscripts \
         ', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'qt5', \
