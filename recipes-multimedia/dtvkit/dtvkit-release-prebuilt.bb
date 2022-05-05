@@ -53,5 +53,5 @@ do_install () {
 FILES_${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/*"
 FILES_${PN}-dev = "${includedir}/* "
 
-INSANE_SKIP_${PN} = "ldflags"
-INSANE_SKIP_${PN}-dev = "dev-elf dev-so already-stripped"
+INSANE_SKIP_${PN} = "ldflags already-stripped"
+INSANE_SKIP_${PN}-dev = "dev-elf dev-so"

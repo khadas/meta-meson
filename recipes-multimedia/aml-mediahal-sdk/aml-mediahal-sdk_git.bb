@@ -53,5 +53,5 @@ do_install() {
 
 FILES_${PN} = "${libdir}/* ${includedir}/* /usr/bin/*"
 FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP_${PN} = "dev-so ldflags dev-elf already-stripped"
 INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
