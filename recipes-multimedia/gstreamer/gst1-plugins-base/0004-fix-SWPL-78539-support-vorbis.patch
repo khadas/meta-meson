@@ -1,0 +1,122 @@
+diff --git a/ext/vorbis/gstvorbisdec.c b/ext/vorbis/gstvorbisdec.c
+index a0b48b7..57a0c23 100644
+--- a/ext/vorbis/gstvorbisdec.c
++++ b/ext/vorbis/gstvorbisdec.c
+@@ -377,6 +377,72 @@ vorbis_dec_handle_header_buffer (GstVorbisDec * vd, GstBuffer * buffer)
+   return ret;
+ }
+ 
++static GstBufferList *
++vorbis_parse_stream_headers (gpointer codec_data,
++    gsize codec_data_size)
++{
++  GstBufferList *list = NULL;
++  guint8 *p = codec_data;
++  gint i, offset, num_packets;
++  guint *length, last;
++
++  if (codec_data == NULL || codec_data_size == 0)
++    goto error;
++
++  /* start of the stream and vorbis audio or theora video, need to
++   * send the codec_priv data as first three packets */
++  num_packets = p[0] + 1;
++  GST_DEBUG ("%u stream headers, total length=%" G_GSIZE_FORMAT " bytes",
++      (guint) num_packets, codec_data_size);
++
++  length = g_alloca (num_packets * sizeof (guint));
++  last = 0;
++  offset = 1;
++
++  /* first packets, read length values */
++  for (i = 0; i < num_packets - 1; i++) {
++    length[i] = 0;
++    while (offset < codec_data_size) {
++      length[i] += p[offset];
++      if (p[offset++] != 0xff)
++        break;
++    }
++    last += length[i];
++  }
++  if (offset + last > codec_data_size)
++    goto error;
++
++  /* last packet is the remaining size */
++  length[i] = codec_data_size - offset - last;
++
++  list = gst_buffer_list_new ();
++
++  for (i = 0; i < num_packets; i++) {
++    GstBuffer *hdr;
++
++    GST_DEBUG ("buffer %d: %u bytes", i, (guint) length[i]);
++
++    if (offset + length[i] > codec_data_size)
++      goto error;
++
++    hdr = gst_buffer_new_wrapped (g_memdup (p + offset, length[i]), length[i]);
++    gst_buffer_list_add (list, hdr);
++
++    offset += length[i];
++  }
++
++  return list;
++
++/* ERRORS */
++error:
++  {
++    if (list != NULL)
++      gst_buffer_list_unref (list);
++    return NULL;
++  }
++}
++
++
+ #define MIN_NUM_HEADERS 3
+ static GstFlowReturn
+ vorbis_dec_handle_header_caps (GstVorbisDec * vd)
+@@ -385,6 +451,8 @@ vorbis_dec_handle_header_caps (GstVorbisDec * vd)
+   GstCaps *caps;
+   GstStructure *s = NULL;
+   const GValue *array = NULL;
++  const GValue *val = NULL;
++  GValue arr_val = G_VALUE_INIT;
+ 
+   caps = gst_pad_get_current_caps (GST_AUDIO_DECODER_SINK_PAD (vd));
+   if (caps)
+@@ -392,6 +460,35 @@ vorbis_dec_handle_header_caps (GstVorbisDec * vd)
+   if (s)
+     array = gst_structure_get_value (s, "streamheader");
+ 
++  if (!array) {
++    val= gst_structure_get_value( s, "codec_data");
++  
++    if ( val ) {
++        GstBuffer *buf;
++        GstMapInfo map;
++        GstBufferList * stream_headers;
++        gint i, num;
++        GValue buf_val = G_VALUE_INIT;
++
++        g_value_init (&arr_val, GST_TYPE_ARRAY);
++        g_value_init (&buf_val, GST_TYPE_BUFFER);
++  
++        buf= gst_value_get_buffer (val);
++        gst_buffer_map (buf, &map, GST_MAP_READ);
++
++        stream_headers = vorbis_parse_stream_headers (map.data, map.size);
++
++        num = gst_buffer_list_length (stream_headers);
++        for (i = 0; i < num; ++i) {
++          g_value_set_boxed (&buf_val, gst_buffer_list_get (stream_headers, i));
++          gst_value_array_append_value (&arr_val, &buf_val);
++        }
++        gst_buffer_unmap (buf, &map);
++
++        array = &arr_val;
++    }
++  }
++
+   if (caps)
+     gst_caps_unref (caps);
+ 
