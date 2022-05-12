@@ -44,7 +44,6 @@ EXTERNALSRC_pn-optee-scripts-native = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/am
 EXTERNALSRC_pn-optee-linux-driver = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk-3.8' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk-3.8')) else ''}"
 EXTERNALSRC_pn-aml-avsync = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/avsync-lib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/avsync-lib')) else ''}"
 EXTERNALSRC_pn-aml-mp-sdk = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_mp_sdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_mp_sdk')) else ''}"
-EXTERNALSRC_pn-ffmpeg-vendor = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg-vendor' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg-vendor')) else ''}"
 EXTERNALSRC_pn-ffmpeg = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg-aml' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg-aml')) else ''}"
 EXTERNALSRC_pn-gst-player-demo = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-player-demo/src' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-player-demo')) else ''}"
 EXTERNALSRC_pn-aml-secmem = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm')) else ''}"

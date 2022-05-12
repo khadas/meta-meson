@@ -144,7 +144,6 @@ EXTRA_OECONF_append = " \
     --disable-decoder=dolby_e            \
     --disable-demuxer=ac3          \
     --disable-demuxer=avisynth     \
-    --disable-demuxer=dash         \
     --disable-demuxer=dts          \
     --disable-demuxer=dtshd        \
     --disable-demuxer=eac3         \
@@ -242,4 +241,8 @@ EXTRA_OECONF_append = " \
     --disable-encoder=vp8_vaapi          \
     --disable-encoder=vp9_vaapi          \
     --disable-encoder=vp9_qsv            \
+    --enable-libxml2                     \
 "
+
+DEPENDS += " libxml2 "
+RDEPENDS_${PN} += " libxml2 "

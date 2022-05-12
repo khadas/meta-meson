@@ -18,7 +18,7 @@ do_compile[noexec] = "1"
 INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_SYSROOT_STRIP = "1"
 
-DEPENDS += "aml-dvb aml-mediahal-sdk optee-userspace aml-secmem liblog aml-mp-sdk ffmpeg-vendor"
+DEPENDS += "aml-dvb aml-mediahal-sdk optee-userspace aml-secmem liblog aml-mp-sdk ffmpeg"
 
 EXTRA_OEMAKE=" STAGING_DIR=${STAGING_DIR_TARGET} \
                  TARGET_DIR=${D} \
