@@ -55,6 +55,8 @@ do_install() {
         install -m 644 -D ${S}/libaudio_client.so -t ${D}${libdir}
         install -m 644 -D ${S}/include/audio_if_client.h -t ${D}/usr/include
         install -m 644 -D ${S}/include/audio_if.h -t ${D}/usr/include
+        install -m 644 -D ${S}/include/audio_effect_if.h -t ${D}/usr/include
+        install -m 644 -D ${S}/include/audio_effect_params.h -t ${D}/usr/include
         for f in ${S}/include/hardware/*.h; do \
             install -m 644 -D ${f} -t ${D}/usr/include/hardware; \
         done
