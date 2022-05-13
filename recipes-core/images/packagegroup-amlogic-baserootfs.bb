@@ -98,6 +98,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         gstreamer1.0-plugins-bad \
         gst-plugin-aml-asink \
         gst-plugin-video-sink \
+        gst-plugin-aml-v4l2dec \
         gst-aml-drm-plugins \
         gstreamer1.0-libav \
         gst-player \
