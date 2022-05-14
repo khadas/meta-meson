@@ -1,0 +1,26 @@
+From 69bf44a1b369bffbbbf76c4c64f4c5045ad25c3b Mon Sep 17 00:00:00 2001
+From: "kaiqiang.xiang" <kaiqiang.xiang@amlogic.com>
+Date: Sat, 14 May 2022 18:52:04 +0800
+Subject: [PATCH] modify avdemux priority
+
+---
+ ext/libav/gstavdemux.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+index 056294f..ae44824 100644
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -2107,7 +2107,8 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
+       register_typefind_func = FALSE;
+ 
+     env = getenv("VENDOR_MEDIA_GST_LIBAV_ENABLE_FFMPEG");
+-    if ((NULL == env) || ((env) && (atoi(env)))) {
++    if (((NULL == env) || ((env) && (atoi(env))))
++        && strcmp (in_plugin->name, "mov,mp4,m4a,3gp,3g2,mj2")){
+         rank = GST_RANK_PRIMARY;
+     } else {
+         /* Set the rank of demuxers known to work to MARGINAL.
+-- 
+2.25.1
+
