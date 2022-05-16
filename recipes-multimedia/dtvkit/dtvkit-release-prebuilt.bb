@@ -40,12 +40,12 @@ do_install () {
     install -D -m 0644 ${S}/DVBCore/include/dvbcore/platform/inc/*.h ${D}/usr/include/dtvkit/platform/inc
     install -D -m 0644 ${S}/DVBCore/include/dvbcore/inc/*.h ${D}/usr/include/dtvkit/inc
     install -D -m 0644 ${S}/DVBCore/include/dvbcore/midware/stb/inc/*.h ${D}/usr/include/dtvkit/midware/stb/inc
-    install -D -m 0644 ${S}/DVBCore/${ARM_TARGET}/libdvbcore.a  ${D}/${libdir}
 
     install -D -m 0644 ${S}/dtvkit-amlogic/include/dtvkit_platform/hw/inc/*.h ${D}/usr/include/dtvkit/hw/inc
-    install -D -m 0644 ${S}/dtvkit-amlogic/${ARM_TARGET}/libdtvkit_platform.a ${D}/${libdir}
 
-    install -D -m 0644 ${S}/android-rpcservice/${ARM_TARGET}/libdtvkitserver.so ${D}/${libdir}
+    if ${@bb.utils.contains("DISTRO_FEATURES", "dtvkit-src", "false", "true", d)}; then
+        install -D -m 0644 ${S}/android-rpcservice/${ARM_TARGET}/libdtvkitserver.so ${D}/${libdir}
+    fi
     install -D -m 0644 ${S}/android-rpcservice/config/${CONFIG} ${D}/etc/config.xml
     install -D -m 0644 ${S}/android-rpcservice/config/*.json  ${D}/etc/
 }
