@@ -3,6 +3,7 @@
 PQ_DEFAULT_PATH=/vendor/etc/tvconfig/pq
 PQ_DEFAULT_CONF=${PQ_DEFAULT_PATH}/pq_default.ini
 PQ_DEFAULT_DB=${PQ_DEFAULT_PATH}/pq.db
+PQ_DEFAULT_OVERSCAN_DB=${PQ_DEFAULT_PATH}/overscan.db
 
 if [ ! -f ${PQ_DEFAULT_CONF} ]; then
     echo "${PQ_DEFAULT_CONF} not found."
@@ -35,5 +36,8 @@ fi
 
 if mkdir -p ${PQ_RW_PATH}; then
     cp -af ${PQ_DEFAULT_DB} ${PQ_RW_PATH}
+    if [ -f ${PQ_DEFAULT_OVERSCAN_DB} ]; then
+      cp -af ${PQ_DEFAULT_OVERSCAN_DB} ${PQ_RW_PATH}
+    fi
     echo "Check done, database copied."
 fi
