@@ -16,9 +16,7 @@ S = "${WORKDIR}/git"
 #SRC_URI = " git://${AML_GIT_ROOT}/platform/external/ffmpeg-aml;protocol=${AML_GIT_PROTOCOL};branch=s-amlogic"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
-SRC_URI = " file://0001-do-remove-config-headfile.patch \
-            file://0002-do-modify-configure-for-linux.patch \
-            file://0003-do-remove-flag-werror.patch "
+SRC_URI = " file://0001-do-remove-config-headfile.patch"
 
 TARGET_CFLAGS += "-DAMFFMPEG"
 
