@@ -7,4 +7,5 @@ SRC_URI += " \
         file://0003-policy-modules-for-mount-vendor-device.patch \
         file://0004-policy-modules-enable-sysadm-read-char-device.patch \
         file://0005-policy-modules-enable-sysadm-watch-journal-files.patch \
+        file://0006-policy-modules-add-refpolicy-for-data-directory.patch \
         "
