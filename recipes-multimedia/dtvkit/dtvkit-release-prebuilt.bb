@@ -19,6 +19,7 @@ CONFIG_aq222 = "config_aq222.xml"
 CONFIG_ap232 = "config_ap232.xml"
 CONFIG_ah212-pip = "config_ah212_pip.xml"
 CONFIG_t5d = "config_t5d.xml"
+CONFIG_t5w = "config_t5w.xml"
 
 S = "${WORKDIR}/git"
 
