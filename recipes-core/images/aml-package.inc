@@ -104,6 +104,9 @@ else
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-emmc ${DEPLOY_DIR_IMAGE}/sw-description
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-emmc ${DEPLOY_DIR_IMAGE}/sw-package-filelist
 
+        sed 's@boardname@${MACHINE_ARCH}@' -i ${DEPLOY_DIR_IMAGE}/sw-description
+        sed 's@_lib32_@_@' -i ${DEPLOY_DIR_IMAGE}/sw-description
+
         ${DEPLOY_DIR_IMAGE}/sw_package_create.sh ${DEPLOY_DIR_IMAGE}
     fi
 fi

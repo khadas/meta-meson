@@ -229,6 +229,10 @@ do_install () {
 
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/swupdate.service ${D}/${systemd_unitdir}/system
+
+    # config boardname
+    sed 's@boardname@${MACHINE_ARCH}@' -i ${D}/etc/hwrevision
+    sed 's@_lib32_@_@' -i ${D}/etc/hwrevision
 }
 
 SYSTEMD_PACKAGES = "${PN} ${PN}-progress"
