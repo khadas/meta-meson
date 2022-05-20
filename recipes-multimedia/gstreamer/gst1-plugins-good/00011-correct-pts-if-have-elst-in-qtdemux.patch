@@ -1,0 +1,89 @@
+From 15bcda6f59a4a387598a8c1913a78dbfa11560dd Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Fri, 20 May 2022 10:54:14 +0800
+Subject: [PATCH] gstreamer1.0-plugins-good: CB1 correct pts to if have elst
+ [1/1]
+
+PD#SWPL-81980
+
+Problem:
+correct-dts-if-have-elst-in-qtdemux.patch, will make dts negative
+which will make regression, so reverted by qtdemux Community
+
+Solution:
+refine 00011-correct-dts-if-have-elst-in-qtdemux.patch,
+Correct pts instead of dts, do not make dts be negative
+
+Verify:
+AH212
+---
+ gst/isomp4/qtdemux.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index 649fe4d..c473c24 100755
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -452,6 +452,7 @@ struct _QtDemuxStream
+   gpointer protection_scheme_info;      /* specific to the protection scheme */
+   GQueue protection_scheme_event_queue;
+ 
++  guint64 elst_media_time;
+   gint ref_count;               /* atomic */
+ };
+ 
+@@ -6065,7 +6066,7 @@ gst_qtdemux_decorate_and_push_buffer (GstQTDemux * qtdemux,
+   }
+ 
+   /* position reporting */
+-  if (qtdemux->segment.rate >= 0) {
++  if (qtdemux->segment.rate >= 0 && GST_CLOCK_TIME_IS_VALID(position)) {
+     qtdemux->segment.position = position;
+     gst_qtdemux_sync_streams (qtdemux);
+   }
+@@ -7473,7 +7474,7 @@ gst_qtdemux_process_adapter (GstQTDemux * demux, gboolean force)
+           keyframe = QTSAMPLE_KEYFRAME (stream, sample);
+ 
+           /* check for segment end */
+-          if (G_UNLIKELY (demux->segment.stop != -1
++          if (G_UNLIKELY (demux->segment.stop != -1 && GST_CLOCK_TIME_IS_VALID(dts)
+                   && demux->segment.stop <= pts && stream->on_keyframe)
+               && !(demux->upstream_format_is_time && demux->segment.rate < 0)) {
+             GST_DEBUG_OBJECT (demux, "we reached the end of our segment.");
+@@ -9734,7 +9735,13 @@ ctts:
+       ctts_soffset = stream->ctts_soffset;
+ 
+       for (j = stream->ctts_sample_index; j < ctts_count; j++) {
+-        cur->pts_offset = ctts_soffset;
++        if (0 == n && stream->elst_media_time != G_MAXUINT64 && FOURCC_vide == stream->subtype)
++        {
++          cur->pts_offset = ctts_soffset - stream->elst_media_time;
++          GST_DEBUG_OBJECT (qtdemux, "elst_media_time: %lld, new pts_offset: %lld", stream->elst_media_time, cur->pts_offset);
++        } else {
++             cur->pts_offset = ctts_soffset;
++        }
+         cur++;
+ 
+         if (G_UNLIKELY (cur > last)) {
+@@ -9811,6 +9818,7 @@ qtdemux_parse_segments (GstQTDemux * qtdemux, QtDemuxStream * stream,
+   GST_DEBUG_OBJECT (qtdemux, "looking for edit list container");
+   stream->n_segments = 0;
+   stream->segments = NULL;
++ stream->elst_media_time = G_MAXUINT64;
+   if ((edts = qtdemux_tree_get_child_by_type (trak, FOURCC_edts))) {
+     GNode *elst;
+     gint n_segments;
+@@ -9871,7 +9879,10 @@ qtdemux_parse_segments (GstQTDemux * qtdemux, QtDemuxStream * stream,
+       }
+ 
+       if (!empty_edit)
++      {
++        stream->elst_media_time = MIN(media_time, stream->elst_media_time);
+         media_start = QTSTREAMTIME_TO_GSTTIME (stream, media_time);
++      }
+ 
+       segment = &stream->segments[segment_number];
+ 
+-- 
+2.25.1
+
