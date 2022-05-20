@@ -102,7 +102,7 @@ do_install_append_t5d () {
 EOF
     else
     cat >> ${D}${sysconfdir}/fstab <<EOF
-/dev/vendor            /vendor                    auto       defaults              0  0
+ /dev/vendor            /vendor                    auto       defaults              0  0
  /dev/factory           /factory                   auto       defaults              0  0
 EOF
     fi
