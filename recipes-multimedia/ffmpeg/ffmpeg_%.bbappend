@@ -21,6 +21,8 @@ SRC_URI = " file://0001-do-remove-config-headfile.patch"
 TARGET_CFLAGS += "-DAMFFMPEG"
 
 EXTRA_OECONF_append = " \
+    --disable-gpl \
+    --disable-libx264 \
     --disable-ffprobe \
     --disable-ffmpeg \
     --disable-postproc \
