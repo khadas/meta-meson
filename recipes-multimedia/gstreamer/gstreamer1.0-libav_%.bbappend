@@ -13,5 +13,6 @@ SRC_URI_append = "file://0011-fix_SWPL-79942-support-lpcm.patch "
 SRC_URI_append = "file://0011-libav-remove-support-dolby-vision-unknow-Compatibility-ID.patch "
 SRC_URI_append = "file://0012-fix-SWPL-78539-support-opus-vorbis.patch "
 SRC_URI_append = "file://0013-modify-avdemux-priority.patch "
+SRC_URI_append = "file://0014-support-DTS-parse.patch "
 
 TARGET_CFLAGS += "-DAMFFMPEG"

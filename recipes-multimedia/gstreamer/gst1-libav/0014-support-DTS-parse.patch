@@ -1,0 +1,79 @@
+From 4caef36382394bcbe66e6d76a4dfeb5f42d650fd Mon Sep 17 00:00:00 2001
+From: "hanghang.luo" <hanghang.luo@amlogic.com>
+Date: Mon, 23 May 2022 09:20:08 +0800
+Subject: [PATCH] modify
+
+---
+ ext/libav/gstavdemux.c | 49 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
+
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+index ae44824..fb4e885 100644
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -913,6 +913,32 @@ gst_ffmpegdemux_create_padname (const gchar * templ, gint n)
+   return g_string_free (string, FALSE);
+ }
+ 
++static gboolean
++gst_ffmpegdemux_have_dts_caps (const GstCaps * caps, GstTypeFindProbability prob)
++{
++  GstStructure *s;
++
++  s = gst_caps_get_structure (caps, 0);
++  if (!gst_structure_has_name (s, "audio/x-dts"))
++    return FALSE;
++  /* typefind behavior for DTS:
++   *  MAXIMUM: multiple frame syncs detected, certainly DTS
++   *  LIKELY: single frame sync at offset 0.  Maybe DTS?
++   *  POSSIBLE: single frame sync, not at offset 0.  Highly unlikely
++   *    to be DTS.  */
++  if (prob > GST_TYPE_FIND_LIKELY)
++    return TRUE;
++  if (prob < GST_TYPE_FIND_POSSIBLE)
++    return FALSE;
++  /* for maybe, check for at least a valid-looking rate and channels */
++  if (!gst_structure_has_field (s, "channels"))
++    return FALSE;
++  /* and for extra assurance we could also check the rate from the DTS frame
++   * against the one in the wav header, but for now let's not do that */
++  return gst_structure_has_field (s, "rate");
++}
++
++
+ static GstFFStream *
+ gst_ffmpegdemux_get_stream (GstFFMpegDemux * demux, AVStream * avstream)
+ {
+@@ -976,6 +1002,29 @@ gst_ffmpegdemux_get_stream (GstFFMpegDemux * demux, AVStream * avstream)
+         gst_caps_set_simple (caps, "parsed", G_TYPE_BOOLEAN, "true",
+             "stream-format", G_TYPE_STRING, "byte-stream", NULL);
+       }
++  if (!strcmp(demux->context->iformat->name, "wav")) {
++     GstTypeFindProbability prob;
++     AVPacket pkt;
++     gint res = -1;
++     GstCaps *tf_caps;
++     GstBuffer *outbuf = NULL;
++     
++     res = av_read_frame (demux->context, &pkt);
++     outbuf = gst_buffer_new_and_alloc (pkt.size);
++     gst_buffer_fill(outbuf, 0, pkt.data, pkt.size);
++     tf_caps= gst_type_find_helper_for_buffer (GST_OBJECT (pad), outbuf, &prob);
++     if (tf_caps) {
++       GST_LOG ("typefind caps = %" GST_PTR_FORMAT ", P=%d", tf_caps, prob);
++       if (gst_ffmpegdemux_have_dts_caps (tf_caps, prob)) {
++           GST_DEBUG("Found DTS marker in file marked as raw PCM");
++           gst_caps_unref (caps);
++           caps = tf_caps;
++         }
++     }
++     av_packet_unref (&pkt);
++     gst_buffer_unref(outbuf);
++   }
++
+ 
+   /* stream is known now */
+   stream->unknown = FALSE;
+-- 
+2.25.1
+
