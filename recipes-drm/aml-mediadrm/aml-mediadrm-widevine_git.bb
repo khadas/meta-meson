@@ -19,7 +19,6 @@ PV = "git${SRCPV}"
 
 S = "${WORKDIR}/git"
 DEPENDS = "optee-userspace aml-secmem aml-mediahal-sdk"
-RDEPENDS_${PN} = "libamavutils"
 inherit autotools pkgconfig
 
 ARM_TARGET = "arm.aapcs-linux.hard"

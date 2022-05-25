@@ -22,7 +22,6 @@ DISTRO_FEATURES_append = " dunfell"
 MACHINEOVERRIDES .= ":wpe:thunder"
 DISTROOVERRIDES .= ":dunfell"
 #PREFERRED_VERSION_libopus = "1.1"
-#PREFERRED_PROVIDER_faad2 = "libplayer"
 
 include conf/include/bbmasks-amlogic-platform.inc
 PREFERRED_VERSION_cmake-native= "3.16.5"

@@ -11,8 +11,8 @@ PV = "${SRCPV}"
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_audio_hal')}"
 EXTRA_OEMAKE = "TARGET_DIR=${D} STAGING_DIR=${D}"
 
-DEPENDS += "liblog aml-amaudioutils alsa-lib libamavutils aml-mediahal-sdk"
-RDEPENDS_${PN} += "liblog libamavutils aml-mediahal-sdk"
+DEPENDS += "liblog aml-amaudioutils alsa-lib"
+RDEPENDS_${PN} += "liblog"
 do_compile () {
     cd ${S}/dtv_audio_utils
     oe_runmake -j1 ${EXTRA_OEMAKE} all
@@ -25,8 +25,7 @@ do_install () {
     install -d ${D}/usr/include/
     install -m 0644 -D ${S}/dtv_audio_utils/libdvbaudioutils.so ${D}${libdir}
     install -m 0644 ${S}/dtv_audio_utils/sync/*.h ${D}/usr/include
-    #lib32-aml-dvb-999-r0 do_prepare_recipe_sysroot: The file /usr/include/audio_dtv_ad.h is installed by both lib32-aml-dvbaudioutils and lib32-libamadec, aborting
-    #install -m 0644 ${S}/dtv_audio_utils/audio_read_api/*.h ${D}/usr/include
+    install -m 0644 ${S}/dtv_audio_utils/audio_read_api/*.h ${D}/usr/include
     install -m 0644 ${S}/dtv_audio_utils/audio_read_api/audio_es.h ${D}/usr/include
     install -m 0644 -D ${S}/amadec/libaudamadec.so ${D}${libdir}
 }

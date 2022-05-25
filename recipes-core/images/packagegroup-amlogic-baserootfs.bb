@@ -67,7 +67,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     zram \
     modules-load \
     system-config \
-    libamavutils \
     aml-libdvr \
     aml-mp-sdk \
     aml-pqserver \
