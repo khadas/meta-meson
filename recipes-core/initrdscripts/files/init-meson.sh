@@ -59,7 +59,8 @@ read_args() {
                 root_fstype=$optarg
                 modprobe $optarg 2> /dev/null ;;
             androidboot.slot_suffix=*)
-                ACTIVE_SLOT=$optarg ;;
+                ACTIVE_SLOT=$optarg
+                ROOT_DEVICE=${ROOT_DEVICE}${ACTIVE_SLOT};;
             LABEL=*)
                 label=$optarg ;;
             video=*)
