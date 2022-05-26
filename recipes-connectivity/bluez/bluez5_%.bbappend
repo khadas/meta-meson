@@ -10,12 +10,14 @@ SRC_URI += "file://main.conf"
 SRC_URI += "file://bluez.service"
 SRC_URI += "file://bluez_tool.sh"
 SRC_URI += "file://0001-RDK-fix-issue-in-bluez5.55-1-1.patch"
+SRC_URI += "file://0001-bluez5-add-default_agent-3-5.patch"
 
 do_install_append(){
     install -d ${D}${bindir}
     install -d ${D}/${systemd_unitdir}/system
     install -d ${D}/${sysconfdir}/bluetooth
 
+    install -m 0755 ${B}/client/default_agent ${D}/${bindir}
     install -m 0755 ${WORKDIR}/bluez_tool.sh ${D}/${bindir}
     install -m 0644 ${WORKDIR}/bluez.service ${D}/${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/main.conf ${D}/${sysconfdir}/bluetooth
