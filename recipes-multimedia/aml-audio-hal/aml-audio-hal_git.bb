@@ -32,6 +32,9 @@ PACKAGECONFIG_append_sc2 += "sc2"
 PACKAGECONFIG_append_s4 += "sc2"
 PACKAGECONFIG[sc2] = "-DUSE_SC2=ON,-DUSE_SC2=OFF,"
 
+PACKAGECONFIG_append += "${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'eq_drc', '', d)}"
+PACKAGECONFIG[eq_drc] = "-DUSE_EQ_DRC=ON,-DUSE_EQ_DRC=OFF,"
+
 SRC_URI  += "\
   file://aml_audio_config.json \
   file://aml_audio_config.ah212.json \
