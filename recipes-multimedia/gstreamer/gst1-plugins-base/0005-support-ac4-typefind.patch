@@ -1,0 +1,65 @@
+From d9c61f1eb04bbfb591d45d3d13dc73e372721333 Mon Sep 17 00:00:00 2001
+From: "kaiqiang.xiang" <kaiqiang.xiang@amlogic.com>
+Date: Thu, 26 May 2022 11:03:16 +0800
+Subject: [PATCH] support ac4 typefind
+
+---
+ gst/typefind/gsttypefindfunctions.c | 35 ++++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/gst/typefind/gsttypefindfunctions.c b/gst/typefind/gsttypefindfunctions.c
+index c336bf0..efe7432 100644
+--- a/gst/typefind/gsttypefindfunctions.c
++++ b/gst/typefind/gsttypefindfunctions.c
+@@ -1812,6 +1812,38 @@ ac3_type_find (GstTypeFind * tf, gpointer unused)
+   }
+ }
+ 
++/*** audio/x-ac4 ***/
++/* FIXME 0.11: should be audio/ac4, but isn't for backwards compatibility */
++static GstStaticCaps ac4_caps = GST_STATIC_CAPS ("audio/x-ac4");
++#define AC4_CAPS (gst_static_caps_get(&ac4_caps))
++
++static void
++ac4_type_find (GstTypeFind * tf, gpointer unused)
++{
++  DataScanCtx c = { 0, NULL, 0 };
++
++  /* Search for an ac4 frame; not necessarily right at the start, but give it
++   * a lower probability if not found right at the start. Check that the
++   * frame is followed by a second frame at the expected offset.
++   * We could also check the two ac4 CRCs, but we don't do that right now */
++  while (c.offset < 1024) {
++    if (G_UNLIKELY (!data_scan_ctx_ensure_data (tf, &c, 7)))
++      break;
++
++    if (c.data[0] == 0xAC && c.data[1] == 0x40 && c.data[2] == 0xFF && c.data[3] == 0xFF) {
++      guint len = c.data[4]*0x10000 + c.data[5]*0x100 + c.data[6];
++	  //if(len<1024)
++	  {
++		  GST_LOG ("found ac4, frame len is %x", len);
++		  GstTypeFindProbability prob;
++		  prob = GST_TYPE_FIND_MAXIMUM;
++		  gst_type_find_suggest (tf, prob, AC4_CAPS);
++                return;
++	  }
++    }
++    data_scan_ctx_advance (tf, &c, 1);
++  }
++}
+ /*** audio/x-dts ***/
+ static GstStaticCaps dts_caps = GST_STATIC_CAPS ("audio/x-dts");
+ #define DTS_CAPS (gst_static_caps_get (&dts_caps))
+@@ -6187,7 +6219,8 @@ plugin_init (GstPlugin * plugin)
+       tap_type_find, "tap", TAP_CAPS, NULL, NULL);
+   TYPE_FIND_REGISTER_START_WITH (plugin, "audio/x-tap-dmp",
+       GST_RANK_SECONDARY, "dmp", "DC2N-TAP-RAW", 12, GST_TYPE_FIND_LIKELY);
+-
++  TYPE_FIND_REGISTER (plugin, "audio/x-ac4", GST_RANK_PRIMARY,
++      ac4_type_find, "ac4", AC4_CAPS, NULL, NULL);
+   return TRUE;
+ }
+ 
+-- 
+2.25.1
+
