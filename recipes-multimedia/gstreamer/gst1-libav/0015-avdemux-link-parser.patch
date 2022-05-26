@@ -1,0 +1,25 @@
+From 082fb0a4a69c08718174f1eb510205abcc2a5722 Mon Sep 17 00:00:00 2001
+From: "hanghang.luo" <hanghang.luo@amlogic.com>
+Date: Thu, 26 May 2022 16:13:13 +0800
+Subject: [PATCH] modify code
+
+---
+ ext/libav/gstavdemux.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+index fb4e885..ac17a4a 100644
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -997,7 +997,7 @@ gst_ffmpegdemux_get_stream (GstFFMpegDemux * demux, AVStream * avstream)
+        || (!strcmp(demux->context->iformat->name, "avi")
+        && (AV_CODEC_ID_H264 == ctx->codec_id || AV_CODEC_ID_HEVC == ctx->codec_id))
+        || (!strcmp(demux->context->iformat->name, "matroska,webm")
+-       && (AV_CODEC_ID_H264 == ctx->codec_id || AV_CODEC_ID_HEVC == ctx->codec_id)))
++       && (AV_CODEC_ID_H264 == ctx->codec_id)))
+       {
+         gst_caps_set_simple (caps, "parsed", G_TYPE_BOOLEAN, "true",
+             "stream-format", G_TYPE_STRING, "byte-stream", NULL);
+-- 
+2.25.1
+
