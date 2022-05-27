@@ -11,11 +11,13 @@ SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/gst
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-DEPENDS = " gstreamer1.0 gstreamer1.0-plugins-base glib-2.0 zlib aml-mediadrm-widevine "
+DEPENDS = " gstreamer1.0 gstreamer1.0-plugins-base glib-2.0 zlib aml-mediadrm-widevine"
 DEPENDS += "gstreamer1.0-plugins-bad"
 RDEPENDS_${PN} += "aml-mediadrm-widevine aml-secmem"
 
 S = "${WORKDIR}/git/gst-aml-drm-plugins-1.0"
+
+EXTRA_OECONF += "--enable-essos-rm=no"
 
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
 inherit autotools pkgconfig features_check
