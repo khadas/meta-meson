@@ -87,6 +87,10 @@ do_compile () {
     export KCFLAGS="${KCFLAGS}"
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'false', 'true', d)}; then
+        sed -i '/CONFIG_CMD_BOOTCTOL_AVB/ d' ${S}/bl33/v2019/board/amlogic/defconfigs/${UBOOT_TYPE%_config}_defconfig
+    fi
     LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG}
     cp -rf build/* fip/
 }

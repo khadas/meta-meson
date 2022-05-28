@@ -92,6 +92,11 @@ do_compile () {
     export KCFLAGS="${KCFLAGS}"
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'false', 'true', d)}; then
+        sed -i '/CONFIG_CMD_BOOTCTOL_AVB/ d' ${S}/bl33/v2015/board/amlogic/defconfigs/${UBOOT_TYPE%_config}_defconfig
+    fi
+
     if ${@bb.utils.contains('DISTRO_FEATURES','secure-u-boot','true','false',d)}; then
         if [ "${BL32_SOC_FAMILY}" = "t5d" ];then
             mkdir -p ${S}/bl32/bin/${BL32_SOC_FAMILY}/
