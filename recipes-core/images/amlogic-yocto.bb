@@ -36,7 +36,9 @@ PACKAGE_INSTALL += "base-files netbase ${VIRTUAL-RUNTIME_base-utils} ${VIRTUAL-R
 #IMAGE_LINGUAS = ""
 
 #reduce this value to reserve space for DM-verity/AVB meta-data at the end of partition(64M)
-IMAGE_ROOTFS_SIZE = "1507328"
+#unit is 1K, ${IMAGE_ROOTFS_SIZE} + DM-verity-meta-data-size=system-flash-partition-size, 1.5G rootfs, the DM-meta-data-size is about 13M, so reserve 32M is enough
+#IMAGE_ROOTFS_SIZE = (0x60000000 - 32*1024*1024)/1024
+IMAGE_ROOTFS_SIZE = "1540096"
 
 #UBI
 UBI_VOLNAME = "system"

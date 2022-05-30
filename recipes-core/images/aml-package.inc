@@ -22,6 +22,23 @@ SOC_FAMILY_a213y = "a213y"
 
 PACK_CONF = "${@bb.utils.contains('DISTRO_FEATURES','absystem','aml_upgrade_package_ab.conf','aml_upgrade_package.conf', d)}"
 
+padding_to_multipleOf4K_for_img2simg() {
+    local add_size=0
+    local file_size=$(stat -L -c "%s" $1)
+
+    echo "$1 file_size $file_size"
+
+    local remain=$(expr $file_size % 4096)
+    if [ $remain -ne 0 ]; then
+        add_size=$(expr 4096 - $remain)
+        echo "$1 add_size $add_size"
+        if [ $add_size -gt 0 ];then
+            echo "$1 padding $add_size bytes for img2simg"
+            truncate --size="+$add_size" $1
+        fi
+    fi
+}
+
 do_aml_pack() {
        if ${@bb.utils.contains('DISTRO_FEATURES','onepass','false','true',d)}; then
             dir64b=`echo ${DEPLOY_DIR_IMAGE} | sed -r 's/_32b//'`
@@ -62,10 +79,12 @@ if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
     cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubi ${DEPLOY_DIR_IMAGE}/vendor.ubi
     ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_nand.conf ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
 else
+    padding_to_multipleOf4K_for_img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4
     ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/rootfs.ext4.img2simg
     ${DEPLOY_DIR_IMAGE}/ext2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/system.img
 
     if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ];then
+        padding_to_multipleOf4K_for_img2simg ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4
         ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/vendor.ext4.img2simg
     fi
 
