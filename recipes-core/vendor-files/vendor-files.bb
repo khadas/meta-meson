@@ -28,6 +28,9 @@ do_install() {
 		if [ -e ${S}/etc/tvconfig/${SOC}/audio_effects.xml ]; then
 			install -m 0644 -D ${S}/etc/tvconfig/${SOC}/audio_effects.xml ${D}/etc/audio_effects.xml
 		fi
+		if [ -e ${S}/etc/tvconfig/${SOC}/ms12_tuning.dat ]; then
+			install -m 0644 -D ${S}/etc/tvconfig/${SOC}/ms12_tuning.dat ${D}/etc/ms12_tuning.dat
+		fi
 		install -d ${D}/etc/tvconfig/pq
 		if [ -e ${S}/etc/tvconfig/${SOC}/PQ ]; then
 			install -m 0644 -D ${S}/etc/tvconfig/${SOC}/PQ/pq.db ${D}/etc/tvconfig/pq/pq.db
