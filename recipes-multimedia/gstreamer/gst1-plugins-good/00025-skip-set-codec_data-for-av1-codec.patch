@@ -1,0 +1,80 @@
+From 641fbe63c4b252e83b7e39368d5e3219b2d1ab7b Mon Sep 17 00:00:00 2001
+From: "fei.deng" <fei.deng@amlogic.com>
+Date: Tue, 31 May 2022 15:29:15 +0800
+Subject: [PATCH] skip set codec_data for av1 codec
+
+Change-Id: I7f61d3e14093f24a61da6784ec4f3f8fd2fd1711
+---
+ gst/isomp4/qtdemux.c | 56 ++++++++++++++++++++------------------------
+ 1 file changed, 25 insertions(+), 31 deletions(-)
+
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index b255c44..d19b3b7 100644
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -11748,37 +11748,31 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+                   if (size < 5)
+                     break;
+ 
+-                  /* Content is:
+-                   * 4 bytes: atom length
+-                   * 4 bytes: fourcc
+-                   * 1 byte: version
+-                   * 3 bytes: flags
+-                   * 3 bits: reserved
+-                   * 1 bits:  initial_presentation_delay_present
+-                   * 4 bits: initial_presentation_delay (if present else reserved
+-                   * rest: OBUs.
+-                   */
+-
+-                  if (av1_data[9] != 0) {
+-                    GST_WARNING ("Unknown version %d of av1C box", av1_data[9]);
+-                    //break;
+-                  }
+-
+-                  /* We skip initial_presentation_delay* for now */
+-                  pres_delay_field = *(av1_data + 12);
+-                  if (pres_delay_field & (1 << 5)) {
+-                    gst_caps_set_simple (entry->caps,
+-                        "presentation-delay", G_TYPE_INT,
+-                        (gint) (pres_delay_field & 0x0F) + 1, NULL);
+-                  }
+-                  if (size > 5) {
+-                    buf = gst_buffer_new_and_alloc (size - 5);
+-                    GST_BUFFER_FLAG_SET (buf, GST_BUFFER_FLAG_HEADER);
+-                    gst_buffer_fill (buf, 0, av1_data + 13, size - 5);
+-                    gst_caps_set_simple (entry->caps,
+-                        "codec_data", GST_TYPE_BUFFER, buf, NULL);
+-                    gst_buffer_unref (buf);
+-                  }
++                  guint32 tmp = QT_UINT8(av1_data+8);
++                  guint32 marker = tmp >> 7; //1bit
++                  guint32 version = tmp & 0x7F;
++                  tmp = QT_UINT8(av1_data+9);
++                  guint32 seq_profile = tmp & 0xE0;
++                  guint32 seq_level_idx_0 = tmp & 0x1F;
++                  tmp = QT_UINT8(av1_data+10);
++                  guint32 seq_tier_0 = tmp >> 7;
++                  guint32 high_bitdepth = (tmp >> 6) &0x1;
++                  guint32 twelve_bit = (tmp >> 5) &0x1;
++                  guint32 monochrome = (tmp >> 4) &0x1;
++                  guint32 chroma_subsampling_x = (tmp >> 3) &0x1;
++                  guint32 chroma_subsampling_y = (tmp >> 2) &0x1;
++                  guint32 chroma_sample_position = tmp && 0x3;
++                  GST_DEBUG_OBJECT ("av1C box, marker:%d,version:%d,seq_profile:%d,seq_level_idx_0:%d,seq_tier_0:%d,high_bitdepth:%d,twelve_bit:%d,monochrome:%d,", 
++                              marker,version,seq_profile,seq_level_idx_0,seq_tier_0, high_bitdepth,twelve_bit,monochrome);
++                  //we don't set codec_data for av1 codec, it cause v4l2 decoder writing data error
++                  // if (size > 5) {
++                  //   buf = gst_buffer_new_and_alloc (size);
++                  //   GST_BUFFER_FLAG_SET (buf, GST_BUFFER_FLAG_HEADER);
++                  //   gst_buffer_fill (buf, 0, av1_data + 8, size);
++                  //   gst_caps_set_simple (entry->caps,
++                  //       "codec_data", GST_TYPE_BUFFER, buf, NULL);
++                  //   gst_buffer_unref (buf);
++                  // }
+                   break;
+                 }
+                 case FOURCC_dvcC:
+-- 
+2.25.1
+
