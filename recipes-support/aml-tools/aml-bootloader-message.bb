@@ -10,7 +10,9 @@ PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/bootloader_message"
 
+CFLAGS += " -DBOOTCTOL_AVB "
 do_compile(){
+    export CFLAGS="${CFLAGS}"
     ${MAKE} -C ${S} all
 }
 

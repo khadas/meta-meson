@@ -1,4 +1,4 @@
-From 3e90654bc4c4873d803922de7aa450f2b7aceb71 Mon Sep 17 00:00:00 2001
+From de01caab8851eaa425a3cd739a4954162bc9e9b2 Mon Sep 17 00:00:00 2001
 From: Blance Tang <guofeng.tang@amlogic.com>
 Date: Wed, 20 Oct 2021 16:05:47 +0800
 Subject: [PATCH] amlogic update based on 2021.04
@@ -23,7 +23,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  handlers/Makefile         |   1 +
  handlers/ext4_handler.c   | 318 ++++++++++++++++
  handlers/flash_handler.c  |  69 +++-
- handlers/raw_handler.c    | 224 ++++++++++-
+ handlers/raw_handler.c    | 225 ++++++++++-
  handlers/ubivol_handler.c |  14 +-
  include/bootloader.h      |   2 +
  include/flash.h           |   1 +
@@ -44,7 +44,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  libsparse/sparse_file.h   |  32 ++
  libsparse/sparse_format.h |  55 +++
  libsparse/sparse_read.c   | 510 +++++++++++++++++++++++++
- 33 files changed, 3813 insertions(+), 10 deletions(-)
+ 33 files changed, 3814 insertions(+), 10 deletions(-)
  create mode 100644 handlers/ext4_handler.c
  create mode 100644 libsparse/Config.in
  create mode 100644 libsparse/Makefile
@@ -1031,7 +1031,7 @@ index 5c11ff6..1f42e8b 100644
  	if (flash_write_image(mtdnum, img)) {
  		ERROR("I cannot copy %s into %s partition",
 diff --git a/handlers/raw_handler.c b/handlers/raw_handler.c
-index 619a2f4..2451c07 100644
+index 619a2f4..c0b61a9 100644
 --- a/handlers/raw_handler.c
 +++ b/handlers/raw_handler.c
 @@ -29,10 +29,175 @@
@@ -1210,7 +1210,7 @@ index 619a2f4..2451c07 100644
  /**
   * Handle write protection for block devices
   *
-@@ -55,11 +220,34 @@ static int blkprotect(struct img_type *img, bool on)
+@@ -55,11 +220,35 @@ static int blkprotect(struct img_type *img, bool on)
  	int fd_force_ro;
  	struct stat sb;
  	char current_prot;
@@ -1222,7 +1222,8 @@ index 619a2f4..2451c07 100644
  	}
  
 +//try a/b system
-+if (get_active_slot(&slot)==0 && ((strcmp(img->fname, "boot.img")==0) || (strcmp(img->fname, "recovery.img")==0))) {
++if (get_active_slot(&slot)==0 && ((strcmp(img->fname, "boot.img")==0) ||
++ (strcmp(img->fname, "recovery.img")==0) || (strcmp(img->fname, "vbmeta.img")==0))) {
 +	if (slot == 0) {
 +		sprintf(device_name, "%s%s", img->device, "_b");
 +	} else {
@@ -1245,7 +1246,7 @@ index 619a2f4..2451c07 100644
  	if (stat(img->device, &sb) == -1) {
  		TRACE("stat for device %s failed: %s", img->device, strerror(errno));
  		return ret;
-@@ -73,6 +261,7 @@ static int blkprotect(struct img_type *img, bool on)
+@@ -73,6 +262,7 @@ static int blkprotect(struct img_type *img, bool on)
  		ret = -errno;
  		goto blkprotect_out;
  	}
@@ -1253,7 +1254,7 @@ index 619a2f4..2451c07 100644
  
  	ret_int = asprintf(&sysfs_path, c_sys_path, abs_path + 5);  /* remove "/dev/" from device path */
  	if(ret_int < 0) {
-@@ -128,11 +317,40 @@ static int install_raw_image(struct img_type *img,
+@@ -128,11 +318,40 @@ static int install_raw_image(struct img_type *img,
  	if (prot_stat < 0)
  		return prot_stat;
  

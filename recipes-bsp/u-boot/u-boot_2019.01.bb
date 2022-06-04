@@ -64,11 +64,12 @@ BL32_SOC_FAMILY = "TBD"
 BL32_SOC_FAMILY_s4 = "s4/s905y4"
 BL32_ARG = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '--bl32 bl32_3.8/bin/${BL32_SOC_FAMILY}/blob-bl32.nand.bin.signed', '', d)}"
 
+BL33_ARG = "${@bb.utils.contains('DISTRO_FEATURES','AVB','--avb2','',d)}"
+
 #VMX UBOOT PATH depends on SoC
 VMX_UBOOT_PATH = "TBD"
 VMX_UBOOT_PATH_s4 = "s905y4"
 VMX_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '--bl32 vmx-sdk/bootloader/${VMX_UBOOT_PATH}/bl32/blob-bl32.bin.signed', '', d)}"
-BL33_ARG = "${@bb.utils.contains('DISTRO_FEATURES','AVB','--avb2','',d)}"
 
 #NAGRA UBOOT PATH depends on SoC
 NAGRA_UBOOT_PATH = "TBD"
@@ -88,9 +89,6 @@ do_compile () {
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
 
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'false', 'true', d)}; then
-        sed -i '/CONFIG_CMD_BOOTCTOL_AVB/ d' ${S}/bl33/v2019/board/amlogic/defconfigs/${UBOOT_TYPE%_config}_defconfig
-    fi
     LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG}
     cp -rf build/* fip/
 }
