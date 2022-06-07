@@ -48,5 +48,8 @@ do_install_append(){
 
 FILES_${PN} += "${bindir}/*"
 FILES_${PN} += "${systemd_unitdir}/system/*"
+FILES_${PN}-obex += "${bindir}/obexctl"
 
 SYSTEMD_SERVICE_${PN} += "bluez.service"
+
+RDEPENDS_${PN}-obex_append_libc-glibc = " glibc-gconv-utf-16"

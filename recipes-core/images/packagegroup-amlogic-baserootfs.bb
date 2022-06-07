@@ -153,6 +153,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     tzcode \
     format-partitions \
     bluez-alsa \
+    bluez5-obex \
     "
 
 RDEPENDS_packagegroup-amlogic-baserootfs += " \
