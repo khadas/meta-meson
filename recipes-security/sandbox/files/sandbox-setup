@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export XDG_RUNTIME_DIR=/run/user/0
+XDG_RUNTIME_DIR=/run/user/0
 GROUP_SYSTEM=system
 GROUP_SESSION=session
 
