@@ -18,6 +18,8 @@ IMAGE_INSTALL_append = "\
                     ntfs-3g \
                     systemd \
                     kernel-modules \
+                    system-config \
+                    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
                    "
 
 IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
