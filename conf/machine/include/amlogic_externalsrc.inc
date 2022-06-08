@@ -114,7 +114,6 @@ EXTERNALSRC_pn-netflix-aml = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/netflix
 EXTERNALSRC_pn-netflix-prebuilt-dep = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/netflix' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/netflix')) else ''}"
 EXTERNALSRC_pn-wpeframework-plugin-netflix = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/wpe-plugin-netflix' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/wpe-plugin-netflix')) else ''}"
 EXTERNALSRC_pn-wpeframework-plugin-amltts = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/wpe-plugin-tts' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/wpe-plugin-tts')) else ''}"
-EXTERNALSRC_pn-devicesettings-hal = "${@['', '${MESON_ROOT_PATH}/aml-comp/thirdparty/Devicesettings-hal'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/Devicesettings-hal')]}"
 EXTERNALSRC_pn-thunder-services = "${@['', '${MESON_ROOT_PATH}/aml-comp/thirdparty/thunder-services'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/thunder-services')]}"
 EXTERNALSRC_pn-aml-dial = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dialserver'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dialserver')]}"
 EXTERNALSRC_pn-secpu-fw-loader = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/secpu_fw_loader'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/secpu_fw_loader')]}"

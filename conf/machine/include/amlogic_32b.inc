@@ -1,6 +1,5 @@
 DEFAULTTUNE = "armv7athf-neon"
 
-#PREFERRED_PROVIDER_virtual/devicesettings-hal = "devicesettings-hal-amlogic"
 #PREFERRED_PROVIDER_virtual/closedcaption-hal = "closedcaption-hal-amlogic"
 PREFERRED_PROVIDER_virtual/gst-plugins-playersinkbin = "gst-plugins-playersinkbin-rpi"
 #PREFERRED_PROVIDER_virtual/iarmmgrs-hal = "iarmmgrs-hal-amlogic"
