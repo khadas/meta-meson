@@ -30,7 +30,6 @@ KERNEL_MODULE_AUTOLOAD += " hci_uart"
 KERNEL_MODULE_PROBECONF += "hci_uart"
 KERNEL_MODULE_AUTOLOAD += "aml_aucpu"
 KERNEL_MODULE_AUTOLOAD += "meson-cpufreq"
-KERNEL_MODULE_AUTOLOAD += " media_sync"
 
 DISTRO_FEATURES_append = " drm"
 #DISTRO_FEATURES_append = " onepass"
