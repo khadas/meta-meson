@@ -42,6 +42,10 @@ do_install() {
     install -m 0755 ${S}/am_dmx_test ${D}${bindir}/
     install -m 0755 ${S}/dvr_wrapper_test ${D}${bindir}/
     install -m 0644 ${S}/include/* ${D}${includedir}/libdvr/
+    install -m 0644 ${S}/include/dvb_*.h ${D}${includedir}/
+    install -m 0644 ${S}/include/dvr_*.h ${D}${includedir}/
+    install -m 0644 ${S}/include/segment.h ${D}${includedir}/
+    install -m 0644 ${S}/include/list.h ${D}${includedir}/
 }
 
 FILES_${PN} = "${libdir}/* ${bindir}/*"
