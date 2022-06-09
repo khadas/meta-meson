@@ -41,8 +41,11 @@ PACKAGE_INSTALL += "base-files netbase ${VIRTUAL-RUNTIME_base-utils} ${VIRTUAL-R
 IMAGE_ROOTFS_SIZE = "1540096"
 
 #UBI
+# -e 253952: logical eraseblock size of the UBI volume
+# -c 1240: specifies maximum file-system size in logical eraseblocks
+# the resulting FS may be put on volumes up to about 300MiB (253952 multiplied by 1240)
 UBI_VOLNAME = "system"
-MKUBIFS_ARGS = "-F -m 4096 -e 253952 -c 1120"
+MKUBIFS_ARGS = "-F -m 4096 -e 253952 -c 1240"
 UBINIZE_ARGS = "-m 4096 -p 256KiB -s 4096 -O 4096"
 
 IMAGE_ROOTFS_EXTRA_SPACE = "0"

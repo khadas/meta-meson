@@ -81,11 +81,13 @@ EOF
         sed -i '/^ *\/dev\/root/ d' ${D}${sysconfdir}/fstab
     fi
 
+if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'false', 'true', d)}; then
     if ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'true', 'false', d)}; then
         sed -i '$a \  /dev/tee          /tee/         ext4        defcontext=system_u:object_r:usr_t,defaults,x-systemd.automount,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
     else
         sed -i '$a \  /dev/tee          /tee/         ext4        defaults,x-systemd.automount,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
     fi
+fi
 }
 FILES_${PN}_append_s4 = " /vendor/* /factory/* "
 dirs755_append_s4 = " /vendor /factory "
