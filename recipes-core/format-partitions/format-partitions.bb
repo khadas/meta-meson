@@ -1,7 +1,6 @@
 SUMMARY = "Systemd service to format partitions"
 SECTION = "core"
 LICENSE = "CLOSED"
-LIC_FILES_CHKSUM = "file://LICENSE.TXT;md5=726a766df559f36316aa5261724ee8cd"
 
 SRC_URI = " file://ext4format@.service"
 SRC_URI_append = " file://format-to-ext4.sh"
