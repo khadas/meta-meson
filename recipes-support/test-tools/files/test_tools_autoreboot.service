@@ -1,0 +1,11 @@
+[Unit]
+Description=test_tools_autoreboot.service
+ConditionPathExists=/usr/bin/S95autoreboot
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/S95autoreboot
+
+[Install]
+WantedBy=multi-user.target

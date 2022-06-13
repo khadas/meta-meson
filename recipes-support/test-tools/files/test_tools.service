@@ -1,0 +1,11 @@
+[Unit]
+Description=test_tools.service
+ConditionPathExists=/usr/bin/S95AutoExecuteCheck
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/S95AutoExecuteCheck
+
+[Install]
+WantedBy=multi-user.target

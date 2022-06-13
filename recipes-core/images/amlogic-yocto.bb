@@ -18,6 +18,7 @@ IMAGE_INSTALL += " \
     packagegroup-amlogic-baserootfs \
     gdb \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'packagegroup-core-selinux auditd', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'test_tools', 'test-tools', '', d)} \
     "
 
 # unicode locale support
