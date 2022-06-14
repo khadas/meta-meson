@@ -1,0 +1,25 @@
+From 845ca1ec6f9b64d2512bde407c3fd0f37d69fc50 Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Tue, 14 Jun 2022 18:47:10 +0800
+Subject: [PATCH] policy/modules: add support ubifs
+
+Change-Id: Ic5216766f13784bb879e2b5f2ac944dcd8242620
+---
+ policy/modules/kernel/filesystem.te | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/policy/modules/kernel/filesystem.te b/policy/modules/kernel/filesystem.te
+index 32dc72d1c..89ab38b3b 100644
+--- a/policy/modules/kernel/filesystem.te
++++ b/policy/modules/kernel/filesystem.te
+@@ -38,6 +38,7 @@ fs_use_xattr overlay gen_context(system_u:object_r:fs_t,s0);
+ fs_use_xattr squashfs gen_context(system_u:object_r:fs_t,s0);
+ fs_use_xattr xfs gen_context(system_u:object_r:fs_t,s0);
+ fs_use_xattr zfs gen_context(system_u:object_r:fs_t,s0);
++fs_use_xattr ubifs gen_context(system_u:object_r:fs_t,s0);
+ 
+ # Use the allocating task SID to label inodes in the following filesystem
+ # types, and label the filesystem itself with the specified context.
+-- 
+2.29.0
+

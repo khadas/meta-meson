@@ -1,4 +1,4 @@
-From 71e3e38c33ce47181b24239c354b989ae9847f2d Mon Sep 17 00:00:00 2001
+From e3f8ae300bde7b05491e125f5a694299fc42ad06 Mon Sep 17 00:00:00 2001
 From: Bing Jiang <bing.jiang@amlogic.com>
 Date: Thu, 7 Apr 2022 19:30:48 +0800
 Subject: [PATCH] policy/modules: add refpolicy for data directory
@@ -26,9 +26,9 @@ Signed-off-by: Bing Jiang <bing.jiang@amlogic.com>
  policy/modules/system/mount.if            |  17 +++
  policy/modules/system/mount.te            |   3 +-
  policy/modules/system/selinuxutil.te      |   2 +
- policy/modules/system/systemd.te          |  20 +++
+ policy/modules/system/systemd.te          |  21 +++
  policy/modules/system/udev.te             |   4 +
- 22 files changed, 245 insertions(+), 3 deletions(-)
+ 22 files changed, 246 insertions(+), 3 deletions(-)
 
 diff --git a/policy/modules/admin/alsa.te b/policy/modules/admin/alsa.te
 index c6dcfa8cb..f06da9ac9 100644
@@ -497,7 +497,7 @@ index 09fef149b..39494f6cc 100644
  fs_getattr_all_xattr_fs(setfiles_t)
  fs_getattr_cgroup(setfiles_t)
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
-index f0102358b..4e7e0b1f7 100644
+index f0102358b..ac5c1ce4e 100644
 --- a/policy/modules/system/systemd.te
 +++ b/policy/modules/system/systemd.te
 @@ -378,6 +378,10 @@ files_read_boot_files(systemd_generator_t)
@@ -580,7 +580,15 @@ index f0102358b..4e7e0b1f7 100644
  
  selinux_get_enforce_mode(systemd_sessions_t)
  selinux_get_fs_mount(systemd_sessions_t)
-@@ -1253,6 +1270,7 @@ files_relabelfrom_home(systemd_tmpfiles_t)
+@@ -1186,6 +1203,7 @@ allow systemd_sysusers_t self:unix_dgram_socket sendto;
+ 
+ files_manage_etc_files(systemd_sysusers_t)
+ files_map_etc_files(systemd_sysusers_t)
++files_search_data(systemd_sysusers_t)
+ 
+ kernel_read_kernel_sysctls(systemd_sysusers_t)
+ kernel_use_fds(systemd_sysusers_t)
+@@ -1253,6 +1271,7 @@ files_relabelfrom_home(systemd_tmpfiles_t)
  files_relabelto_home(systemd_tmpfiles_t)
  files_relabelto_etc_dirs(systemd_tmpfiles_t)
  files_map_etc_files(systemd_tmpfiles_t)
@@ -588,7 +596,7 @@ index f0102358b..4e7e0b1f7 100644
  
  files_manage_non_auth_files(systemd_tmpfiles_t)
  files_relabel_non_auth_files(systemd_tmpfiles_t)
-@@ -1361,6 +1379,7 @@ files_map_usr_files(systemd_update_done_t)
+@@ -1361,6 +1380,7 @@ files_map_usr_files(systemd_update_done_t)
  files_getattr_usr_files(systemd_update_done_t)
  files_rw_usr_dirs(systemd_update_done_t)
  files_manage_usr_files(systemd_update_done_t)
@@ -596,7 +604,7 @@ index f0102358b..4e7e0b1f7 100644
  
  seutil_read_file_contexts(systemd_update_done_t)
  
-@@ -1455,6 +1474,7 @@ fs_getattr_tmpfs(systemd_user_runtime_dir_t)
+@@ -1455,6 +1475,7 @@ fs_getattr_tmpfs(systemd_user_runtime_dir_t)
  fs_list_tmpfs(systemd_user_runtime_dir_t)
  fs_unmount_tmpfs(systemd_user_runtime_dir_t)
  fs_relabelfrom_tmpfs_dirs(systemd_user_runtime_dir_t)
