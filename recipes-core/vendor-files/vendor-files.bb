@@ -19,6 +19,7 @@ SOC_at301 = "t962d4"
 SOC_ar321 = "t965d4"
 SOC_ap222 = "s905y4"
 SOC_ah212 = "s905x4"
+SOC_aq222 = "s805x2"
 SOC_pxp = "p1_pxp"
 
 S = "${WORKDIR}/git/"
