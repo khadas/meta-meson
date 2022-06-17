@@ -77,45 +77,46 @@ do_aml_pack() {
 
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
 
-if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
-    cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ubi ${DEPLOY_DIR_IMAGE}/rootfs.ubi
-    cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubi ${DEPLOY_DIR_IMAGE}/vendor.ubi
-    ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_nand.conf ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
-else
-    padding_to_multipleOf4K_for_img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4
-    ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/rootfs.ext4.img2simg
-    ${DEPLOY_DIR_IMAGE}/ext2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/system.img
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
+        cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ubi ${DEPLOY_DIR_IMAGE}/rootfs.ubi
+        cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubi ${DEPLOY_DIR_IMAGE}/vendor.ubi
+        ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_nand.conf ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
+    else
+        padding_to_multipleOf4K_for_img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4
+        ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/rootfs.ext4.img2simg
+        ${DEPLOY_DIR_IMAGE}/ext2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/system.img
 
-    if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ];then
-        padding_to_multipleOf4K_for_img2simg ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4
-        ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/vendor.ext4.img2simg
-    fi
-
-    if [ "${SOC_FAMILY}" = "p1" ];then
-        cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/rootfs.ext4.img2simg
-        cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/vendor.ext4.img2simg
-    fi
-
-    ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/${PACK_CONF} ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
-
-    #sign image
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'scs', 'true', 'false', d)}; then
-        cp -rf ${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/device-keys ${DEPLOY_DIR_IMAGE}/
-        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/fw_arb.cfg ${DEPLOY_DIR_IMAGE}/
-
-        if [ "${AML_SCS_SIGN_TOOL}" = "" ];then
-            AML_SCS_SIGN=${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/amlogic_scs_sign_whole_pkg.bash
-        else
-            AML_SCS_SIGN=${AML_SCS_SIGN_TOOL}
+        if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ];then
+            padding_to_multipleOf4K_for_img2simg ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4
+            ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/vendor.ext4.img2simg
         fi
 
-        UBOOT_TYPE="${UBOOT_MACHINE}"
-        ${AML_SCS_SIGN} --soc ${CHIPSET_NAME} \
-            --aml_key ${DEPLOY_DIR_IMAGE}/device-keys \
-            --fw_arb_cfg ${DEPLOY_DIR_IMAGE}/fw_arb.cfg \
-            --aml_img ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img \
-            --bootloader_zip ${DEPLOY_DIR_IMAGE}/${UBOOT_TYPE%_config}-u-boot.aml.zip \
-            --output ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_enc.img
+        if [ "${SOC_FAMILY}" = "p1" ];then
+            cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/rootfs.ext4.img2simg
+            cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/vendor.ext4.img2simg
+        fi
+
+        ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/${PACK_CONF} ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
+
+        #sign image
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'scs', 'true', 'false', d)}; then
+            cp -rf ${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/device-keys ${DEPLOY_DIR_IMAGE}/
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/fw_arb.cfg ${DEPLOY_DIR_IMAGE}/
+
+            if [ "${AML_SCS_SIGN_TOOL}" = "" ];then
+                AML_SCS_SIGN=${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/amlogic_scs_sign_whole_pkg.bash
+            else
+                AML_SCS_SIGN=${AML_SCS_SIGN_TOOL}
+            fi
+
+            UBOOT_TYPE="${UBOOT_MACHINE}"
+            ${AML_SCS_SIGN} --soc ${CHIPSET_NAME} \
+                --aml_key ${DEPLOY_DIR_IMAGE}/device-keys \
+                --fw_arb_cfg ${DEPLOY_DIR_IMAGE}/fw_arb.cfg \
+                --aml_img ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img \
+                --bootloader_zip ${DEPLOY_DIR_IMAGE}/${UBOOT_TYPE%_config}-u-boot.aml.zip \
+                --output ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_enc.img
+        fi
     fi
 
     #create software.swu
@@ -123,11 +124,18 @@ else
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/swupdate-priv.pem ${DEPLOY_DIR_IMAGE}/
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/update.sh ${DEPLOY_DIR_IMAGE}/
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/sw_package_create.sh ${DEPLOY_DIR_IMAGE}/
-        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-emmc ${DEPLOY_DIR_IMAGE}/sw-description
-        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-emmc ${DEPLOY_DIR_IMAGE}/sw-package-filelist
-        if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'true', 'false', d)}; then
-            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-emmc-avb ${DEPLOY_DIR_IMAGE}/sw-description
-            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-emmc-avb ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
+            cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ubifs ${DEPLOY_DIR_IMAGE}/rootfs.ubifs
+            cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubifs ${DEPLOY_DIR_IMAGE}/vendor.ubifs
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-nand ${DEPLOY_DIR_IMAGE}/sw-description
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+        else
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-emmc ${DEPLOY_DIR_IMAGE}/sw-description
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-emmc ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+            if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'true', 'false', d)}; then
+                cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-emmc-avb ${DEPLOY_DIR_IMAGE}/sw-description
+                cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-emmc-avb ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+            fi
         fi
 
         sed 's@boardname@${MACHINE_ARCH}@' -i ${DEPLOY_DIR_IMAGE}/sw-description
@@ -135,7 +143,6 @@ else
 
         ${DEPLOY_DIR_IMAGE}/sw_package_create.sh ${DEPLOY_DIR_IMAGE}
     fi
-fi
 }
 
 do_aml_pack[depends] += "core-image-minimal:do_image_complete "

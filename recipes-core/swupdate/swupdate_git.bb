@@ -31,6 +31,8 @@ SRC_URI = "git://github.com/sbabic/swupdate.git;protocol=https \
         file://swupdate.service \
 "
 
+SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "nand", "file://nand.cfg", "", d)}"
+
 LTOEXTRA += "-flto-partition=none"
 
 PACKAGES =+ " \

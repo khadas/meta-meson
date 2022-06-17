@@ -20,6 +20,9 @@ case $system_mtd_number in
     6)
         str="0 1 2 3 4 5"
         ;;
+    11)
+        str="0 1 2 3 4 5 6 7 8 9 10 13"
+        ;;
     *)
         ;;
 esac
@@ -31,7 +34,7 @@ echo 1 > /sys/class/graphics/fb1/blank
 #Waiting for /dev/data device to become ready
 TimedOut=10 #10 second
 WaitedTime=0
-if [ ${data_mtd_number} = ""]; then
+if [ ${data_mtd_number} = "" ]; then
     echo "can not get data mtd number, maybe emmc device......"
     while [ "$WaitedTime" -lt "$TimedOut" ]
     do
