@@ -1,0 +1,48 @@
+From 6ba4d7fe68b395873c01ede2f62e5401f48be6d9 Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Tue, 21 Jun 2022 14:51:45 +0800
+Subject: [PATCH] gstreamer1.0-plugins-bad: CB1 add registration_id 444f5649
+ for tsdemux [1/1]
+
+PD#SWPL-84710
+
+Problem:
+There is no case registration_id 444f5649 in tsdemux,
+that will lead tsdemux can not handle it
+
+Solution:
+Add case registration_id 444f5649 for tsdemux
+
+Verify:
+AP212
+---
+ gst/mpegtsdemux/gstmpegdesc.h | 1 +
+ gst/mpegtsdemux/tsdemux.c     | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/gst/mpegtsdemux/gstmpegdesc.h b/gst/mpegtsdemux/gstmpegdesc.h
+index 0e66daf..0da0dde 100644
+--- a/gst/mpegtsdemux/gstmpegdesc.h
++++ b/gst/mpegtsdemux/gstmpegdesc.h
+@@ -235,5 +235,6 @@
+ #define DRF_ID_KLVA       0x4b4c5641   /* defined in RP217 */
+ #define DRF_ID_OPUS       0x4f707573
+ #define DRF_ID_EAC3       0x45414333   /* defined in A/52 Annex G */
++#define DRF_ID_DolbyVision  0x444f5649
+ 
+ #endif /* __GST_MPEG_DESC_H__ */
+diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
+index 3dff0b3..819f086 100644
+--- a/gst/mpegtsdemux/tsdemux.c
++++ b/gst/mpegtsdemux/tsdemux.c
+@@ -1449,6 +1449,7 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+           }
+           break;
+         case DRF_ID_HEVC:
++        case DRF_ID_DolbyVision:
+           is_video = TRUE;
+           caps = gst_caps_new_simple ("video/x-h265",
+               "stream-format", G_TYPE_STRING, "byte-stream",
+-- 
+2.25.1
+
