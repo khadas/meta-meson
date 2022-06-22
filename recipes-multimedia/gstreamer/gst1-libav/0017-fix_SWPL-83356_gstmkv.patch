@@ -1,0 +1,16 @@
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+index d8cae44..071d956 100644
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -2165,7 +2165,10 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
+ 
+     env = getenv("VENDOR_MEDIA_GST_LIBAV_ENABLE_FFMPEG");
+     if (((NULL == env) || ((env) && (atoi(env))))
+-        && strcmp (in_plugin->name, "mov,mp4,m4a,3gp,3g2,mj2")){
++        && strcmp (in_plugin->name, "mov,mp4,m4a,3gp,3g2,mj2")
++        && strcmp (in_plugin->name, "matroska")
++        && strcmp (in_plugin->name, "matroska_webm")
++        && strcmp (in_plugin->name, "matroska,webm")) {
+         rank = GST_RANK_PRIMARY;
+     } else {
+         /* Set the rank of demuxers known to work to MARGINAL.
