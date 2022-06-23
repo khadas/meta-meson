@@ -961,7 +961,7 @@ Index: git/utils/a2dp_ctl.c
  
  		if (strcmp(argv[1], "scan") == 0) {
  			sleep(1);
-@@ -963,104 +45,41 @@ int main(int argc, void **argv)
+@@ -963,104 +45,51 @@ int main(int argc, void **argv)
  			//remove_dev();
  
  			adapter_scan(1);
@@ -1042,8 +1042,7 @@ Index: git/utils/a2dp_ctl.c
 -			}
 +			print_scan_results();
  		} else if (strcmp(argv[1], "scanoff") == 0) {
--			adapter_scan(0);
-+			adapter_scan(0);			
+ 			adapter_scan(0);
 +			print_scan_results();
  		} else if (strcmp(argv[1], "connect") == 0) {
  			if (argc > 2) {
@@ -1063,15 +1062,25 @@ Index: git/utils/a2dp_ctl.c
  				ret = 1;
  			}
  		} else if (strcmp(argv[1], "disconnect") == 0) {
- 			disconnect_dev();
+-			disconnect_dev();
++			if (argc > 2) {
++				bddr = argv[2];
++				printf("connec target : %s\n", bddr);
++				bddr[2] = bddr[5] = bddr[8] = bddr[11] = bddr[14] = '_';
++				ret = disconnect_dev(bddr);
++			} else {
++				ret = disconnect_dev(NULL);
++			}
++			if (!ret)
++				printf("\n*********************\n* Device Disconnected! *\n*********************\n");
++			
  		} else if (strcmp(argv[1], "status") == 0) {
 -			connect_status();
 +			print_connect_status();
  		}
--	}
+ 	}
 -error:
 -	player_delinit();
-+	}	
 +	a2dp_ctl_delinit();
  
  	return ret;
@@ -1080,7 +1089,7 @@ Index: git/utils/a2dp_ctl.h
 ===================================================================
 --- git.orig/utils/a2dp_ctl.h
 +++ git/utils/a2dp_ctl.h
-@@ -1,9 +1,12 @@
+@@ -1,9 +1,21 @@
 -#ifndef _CT_H_
 -#define _CT_H_
 +#ifndef _A2DP_CTL_H_
@@ -1089,6 +1098,15 @@ Index: git/utils/a2dp_ctl.h
 +#ifdef __cplusplus
 +extern "C" {
 +#endif
++
++typedef enum{
++    A2DP_EVENT_CONNECT,
++    A2DP_EVENT_DISCONNECT,
++    A2DP_EVENT_PLAYING,
++    A2DP_EVENT_PAUSE,
++    A2DP_EVENT_STOP,
++    A2DP_EVENT_TYPE_PLAYER,
++}A2DP_Event_t;
  
 -int player_init(void);
 -void player_delinit(void);
@@ -1097,7 +1115,7 @@ Index: git/utils/a2dp_ctl.h
  int start_play(void);
  int stop_play(void);
  int pause_play(void);
-@@ -11,7 +14,23 @@ int next(void);
+@@ -11,7 +23,24 @@ int next(void);
  int previous(void);
  int volume_up();
  int volume_down();
@@ -1108,14 +1126,15 @@ Index: git/utils/a2dp_ctl.h
 +int adapter_ready(void);
 +int adapter_scan(int onoff);
 +int connect_dev(const char* bddr);
-+void disconnect_dev(void);
++int disconnect_dev(const char *bddr);
++unsigned char get_connect_status(char *name, char *addr, char *state);
 +void print_connect_status(void);
 +void print_scan_results(void);
 +
 +int pcm_bluealsa_open(const char *bddr);
 +int pcm_bluealsa_close();
 +int pcm_bluealsa_write(void *buf, size_t bytes) ;
-+void register_callback(void (*conn_cb)(int connected) , void (*play_cb)(char *status) );
++void register_callback(void (*conn_cb)(A2DP_Event_t type));
 +
 +#ifdef __cplusplus
 +}
@@ -1126,7 +1145,7 @@ Index: git/utils/lib_a2dp_ctl.c
 ===================================================================
 --- /dev/null
 +++ git/utils/lib_a2dp_ctl.c
-@@ -0,0 +1,1278 @@
+@@ -0,0 +1,1309 @@
 +#include <stdio.h>
 +#include <stdlib.h>
 +#include <unistd.h>
@@ -1196,8 +1215,7 @@ Index: git/utils/lib_a2dp_ctl.c
 +static char device_mode[11] = "central"; //size of 11 bytes for "peripheral"
 +static snd_pcm_t *pcm_handle_playback;
 +static char pcm_device_spk[] = "bluealsa:DEV=00:00:00:00:00:00";
-+static void (*mconnect_call_back)(int connected);
-+static void (*mplay_call_back)(char *status);
++static void (*mconnect_call_back)(A2DP_Event_t event);
 +
 +
 +//static char target_bddr[]    = "00:00:00:00:00:00";
@@ -1263,7 +1281,6 @@ Index: git/utils/lib_a2dp_ctl.c
 +		return ret;
 +	}
 +
-+	info("%s\n", __func__);
 +	ret = snd_pcm_set_params(pcm_handle_playback, SND_PCM_FORMAT_S16_LE,
 +								  SND_PCM_ACCESS_RW_INTERLEAVED,
 +								  2,			  /*1 channel*/
@@ -1274,13 +1291,11 @@ Index: git/utils/lib_a2dp_ctl.c
 +		info("snd_pcm_set_params fail:%s\n", strerror(errno));
 +	}
 +
-+	info("%s\n", __func__);
 +	return ret;
 +}
 +int pcm_bluealsa_close()
 +{
 +	int ret;
-+	info("%s\n", __func__);
 +	if (pcm_handle_playback == NULL) {
 +		info("%s already closed\n", __func__);
 +		return 0;
@@ -1295,7 +1310,7 @@ Index: git/utils/lib_a2dp_ctl.c
 +	//snd_config_update_free_global();
 +}
 +
-+int pcm_bluealsa_write(void *buf, size_t bytes) 
++int pcm_bluealsa_write(void *buf, size_t bytes)
 +{
 +	if (pcm_handle_playback == NULL) {
 +		info("%s dev not open\n", __func__);
@@ -1341,57 +1356,49 @@ Index: git/utils/lib_a2dp_ctl.c
 +
 +int volume_up()
 +{
-+	INFO("\n");
 +	return modify_tansport_volume_property(TRUE);
 +}
 +
 +int volume_down()
 +{
-+	INFO("\n");
 +	return modify_tansport_volume_property(FALSE);
 +}
 +
 +void connect_call_back(int connected)
 +{
-+#if 1
-+	if (connected) {
-+		INFO("A2dp Connected\n");
-+		/*works when a2dp connected*/
-+
-+	} else {
-+		INFO("A2dp Disconnected\n");
-+		/*works when a2dp disconnected*/
-+	}
-+#endif
++	INFO("A2dp %s\n", connected? "Connected":"Disconnected");
 +	if(mconnect_call_back)
-+		mconnect_call_back(connected);
++		mconnect_call_back(connected?A2DP_EVENT_CONNECT:A2DP_EVENT_DISCONNECT);
 +}
 +
 +void play_call_back(char *status)
 +{
-+#if 1
 +	/*Possible status: "playing", "stopped", "paused"*/
-+	if (strcmp("playing", status) == 0) {
-+		INFO("Media_Player is now playing\n");
-+		/*works when playing*/
++	INFO("Media_Player status: %s\n", status);
 +
-+	} else if (strcmp("stopped", status) == 0) {
-+		INFO("Media_Player stopped\n");
-+		/*works when stopped*/
-+
-+	} else if (strcmp("paused", status) == 0) {
-+		INFO("Media_Player paused\n");
-+		/*works when paused*/
-+
++	if(mconnect_call_back) {
++		if (strcmp("playing", status) == 0) {
++			mconnect_call_back(A2DP_EVENT_PLAYING);
++		} else if (strcmp("stopped", status) == 0) {
++			mconnect_call_back(A2DP_EVENT_STOP);
++		} else if (strcmp("paused", status) == 0) {
++			mconnect_call_back(A2DP_EVENT_PAUSE);
++		}
 +	}
-+#endif
-+	if(mplay_call_back)
-+		mplay_call_back(status);
 +}
-+void register_callback(void (*conn_cb)(int connected) , void (*play_cb)(char *status) )
++
++void connecttype_call_back()
++{
++// for source.  there has transport
++// for sink,  there has player and transport both
++// send only when player type.
++	if(mconnect_call_back)
++		mconnect_call_back(A2DP_EVENT_TYPE_PLAYER);
++}
++
++void register_callback(void (*conn_cb)(A2DP_Event_t eventType) )
 +{
 +	mconnect_call_back = conn_cb;
-+	mplay_call_back = play_cb;
 +}
 +
 +static void unref_variant(GVariant *v)
@@ -1402,7 +1409,6 @@ Index: git/utils/lib_a2dp_ctl.c
 +
 +static int call_player_method(char *method)
 +{
-+
 +	GVariant *result;
 +	GError *error = NULL;
 +	int ret = -1;
@@ -1426,7 +1432,7 @@ Index: git/utils/lib_a2dp_ctl.c
 +		return ret;
 +	}
 +
-+	INFO("args: %s\n", method);
++	//INFO("args: %s\n", method);
 +
 +	result = g_dbus_connection_call_sync(conn,
 +			"org.bluez",
@@ -1550,6 +1556,33 @@ Index: git/utils/lib_a2dp_ctl.c
 +		temp = temp->next;
 +	}
 +}
++
++unsigned char get_connect_status(char *name, char *addr, char *state)
++{
++
++	char dev_obj[256] = {0};
++
++	if (NULL == conn) {
++		INFO("No connection!! Please init first\n");
++		return false;
++	}
++
++	if (strncmp("/org/bluez", TRANSPORT_OBJECT, 10) != 0) {
++		INFO("\n\n**No Connected Device!!\n\n");
++		return false;
++	} else {
++		/*copy obj_path from trasport, example: /org/bluez/hci0/dev_22_22_B0_69_CE_60/fd4
++		 only the front 37 bytes copied */
++		strncpy(dev_obj, TRANSPORT_OBJECT, 37);
++		strcpy(name, g_variant_get_string(get_property((char *)dev_obj, DEVICE_INTERFACE, "Name"), NULL));
++		strcpy(addr, g_variant_get_string(get_property((char *)dev_obj, DEVICE_INTERFACE, "Address"), NULL));
++		strcpy(state, g_variant_get_string(get_property((char *)TRANSPORT_OBJECT, TRANSPORT_INTERFACE, "State"), NULL));
++
++		INFO("\n\n****Connected Device Information******\nName   : %s\nAddress: %s\nState  : %s\n\n",
++			name, addr, state);
++	}
++	return true;
++}
 +#if 0
 +static void remove_dev(void)
 +{
@@ -1593,26 +1626,37 @@ Index: git/utils/lib_a2dp_ctl.c
 +}
 +#endif
 +
-+void disconnect_dev(void)
++int disconnect_dev(const char *bddr)
 +{
-+
++	int ret = 1;
 +	GVariant *result;
 +	GError *error = NULL;
 +	char obj[256] = {0};
 +
 +	if (NULL == conn) {
 +		INFO("No connection!! Please init first\n");
-+		return;
++		return ret;
 +	}
 +
 +	if (strncmp("/org/bluez", TRANSPORT_OBJECT, 10) != 0) {
 +		INFO("a2dp not connected\n");
-+		return;
++		return ret;
 +	}
 +
 +	/*copy obj_path from trasport, example: /org/bluez/hci0/dev_22_22_B0_69_CE_60/fd4
 +	 only the front 37 bytes copied */
-+	strncpy(obj, TRANSPORT_OBJECT, 37);
++	if (bddr == NULL) {
++		strncpy(obj, TRANSPORT_OBJECT, 37);		
++	} else {
++		if (strlen(bddr) != strlen("xx:xx:xx:xx:xx:xx")) {
++			INFO("Bad bddr\n");
++			return ret;
++		}
++		char addr[32];
++		strcpy(addr, bddr);
++		addr[2] = addr[5] = addr[8] = addr[11] = addr[14] = '_';
++		sprintf(obj, "/org/bluez/hci0/dev_%s", addr);
++	}
 +
 +	INFO("Target obj: %s\n", obj);
 +
@@ -1631,8 +1675,11 @@ Index: git/utils/lib_a2dp_ctl.c
 +	if (result == NULL) {
 +		INFO("Error: %s\n", error->message);
 +		g_error_free (error);
++		return ret;
 +	} else
 +		g_variant_unref(result);
++
++	return 0;
 +}
 +
 +int connect_dev(const char* bddr)
@@ -1665,7 +1712,7 @@ Index: git/utils/lib_a2dp_ctl.c
 +
 +		if (strncmp(obj, TRANSPORT_OBJECT, 37) != 0) {
 +			INFO("Disconnect previous device\n");
-+			disconnect_dev();
++			disconnect_dev(NULL);
 +			sleep(1);
 +		}
 +	}
@@ -1866,7 +1913,7 @@ Index: git/utils/lib_a2dp_ctl.c
 +	g_variant_get(result, "(v)", &temp);
 +	g_variant_unref(result);
 +
-+	debug("prop = %s: %s\n", prop, g_variant_print (temp, TRUE));
++	//debug("prop = %s: %s\n", prop, g_variant_print (temp, TRUE));
 +
 +	return temp;
 +}
@@ -1986,6 +2033,7 @@ Index: git/utils/lib_a2dp_ctl.c
 +			memset(PLAYER_OBJECT, 0, sizeof(PLAYER_OBJECT));
 +			INFO("Media_Player registerd: %s\n", object);
 +			strncpy(PLAYER_OBJECT, object, sizeof(PLAYER_OBJECT) - 1);
++			connecttype_call_back();
 +		} else if (strcmp(interface_name, CONTROL_INTERFACE) == 0) {
 +			INFO("Media_Control registerd: %s\n", object);
 +		} else if (strcmp(interface_name, DEVICE_INTERFACE) == 0) {
@@ -2074,6 +2122,7 @@ Index: git/utils/lib_a2dp_ctl.c
 +	//Media_Control properies handler
 +	if (strcmp(interface_name, CONTROL_INTERFACE) == 0) {
 +		while (g_variant_iter_next(properties, "{sv}", &property, &value)) {
++			info("Control Interface:  property: %s\n", property);
 +			if (strcmp(property, "Connected") == 0) {
 +				g_variant_get(value, "b", &A2dpConnected);
 +				/*Possible value: TRUE, FALSE*/
@@ -2090,6 +2139,7 @@ Index: git/utils/lib_a2dp_ctl.c
 +	//Media_Player properies handler
 +	if (strcmp(interface_name, PLAYER_INTERFACE) == 0) {
 +		while (g_variant_iter_next(properties, "{sv}", &property, &value)) {
++			info("Player Interface: property: %s\n", property);
 +			if (strcmp(property, "Status") == 0) {
 +				g_variant_get(value, "s", &status);
 +				play_call_back(status);
