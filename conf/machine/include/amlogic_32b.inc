@@ -6,7 +6,7 @@ PREFERRED_PROVIDER_virtual/gst-plugins-playersinkbin = "gst-plugins-playersinkbi
 #PREFERRED_PROVIDER_virtual/iarmmgrs-hal = "iarmmgrs-hal-amlogic"
 #PREFERRED_PROVIDER_virtual/mfrlib = "mfrlib-amlogic"
 #DISTRO_FEATURES_remove += "opengl gl"
-DISTRO_FEATURES_remove += "parodus"
+DISTRO_FEATURES_remove += "parodus 3g"
 VIRTUAL-RUNTIME_alsa-state ?= "alsa-states"
 
 # append drm(wayland drm backend)
