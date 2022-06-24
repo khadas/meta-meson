@@ -1,0 +1,47 @@
+From 6d63b1c73dc9847f9f718e4a08f63495a2cd9f4f Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Fri, 24 Jun 2022 10:57:40 +0800
+Subject: [PATCH] gstreamer1.0-plugins-good: CB1 io pointer is not correct when
+ parser trun [1/1]
+
+PD#SWPL-85721
+
+Problem:
+The test file has TR_FIRST_SAMPLE_FLAGS but not be read
+which will make io pointer did not sift and then when read the sample size
+The reading sample size vale  TR_FIRST_SAMPLE_FLAGS value and it is a huge value
+Which is bigger than mdat size and qtdemux think this is a invalid sample
+and refused to playback
+
+Solution:
+When FIRST_SAMPLE_FLAGS exist, read it and make io pointer sift
+
+Verify:
+AP212
+---
+ gst/isomp4/qtdemux.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index 722e150..e113936 100755
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -3404,11 +3404,11 @@ qtdemux_parse_trun (GstQTDemux * qtdemux, GstByteReader * trun,
+       GST_DEBUG_OBJECT (qtdemux,
+           "invalid flags; SAMPLE and FIRST_SAMPLE present, discarding latter");
+       flags ^= TR_FIRST_SAMPLE_FLAGS;
+-    } else {
+-      if (!gst_byte_reader_get_uint32_be (trun, &first_flags))
+-        goto fail;
+-      GST_LOG_OBJECT (qtdemux, "first flags: 0x%x", first_flags);
+     }
++
++    if (!gst_byte_reader_get_uint32_be (trun, &first_flags))
++      goto fail;
++    GST_LOG_OBJECT (qtdemux, "first flags: 0x%x", first_flags);
+   }
+ 
+   /* FIXME ? spec says other bits should also be checked to determine
+-- 
+2.25.1
+
