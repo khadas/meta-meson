@@ -7,8 +7,8 @@ SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 SRC_URI +="file://hdmicontrol.service"
 
-DEPENDS = " libbinder liblog"
-RDEPENDS_${PN} = " liblog libbinder"
+DEPENDS = " libbinder liblog aml-audio-service"
+RDEPENDS_${PN} = " liblog libbinder aml-audio-service"
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 #inherit autotools pkgconfig systemd
