@@ -131,3 +131,6 @@ EXTERNALSRC_pn-westeros-soc-drm = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/we
 EXTERNALSRC_pn-westeros-simplebuffer = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/westeros/simplebuffer' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/westeros/simplebuffer')) else ''}"
 EXTERNALSRC_pn-westeros-simpleshell = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/westeros/simpleshell' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/westeros/simpleshell')) else ''}"
 EXTERNALSRC_pn-westeros-rawsink = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/westeros/westeros-sink/raw' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/westeros/westeros-sink/raw')) else ''}"
+EXTERNALSRC_pn-gst-plugin-venc-jpeg = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/jpeg' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/jpeg')) else ''}"
+EXTERNALSRC_pn-gst-plugin-venc-h264 = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/h264-hcodec' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/h264-hcodec')) else ''}"
+EXTERNALSRC_pn-gst-plugin-venc-h265 = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/h265-wave420' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/h265-wave420')) else ''}"
