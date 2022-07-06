@@ -54,6 +54,7 @@ MACHINEOVERRIDES .= ":client"
 
 TDK_VERSION_s4 = "v3.8/dev/S805X2"
 
+DISTRO_FEATURES_append = " bt-qca "
 EXTRA_BLUETOOTH_STUFF := "${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', bb.utils.contains('DISTRO_FEATURES', 'bluez5', ' bluez5', ' bluez4', d), '', d)}"
 DISTRO_FEATURES_append = "${EXTRA_BLUETOOTH_STUFF}"
 

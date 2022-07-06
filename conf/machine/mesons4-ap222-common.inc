@@ -72,6 +72,7 @@ DEFAULT_ENFORCING = "permissive"
 OVERRIDES .= ":ap222:s4:onepass"
 MACHINEOVERRIDES .= ":client"
 
+DISTRO_FEATURES_append = " bt-qca "
 DISTRO_FEATURES_append = " bluetooth bluez5 "
 EXTRA_BLUETOOTH_STUFF := "${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', bb.utils.contains('DISTRO_FEATURES', 'bluez5', ' bluez5', ' bluez4', d), '', d)}"
 DISTRO_FEATURES_append = "${EXTRA_BLUETOOTH_STUFF}"

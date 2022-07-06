@@ -63,6 +63,7 @@ OVERRIDES .= ":ah212:ah232:sc2:onepass"
 MACHINEOVERRIDES .= ":client"
 TDK_VERSION_sc2 = "v3.8/dev/S905C2"
 
+DISTRO_FEATURES_append = " bt-qca "
 DISTRO_FEATURES_append = " bluetooth bluez5 "
 EXTRA_BLUETOOTH_STUFF := "${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', bb.utils.contains('DISTRO_FEATURES', 'bluez5', ' bluez5', ' bluez4', d), '', d)}"
 DISTRO_FEATURES_append = "${EXTRA_BLUETOOTH_STUFF}"

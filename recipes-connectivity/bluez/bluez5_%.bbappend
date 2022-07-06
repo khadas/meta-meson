@@ -11,8 +11,7 @@ SRC_URI += "file://bluez.service"
 SRC_URI += "file://bluez_tool.sh"
 SRC_URI += "file://0001-RDK-fix-issue-in-bluez5.55-1-1.patch"
 SRC_URI += "file://0001-bluez5-add-default_agent-3-5.patch"
-SRC_URI_append_s4  = " file://0001-BT-add-qca-bt-wakeup-1-3.patch"
-SRC_URI_append_sc2 = " file://0001-BT-add-qca-bt-wakeup-1-3.patch"
+SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "bt-qca", "file://0001-BT-add-qca-bt-wakeup-1-3.patch", "", d)}"
 
 do_install_append(){
     install -d ${D}${bindir}
@@ -25,17 +24,11 @@ do_install_append(){
     install -m 0644 ${WORKDIR}/main.conf ${D}/${sysconfdir}/bluetooth
 
     if ${@bb.utils.contains("DISTRO_FEATURES", "aml-w1", "true", "false", d)}; then
-        sed -i '/Debug=0/a Device=aml' ${D}${sysconfdir}/bluetooth/main.conf
+        sed -i '/Debug/a Device=aml' ${D}${sysconfdir}/bluetooth/main.conf
+    elif ${@bb.utils.contains("DISTRO_FEATURES", "bt-qca", "true", "false", d)}; then 
+        sed -i '/Debug/a Device=qca' ${D}${sysconfdir}/bluetooth/main.conf
     else
-        echo "MACHINE_ARCH is ${MACHINE_ARCH}"
-        case ${MACHINE_ARCH} in
-        mesonsc2* | mesons4*)
-            sed -i '/Debug/a Device=qca' ${D}${sysconfdir}/bluetooth/main.conf
-        ;;
-        mesont5d* | mesont5w* | mesont3*)
-            sed -i '/Debug/a Device=rtk' ${D}${sysconfdir}/bluetooth/main.conf
-        ;;
-        esac
+        sed -i '/Debug/a Device=rtk' ${D}${sysconfdir}/bluetooth/main.conf
     fi
 
     case ${MACHINE_ARCH} in
