@@ -15,5 +15,9 @@ SRC_URI_append = "file://0013-modify-avdemux-priority.patch "
 SRC_URI_append = "file://0014-support-DTS-parse.patch "
 SRC_URI_append = "file://0016-calculate-a-appropriate-pts-when-no-timestamp.patch "
 SRC_URI_append = "file://0017-fix_SWPL-83356_gstmkv.patch "
+SRC_URI_append = "file://0018-ts-streams-prefer-tsdemux-to-avdemux-mpegts.patch "
+
+
+
 
 TARGET_CFLAGS += "-DAMFFMPEG"
