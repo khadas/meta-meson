@@ -39,6 +39,7 @@ EXTERNALSRC_pn-realtek-hciattach = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml
 EXTERNALSRC_pn-wififw = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/wifi' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/wifi')) else ''}"
 EXTERNALSRC_pn-aml-hdcprx = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp')) else ''}"
 EXTERNALSRC_pn-aml-provision = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/provision' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/provision')) else ''}"
+EXTERNALSRC_pn-aml-efuse = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/efuse' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/efuse')) else ''}"
 EXTERNALSRC_pn-optee-userspace_t5d = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk')) else ''}"
 EXTERNALSRC_pn-optee-scripts-native_t5d = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk')) else ''}"
 EXTERNALSRC_pn-optee-linux-driver_t5d = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk')) else ''}"

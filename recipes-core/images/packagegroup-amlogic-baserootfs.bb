@@ -134,6 +134,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     aml-audio-hal \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-audio-effect', '', d)} \
     aml-provision \
+    aml-efuse \
     tinyalsa-tools \
     aml-audio-service aml-audio-service-testapps \
     ${@bb.utils.contains('DISTRO_FEATURES', 'tts', 'wpeframework-plugin-amltts', '', d)} \
