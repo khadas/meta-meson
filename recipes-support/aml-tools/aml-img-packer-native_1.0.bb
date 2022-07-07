@@ -30,6 +30,7 @@ SOC_BOARD_t962x3 = "ab301"
 SOC_BOARD_ah232 = "ah232"
 SOC_BOARD_ah221 = "ah221"
 SOC_BOARD_aq222 = "aq222"
+SOC_BOARD_ap232 = "ap232"
 
 PR = "r3"
 

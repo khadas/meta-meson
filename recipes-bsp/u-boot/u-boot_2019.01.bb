@@ -63,6 +63,7 @@ export BL2_ARG = ""
 BL32_SOC_FAMILY = "TBD"
 BL32_SOC_FAMILY_s4 = "s4/s905y4"
 BL32_ARG = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '--bl32 bl32_3.8/bin/${BL32_SOC_FAMILY}/blob-bl32.nand.bin.signed', '', d)}"
+BL32_ARG_aq2432 = ""
 
 BL33_ARG = "${@bb.utils.contains('DISTRO_FEATURES','AVB','--avb2','',d)}"
 
@@ -77,6 +78,16 @@ NAGRA_UBOOT_PATH_ah232 = "sc2/s905c2"
 NAGRA_UBOOT_PATH_ah221 = "sc2/s905c2l"
 NAGRA_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', '--chip-varient nocs-jts-ap --bl32 nagra-sdk/bootloader/${NAGRA_UBOOT_PATH}/bl32/blob-bl32.bin.signed --bl31 nagra-sdk/bootloader/${NAGRA_UBOOT_PATH}/bl31/blob-bl31.bin.signed', '', d)}"
 
+#IRDETO UBOOT PATH depends on SoC
+IRDETO_UBOOT_PATH = "TBD"
+IRDETO_UBOOT_PATH_sc2 = "sc2"
+IRDETO_UBOOT_PATH_ap232 = "s4d/s905c3"
+IRDETO_UBOOT_PATH_aq2432 = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 's4d/s805c3_nand', 's4d/s805c3_emmc', d)}"
+IRDETO_BL2e_ARG="--bl2e irdeto-sdk/bootloader/${IRDETO_UBOOT_PATH}/bl2/blob-bl2e.sto.bin.signed"
+IRDETO_BL32_ARG="--bl32 irdeto-sdk/bootloader/${IRDETO_UBOOT_PATH}/bl32/blob-bl32.bin.signed"
+IRDETO_BL40_ARG="--bl40 irdeto-sdk/bootloader/${IRDETO_UBOOT_PATH}/bl40/blob-bl40.bin.signed"
+IRDETO_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', '${IRDETO_BL2e_ARG} ${IRDETO_BL32_ARG} ${IRDETO_BL40_ARG}', '', d)}"
+
 CFLAGS +=" -DCONFIG_YOCTO "
 KCFLAGS +=" -DCONFIG_YOCTO "
 do_compile () {
@@ -89,7 +100,7 @@ do_compile () {
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
 
-    LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG}
+    LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG} ${IRDETO_UBOOT_ARG}
     cp -rf build/* fip/
 }
 

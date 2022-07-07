@@ -27,4 +27,9 @@ do_install() {
     ;;
     esac
     install -m 0755 ${WORKDIR}/property_set.sh ${D}${sysconfdir}/profile.d/
+
+    if ${@bb.utils.contains("DISTRO_FEATURES", "irdeto", "true", "false", d)}
+    then
+        sed -i '$a\export XDG_RUNTIME_DIR=\/run' ${D}${sysconfdir}/profile.d/property_set.sh
+    fi
 }

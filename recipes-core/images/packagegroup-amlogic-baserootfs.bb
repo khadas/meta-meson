@@ -167,6 +167,11 @@ RDEPENDS_packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk nagra-cashal-rel nagra-cert-prebuilt', '', d)} \
     "
 
+#For Irdeto CAS
+RDEPENDS_packagegroup-amlogic-baserootfs += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'irdeto-sdk irdeto-hal irdeto-cashal-rel', '', d)} \
+    "
+
 #VENC related
 RDEPENDS_packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libjpeg', 'gst-plugin-venc-jpeg', '', d), '', d)} \ 
