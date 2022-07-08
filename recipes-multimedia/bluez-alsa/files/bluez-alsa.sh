@@ -101,7 +101,7 @@ Blue_start()
 		A2DP_BOTH_SERVICE
 	fi
 
-	default_agent > /dev/null &
+	# default_agent > /dev/null &
 
 	echo "|-----bluez-alsa is ready----|"
 }
