@@ -77,6 +77,7 @@ EXTRA_BLUETOOTH_STUFF := "${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', b
 DISTRO_FEATURES_append = "${EXTRA_BLUETOOTH_STUFF}"
 
 TDK_VERSION_s4 = "v3.8/dev/S905C3"
+MEDIA_MODULES_UCODE_BIN_s4 = "firmware/S905C3/video_ucode.bin"
 
 #READONLY = "y"
 # dm-verity

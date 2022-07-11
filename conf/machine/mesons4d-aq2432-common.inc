@@ -31,3 +31,4 @@ DISTRO_FEATURES_remove = " selinux"
 
 OVERRIDES .= ":aq2432"
 TDK_VERSION_s4 = "v3.8/dev/S805C3"
+MEDIA_MODULES_UCODE_BIN_s4 = "firmware/S805C3/video_ucode.bin"

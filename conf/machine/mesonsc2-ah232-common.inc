@@ -62,6 +62,7 @@ DISTRO_FEATURES_append = " swupdate "
 OVERRIDES .= ":ah212:ah232:sc2:onepass"
 MACHINEOVERRIDES .= ":client"
 TDK_VERSION_sc2 = "v3.8/dev/S905C2"
+MEDIA_MODULES_UCODE_BIN_sc2 = "firmware/S905C2/video_ucode.bin"
 
 DISTRO_FEATURES_append = " bt-qca "
 DISTRO_FEATURES_append = " bluetooth bluez5 "

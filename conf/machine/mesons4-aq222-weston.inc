@@ -53,6 +53,7 @@ OVERRIDES .= ":aq222:s4:onepass"
 MACHINEOVERRIDES .= ":client"
 
 TDK_VERSION_s4 = "v3.8/dev/S805X2"
+MEDIA_MODULES_UCODE_BIN_s4 = "firmware/S805X2/video_ucode.bin"
 
 DISTRO_FEATURES_append = " bt-qca "
 EXTRA_BLUETOOTH_STUFF := "${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', bb.utils.contains('DISTRO_FEATURES', 'bluez5', ' bluez5', ' bluez4', d), '', d)}"
