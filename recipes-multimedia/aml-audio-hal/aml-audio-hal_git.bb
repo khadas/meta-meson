@@ -44,6 +44,7 @@ SRC_URI  += "\
   file://aml_audio_config.u212.json \
   file://mixer_paths.xml \
   file://mixer_paths.at301.xml \
+  file://mixer_paths.t5d.xml \
 "
 
 PROPERTY_SET_CONF = "aml_audio_config.json"
@@ -54,6 +55,7 @@ PROPERTY_SET_CONF_at301 = "aml_audio_config.at301.json"
 PROPERTY_SET_CONF_ap222 = "aml_audio_config.ap222.json"
 PROPERTY_SET_MIXER = "mixer_paths.xml"
 PROPERTY_SET_MIXER_at301 = "mixer_paths.at301.xml"
+PROPERTY_SET_MIXER_t5d = "mixer_paths.t5d.xml"
 
 do_install_append() {
     install -d ${D}/${sysconfdir}/halaudio
