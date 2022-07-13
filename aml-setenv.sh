@@ -125,7 +125,7 @@ EOF
     # Add meta-aml-netflix only if a machine configuration choosed from different layer
     if [ -d ${MESON_ROOT_PATH}/meta-aml-netflix ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-aml-netflix[^-]') -eq 0 ]; then
       cat >> conf/bblayers.conf <<EOF
-BBLAYERS =+ "${MESON_ROOT_PATH}/meta-aml-netflix"
+BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-netflix"
 EOF
     fi
 
@@ -138,6 +138,12 @@ EOF
     if [ -d ${MESON_ROOT_PATH}/meta-security ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-security[^-]') -eq 0 ]; then
             cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-security"
+EOF
+    fi
+
+    if [ -d ${MESON_ROOT_PATH}/meta-zapperplus ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-zapperplus[^-]') -eq 0 ]; then
+            cat >> conf/bblayers.conf <<EOF
+BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-zapperplus"
 EOF
     fi
 
