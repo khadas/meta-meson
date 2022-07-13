@@ -7,6 +7,7 @@ DISTRO_FEATURES_append = " aml-launcher"
 DISTRO_FEATURES_append = " aml-thunder"
 DISTRO_FEATURES_append = " cobalt"
 DISTRO_FEATURES_append = " amazon-plugin"
+DISTRO_FEATURES_append = " mediaplayer"
 
 PREFERRED_VERSION_amazon-prime-src = "3.0"
 
