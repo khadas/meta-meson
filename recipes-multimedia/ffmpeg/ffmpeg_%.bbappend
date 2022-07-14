@@ -1,3 +1,4 @@
+PN = 'ffmpeg'
 LICENSE = "AMLOGIC"
 LICENSE_${PN} = "AMLOGIC"
 LICENSE_libavcodec = "AMLOGIC"
@@ -251,3 +252,9 @@ EXTRA_OECONF_append = " \
 
 DEPENDS += " libxml2 "
 RDEPENDS_${PN} += " libxml2 "
+
+INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+
+FILES_${PN} += " ${libdir}/*.so ${libdir}/*.so.* "
+FILES_${PN}-dev = "${includedir}/* "
