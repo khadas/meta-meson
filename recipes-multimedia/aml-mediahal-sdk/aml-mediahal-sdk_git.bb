@@ -33,6 +33,8 @@ do_compile(){
     oe_runmake
     cd ${S}/example/AmTsPlayerMultiExample
     oe_runmake
+    cd ${S}/example/EsVideoDecPlayer
+    oe_runmake
 }
 
 do_install() {
@@ -48,6 +50,7 @@ do_install() {
     install -d -m 0755 ${D}/usr/bin
     install -D -m 0755 ${S}/example/AmTsPlayerExample/AmTsPlayerExample ${D}/usr/bin
     install -D -m 0755 ${S}/example/AmTsPlayerMultiExample/AmTsPlayerMultiExample ${D}/usr/bin
+    install -D -m 0755 ${S}/example/EsVideoDecPlayer/EsVideoDecPlayer ${D}/usr/bin
 }
 
 
