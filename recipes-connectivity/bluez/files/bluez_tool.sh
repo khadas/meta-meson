@@ -259,12 +259,12 @@ Blue_stop()
 	#service_down
 	killall rtk_hciattach
 	killall hciattach
-	rmmod sdio_bt
-	rmmod hci_uart
+	#rmmod sdio_bt
+	#rmmod hci_uart
 	#rmmod rtk_btusb
-	sleep 2
-	echo 0 > /sys/class/rfkill/rfkill0/state
-	echo
+	#sleep 2
+	#echo 0 > /sys/class/rfkill/rfkill0/state
+	#echo
 	echo "|-----bluez is shutdown-----|"
 }
 
