@@ -1,0 +1,29 @@
+Index: bluez-5.55/src/adapter.c
+===================================================================
+--- bluez-5.55.orig/src/adapter.c
++++ bluez-5.55/src/adapter.c
+@@ -5095,7 +5095,7 @@ void adapter_auto_connect_add(struct btd
+ 	memset(&cp, 0, sizeof(cp));
+ 	bacpy(&cp.addr.bdaddr, bdaddr);
+ 	cp.addr.type = bdaddr_type;
+-	cp.action = 0x02;
++	cp.action = 0x01;
+ 
+ 	id = mgmt_send(adapter->mgmt, MGMT_OP_ADD_DEVICE,
+ 			adapter->dev_id, sizeof(cp), &cp, add_device_complete,
+@@ -7830,6 +7830,15 @@ static void dev_disconnected(struct btd_
+ 	if (device) {
+ 		adapter_remove_connection(adapter, device, addr->type);
+ 		disconnect_notify(device, reason);
++
++		DBG("device found, checking reason and addr type");
++		if (reason == 4 //mgmt auth failure
++			&& addr->type != BDADDR_BREDR
++			&& device_is_paired(device, addr->type)) {
++			DBG("BLE device and auth failure, remove bonding");
++			btd_adapter_remove_bonding(adapter, &addr->bdaddr,
++							addr->type);
++		}
+ 	}
+ 
+ 	bonding_attempt_complete(adapter, &addr->bdaddr, addr->type,
