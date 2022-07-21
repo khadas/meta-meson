@@ -1,0 +1,21 @@
+Index: bluez-5.55/tools/hciattach_rome.c
+===================================================================
+--- bluez-5.55.orig/tools/hciattach_rome.c
++++ bluez-5.55/tools/hciattach_rome.c
+@@ -1869,13 +1869,15 @@ int qca_woble_configure(int fd)
+ 		printf("%s, BT_MAC: 0x%x:%x:%x:%x:%x:%x\n", __FUNCTION__, rsp[12], rsp[11], rsp[10], rsp[9], rsp[8], rsp[7]);
+ 		memcpy((unsigned char*)APCF_config_manf_data+17, rsp+7, 6);
+ 		qca_hci_send_cmd(fd, (unsigned char*)reset_cmd, sizeof(reset_cmd), (unsigned char*)rsp);
++		//to ensure bt-wake-host is high after reset
++		usleep(10000);
+ 		qca_hci_send_cmd(fd, (unsigned char*)APCF_set_filtering_param, sizeof(APCF_set_filtering_param), (unsigned char*)rsp);
+ 		qca_hci_send_cmd(fd, (unsigned char*)APCF_config_manf_data, sizeof(APCF_config_manf_data), (unsigned char*)rsp);
+ 		qca_hci_send_cmd(fd, (unsigned char*)APCF_enable, sizeof(APCF_enable), (unsigned char*)rsp);
+ 		qca_hci_send_cmd(fd, (unsigned char*)le_set_evt_mask, sizeof(le_set_evt_mask), (unsigned char*)rsp);
+ 		qca_hci_send_cmd(fd, (unsigned char*)le_scan_param_setting, sizeof(le_scan_param_setting), (unsigned char*)rsp);
+-		qca_hci_send_cmd(fd, (unsigned char*)le_scan_enable, sizeof(le_scan_enable), (unsigned char*)rsp);
+ 		qca_hci_send_cmd(fd, (unsigned char*)host_sleep_VSC, sizeof(host_sleep_VSC), (unsigned char*)rsp);
++		qca_hci_send_cmd(fd, (unsigned char*)le_scan_enable, sizeof(le_scan_enable), (unsigned char*)rsp);
+ 		return 0;
+ }
+ 
