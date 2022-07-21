@@ -1,0 +1,40 @@
+From 2b623bc6b9aeb8c75db174843b4464702e4989c9 Mon Sep 17 00:00:00 2001
+From: HenryLee <henry_1_lee@163.com>
+Date: Thu, 29 Dec 2022 14:36:36 +0800
+Subject: [PATCH] fix-sizeof-config_para_ex-is-not-equal-to-driver
+
+Signed-off-by: HenryLee <henry_1_lee@163.com>
+---
+ gfxdrivers/amlgfx/aml.h | 2 ++
+ lib/direct/trace.c      | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/gfxdrivers/amlgfx/aml.h b/gfxdrivers/amlgfx/aml.h
+index f0a1678..1214137 100644
+--- a/gfxdrivers/amlgfx/aml.h
++++ b/gfxdrivers/amlgfx/aml.h
+@@ -312,6 +312,8 @@ typedef    struct {
+ 	config_planes_t src_planes[4];
+ 	config_planes_t src2_planes[4];
+ 	config_planes_t dst_planes[4];
++
++	int mem_sec;
+ }config_para_ex_t;
+ 
+ typedef struct {
+diff --git a/lib/direct/trace.c b/lib/direct/trace.c
+index a84750b..240d7a1 100644
+--- a/lib/direct/trace.c
++++ b/lib/direct/trace.c
+@@ -152,7 +152,7 @@ static DirectMutex tables_lock;
+ static void
+ tables_lock_init( void )
+ {
+-     direct_recursive_mutex_init(&tabless_lock);
++     direct_recursive_mutex_init(&tables_lock);
+ }
+ 
+ __dfb_no_instrument_function__
+-- 
+2.25.1
+
