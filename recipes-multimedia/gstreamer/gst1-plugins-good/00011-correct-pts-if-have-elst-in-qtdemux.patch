@@ -55,7 +55,7 @@ index 649fe4d..c473c24 100755
  
        for (j = stream->ctts_sample_index; j < ctts_count; j++) {
 -        cur->pts_offset = ctts_soffset;
-+        if (0 == n && stream->elst_media_time != G_MAXUINT64 && FOURCC_vide == stream->subtype)
++        if (stream->elst_media_time != G_MAXUINT64 && FOURCC_vide == stream->subtype)
 +        {
 +          cur->pts_offset = ctts_soffset - stream->elst_media_time;
 +          GST_DEBUG_OBJECT (qtdemux, "elst_media_time: %lld, new pts_offset: %lld", stream->elst_media_time, cur->pts_offset);
