@@ -24,15 +24,20 @@ do_compile () {
 
 do_install() {
 
+    install -d -m 0644 ${D}/${libdir}
+    install -d -m 0644 ${D}/etc/cas/irdeto/cadata
+
     if [ -e ${S}/libird_dvb.so ] ; then
-        install -d -m 0644 ${D}/${libdir}
         install -D -m 0644 ${S}/libird_dvb.so ${D}/${libdir}
     fi
 
-    if [ -e ${S}/data/cloaked_ca_*.dat ] ; then
-        install -d -m 0644 ${D}/etc/cas/irdeto/cadata
-        install -D -m 0644 ${S}/data/cloaked_ca_*.dat ${D}/etc/cas/irdeto/cadata
-    fi
+    for file in `ls -a ${S}/data/`
+    do
+        if [ "${file##*.}" = "dat" ]; then
+            install -D -m 0644 ${S}/data/${file} ${D}/etc/cas/irdeto/cadata
+        fi
+    done
+
 }
 
 FILES_${PN} = "${libdir}/* /usr/lib/* ${bindir}/* /etc/cas/irdeto/cadata/*"
