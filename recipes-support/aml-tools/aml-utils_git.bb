@@ -9,7 +9,7 @@ PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/utils"
 
-PACKAGES =+ "\
+PACKAGES = "\
     ${PN}-wifi-power \
     ${PN}-simulate-key \
     ${PN}-usb-monitor \
