@@ -1,8 +1,12 @@
 SUMMARY = "amlogic dtvkit prebuilt"
 LICENSE = "CLOSED"
-DEPENDS = "aml-mp-sdk"
-RDEPENDS_${PN} = "aml-mp-sdk"
+DEPENDS = "aml-mp-sdk "
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', ' android-rpcservice', '', d)} "
+RDEPENDS_${PN} = "aml-mp-sdk aml-mediahal-sdk  aml-subtitleserver aml-libdvr jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 libcurl freetype openssl "
 
+inherit systemd
+SYSTEMD_SERVICE_${PN} = "dtvkit.service"
+FILES_${PN} += "${systemd_unitdir}/system/dtvkit.service"
 
 ARM_TARGET = "lib32"
 ARM_TARGET_aarch64 = "lib64"
@@ -37,18 +41,24 @@ do_install () {
 
 	mkdir -p ${D}/etc/
 
-    install -D -m 0644 ${S}/DVBCore/include/dvbcore/dvb/inc/*.h ${D}/usr/include/dtvkit/dvb/inc
-    install -D -m 0644 ${S}/DVBCore/include/dvbcore/platform/inc/*.h ${D}/usr/include/dtvkit/platform/inc
-    install -D -m 0644 ${S}/DVBCore/include/dvbcore/inc/*.h ${D}/usr/include/dtvkit/inc
-    install -D -m 0644 ${S}/DVBCore/include/dvbcore/midware/stb/inc/*.h ${D}/usr/include/dtvkit/midware/stb/inc
+    install -D -m 0644 ${S}/inc/DVBCore/include/dvbcore/dvb/inc/*.h ${D}/usr/include/dtvkit/dvb/inc
+    install -D -m 0644 ${S}/inc/DVBCore/include/dvbcore/platform/inc/*.h ${D}/usr/include/dtvkit/platform/inc
+    install -D -m 0644 ${S}/inc/DVBCore/include/dvbcore/inc/*.h ${D}/usr/include/dtvkit/inc
+    install -D -m 0644 ${S}/inc/DVBCore/include/dvbcore/midware/stb/inc/*.h ${D}/usr/include/dtvkit/midware/stb/inc
 
-    install -D -m 0644 ${S}/dtvkit-amlogic/include/dtvkit_platform/hw/inc/*.h ${D}/usr/include/dtvkit/hw/inc
+    install -D -m 0644 ${S}/inc/dtvkit-amlogic/include/dtvkit_platform/hw/inc/*.h ${D}/usr/include/dtvkit/hw/inc
 
     if ${@bb.utils.contains("DISTRO_FEATURES", "dtvkit-src", "false", "true", d)}; then
-        install -D -m 0644 ${S}/android-rpcservice/${ARM_TARGET}/libdtvkitserver.so ${D}/${libdir}
+        install -D -m 0644 ${S}/${ARM_TARGET}/libdtvkitserver.so ${D}/${libdir}
+        install -D -m 0644 ${S}/${ARM_TARGET}/libdtvkitclient.so ${D}/${libdir}
+
+        install -D -m 0755 ${S}/${ARM_TARGET}/dtvkitserver ${D}/${bindir}
+        install -D -m 0755 ${S}/${ARM_TARGET}/CLIENT ${D}/${bindir}
     fi
-    install -D -m 0644 ${S}/android-rpcservice/config/${CONFIG} ${D}/etc/config.xml
-    install -D -m 0644 ${S}/android-rpcservice/config/*.json  ${D}/etc/
+    install -d ${D}/${systemd_unitdir}/system
+    install -m 0644 ${S}/dtvkit.service ${D}/${systemd_unitdir}/system
+    install -D -m 0644 ${S}/config/${CONFIG} ${D}/etc/config.xml
+    install -D -m 0644 ${S}/config/*.json  ${D}/etc/
 }
 
 FILES_${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/*"
