@@ -142,6 +142,7 @@ EXTRA_OECONF_append = " \
     --disable-decoder=vp9_mediacodec     \
     --disable-decoder=vp9_qsv            \
     --disable-decoder=dolby_e            \
+    --disable-decoder=mpl2               \
     --disable-demuxer=ac3          \
     --disable-demuxer=avisynth     \
     --disable-demuxer=dts          \
@@ -155,6 +156,7 @@ EXTRA_OECONF_append = " \
     --disable-demuxer=libopenmpt   \
     --disable-demuxer=vapoursynth  \
     --disable-demuxer=dv  \
+    --disable-demuxer=mpl2 \
     --disable-muxer=ac3         \
     --disable-muxer=dts         \
     --disable-muxer=eac3        \
@@ -242,6 +244,8 @@ EXTRA_OECONF_append = " \
     --disable-encoder=vp9_vaapi          \
     --disable-encoder=vp9_qsv            \
     --enable-libxml2                     \
+    --disable-libsmbclient               \
+    --disable-protocol=libsmbclient      \
 "
 
 DEPENDS += " libxml2 "
