@@ -11,12 +11,18 @@ do_compile[noexec] = "1"
 inherit autotools pkgconfig
 
 do_install() {
-    TDK_VERSION_NEW=`echo ${TDK_VERSION} | sed 's/v3.8/v3/' | sed 's/v2.4/v2/'`
     install -d -m 0644 ${D}/lib/teetz
-    install -D -m 0755 ${S}/ta/${TDK_VERSION_NEW}/*.ta ${D}/lib/teetz/
+
+    if [[ "$TDK_VERSION" = *"v3.8"* ]]
+    then
+        TDK_VERSION_NEW=`echo ${TDK_VERSION} | sed 's/v3.8/v3/'`
+        install -D -m 0755 ${S}/ta/${TDK_VERSION_NEW}/*.ta ${D}/lib/teetz/
+    fi
 }
 
 FILES_${PN} += "/lib/teetz/*"
 FILES_${PN}-dev = " "
 INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"
 INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf"
+
+ALLOW_EMPTY_${PN} = "1"
