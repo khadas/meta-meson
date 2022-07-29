@@ -4,7 +4,8 @@ After=tee-supplicant.service
 Requires=tee-supplicant.service 
 
 [Service]
-Type=oneshot
+Type=simple
+Restart=on-failure
 RemainAfterExit=yes
 ExecStart=/usr/bin/tee_preload_fw /lib/firmware/video/video_ucode.bin
 
