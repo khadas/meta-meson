@@ -13,7 +13,7 @@ inherit autotools pkgconfig
 do_install() {
     install -d -m 0644 ${D}/lib/teetz
 
-    if [[ "$TDK_VERSION" = *"v3.8"* ]]
+    if [ "$(echo ${TDK_VERSION} | grep "v3.8")" != "" ]
     then
         TDK_VERSION_NEW=`echo ${TDK_VERSION} | sed 's/v3.8/v3/'`
         install -D -m 0755 ${S}/ta/${TDK_VERSION_NEW}/*.ta ${D}/lib/teetz/
@@ -24,5 +24,5 @@ FILES_${PN} += "/lib/teetz/*"
 FILES_${PN}-dev = " "
 INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"
 INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf"
-
 ALLOW_EMPTY_${PN} = "1"
+
