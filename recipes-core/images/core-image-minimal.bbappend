@@ -18,6 +18,10 @@ IMAGE_INSTALL_append = "\
                     ${@bb.utils.contains("DISTRO_FEATURES", "nand", "mtd-utils-ubifs", "", d)} \
                    "
 
+#AVB with DM-verity
+AVB_DM_VERITY = '${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('DISTRO_FEATURES', 'AVB', 'true', 'False' ,d), 'False', d)}'
+
+IMAGE_INSTALL_append += '${@'python3 avbtool-dm-verity' if AVB_DM_VERITY == 'true'  else ''}'
 #IMAGE_INSTALL_append_aarch64 = "\
 #                    kernel-modules \
 #                    gpu \
@@ -91,19 +95,23 @@ IMAGE_ROOTFS_EXTRA_SPACE_append = "${@bb.utils.contains("DISTRO_FEATURES", "syst
 
 deploy_verity_hash() {
     if [ -f ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env ]; then
-        bbnote "install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
-            ${IMAGE_ROOTFS}/${datadir}/system-dm-verity.env"
-        install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
-            ${IMAGE_ROOTFS}/${datadir}/system-dm-verity.env
+        if [ "${AVB_DM_VERITY}" != "true" ]; then
+            bbnote "install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+                ${IMAGE_ROOTFS}/${datadir}/system-dm-verity.env"
+            install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+                ${IMAGE_ROOTFS}/${datadir}/system-dm-verity.env
+        fi
     else
         bberror "Cannot find ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env"
     fi
 
     if [ -f ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env ]; then
-        bbnote " install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
-            ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env"
-        install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
-            ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env
+        if [ "${AVB_DM_VERITY}" != "true" ]; then
+            bbnote " install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+                ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env"
+            install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+                ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env
+        fi
     else
         bberror "Cannot find ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env"
     fi

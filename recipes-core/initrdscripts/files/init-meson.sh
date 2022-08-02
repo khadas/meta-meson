@@ -16,6 +16,7 @@ DM_VERITY_STATUS="disabled"
 DM_DEV_COUNT=0
 ACTIVE_SLOT=""
 root_fstype="ext4"
+VBMETA_DEVICE=""
 
 # Copied from initramfs-framework. The core of this script probably should be
 # turned into initramfs-framework modules to reduce duplication.
@@ -61,6 +62,8 @@ read_args() {
             androidboot.slot_suffix=*)
                 ACTIVE_SLOT=$optarg
                 ROOT_DEVICE=${ROOT_DEVICE}${ACTIVE_SLOT};;
+            androidboot.vbmeta.device=*)
+                VBMETA_DEVICE=$optarg ;;
             LABEL=*)
                 label=$optarg ;;
             video=*)
@@ -267,8 +270,29 @@ data_ext4_handle() {
 
 dm_verity_setup() {
     echo "setup dm-verity for ${1} partition(${2}) mount to ${3}"
-    if [ -f /usr/share/${1}-dm-verity.env ]; then
-        . /usr/share/${1}-dm-verity.env
+    VERITY_ENV=/usr/share/${1}-dm-verity.env
+
+    VBMETA_DEVICE_REAL=${VBMETA_DEVICE}${ACTIVE_SLOT}
+    # Change /dev/block/ to /dev/
+    if [ ! -b ${VBMETA_DEVICE_REAL} ]; then
+        VBMETA_DEVICE_REAL=`echo ${VBMETA_DEVICE_REAL} | sed "s/\/block\//\//g"`
+    fi
+    if [ -b "${VBMETA_DEVICE_REAL}" ]; then
+        mkdir -p /tmp
+        AVB_DM_TOOL=/usr/bin/avbtool-dm-verity.py
+        if [ -x ${AVB_DM_TOOL} ]; then
+            VERITY_ENV=/tmp/${1}-dm-verity.env
+            avbtool-dm-verity.py print_partition_verity --image "${VBMETA_DEVICE_REAL}" --partition_name "${1}" --active_slot "${ACTIVE_SLOT}" --output "$VERITY_ENV"
+            if [ "$?" != "0" ]; then
+                echo "failed to read vbmeta device from ${VBMETA_DEVICE_REAL}"
+            fi
+        fi
+    fi
+
+    echo "verity env is $VERITY_ENV"
+
+    if [ -f $VERITY_ENV ]; then
+        . $VERITY_ENV
         veritysetup --data-block-size=${DATA_BLOCK_SIZE} --hash-offset=${DATA_SIZE} \
             create ${1} ${2} ${2} ${ROOT_HASH}
         if [ $? = 0 ]; then

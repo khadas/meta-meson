@@ -159,3 +159,10 @@ process_for_read_only_rootfs(){
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('READONLY', 'y', 'process_for_read_only_rootfs; ', '', d)}"
+
+inherit avb-dm-verity
+# The following is needed only if chained
+AVB_DMVERITY_SIGNINING_KEY = "testkey_rsa4096.pem"
+AVB_DMVERITY_SIGNINING_ALGORITHM = "SHA256_RSA4096"
+AVB_DMVERITY_PARTITON_SIZE = "${DEVICE_PROPERTY_SYSTEM_PARTITION_SIZE}"
+AVB_DM_VERITY_PARTITON_NAME = "system"
