@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 #We still need patch even in external src mode
 SRCTREECOVEREDTASKS_remove = "do_patch"
 FILESEXTRAPATHS_prepend := "${THISDIR}/5.4:"
+FILESEXTRAPATHS_prepend_aq2432 := "${THISDIR}/5.4/aq2432:"
 
 KBRANCH = "amlogic-5.4-dev"
 #SRC_URI = "git://${AML_GIT_ROOT}/kernel/common.git;protocol=${AML_GIT_PROTOCOL};branch=${KBRANCH};"
@@ -20,6 +21,7 @@ SRC_URI_append_t5w = " file://t5w.cfg"
 SRC_URI_append_t3 = " file://t3.cfg"
 SRC_URI_append_sc2 = " file://sc2.cfg"
 SRC_URI_append_tm2 = " file://tm2.cfg"
+SRC_URI_append_aq2432 = " file://defconfig"
 
 SRC_URI += "file://common.cfg"
 
