@@ -34,7 +34,7 @@ echo 1 > /sys/class/graphics/fb1/blank
 #Waiting for /dev/data device to become ready
 TimedOut=10 #10 second
 WaitedTime=0
-if [ ${data_mtd_number} = "" ]; then
+if [ "${data_mtd_number}" = "" ]; then
     echo "can not get data mtd number, maybe emmc device......"
     while [ "$WaitedTime" -lt "$TimedOut" ]
     do
