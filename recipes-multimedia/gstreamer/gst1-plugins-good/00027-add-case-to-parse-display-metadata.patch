@@ -1,0 +1,200 @@
+From 373ca03d2421032668d5d4c3dd37fd666bd99e1c Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Thu, 4 Aug 2022 15:35:13 +0800
+Subject: [PATCH] gstreamer1.0-plugins-good: CB1 parse display-metadata for
+ matroska  [1/1]
+ 
+PD#SWPL-89073
+
+Problem:
+matroska demux has no case to parse display-metadata, so there is no HDR feature
+
+Solution:
+Add case to parse display-metadata sync from source code 1.20.3
+
+Verify:
+AH212
+---
+ gst/matroska/matroska-demux.c | 112 ++++++++++++++++++++++++++++++++++
+ gst/matroska/matroska-ids.h   |  14 +++++
+ 2 files changed, 126 insertions(+)
+
+diff --git a/gst/matroska/matroska-demux.c b/gst/matroska/matroska-demux.c
+index f890ae6..bf8ccae 100644
+--- a/gst/matroska/matroska-demux.c
++++ b/gst/matroska/matroska-demux.c
+@@ -463,6 +463,100 @@ gst_matroska_demux_add_stream_headers_to_caps (GstMatroskaDemux * demux,
+   g_value_unset (&buf_val);
+ }
+ 
++static GstFlowReturn
++gst_matroska_demux_parse_mastering_metadata (GstMatroskaDemux * demux,
++    GstEbmlRead * ebml, GstMatroskaTrackVideoContext * video_context)
++{
++  GstFlowReturn ret = GST_FLOW_OK;
++  GstVideoMasteringDisplayInfo minfo;
++  guint32 id;
++  gdouble num;
++  /* Precision defined by HEVC specification */
++  const guint chroma_scale = 50000;
++  const guint luma_scale = 10000;
++
++  gst_video_mastering_display_info_init (&minfo);
++
++  DEBUG_ELEMENT_START (demux, ebml, "MasteringMetadata");
++
++  if ((ret = gst_ebml_read_master (ebml, &id)) != GST_FLOW_OK)
++    goto beach;
++
++  while (ret == GST_FLOW_OK && gst_ebml_read_has_remaining (ebml, 1, TRUE)) {
++    if ((ret = gst_ebml_peek_id (ebml, &id)) != GST_FLOW_OK)
++      goto beach;
++
++    /* all sub elements have float type */
++    if ((ret = gst_ebml_read_float (ebml, &id, &num)) != GST_FLOW_OK)
++      goto beach;
++
++    /* chromaticity should be in [0, 1] range */
++    if (id >= GST_MATROSKA_ID_PRIMARYRCHROMATICITYX &&
++        id <= GST_MATROSKA_ID_WHITEPOINTCHROMATICITYY) {
++      if (num < 0 || num > 1.0) {
++        GST_WARNING_OBJECT (demux, "0x%x has invalid value %f", id, num);
++        goto beach;
++      }
++    } else if (id == GST_MATROSKA_ID_LUMINANCEMAX ||
++        id == GST_MATROSKA_ID_LUMINANCEMIN) {
++      /* Note: webM spec said valid range is [0, 999.9999] but
++       * 1000 cd/m^2 is generally used value on HDR. Just check guint range here.
++       * See https://www.webmproject.org/docs/container/#LuminanceMax
++       */
++      if (num < 0 || num > (gdouble) (G_MAXUINT32 / luma_scale)) {
++        GST_WARNING_OBJECT (demux, "0x%x has invalid value %f", id, num);
++        goto beach;
++      }
++    }
++
++    switch (id) {
++      case GST_MATROSKA_ID_PRIMARYRCHROMATICITYX:
++        minfo.display_primaries[0].x = (guint16) (num * chroma_scale);
++        break;
++      case GST_MATROSKA_ID_PRIMARYRCHROMATICITYY:
++        minfo.display_primaries[0].y = (guint16) (num * chroma_scale);
++        break;
++      case GST_MATROSKA_ID_PRIMARYGCHROMATICITYX:
++        minfo.display_primaries[1].x = (guint16) (num * chroma_scale);
++        break;
++      case GST_MATROSKA_ID_PRIMARYGCHROMATICITYY:
++        minfo.display_primaries[1].y = (guint16) (num * chroma_scale);
++        break;
++      case GST_MATROSKA_ID_PRIMARYBCHROMATICITYX:
++        minfo.display_primaries[2].x = (guint16) (num * chroma_scale);
++        break;
++      case GST_MATROSKA_ID_PRIMARYBCHROMATICITYY:
++        minfo.display_primaries[2].y = (guint16) (num * chroma_scale);
++        break;
++      case GST_MATROSKA_ID_WHITEPOINTCHROMATICITYX:
++        minfo.white_point.x = (guint16) (num * chroma_scale);
++        break;
++      case GST_MATROSKA_ID_WHITEPOINTCHROMATICITYY:
++        minfo.white_point.y = (guint16) (num * chroma_scale);
++        break;
++      case GST_MATROSKA_ID_LUMINANCEMAX:
++        minfo.max_display_mastering_luminance = (guint32) (num * luma_scale);
++        break;
++      case GST_MATROSKA_ID_LUMINANCEMIN:
++        minfo.min_display_mastering_luminance = (guint32) (num * luma_scale);
++        break;
++      default:
++        GST_FIXME_OBJECT (demux,
++            "Unsupported subelement 0x%x in MasteringMetadata", id);
++        ret = gst_ebml_read_skip (ebml);
++        break;
++    }
++  }
++
++  video_context->mastering_display_info = minfo;
++  video_context->mastering_display_info_present = TRUE;
++
++beach:
++  DEBUG_ELEMENT_STOP (demux, ebml, "MasteringMetadata", ret);
++
++  return ret;
++}
++
+ static GstFlowReturn
+ gst_matroska_demux_parse_colour (GstMatroskaDemux * demux, GstEbmlRead * ebml,
+     GstMatroskaTrackVideoContext * video_context)
+@@ -585,6 +679,9 @@ gst_matroska_demux_parse_colour (GstMatroskaDemux * demux, GstEbmlRead * ebml,
+           case 15:
+             colorimetry.transfer = GST_VIDEO_TRANSFER_BT2020_12;
+             break;
++          case 16:
++            colorimetry.transfer = GST_VIDEO_TRANSFER_SMPTE_ST_2084;
++            break;
+           default:
+             GST_FIXME_OBJECT (demux,
+                 "Unsupported color transfer characteristics  %"
+@@ -594,6 +691,14 @@ gst_matroska_demux_parse_colour (GstMatroskaDemux * demux, GstEbmlRead * ebml,
+         break;
+       }
+ 
++      case GST_MATROSKA_ID_MASTERINGMETADATA:{
++        if ((ret =
++                gst_matroska_demux_parse_mastering_metadata (demux, ebml,
++                    video_context)) != GST_FLOW_OK)
++          goto beach;
++        break;
++      }
++
+       case GST_MATROSKA_ID_VIDEOPRIMARIES:{
+         if ((ret = gst_ebml_read_uint (ebml, &id, &num)) != GST_FLOW_OK)
+           goto beach;
+@@ -6438,6 +6543,13 @@ gst_matroska_demux_video_caps (GstMatroskaTrackVideoContext *
+       g_free (colorimetry);
+     }
+ 
++    if (videocontext->mastering_display_info_present) {
++      if (!gst_video_mastering_display_info_add_to_caps
++          (&videocontext->mastering_display_info, caps)) {
++        GST_WARNING ("couldn't set mastering display info to caps");
++      }
++    }
++
+     caps = gst_caps_simplify (caps);
+   }
+ 
+diff --git a/gst/matroska/matroska-ids.h b/gst/matroska/matroska-ids.h
+index a0d6834..b89a2af 100644
+--- a/gst/matroska/matroska-ids.h
++++ b/gst/matroska/matroska-ids.h
+@@ -145,6 +145,18 @@
+ #define GST_MATROSKA_ID_VIDEORANGE                 0x55B9
+ #define GST_MATROSKA_ID_VIDEOTRANSFERCHARACTERISTICS  0x55BA
+ #define GST_MATROSKA_ID_VIDEOPRIMARIES             0x55BB
++#define GST_MATROSKA_ID_MASTERINGMETADATA          0x55D0
++/* IDs in the MasteringMetadata */
++#define GST_MATROSKA_ID_PRIMARYRCHROMATICITYX      0x55D1
++#define GST_MATROSKA_ID_PRIMARYRCHROMATICITYY      0x55D2
++#define GST_MATROSKA_ID_PRIMARYGCHROMATICITYX      0x55D3
++#define GST_MATROSKA_ID_PRIMARYGCHROMATICITYY      0x55D4
++#define GST_MATROSKA_ID_PRIMARYBCHROMATICITYX      0x55D5
++#define GST_MATROSKA_ID_PRIMARYBCHROMATICITYY      0x55D6
++#define GST_MATROSKA_ID_WHITEPOINTCHROMATICITYX    0x55D7
++#define GST_MATROSKA_ID_WHITEPOINTCHROMATICITYY    0x55D8
++#define GST_MATROSKA_ID_LUMINANCEMAX               0x55D9
++#define GST_MATROSKA_ID_LUMINANCEMIN               0x55DA
+ 
+ /* IDs in the TrackAudio master */
+ #define GST_MATROSKA_ID_AUDIOSAMPLINGFREQ          0xB5
+@@ -627,6 +639,8 @@ typedef struct _GstMatroskaTrackVideoContext {
+ 
+   GstBuffer     *dirac_unit;
+   GstVideoColorimetry colorimetry;
++  GstVideoMasteringDisplayInfo mastering_display_info;
++  gboolean mastering_display_info_present;
+ } GstMatroskaTrackVideoContext;
+ 
+ typedef struct _GstMatroskaTrackAudioContext {
+-- 
+2.25.1
+

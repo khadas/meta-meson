@@ -25,4 +25,5 @@ SRC_URI_append = "file://00023_SH-9750-Dump_decode_frame.patch "
 SRC_URI_append = "file://00024-qtdemux-remove-support-dolby-vision-unknow-Compatibility-ID.patch "
 SRC_URI_append = "file://00025-skip-set-codec_data-for-av1-codec.patch "
 SRC_URI_append = "file://00026-correct-io-pointer-when-parse-trun.patch "
+SRC_URI_append = "file://00027-add-case-to-parse-display-metadata.patch "
 
