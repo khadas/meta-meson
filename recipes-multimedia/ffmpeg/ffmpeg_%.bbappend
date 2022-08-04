@@ -143,6 +143,7 @@ EXTRA_OECONF_append = " \
     --disable-decoder=vp9_qsv            \
     --disable-decoder=dolby_e            \
     --disable-decoder=mpl2               \
+    --disable-decoder=truemotion1        \
     --disable-demuxer=ac3          \
     --disable-demuxer=avisynth     \
     --disable-demuxer=dts          \
