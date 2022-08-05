@@ -7,7 +7,8 @@ include conf/machine/include/mesons4_k5.4_32b.inc
 include conf/machine/mesons4-aq222-westeros.inc
 
 UBOOT_MACHINE = "s4_aq2432_config"
-KERNEL_DEVICETREE = "s4_s805c3_aq2432_512m_nand.dtb"
+#Default is EMMC
+KERNEL_DEVICETREE = "s4d_s805c3_aq2432_linux_512m.dtb"
 
 KERNEL_MODULE_AUTOLOAD_remove = " cxd2856_fe_64 r836_fe_64 av2018_fe_64 "
 KERNEL_MODULE_AUTOLOAD_remove = " hdr10_tmo_alg_64"
@@ -23,8 +24,6 @@ MACHINE_EXTRA_RRECOMMENDS_append = " aml-wifi-w1 aml-bt-w1"
 DISTRO_FEATURES_remove = " bt-qca "
 DISTRO_FEATURES_append = " aml-w1 "
 DISTRO_FEATURES_remove = " netflix amazon-plugin tts mediaplayer "
-DISTRO_FEATURES_append = " irdeto "
-DISTRO_FEATURES_append = " nand "
 
 DISTRO_FEATURES_append = " UI_720P WesterOS_lowmem"
 DISTRO_FEATURES_append = " appmanager"
