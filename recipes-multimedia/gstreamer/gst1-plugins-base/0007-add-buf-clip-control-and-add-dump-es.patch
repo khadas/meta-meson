@@ -1,0 +1,77 @@
+diff --git a/gst-libs/gst/app/gstappsrc.c b/gst-libs/gst/app/gstappsrc.c
+index 2967b93..298c42a 100644
+--- a/gst-libs/gst/app/gstappsrc.c
++++ b/gst-libs/gst/app/gstappsrc.c
+@@ -100,6 +100,7 @@
+ #include <string.h>
+
+ #include "gstappsrc.h"
++#include "stdio.h"
+
+ typedef enum
+ {
+@@ -273,6 +274,30 @@ G_DEFINE_TYPE_WITH_CODE (GstAppSrc, gst_app_src, GST_TYPE_BASE_SRC,
+     G_ADD_PRIVATE (GstAppSrc)
+     G_IMPLEMENT_INTERFACE (GST_TYPE_URI_HANDLER, gst_app_src_uri_handler_init));
+
++static void gst_app_src_dump_input_buf(GstAppSrc * appsrc, GstBuffer * buffer)
++{
++    const gchar *dump_dir = NULL;
++    gchar *full_file_name = NULL;
++    FILE *out = NULL;
++
++    dump_dir = g_getenv("GST_AML_DUMP_APPSRC_INPUT_BUF_DIR");
++    if (G_LIKELY(dump_dir == NULL))
++        return;
++
++    full_file_name = g_strdup_printf("%s" G_DIR_SEPARATOR_S "%s_input.bin", dump_dir, GST_ELEMENT_NAME(appsrc));
++
++    if ((out = fopen(full_file_name, "ab")))
++    {
++        GstMapInfo map;
++        memset(&map, 0, sizeof(GstMapInfo));
++        gst_buffer_map(buffer, &map, GST_MAP_READ);
++        fwrite(map.data, map.size, 1, out);
++        gst_buffer_unmap(buffer, &map);
++        fclose(out);
++    }
++    g_free(full_file_name);
++}
++
+ static void
+ gst_app_src_class_init (GstAppSrcClass * klass)
+ {
+@@ -2012,6 +2037,7 @@ gst_app_src_push_sample_internal (GstAppSrc * appsrc, GstSample * sample)
+ GstFlowReturn
+ gst_app_src_push_buffer (GstAppSrc * appsrc, GstBuffer * buffer)
+ {
++  gst_app_src_dump_input_buf(appsrc, buffer);
+   return gst_app_src_push_buffer_full (appsrc, buffer, TRUE);
+ }
+
+diff --git a/gst-libs/gst/video/gstvideodecoder.c b/gst-libs/gst/video/gstvideodecoder.c
+index 9a750b7..179aa6e 100644
+--- a/gst-libs/gst/video/gstvideodecoder.c
++++ b/gst-libs/gst/video/gstvideodecoder.c
+@@ -3122,7 +3122,20 @@ gst_video_decoder_clip_and_push_buf (GstVideoDecoder * decoder, GstBuffer * buf)
+         ret = GST_FLOW_EOS;
+       }
+     }
+-    gst_buffer_unref (buf);
++
++    const char *env = getenv("GST_VIDEO_DECODER_DO_CLIP");
++    if (env && 0 == atoi(env)) {
++        GST_DEBUG_OBJECT (decoder, "not clip out of boud buf, send anyway");
++        /* release STREAM_LOCK not to block upstream
++        * while pushing buffer downstream */
++        GST_VIDEO_DECODER_STREAM_UNLOCK (decoder);
++        ret = gst_pad_push (decoder->srcpad, buf);
++        GST_VIDEO_DECODER_STREAM_LOCK (decoder);
++    }
++    else
++    {
++        gst_buffer_unref (buf);
++    }
+     goto done;
+   }
+
