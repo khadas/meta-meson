@@ -75,7 +75,6 @@ EXTRA_BLUETOOTH_STUFF := "${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', b
 DISTRO_FEATURES_append = "${EXTRA_BLUETOOTH_STUFF}"
 
 TDK_VERSION_s4 = "v3.8/dev/S805X2"
-MEDIA_MODULES_UCODE_BIN_s4 = "firmware/S805X2/video_ucode.bin"
 
 # dm-verity
 #DISTRO_FEATURES_append = " dm-verity"

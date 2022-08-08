@@ -34,16 +34,6 @@ TDK_VERSION_t7 = "v3.8/dev/A311D2"
 TDK_VERSION_s4 = "v3.8/dev/S905Y4"
 TDK_VERSION_t3 = "v3.8/dev/T965D4"
 
-MEDIA_MODULES_UCODE_BIN = "TBD"
-MEDIA_MODULES_UCODE_BIN_g12a = "firmware/video_ucode.bin"
-MEDIA_MODULES_UCODE_BIN_a213y = "firmware/video_ucode.bin"
-MEDIA_MODULES_UCODE_BIN_t5d = "firmware/video_ucode.bin"
-MEDIA_MODULES_UCODE_BIN_t5w = "firmware/video_ucode.bin"
-MEDIA_MODULES_UCODE_BIN_p1 = "firmware/POP1/video_ucode.bin"
-MEDIA_MODULES_UCODE_BIN_s4 = "firmware/S905Y4/video_ucode.bin"
-MEDIA_MODULES_UCODE_BIN_sc2 = "firmware/S905X4/video_ucode.bin"
-MEDIA_MODULES_UCODE_BIN_t7 = "firmware/A311D2/video_ucode.bin"
-
 #Widevine Version
 WIDEVINE_VERSION = "16"
 

@@ -17,13 +17,15 @@ PV ?= "git${SRCPV}"
 
 do_configure[noexec] = "1"
 
+MEDIA_MODULES_UCODE_BIN = "${S}/firmware/${CHIPSET_NAME}/video_ucode.bin"
+
 do_install() {
     MEDIADIR=${D}/lib/modules/${KERNEL_VERSION}/kernel/media
     FIRMWAREDIR=${D}/lib/firmware/video/
     unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
     mkdir -p ${MEDIADIR} ${FIRMWAREDIR}
     find ${S}/drivers/ -name *.ko | xargs -i install -m 0666 {} ${MEDIADIR}
-    install -m 0666 ${S}/${MEDIA_MODULES_UCODE_BIN} ${FIRMWAREDIR}
+    install -m 0666 ${MEDIA_MODULES_UCODE_BIN} ${FIRMWAREDIR}
 }
 
 FILES_${PN} = " \
