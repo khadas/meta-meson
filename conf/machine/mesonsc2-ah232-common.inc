@@ -23,7 +23,7 @@ MACHINE_EXTRA_RRECOMMENDS += " \
         optee-linux-driver \
         "
 
-CHIPSET_NAME = "s905c2"
+CHIPSET_NAME = "S905C2"
 KERNEL_DEVICETREE = "sc2_s905x4_ah212_linux.dtb"
 UBOOT_MACHINE = "sc2_ah232_config"
 KERNEL_MODULE_AUTOLOAD += " cxd2856_fe_64"

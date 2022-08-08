@@ -19,7 +19,7 @@ MACHINE_EXTRA_RRECOMMENDS += " \
         optee-linux-driver \
         "
 
-CHIPSET_NAME = "s805x2"
+CHIPSET_NAME = "S805X2"
 KERNEL_DEVICETREE = "s4_s805x2_aq222_linux_1g.dtb"
 UBOOT_MACHINE = "s4_aq222_config"
 KERNEL_MODULE_AUTOLOAD += " cxd2856_fe_64 r836_fe_64 av2018_fe_64 "

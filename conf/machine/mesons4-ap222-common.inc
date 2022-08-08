@@ -19,7 +19,7 @@ MACHINE_EXTRA_RRECOMMENDS += " \
         optee-linux-driver \
         "
 
-CHIPSET_NAME = "s905y4"
+CHIPSET_NAME = "S905Y4"
 KERNEL_DEVICETREE = "s4_s905y4_ap222_linux.dtb s4d_s905y4_ap222_linux.dtb"
 UBOOT_MACHINE = "s4_ap222_config"
 KERNEL_MODULE_AUTOLOAD += " cxd2856_fe_64 r836_fe_64 av2018_fe_64 "

@@ -6,6 +6,7 @@
 include conf/machine/include/mesons4_k5.4_32b.inc
 include conf/machine/mesons4-aq222-westeros.inc
 
+CHIPSET_NAME = "S805C3"
 UBOOT_MACHINE = "s4_aq2432_config"
 #Default is EMMC
 KERNEL_DEVICETREE = "s4d_s805c3_aq2432_linux_512m.dtb"
