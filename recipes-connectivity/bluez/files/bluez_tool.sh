@@ -180,25 +180,13 @@ BLE_SERVICE()
 service_down()
 {
 	echo "|--stop bluez service--|"
-	killall hfp_ctl
-	killall default_agent
-	killall bluealsa-aplay
-	killall bluealsa
-	killall bluetoothd
-	killall btgatt-server
-	killall hcidump
-	hciconfig hci0 down
+	sh bluez-alsa.sh stop
 }
 
 service_up()
 {
-	if [ $mode = "ble" ];then
-		BLE_SERVICE
-	elif [ $mode = "source" ];then
-		A2DP_SOURCE_SERVICE
-	else
-		A2DP_SINK_SERVICE
-	fi
+	echo "|--start bluez service--|"
+	sh bluez-alsa.sh start
 }
 
 Blue_start()
@@ -259,7 +247,7 @@ Blue_start()
 		done
 	fi
 
-	#service_up
+	service_up
 
 	echo "|-----bluez is ready----|"
 }
@@ -267,7 +255,7 @@ Blue_start()
 Blue_stop()
 {
 	echo -n "Stopping bluez"
-	#service_down
+	service_down
 	killall rtk_hciattach
 	killall hciattach
 	#rmmod sdio_bt

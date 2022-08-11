@@ -1,5 +1,7 @@
 #!/bin/sh
 
+configure_file="/etc/bluetooth/main.conf"
+
 WAIT_BLUETOOTHD()
 {
 	for i in `seq 1 10`
@@ -86,6 +88,11 @@ A2DP_SOURCE_SERVICE()
 
 Blue_start()
 {
+	if [ "$mode" = "disable" ]; then
+		echo "A2DP in disable mode"
+		return;
+	fi
+
 	echo "|-----start bluez-alsa----|"
 	WAIT_BLUETOOTHD
 	if [ $? -ne 0 ]; then
@@ -106,42 +113,6 @@ Blue_start()
 	echo "|-----bluez-alsa is ready----|"
 }
 
-#Blue_start()
-#{
-#	echo "|-----start bluez-alsa----|"
-#	WAIT_BLUETOOTHD
-#	if [ $? -ne 0 ]; then
-#		echo "|-----bluez-alsa failed to start----|"
-#		return -1
-#	fi
-#
-#	bluealsa &
-#	usleep 200000
-#	bt-halplay &
-#	default_agent > /dev/null &
-#
-#	for i in `seq 1 10`
-#	do
-#		sleep 1
-#		hciconfig hci0 piscan
-#		echo $(hciconfig) | grep PSCAN
-#		if [ $? -eq 0 ]
-#		then
-#			echo "hci0 already open scan"
-#			break;
-#		else
-#			if [ $i -eq 5 ]
-#			then
-#				echo "hci0 open scan fail!"
-#			fi
-#		fi
-#	done
-#
-#	hciconfig hci0 inqparms 18:1024
-#	hciconfig hci0 pageparms 18:1024
-#
-#	echo "|-----bluez-alsa is ready----|"
-#}
 
 
 Blue_stop()
@@ -152,16 +123,37 @@ Blue_stop()
 	echo "|-----bluez-alsa is shutdown-----|"
 }
 
+set_mode()
+{
+   sed -i '/A2DP=/c\A2DP='$mode $configure_file
+}
+
+get_mode()
+{
+	if [ -f $configure_file ];then
+		str=`grep "A2DP=" $configure_file`
+		if [ ! $str = "" ];then
+			mode=`echo $str | awk -F = '{print $2}'`
+		else
+			echo No A2DP type defined in confirue file
+		fi
+	else
+		echo "No configure file"
+	fi
+	echo "get a2dp mode: $mode"
+}
+
 if [ $2 ];then
 	mode=$2
+	set_mode
 else
-	mode="both"
+	get_mode
 fi
 
 case "$1" in
 	start)
 		Blue_start &
-		;;
+	;;
 	stop)
 		Blue_stop
 		;;
