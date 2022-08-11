@@ -55,6 +55,7 @@ fi
 
 if [ -f "/mnt/software.swu" ]; then
     echo "find software.swu in data, now start update......"
+    export TMPDIR=/mnt
     if [ -f "/proc/inand" ]; then
         if [ -f "/usr/bin/swupdateui" ]; then
             swupdateui /etc/recovery.bmp &
