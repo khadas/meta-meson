@@ -2,6 +2,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
 # Required for WifiControl: 'SetKey("autoscan", "periodic:120")'
 SRC_URI_append_thunder = " file://0001-Set-CONFIG_AUTOSCAN_PERIODIC-y.patch"
+SRC_URI_append = " file://0002-enlarge-cmd-reply-buf.patch"
 
 SRC_URI += " \
             file://wpa_supplicant.service \
