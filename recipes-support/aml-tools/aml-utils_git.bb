@@ -9,22 +9,25 @@ PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/utils"
 
+DEPENDS += "libamldeviceproperty"
+RDEPENDS_${PN}-fota-upgrade += "libamldeviceproperty"
+
 PACKAGES = "\
     ${PN}-wifi-power \
     ${PN}-simulate-key \
     ${PN}-usb-monitor \
+    ${PN}-fota-upgrade \
 "
 
 FILES_${PN}-wifi-power = "${bindir}/wifi_power "
-
 FILES_${PN}-simulate-key = "${bindir}/simulate_key "
-
 FILES_${PN}-usb-monitor = "${bindir}/usb_monitor "
+FILES_${PN}-fota-upgrade = "${bindir}/fota_upgrade "
 
 IR_REMOTE_DEVICE ?= "/dev/input/event0"
 EXTRA_OEMAKE = "IR_REMOTE_DEVICE=${IR_REMOTE_DEVICE}"
 
-UTILS_CMDS = "wifi_power simulate_key usb_monitor"
+UTILS_CMDS = "wifi_power simulate_key usb_monitor fota_upgrade"
 
 do_compile() {
     for CMD in ${UTILS_CMDS} ; do
@@ -37,4 +40,5 @@ do_install() {
     install -m 0755 ${S}/wifi_power ${D}${bindir}
     install -m 0755 ${S}/simulate_key ${D}${bindir}
     install -m 0755 ${S}/usb_monitor ${D}${bindir}
+    install -m 0755 ${S}/fota_upgrade ${D}${bindir}
 }

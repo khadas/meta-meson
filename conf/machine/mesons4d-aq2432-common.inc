@@ -28,8 +28,18 @@ DISTRO_FEATURES_remove = " netflix amazon-plugin tts mediaplayer "
 
 DISTRO_FEATURES_append = " UI_720P WesterOS_lowmem"
 DISTRO_FEATURES_append = " appmanager"
+DISTRO_FEATURES_append = " fota-upgrade"
 DISTRO_FEATURES_remove = " selinux"
 
 OVERRIDES .= ":aq2432"
 TDK_VERSION_s4 = "v3.8/dev/S805C3"
 MEDIA_MODULES_UCODE_BIN_s4 = "firmware/S805C3/video_ucode.bin"
+
+# For Fota upgrade
+DEVICE_PROPERTY_DEVINFO_OEM = "Amlogic"
+DEVICE_PROPERTY_DEVINFO_DEVICETYPE = "smarthome"
+DEVICE_PROPERTY_DEVINFO_PLATFORM = "A113D"
+DEVICE_PROPERTY_DEVINFO_MODELS = "OTT"
+DEVICE_PROPERTY_DEVINFO_PRODUCTID = "1660115992"
+DEVICE_PROPERTY_DEVINFO_PRODUCTSECRET = "fa7bfc8d755c4c0b8c52fdb00d431d3f"
+# End For Fota upgrade
