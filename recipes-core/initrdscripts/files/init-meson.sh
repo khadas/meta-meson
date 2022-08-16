@@ -430,13 +430,9 @@ data_ubi_handle()
 {
   data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
 
+  mkdir -p /data
   if ! uenv get factory-reset | grep -q 'value:\[1\]'; then
     mount | grep 'data' && echo "Already mounted" && return 0
-    #mount dir create
-    if [ ! -d "/data" ]
-    then
-      mkdir /data
-    fi
 
     # sure ubi vol exist or not
     ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
@@ -449,12 +445,12 @@ data_ubi_handle()
         return 0
       fi
     fi
+    ubidetach -p /dev/mtd${data_mtd_number}
   else
     uenv set factory-reset 0
   fi
 
   #mount data
-  ubidetach -p /dev/mtd${data_mtd_number}
   ubiformat -y /dev/mtd${data_mtd_number}
   ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
   ubimkvol /dev/ubi2 -m -N data
