@@ -11,10 +11,10 @@ DM_VERITY_SUPPORT = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'true'
 CHAINED_PARTITION_SUPPORT = "${@bb.utils.contains('DISTRO_FEATURES', 'AVB_chained_partition', 'true', 'false', d)}"
 AVB_DM_VERITY_SYSTEM_PARTITON_NAME = "system"
 AVB_DM_VERITY_VENDOR_PARTITON_NAME = "vendor"
-AVB_DM_VERITY_SYSTEM_PARTITON_PUBKEY = "testkey_rsa4096.avbpubkey"
-AVB_DM_VERITY_VENDOR_PARTITON_PUBKEY = "testkey_rsa4096.avbpubkey"
+AVB_DM_VERITY_SYSTEM_PARTITON_PUBKEY = "system_rsa2048.avbpubkey"
+AVB_DM_VERITY_VENDOR_PARTITON_PUBKEY = "vendor_rsa2048.avbpubkey"
 
-AVB_VBMETA_RSA_KEY = "testkey_rsa2048.pem"
+AVB_VBMETA_RSA_KEY = "vbmeta_rsa2048.pem"
 AVB_VBMETA_ALGORITHM = "SHA256_RSA2048"
 
 SIGN_VBMETA = " --key ${STAGING_DIR_NATIVE}/${sysconfdir_native}/${AVB_VBMETA_RSA_KEY} --algorithm ${AVB_VBMETA_ALGORITHM} --padding_size 4096 "
