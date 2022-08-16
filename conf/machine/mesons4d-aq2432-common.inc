@@ -30,13 +30,15 @@ DISTRO_FEATURES_remove = " netflix amazon-plugin tts mediaplayer playready "
 DISTRO_FEATURES_remove = " bluetooth bluez5 "
 
 DISTRO_FEATURES_append = " UI_720P WesterOS_lowmem"
-DISTRO_FEATURES_append = " appmanager AsperitasDvb"
+DISTRO_FEATURES_append = " appmanager AsperitasDvb LauncherWebkit"
 DISTRO_FEATURES_append = " fota-upgrade"
 DISTRO_FEATURES_append = " remove-test-files"
 
 DISTRO_FEATURES_append = " dm-verity"
 DISTRO_FEATURES_NATIVE_append = " dm-verity"
 #READONLY = "y"
+
+RDEPENDS_packagegroup-amlogic-baserootfs_remove = "libhtmllocal htmllocal-plugin"
 
 OVERRIDES .= ":aq2432"
 TDK_VERSION_s4 = "v3.8/dev/S805C3"
