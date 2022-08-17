@@ -28,6 +28,7 @@ do_install() {
     install -d -m 0755 ${D}/${datadir}/mediadrm
     install -d -m 0755 ${D}/usr/lib
     install -D -m 0644 ${S}/${VMX_PLUGIN_PATH}/iptv/libdec_ca_vmx_iptv.so ${D}/usr/lib
+    install -D -m 0644 ${S}/${VMX_PLUGIN_PATH}/iptv/libvmlogger.so ${D}/usr/lib
     install -D -m 0644 ${S}/${VMX_PLUGIN_PATH}/web/libdec_ca_vmx_web.so ${D}/usr/lib
 }
 
