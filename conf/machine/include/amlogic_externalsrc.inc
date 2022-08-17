@@ -142,3 +142,4 @@ EXTERNALSRC_pn-westeros-rawsink = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/we
 EXTERNALSRC_pn-gst-plugin-venc-jpeg = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/jpeg' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/jpeg')) else ''}"
 EXTERNALSRC_pn-gst-plugin-venc-h264 = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/h264-hcodec' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/h264-hcodec')) else ''}"
 EXTERNALSRC_pn-gst-plugin-venc-h265 = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/h265-wave420' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/h265-wave420')) else ''}"
+EXTERNALSRC_pn-aml-launcher = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/yocto-launcher'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/yocto-launcher')]}"
