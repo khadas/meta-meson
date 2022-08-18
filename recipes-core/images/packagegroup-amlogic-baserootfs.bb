@@ -79,7 +79,8 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'system-user', 'sandbox-setup', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'vmx-sdk-rel vmx-release-binaries vmx-plugin', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'aml-cas-hal aml-secdmx drmplayer-bin', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'drmplayer-bin', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'aml-cas-hal aml-secdmx', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-tvserver', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit', 'dtvkit-release-prebuilt', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', 'android-rpcservice', '', d)} \
@@ -176,7 +177,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs += " \
 
 #VENC related
 RDEPENDS_packagegroup-amlogic-baserootfs += " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libjpeg', 'gst-plugin-venc-jpeg', '', d), '', d)} \ 
+    ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libjpeg', 'gst-plugin-venc-jpeg', '', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libvpcodec', 'gst-plugin-venc-h264', '', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libvphevcodec', 'gst-plugin-venc-h265', '', d), '', d)} \
    "
