@@ -1,0 +1,72 @@
+Index: bluez-5.55/src/shared/att.c
+===================================================================
+--- bluez-5.55.orig/src/shared/att.c
++++ bluez-5.55/src/shared/att.c
+@@ -38,6 +38,25 @@
+ #include "lib/uuid.h"
+ #include "src/shared/att.h"
+ #include "src/shared/crypto.h"
++#include <syslog.h>
++#include <stdio.h>
++#include <errno.h>
++#include <syslog.h>
++#include <stdarg.h>
++#include <stdint.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
++
++static void info(const char *format, ...)
++{
++	va_list ap;
++
++	va_start(ap, format);
++	vsyslog(LOG_INFO, format, ap);
++	va_end(ap);
++}
++
+ 
+ #define ATT_MIN_PDU_LEN			1  /* At least 1 byte for the opcode. */
+ #define ATT_OP_CMD_MASK			0x40
+@@ -199,6 +218,7 @@ static uint8_t get_req_opcode(uint8_t rs
+ 
+ struct att_send_op {
+ 	unsigned int id;
++	unsigned int lastid;
+ 	unsigned int timeout_id;
+ 	enum att_op_type type;
+ 	uint8_t opcode;
+@@ -212,7 +232,7 @@ struct att_send_op {
+ static void destroy_att_send_op(void *data)
+ {
+ 	struct att_send_op *op = data;
+-
++	info("destroy_att_send_op timeout_id :%d ", op->timeout_id);
+ 	if (op->timeout_id)
+ 		timeout_remove(op->timeout_id);
+ 
+@@ -460,6 +480,7 @@ static bool timeout_cb(void *user_data)
+ 	 * This should trigger an io disconnect event which will clean up the
+ 	 * io and notify the upper layer.
+ 	 */
++	info("timeout_cb id: %d", timeout->id);
+ 	io_shutdown(chan->io);
+ 
+ 	return false;
+@@ -541,10 +562,15 @@ static bool can_write_data(struct io *io
+ 		destroy_att_send_op(op);
+ 		return true;
+ 	}
+-
++	if(op->id == 16 && op->lastid == 0) {
++		info("id: %d lastid: %d something error,no need add timer", op->id, op->lastid);
++		return true;
++	}
++	op->lastid = op->id;
+ 	timeout = new0(struct timeout_data, 1);
+ 	timeout->chan = chan;
+ 	timeout->id = op->id;
++	info("can_write_data timeout_add: id: %d", op->id);
+ 	op->timeout_id = timeout_add(ATT_TIMEOUT_INTERVAL, timeout_cb,
+ 								timeout, free);
+ 

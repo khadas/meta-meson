@@ -15,6 +15,7 @@ SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "bt-qca", "file://0001-BT-ad
 SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "bt-qca", "file://0001-BT-qca-fix-adv-auto-wakeup.patch", "", d)}"
 SRC_URI += "file://0001-BT-fix-repeatedly-connect-disconnect.patch"
 SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "aml-w1", "file://0001-BT-add-amlbt-w1-wakeup.patch", "", d)}"
+SRC_URI += "file://0001-bluez5-fix-rcu-reconnect-1-1.patch"
 
 do_install_append(){
     install -d ${D}${bindir}
