@@ -27,7 +27,7 @@ DISTRO_FEATURES_append = " aml-w1 "
 DISTRO_FEATURES_remove = " netflix amazon-plugin tts mediaplayer "
 
 DISTRO_FEATURES_append = " UI_720P WesterOS_lowmem"
-DISTRO_FEATURES_append = " appmanager"
+DISTRO_FEATURES_append = " appmanager AsperitasDvb"
 DISTRO_FEATURES_append = " fota-upgrade"
 DISTRO_FEATURES_remove = " selinux"
 
