@@ -35,7 +35,7 @@ SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "nand", "file://nand.cfg", "
 
 LTOEXTRA += "-flto-partition=none"
 
-PACKAGES =+ " \
+PACKAGES += " \
     ${PN}-client \
     ${PN}-lua \
     ${PN}-progress \
