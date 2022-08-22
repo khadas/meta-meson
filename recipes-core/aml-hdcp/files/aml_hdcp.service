@@ -5,9 +5,10 @@ After=aml_key_inject.service
 [Service]
 User=root
 Type=simple
-Restart=on-failure
 RemainAfterExit=yes
-ExecStart=/usr/bin/tee_hdcp -o /lib/firmware/hdcp/firmware.le
+Restart=on-failure
+ExecStartPre=/usr/bin/tee_hdcp -o /lib/firmware/hdcp/firmware.le &
+ExecStart=/bin/sh -c '/usr/bin/hdcp_tx22 -f /lib/firmware/hdcp/firmware.le&'
 
 [Install]
 WantedBy=multi-user.target
