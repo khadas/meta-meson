@@ -10,6 +10,7 @@ hardware
 #accelerator=49
 # Disable Cursor
 no-cursor
+no-vt
 wm=default
 #debug
 #desktop-buffer-mode=backsystem

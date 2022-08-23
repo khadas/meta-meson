@@ -27,7 +27,8 @@ case $system_mtd_number in
         ;;
 esac
 
-fbset -fb /dev/fb0 -g 480 480 480 960 32
+# Self negotiating between drm and display, don't need to set here.
+#fbset -fb /dev/fb0 -g 480 480 480 960 32
 echo 0 > /sys/class/graphics/fb0/blank
 echo 1 > /sys/class/graphics/fb1/blank
 

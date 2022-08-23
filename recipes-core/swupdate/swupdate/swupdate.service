@@ -1,5 +1,6 @@
 [Unit]
 Description=swupdate
+ConditionPathExists=!/data
 
 [Service]
 Type=oneshot
