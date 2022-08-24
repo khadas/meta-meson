@@ -258,7 +258,9 @@ data_ext4_handle() {
 		   echo -e "factory reset, Formating $ROOT_RWDEVICE to ext4 ..."
 		   yes 2>/dev/null | mkfs.ext4 -q -m 0 $ROOT_RWDEVICE
 		   sync
-		   uenv set factory-reset 0
+		   uenv set default_env 1
+		   echo -e "reboot to reset uenv ..."
+		   /sbin/reboot -f
 		fi
 	fi
 
