@@ -15,7 +15,7 @@ IMAGE_INSTALL_append = "\
                     e2fsprogs \
                     aml-ubootenv \
                     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'policycoreutils-setfiles', '', d)} \
-                    ${@bb.utils.contains("DISTRO_FEATURES", "nand", "mtd-utils-ubifs", "", d)} \
+                    ${@bb.utils.contains("DISTRO_FEATURES", "nand", "mtd-utils mtd-utils-ubifs", "", d)} \
                    "
 
 #AVB with DM-verity

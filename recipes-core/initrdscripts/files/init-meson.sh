@@ -74,7 +74,7 @@ read_args() {
 #if do factory reset, selinux relabel will happen again
 selinux_relabel() {
     if [ -e $ROOT_MOUNT/read-only ]; then
-        if [ ! -e $ROOT_MOUNT/data/.autorelabel ];then
+        if [ ! -e $ROOT_MOUNT/data/.autorelabel ] && [ -f /sbin/setfiles ]; then
             echo "selinux relabel"
             touch $ROOT_MOUNT/data/.autorelabel
             chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data
@@ -128,8 +128,7 @@ boot_root() {
     check_set_machine_id
     attach_unifykey
     # The rootfs does not yet contain kernel modules.  Copy it!
-    if [ ! -d ${ROOT_MOUNT}/lib/modules ];
-    then
+    if [ ! -d ${ROOT_MOUNT}/lib/modules ]; then
         cp -rf /lib/modules ${ROOT_MOUNT}/lib/
         cp -rf /lib/firmware ${ROOT_MOUNT}/lib/
         cp -rf /etc/modprobe.d ${ROOT_MOUNT}/etc/
@@ -314,15 +313,13 @@ mount_and_boot() {
     elif [ "${root_fstype}" = "squashfs" ]; then
         squashfs_rootfs_mount
     else
-        if [ "${FIRMWARE}" != "" ];
-        then
+        if [ "${FIRMWARE}" != "" ]; then
             ROOT_DEVICE="/dev/mmcblk1p1"
         fi
 
         wait_for_device
 
-        if [ "$ROOT_DEVICE" != "" ];
-        then
+        if [ "$ROOT_DEVICE" != "" ]; then
             dm_verity_setup system ${ROOT_DEVICE} ${ROOT_MOUNT}
             dm_verity_setup vendor ${VENDOR_DEVICE}${ACTIVE_SLOT} none
             echo "dm-verity is $DM_VERITY_STATUS"
@@ -341,7 +338,11 @@ mount_and_boot() {
     if touch $ROOT_MOUNT/bin 2>/dev/null || [ -e $ROOT_MOUNT/read-only ]; then
         # The root image is read-write, directly boot it up.
         echo "read-only, skip overlay"
-        data_ext4_handle $ROOT_MOUNT/data
+        if [ "${root_fstype}" = "ext4" ]; then
+            data_ext4_handle $ROOT_MOUNT/data
+        else
+            data_yaffs2_handle $ROOT_MOUNT/data
+        fi
         boot_root
     fi
 
@@ -439,41 +440,58 @@ ubi_vendor_attach()
 
 data_ubi_handle()
 {
-  data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+    data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
 
-  mkdir -p /data
-  if ! uenv get factory-reset | grep -q 'value:\[1\]'; then
-    mount | grep 'data' && echo "Already mounted" && return 0
+    mkdir -p /data
+    if ! uenv get factory-reset | grep -q 'value:\[1\]'; then
+        mount | grep 'data' && echo "Already mounted" && return 0
 
-    # sure ubi vol exist or not
-    ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
-    if [ -c "/dev/${1}_0" ]
-    then
-      data_vol_name=`cat /sys/class/ubi/${1}_0/name`
-      if [ "${data_vol_name}" = "data" ]
-      then
+        # sure ubi vol exist or not
+        ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
+        if [ -c "/dev/${1}_0" ]; then
+            data_vol_name=`cat /sys/class/ubi/${1}_0/name`
+            if [ "${data_vol_name}" = "data" ]; then
+                mount -t ubifs /dev/${1}_0 /data
+                return 0
+            fi
+        fi
+        ubidetach -p /dev/mtd${data_mtd_number}
+
+        #format data
+        ubiformat -y /dev/mtd${data_mtd_number}
+        ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
+        ubimkvol /dev/${1} -m -N data
+
         mount -t ubifs /dev/${1}_0 /data
-        return 0
-      fi
+    else
+        #format data
+        ubiformat -y /dev/mtd${data_mtd_number}
+        ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
+        ubimkvol /dev/${1} -m -N data
+
+        uenv set default_env 1
+        echo -e "reboot to reset uenv ..."
+        /sbin/reboot -f
     fi
-    ubidetach -p /dev/mtd${data_mtd_number}
+}
 
-    #format data
-    ubiformat -y /dev/mtd${data_mtd_number}
-    ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
-    ubimkvol /dev/${1} -m -N data
+data_yaffs2_handle()
+{
+    data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
 
-    mount -t ubifs /dev/${1}_0 /data
-  else
-    #format data
-    ubiformat -y /dev/mtd${data_mtd_number}
-    ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
-    ubimkvol /dev/${1} -m -N data
+    mkdir -p $1
+    if ! uenv get factory-reset | grep -q 'value:\[1\]'; then
+        mount | grep 'data' && echo "Already mounted" && return 0
+    else
+        flash_erase /dev/mtd${data_mtd_number} 0 0
 
-    uenv set default_env 1
-    echo -e "reboot to reset uenv ..."
-    /sbin/reboot -f
-  fi
+        uenv set default_env 1
+        echo -e "reboot to reset uenv ..."
+        /sbin/reboot -f
+    fi
+
+    #mount data
+    mount -t yaffs2 /dev/mtdblock${data_mtd_number} $1
 }
 
 mount_and_boot
