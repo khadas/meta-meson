@@ -18,23 +18,6 @@ ACTIVE_SLOT=""
 root_fstype="ext4"
 VBMETA_DEVICE=""
 
-# Copied from initramfs-framework. The core of this script probably should be
-# turned into initramfs-framework modules to reduce duplication.
-udev_daemon() {
-	OPTIONS="/sbin/udev/udevd /sbin/udevd /lib/udev/udevd /lib/systemd/systemd-udevd"
-
-	for o in $OPTIONS; do
-		if [ -x "$o" ]; then
-			echo $o
-			return 0
-		fi
-	done
-
-	return 1
-}
-
-_UDEV_DAEMON=`udev_daemon`
-
 early_setup() {
     mkdir -p /proc
     mkdir -p /sys
@@ -44,9 +27,6 @@ early_setup() {
 
     mkdir -p /run
     mkdir -p /var/run
-
-    $_UDEV_DAEMON --daemon
-    udevadm trigger --action=add
 }
 
 read_args() {
@@ -139,9 +119,6 @@ check_set_machine_id() {
 }
 
 boot_root() {
-    # Watches the udev event queue, and exits if all current events are handled
-    udevadm settle
-
     check_set_machine_id
     # The rootfs does not yet contain kernel modules.  Copy it!
     if [ ! -d ${ROOT_MOUNT}/lib/modules ];
