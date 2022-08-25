@@ -1,0 +1,56 @@
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index 8a9072c..038021a 100644
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -11176,14 +11176,18 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+                   guint32 dv_profile = (tmp >> 9) & 0x7f;    // 7 bits
+                   guint32 dv_level = (tmp >> 3) & 0x3f;    // 6 bits
+                   guint32 rpu_present_flag = (tmp >> 2) & 0x01;
+-                  guint32 el_present_flag = (tmp >> 1) & 0x01;    // 1 bit
+-                  guint32 bl_present_flag = tmp & 0x01;    // 1 bit
++                  gboolean el_present_flag = (tmp >> 1) & 0x01;    // 1 bit
++                  gboolean bl_present_flag = tmp & 0x01;    // 1 bit
+ 
+                   guint32 dv_bl_signal_compatibility_id = 0;// 0 stands for None
+                   if (len >= 24) {
+                     guint32 id = QT_UINT8(avc_data+12);
+                     dv_bl_signal_compatibility_id = (id >> 4) & 0x0f; // 4 bits
+                   }
++
++                  gst_caps_set_simple (entry->caps, "dv_bl_present_flag", G_TYPE_BOOLEAN, bl_present_flag, NULL);
++                  gst_caps_set_simple (entry->caps, "dv_el_present_flag", G_TYPE_BOOLEAN, el_present_flag, NULL);
++
+                   GST_DEBUG_OBJECT (qtdemux,"DOVI in dvcC/dvvC box, version: %d.%d, profile: %d, level: %d, "
+                     "rpu flag: %d, el flag: %d, bl flag: %d, compatibility id: %d\n",
+                     dv_version_major, dv_version_minor,
+@@ -11269,6 +11273,30 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+                   gst_buffer_unref (buf);
+                   break;
+                 }
++                case FOURCC_dvcC:
++                case FOURCC_dvvC:
++                {
++                    gint len = QT_UINT32 (hevc_data);
++                    const guint8 *config_data = hevc_data + 0x8;
++                    gboolean dv_bl_present_flag = FALSE;
++                    gboolean dv_el_present_flag = FALSE;
++
++                    if (((1<<30) < len) || (1 != config_data[0]) || (0 != config_data[1]))
++                    {
++                        GST_DEBUG_OBJECT (qtdemux, "incorrect hvcC codec_data.");
++                    }
++                    else
++                    {
++                      dv_bl_present_flag = (config_data[3] & 0x01);
++                      dv_el_present_flag = ((config_data[3] >> 1) & 0x01);
++
++                      GST_DEBUG_OBJECT (qtdemux, "dv_bl_present_flag=%d, dv_el_present_flag=%d", dv_bl_present_flag, dv_el_present_flag);
++
++                      gst_caps_set_simple (entry->caps, "dv_bl_present_flag", G_TYPE_BOOLEAN, dv_bl_present_flag, NULL);
++                      gst_caps_set_simple (entry->caps, "dv_el_present_flag", G_TYPE_BOOLEAN, dv_el_present_flag, NULL);
++                    }
++                    break;
++                }
+                 default:
+                   break;
+               }
