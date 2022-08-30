@@ -19,6 +19,8 @@ do_install() {
     install -m 0755 ${S}/testkey_rsa2048.pem ${D}${sysconfdir}/vbmeta_rsa2048.pem
     install -m 0755 ${S}/testkey_rsa2048_2.pem ${D}${sysconfdir}/system_rsa2048.pem
     install -m 0755 ${S}/testkey_rsa2048_2.pem ${D}${sysconfdir}/vendor_rsa2048.pem
+    install -m 0755 ${S}/testkey_rsa2048_2.pem ${D}${sysconfdir}/recovery_rsa2048.pem
     install -m 0755 ${S}/testkey_rsa2048_2.avbpubkey ${D}${sysconfdir}/system_rsa2048.avbpubkey
     install -m 0755 ${S}/testkey_rsa2048_2.avbpubkey ${D}${sysconfdir}/vendor_rsa2048.avbpubkey
+    install -m 0755 ${S}/testkey_rsa2048_2.avbpubkey ${D}${sysconfdir}/recovery_rsa2048.avbpubkey
 }
