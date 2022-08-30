@@ -4798,8 +4798,7 @@ class AvbTool(object):
                              args.output_vbmeta_image,
                              args.do_not_append_vbmeta_image,
                              args.print_required_libavb_version,
-                             args.do_not_use_ab,
-                             args.padding_size)
+                             args.do_not_use_ab)
 
   def add_footer_without_hashtree(self, args):
     """Implements the 'add_footer_without_hashtree' sub-command."""
