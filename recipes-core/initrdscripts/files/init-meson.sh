@@ -4,7 +4,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
 ROOT_MOUNT="/rootfs"
 ROOT_ROMOUNT="/rom"
-ROOT_RWMOUNT="/data/overlay"
+#ROOT_RWMOUNT="/data/overlay"
 INIT="/sbin/init"
 ROOT_DEVICE="/dev/system"
 ROOT_RWDEVICE="/dev/data"
@@ -16,8 +16,16 @@ DM_VERITY_STATUS="disabled"
 DM_DEV_COUNT=0
 ACTIVE_SLOT=""
 root_fstype="ext4"
+OVERLAY_DIR="/data/overlay"
+UNENCRYPTED_DIR="/data/unencrypted"
+SWUPDATE_DIR="/data/swupdate"
 VBMETA_DEVICE=""
 OverlayFS="enabled"
+
+data_fbe_keyblob="fbe_keyblob"
+data_fbe_root_dir=""
+keyring_key_id=""
+DATA_FBE_STATUS="disabled"
 
 early_setup() {
     mkdir -p /proc
@@ -228,30 +236,177 @@ format_and_install() {
     fi
 }
 
+fbe_kernel_keyring_setup() {
+    modules="optee.ko optee_armtz.ko trusted.ko"
+    for mod in $modules; do
+        module_path=`find ${ROOT_ROMOUNT}/lib/modules/ -name $mod`
+        if [ "$module_path" != "" ]; then
+            insmod $module_path
+            if [ $? -ne 0 ]; then
+                echo "FBE: Cannot insert $mod. Failed to setup FBE."
+                return 1
+            fi
+        else
+            echo "FBE: Cannot find $mod. Failed to setup FBE."
+            return 1
+        fi
+    done
+    if [ $2 -ne 0 ]; then
+        echo -n "FBE: Found newly formatted data partition. Creating Data FBE Key ... "
+        keyring_key_id=`keyctl add trusted data_fbe_key "new 64" @u`
+    else
+        if [ -f $1/$data_fbe_keyblob ]; then
+            echo -n "FBE: Sealed key found. Trying to add it to kernel keyring ..."
+            sealed_key=`cat $1/$data_fbe_keyblob`
+            #echo "keyctl add trusted data_fbe_key \"load $sealed_key\" @u"
+            keyring_key_id=`keyctl add trusted data_fbe_key "load $sealed_key" @u`
+        else
+            echo "FBE: No sealed key found!"
+            return 1
+        fi
+    fi
+    #echo "keyring_key_id = $keyring_key_id"
+    if [ "$keyring_key_id" = "" ]; then
+        echo "[ Failed ]"
+        return 1
+    else
+        echo "[ Success ]"
+        return 0
+    fi
+}
+
+fbe_check_packages() {
+    packages="keyctl fscryptctl"
+    for p in $packages; do
+        which $p 1> /dev/null
+        if [ $? -ne 0 ]; then
+            echo "FBE: Cannot find $p. It looks like DISTRO_FEATURE, FBE, is not enabled."
+            echo "FBE: Skip setup."
+            return 1
+        fi
+    done
+    return 0
+}
+
+fbe_fscrypt_setup() {
+    data_fbe_root_dir="fbe_root"
+
+    [ ! -d $1/$data_fbe_root_dir ] && mkdir -p $1/$data_fbe_root_dir
+
+    fscrypt_key_id=`echo $keyring_key_id | fscryptctl add_key_by_keyid $1/$data_fbe_root_dir`
+    #echo "fscrypt_key_id= $fscrypt_key_id"
+
+    echo -n "FBE: fscryptctl set_policy ... "
+    fscryptctl set_policy $fscrypt_key_id $1/$data_fbe_root_dir
+    if [ $? -ne 0 ]; then
+        echo "[ Failed ]"
+        return 1
+    fi
+    echo "[ Success ]"
+    return 0
+}
+
+data_fbe_bind() {
+    # param 1: data partition mount point
+    DATA_MNT_LOC=$1
+    if [ "$DATA_FBE_STATUS" = "setup" ]; then
+        # When DATA_FBE_STATUS = setup, it means FBE has been setup on <data mount point>/fbe_root
+        # We need to bind it to <root mount point>/data
+        mkdir -p $ROOT_MOUNT/data
+        mount --bind $DATA_MNT_LOC/$data_fbe_root_dir $ROOT_MOUNT/data
+        if [ $? != 0 ]; then
+            echo "FBE: Failed to bind $DATA_MNT_LOC/$data_fbe_root_dir to $ROOT_MOUNT/data"
+            DATA_FBE_STATUS="disabled"
+            return 1
+        fi
+        DATA_FBE_STATUS="bound"
+        return 0
+    else
+        return 2
+    fi
+}
+
+data_fbe_add_unencrypted_folders() {
+    if [[ -z "$1" ]]; then
+        echo "Invalid foler name provided"
+        return
+    fi
+    # When DATA_FBE_STATUS == bound, it means FBE has been setup and bound to $ROOT_MOUNT/data
+    if [[ "$DATA_FBE_STATUS" = "bound" ]]; then
+        [[ ! -d $1 ]] && mkdir -p $1
+        [[ ! -d $ROOT_MOUNT/$1 ]] && mkdir -p $ROOT_MOUNT/$1
+        mount --bind $1 $ROOT_MOUNT/$1
+        if [[ $? != 0 ]]; then
+            echo "FBE: Failed to add $1 to $ROOT_MOUNT/$1"
+            DATA_FBE_STATUS="Error add $1"
+        fi
+    fi
+}
+
+data_fbe_setup() {
+    #echo "param: $1 $2"
+    fbe_check_packages
+    ret=$?
+    if [ $ret -ne 0 ]; then
+        return $ret
+    fi
+
+    fbe_kernel_keyring_setup $1 $2
+    ret=$?
+    if [ $ret -ne 0 ]; then
+        #echo "fbe_kernel_key_setup failed"
+        return $ret
+    fi
+    if [ "$keyring_key_id" != "" ]; then
+        fbe_fscrypt_setup $1
+        ret=$?
+        if [ $ret != 0 ]; then
+            return $ret
+        fi
+        # Only store key blob in case of newly created key
+        if [ $2 -ne 0 ]; then
+            keyctl pipe $keyring_key_id > $1/$data_fbe_keyblob
+            ret=$?
+            sync
+            if [ $ret -ne 0 ]; then
+                echo "FBE: Store key blob failed($ret)"
+                return $ret
+            else
+                echo "FBE: key blob saved as $1/$data_fbe_keyblob"
+            fi
+        fi
+        DATA_FBE_STATUS="setup"
+    fi
+}
+
 data_ext4_handle() {
     echo -e "Partition formater on $ROOT_RWDEVICE"
     FsType=$(blkid $ROOT_RWDEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
+    newly_formatted=0
     if [ "${FsType}" != "ext4" ]; then
         echo -e "Formating $ROOT_RWDEVICE to ext4 ..."
-        yes 2>/dev/null | mkfs.ext4 -q -m 0 $ROOT_RWDEVICE
+        yes 2>/dev/null | mkfs.ext4 -q -m 0 -O encrypt $ROOT_RWDEVICE
         sync
         FsType=$(blkid $ROOT_RWDEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
         echo -e "After formating FSTYPE of $ROOT_RWDEVICE = ${FsType} ..."
+        newly_formatted=1
     else
         echo -e "FSTYPE of $ROOT_RWDEVICE is already ext4 ..."
         FactoryReset=$(uenv get factory-reset | grep value | cut -d '[' -f2|cut -d ']' -f1)
         if [ ${FactoryReset} == 1 ]; then
            echo -e "factory reset, Formating $ROOT_RWDEVICE to ext4 ..."
-           yes 2>/dev/null | mkfs.ext4 -q -m 0 $ROOT_RWDEVICE
+           yes 2>/dev/null | mkfs.ext4 -q -m 0 -O encrypt $ROOT_RWDEVICE
            sync
            uenv set factory-reset 0
         fi
     fi
 
-    [ ! -d $1 ]&&mkdir -p $1
+    [ ! -d $1 ] && mkdir -p $1
     if ! mount -t ext4 -o rw,noatime,nodiratime $ROOT_RWDEVICE $1 ; then
         fatal "Could not mount $ROOT_RWDEVICE"
     fi
+
+    data_fbe_setup $1 $newly_formatted
 }
 
 dm_verity_setup() {
@@ -348,6 +503,16 @@ mount_and_boot() {
         # The root image is read-write, directly boot it up.
         if [ "${root_fstype}" = "ext4" ]; then
             data_ext4_handle $ROOT_MOUNT/data
+            data_fbe_bind $ROOT_MOUNT/data
+            if [[ $? -eq 0 ]]; then
+                if [[ -d $OVERLAY_DIR ]]; then
+                    data_fbe_add_unencrypted_folders $OVERLAY_DIR
+                fi
+                data_fbe_add_unencrypted_folders $UNENCRYPTED_DIR
+                data_fbe_add_unencrypted_folders $SWUPDATE_DIR
+                [[ "$DATA_FBE_STATUS" = "bound" ]] && DATA_FBE_STATUS="enabled"
+            fi
+            echo "DATA FBE is: $DATA_FBE_STATUS!"
         else
             data_yaffs2_handle $ROOT_MOUNT/data
         fi
@@ -378,11 +543,25 @@ mount_and_boot() {
             else
                 data_ext4_handle /data
             fi
-            mkdir -p $ROOT_RWMOUNT/upperdir $ROOT_RWMOUNT/work
-            mount -t overlay overlay -o "lowerdir=$ROOT_ROMOUNT,upperdir=$ROOT_RWMOUNT/upperdir,workdir=$ROOT_RWMOUNT/work" $ROOT_MOUNT
-            mkdir -p ${ROOT_MOUNT}/$ROOT_ROMOUNT $ROOT_MOUNT/data
+            mkdir -p $OVERLAY_DIR/upperdir $OVERLAY_DIR/work
+            mount -t overlay overlay -o "lowerdir=$ROOT_ROMOUNT,upperdir=$OVERLAY_DIR/upperdir,workdir=$OVERLAY_DIR/work" $ROOT_MOUNT
+
+            mkdir -p ${ROOT_MOUNT}/$ROOT_ROMOUNT
             mount --move $ROOT_ROMOUNT ${ROOT_MOUNT}/$ROOT_ROMOUNT
-            mount --move /data $ROOT_MOUNT/data
+            data_fbe_bind /data
+            if [[ $? -eq 0 ]]; then
+                if [[ -d $OVERLAY_DIR ]]; then
+                    data_fbe_add_unencrypted_folders $OVERLAY_DIR
+                fi
+                data_fbe_add_unencrypted_folders $UNENCRYPTED_DIR
+                data_fbe_add_unencrypted_folders $SWUPDATE_DIR
+                [[ "$DATA_FBE_STATUS" = "bound" ]] && DATA_FBE_STATUS="enabled"
+            fi
+            if [[ "$DATA_FBE_STATUS" = "disabled" ]]; then
+                mkdir -p $ROOT_MOUNT/data
+                mount --move /data $ROOT_MOUNT/data
+            fi
+            echo "DATA FBE is: $DATA_FBE_STATUS!"
         fi
         ;;
     "aufs")
