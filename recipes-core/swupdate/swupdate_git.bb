@@ -31,7 +31,8 @@ SRC_URI = "git://github.com/sbabic/swupdate.git;protocol=https \
         file://swupdate.service \
 "
 
-SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "nand", "file://nand.cfg", "", d)}"
+SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "nand", \
+            bb.utils.contains("ROOTFS_TYPE", "ubifs", "file://ubifs.cfg", "file://squashfs.cfg", d), "", d)}"
 
 LTOEXTRA += "-flto-partition=none"
 
@@ -237,6 +238,7 @@ do_install () {
 
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/swupdate.service ${D}/${systemd_unitdir}/system
+    sed 's@rootfs_type@${ROOTFS_TYPE}@' -i ${D}/${systemd_unitdir}/system/swupdate.service
 
     # config boardname
     sed 's@boardname@${MACHINE_ARCH}@' -i ${D}/etc/hwrevision

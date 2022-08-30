@@ -6,7 +6,7 @@ ConditionPathExists=!/data
 Type=oneshot
 RemainAfterExit=yes
 User=root
-ExecStart=/usr/bin/swupdate.sh
+ExecStart=/usr/bin/swupdate.sh rootfs_type
 
 [Install]
 WantedBy=multi-user.target

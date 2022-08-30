@@ -78,8 +78,13 @@ do_aml_pack() {
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
-        cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ubi ${DEPLOY_DIR_IMAGE}/rootfs.ubi
-        cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubi ${DEPLOY_DIR_IMAGE}/vendor.ubi
+        if [ "${ROOTFS_TYPE}" = "ubifs" ]; then
+            cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ubi ${DEPLOY_DIR_IMAGE}/rootfs.img
+            cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubi ${DEPLOY_DIR_IMAGE}/vendor.img
+        else
+            cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/rootfs.img
+            cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/vendor.img
+        fi
         ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_nand.conf ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
     else
         padding_to_multipleOf4K_for_img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4
@@ -126,10 +131,10 @@ do_aml_pack() {
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/update.sh ${DEPLOY_DIR_IMAGE}/
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/sw_package_create.sh ${DEPLOY_DIR_IMAGE}/
         if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
-            cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ubifs ${DEPLOY_DIR_IMAGE}/rootfs.ubifs
-            cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubifs ${DEPLOY_DIR_IMAGE}/vendor.ubifs
-            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-nand ${DEPLOY_DIR_IMAGE}/sw-description
-            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+            cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/rootfs.${ROOTFS_TYPE}
+            cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/vendor.${ROOTFS_TYPE}
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-nand-${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/sw-description
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand-${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/sw-package-filelist
         else
             cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-emmc ${DEPLOY_DIR_IMAGE}/sw-description
             cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-emmc ${DEPLOY_DIR_IMAGE}/sw-package-filelist

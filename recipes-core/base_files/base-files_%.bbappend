@@ -54,9 +54,15 @@ do_install_append_s4 () {
     mkdir -p ${D}/factory
 
 if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
+    vendor_dev="ubi1_0"
+    if [ "${ROOTFS_TYPE}" = "squashfs" ]; then
+        vendor_dev="mtdblock12"
+    fi
+
     cat >> ${D}${sysconfdir}/fstab <<EOF
- /dev/ubi1_0            /vendor                    auto       defaults              0  0
+ /dev/${vendor_dev}     /vendor                    auto       defaults              0  0
  /dev/mtdblock5         /factory                   yaffs2     defaults              0  0
+ /dev/mtdblock6         /tee                       yaffs2     defaults              0  0
 EOF
 else
     vendor_dev="vendor"

@@ -5,7 +5,8 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 IMAGECLASS ?= " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'selinux-image', 'core-image', d)} "
 inherit ${IMAGECLASS}
 
-IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'ubi', 'ext4', d)}"
+IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', \
+                bb.utils.contains('ROOTFS_TYPE', 'ubifs', 'ubi', '${ROOTFS_TYPE}', d), 'ext4', d)}"
 
 require aml-package.inc
 

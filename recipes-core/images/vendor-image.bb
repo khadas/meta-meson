@@ -7,7 +7,8 @@ DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'policycoreutils-
 LICENSE = "MIT"
 
 # don't actually generate an image, just the artifacts needed for one
-IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'ubi', 'ext4', d)}"
+IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', \
+                bb.utils.contains('ROOTFS_TYPE', 'ubifs', 'ubi', '${ROOTFS_TYPE}', d), 'ext4', d)}"
 
 #UBI
 UBI_VOLNAME = "vendor"

@@ -32,6 +32,13 @@ esac
 echo 0 > /sys/class/graphics/fb0/blank
 echo 1 > /sys/class/graphics/fb1/blank
 
+show_swupdateui()
+{
+    if [ -f "/usr/bin/swupdateui" ]; then
+        swupdateui /etc/recovery.bmp &
+    fi
+}
+
 #Waiting for /dev/data device to become ready
 TimedOut=10 #10 second
 WaitedTime=0
@@ -57,16 +64,11 @@ fi
 if [ -f "/mnt/software.swu" ]; then
     echo "find software.swu in data, now start update......"
     export TMPDIR=/mnt
-    if [ -f "/proc/inand" ]; then
-        if [ -f "/usr/bin/swupdateui" ]; then
-            swupdateui /etc/recovery.bmp &
-        fi
-        swupdate -l 6 -k /etc/swupdate-public.pem -i /mnt/software.swu
-    else
-        if [ -f "/usr/bin/swupdateui" ]; then
-            swupdateui /etc/recovery.bmp &
-        fi
+    show_swupdateui
+    if [ "${1}" = "ubifs" ]; then
         swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem -i /mnt/software.swu
+    else
+        swupdate -l 6 -k /etc/swupdate-public.pem -i /mnt/software.swu
     fi
     if [ $? != 0 ]; then
         echo "swupdate software.swu from data failed!"
@@ -118,16 +120,11 @@ elif [ -f "$OTA_FILE_FLAG" ]; then
     #Here we detect network is ready
     #Here we detect if the OTA package exist or not
     if [ -n "$NETWORK_READY" ] && [ -n "$OTA_PACKAGE_READY" ]; then
-        if [ -f "/proc/inand" ]; then
-            if [ -f "/usr/bin/swupdateui" ]; then
-                swupdateui /etc/recovery.bmp &
-            fi
-            swupdate -l 6 -k /etc/swupdate-public.pem -D "-t 60"
-        else
-            if [ -f "/usr/bin/swupdateui" ]; then
-                swupdateui /etc/recovery.bmp &
-            fi
+        show_swupdateui
+        if [ "${1}" = "ubifs" ]; then
             swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem -D "-t 60"
+        else
+            swupdate -l 6 -k /etc/swupdate-public.pem -D "-t 60"
         fi
         swupdate_result=$?
         echo "swupdate return result: $swupdate_result"
@@ -185,16 +182,11 @@ else
     fi
     if [ -f "/run/media/$name/software.swu" ]; then
         export TMPDIR=/run/media/$name
-        if [ -f "/proc/inand" ]; then
-            if [ -f "/usr/bin/swupdateui" ]; then
-                swupdateui /etc/recovery.bmp &
-            fi
-            swupdate -l 6 -k /etc/swupdate-public.pem -i /run/media/$name/software.swu
-        else
-            if [ -f "/usr/bin/swupdateui" ]; then
-                swupdateui /etc/recovery.bmp &
-            fi
+        show_swupdateui
+        if [ "${1}" = "ubifs" ]; then
             swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem -i /run/media/$name/software.swu
+        else
+            swupdate -l 6 -k /etc/swupdate-public.pem -i /run/media/$name/software.swu
         fi
         if [ $? != 0 ]; then
             echo "swupdate software.swu from usb failed!"

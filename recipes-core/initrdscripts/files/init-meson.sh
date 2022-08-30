@@ -62,9 +62,9 @@ read_args() {
                 init=$optarg ;;
             debugshell*)
                 if [ -z "$optarg" ]; then
-                        shelltimeout=30
+                    shelltimeout=30
                 else
-                        shelltimeout=$optarg
+                    shelltimeout=$optarg
                 fi
         esac
     done
@@ -135,7 +135,7 @@ boot_root() {
         cp -rf /etc/modprobe.d ${ROOT_MOUNT}/etc/
         cp -rf /etc/modules-load.d ${ROOT_MOUNT}/etc/
         cp -rf /etc/modules ${ROOT_MOUNT}/etc/
-	fi
+    fi
 
     mount -n --move /proc ${ROOT_MOUNT}/proc
     mount -n --move /sys ${ROOT_MOUNT}/sys
@@ -193,9 +193,9 @@ format_and_install() {
         umount /dev/system
         mkfs.ext4 -F /dev/system
         mkdir -p system
-    	if ! mount -o rw,noatime,nodiratime -t ext4 /dev/system /system ; then
-		fatal "Could not mount system device"
-    	fi
+        if ! mount -o rw,noatime,nodiratime -t ext4 /dev/system /system ; then
+            fatal "Could not mount system device"
+        fi
         echo "extracting file system ..."
         gunzip -c /${ROOT_MOUNT}/${FIRMWARE} | tar -xf - -C /system
         if [ $? -ne 0 ]; then
@@ -227,31 +227,31 @@ format_and_install() {
 }
 
 data_ext4_handle() {
-	echo -e "Partition formater on $ROOT_RWDEVICE"
-	FsType=$(blkid $ROOT_RWDEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
-	if [ "${FsType}" != "ext4" ]; then
-		echo -e "Formating $ROOT_RWDEVICE to ext4 ..."
-		yes 2>/dev/null | mkfs.ext4 -q -m 0 $ROOT_RWDEVICE
-		sync
-		FsType=$(blkid $ROOT_RWDEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
-		echo -e "After formating FSTYPE of $ROOT_RWDEVICE = ${FsType} ..."
-	else
-		echo -e "FSTYPE of $ROOT_RWDEVICE is already ext4 ..."
-		FactoryReset=$(uenv get factory-reset | grep value | cut -d '[' -f2|cut -d ']' -f1)
-		if [ ${FactoryReset} == 1 ]; then
-		   echo -e "factory reset, Formating $ROOT_RWDEVICE to ext4 ..."
-		   yes 2>/dev/null | mkfs.ext4 -q -m 0 $ROOT_RWDEVICE
-		   sync
-		   uenv set default_env 1
-		   echo -e "reboot to reset uenv ..."
-		   /sbin/reboot -f
-		fi
-	fi
+    echo -e "Partition formater on $ROOT_RWDEVICE"
+    FsType=$(blkid $ROOT_RWDEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
+    if [ "${FsType}" != "ext4" ]; then
+        echo -e "Formating $ROOT_RWDEVICE to ext4 ..."
+        yes 2>/dev/null | mkfs.ext4 -q -m 0 $ROOT_RWDEVICE
+        sync
+        FsType=$(blkid $ROOT_RWDEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
+        echo -e "After formating FSTYPE of $ROOT_RWDEVICE = ${FsType} ..."
+    else
+        echo -e "FSTYPE of $ROOT_RWDEVICE is already ext4 ..."
+        FactoryReset=$(uenv get factory-reset | grep value | cut -d '[' -f2|cut -d ']' -f1)
+        if [ ${FactoryReset} == 1 ]; then
+           echo -e "factory reset, Formating $ROOT_RWDEVICE to ext4 ..."
+           yes 2>/dev/null | mkfs.ext4 -q -m 0 $ROOT_RWDEVICE
+           sync
+           uenv set default_env 1
+           echo -e "reboot to reset uenv ..."
+           /sbin/reboot -f
+        fi
+    fi
 
-	[ ! -d $1 ]&&mkdir -p $1
-	if ! mount -t ext4 -o rw,noatime,nodiratime $ROOT_RWDEVICE $1 ; then
-		fatal "Could not mount $ROOT_RWDEVICE"
-	fi
+    [ ! -d $1 ]&&mkdir -p $1
+    if ! mount -t ext4 -o rw,noatime,nodiratime $ROOT_RWDEVICE $1 ; then
+        fatal "Could not mount $ROOT_RWDEVICE"
+    fi
 }
 
 dm_verity_setup() {
@@ -308,92 +308,105 @@ mount_and_boot() {
     mkdir $ROOT_MOUNT
     mknod /dev/loop0 b 7 0 2>/dev/null
 
-if [ "${root_fstype}" = "ubifs" ]; then
-    ubi_rootfs_mount
-    ubi_vendor_attach
-else
-    if [ "${FIRMWARE}" != "" ];
-    then
-        ROOT_DEVICE="/dev/mmcblk1p1"
+    if [ "${root_fstype}" = "ubifs" ]; then
+        ubi_rootfs_mount
+        ubi_vendor_attach
+    elif [ "${root_fstype}" = "squashfs" ]; then
+        squashfs_rootfs_mount
+    else
+        if [ "${FIRMWARE}" != "" ];
+        then
+            ROOT_DEVICE="/dev/mmcblk1p1"
+        fi
+
+        wait_for_device
+
+        if [ "$ROOT_DEVICE" != "" ];
+        then
+            dm_verity_setup system ${ROOT_DEVICE} ${ROOT_MOUNT}
+            dm_verity_setup vendor ${VENDOR_DEVICE}${ACTIVE_SLOT} none
+            echo "dm-verity is $DM_VERITY_STATUS"
+            if [ "$DM_VERITY_STATUS" = "disabled" ]; then
+                if ! mount -o ro,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
+                    fatal "Could not mount rootfs device"
+                fi
+            fi
+        fi
+
+        if [ "${FIRMWARE}" != "" ]; then
+            format_and_install
+        fi
     fi
 
-    wait_for_device
-
-	if [ "$ROOT_DEVICE" != "" ];
-	then
-		dm_verity_setup system ${ROOT_DEVICE} ${ROOT_MOUNT}
-		dm_verity_setup vendor ${VENDOR_DEVICE}${ACTIVE_SLOT} none
-		echo "dm-verity is $DM_VERITY_STATUS"
-		if [ "$DM_VERITY_STATUS" = "disabled" ]; then
-			if ! mount -o ro,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
-				fatal "Could not mount rootfs device"
-			fi
-		fi
-	fi
-
-	if [ "${FIRMWARE}" != "" ]; then
-		format_and_install
-	fi
-fi
-
     if touch $ROOT_MOUNT/bin 2>/dev/null || [ -e $ROOT_MOUNT/read-only ]; then
-		# The root image is read-write, directly boot it up.
+        # The root image is read-write, directly boot it up.
         echo "read-only, skip overlay"
-		data_ext4_handle $ROOT_MOUNT/data
-		boot_root
+        data_ext4_handle $ROOT_MOUNT/data
+        boot_root
     fi
 
     # determine which unification filesystem to use
     union_fs_type=""
     if grep -q -w "overlay" /proc/filesystems; then
-	union_fs_type="overlay"
+        union_fs_type="overlay"
     elif grep -q -w "aufs" /proc/filesystems; then
-	union_fs_type="aufs"
+        union_fs_type="aufs"
     else
-	union_fs_type=""
+        union_fs_type=""
     fi
 
     # make a union mount if possible
     case $union_fs_type in
-	"overlay")
-	    mkdir -p $ROOT_ROMOUNT
-	    if ! mount -n --move $ROOT_MOUNT $ROOT_ROMOUNT; then
-		rm -rf $ROOT_ROMOUNT
-		fatal "Could not move rootfs mount point"
-	    else
-        echo "mount overlay"
-        if [ "${root_fstype}" = "ubifs" ]; then
-            data_ubi_handle
+    "overlay")
+        mkdir -p $ROOT_ROMOUNT
+        if ! mount -n --move $ROOT_MOUNT $ROOT_ROMOUNT; then
+            rm -rf $ROOT_ROMOUNT
+            fatal "Could not move rootfs mount point"
         else
-            data_ext4_handle /data
+            echo "mount overlay"
+            if [ "${root_fstype}" = "ubifs" ]; then
+                data_ubi_handle ubi2
+            elif [ "${root_fstype}" = "squashfs" ]; then
+                data_ubi_handle ubi0
+            else
+                data_ext4_handle /data
+            fi
+            mkdir -p $ROOT_RWMOUNT/upperdir $ROOT_RWMOUNT/work
+            mount -t overlay overlay -o "lowerdir=$ROOT_ROMOUNT,upperdir=$ROOT_RWMOUNT/upperdir,workdir=$ROOT_RWMOUNT/work" $ROOT_MOUNT
+            mkdir -p ${ROOT_MOUNT}/$ROOT_ROMOUNT $ROOT_MOUNT/data
+            mount --move $ROOT_ROMOUNT ${ROOT_MOUNT}/$ROOT_ROMOUNT
+            mount --move /data $ROOT_MOUNT/data
         fi
-		mkdir -p $ROOT_RWMOUNT/upperdir $ROOT_RWMOUNT/work
-		mount -t overlay overlay -o "lowerdir=$ROOT_ROMOUNT,upperdir=$ROOT_RWMOUNT/upperdir,workdir=$ROOT_RWMOUNT/work" $ROOT_MOUNT
-		mkdir -p ${ROOT_MOUNT}/$ROOT_ROMOUNT $ROOT_MOUNT/data
-		mount --move $ROOT_ROMOUNT ${ROOT_MOUNT}/$ROOT_ROMOUNT
-		mount --move /data $ROOT_MOUNT/data
-	    fi
-	    ;;
-	"aufs")
-	    mkdir -p /rootfs.ro /rootfs.rw
-	    if ! mount -n --move $ROOT_MOUNT /rootfs.ro; then
-		rm -rf /rootfs.ro /rootfs.rw
-		fatal "Could not move rootfs mount point"
-	    else
-		mount -t tmpfs -o rw,noatime,mode=755 tmpfs /rootfs.rw
-		mount -t aufs -o "dirs=/rootfs.rw=rw:/rootfs.ro=ro" aufs $ROOT_MOUNT
-		mkdir -p $ROOT_MOUNT/rootfs.ro $ROOT_MOUNT/rootfs.rw
-		mount --move /rootfs.ro $ROOT_MOUNT/rootfs.ro
-		mount --move /rootfs.rw $ROOT_MOUNT/rootfs.rw
-	    fi
-	    ;;
-	"")
-	    mount -t tmpfs -o rw,noatime,mode=755 tmpfs $ROOT_MOUNT/media
-	    ;;
+        ;;
+    "aufs")
+        mkdir -p /rootfs.ro /rootfs.rw
+        if ! mount -n --move $ROOT_MOUNT /rootfs.ro; then
+            rm -rf /rootfs.ro /rootfs.rw
+            fatal "Could not move rootfs mount point"
+        else
+            mount -t tmpfs -o rw,noatime,mode=755 tmpfs /rootfs.rw
+            mount -t aufs -o "dirs=/rootfs.rw=rw:/rootfs.ro=ro" aufs $ROOT_MOUNT
+            mkdir -p $ROOT_MOUNT/rootfs.ro $ROOT_MOUNT/rootfs.rw
+            mount --move /rootfs.ro $ROOT_MOUNT/rootfs.ro
+            mount --move /rootfs.rw $ROOT_MOUNT/rootfs.rw
+        fi
+        ;;
+    "")
+        mount -t tmpfs -o rw,noatime,mode=755 tmpfs $ROOT_MOUNT/media
+        ;;
     esac
 
     # boot the image
     boot_root
+}
+
+squashfs_rootfs_mount()
+{
+    system_mtd_number=$(cat /proc/mtd | grep  -E "system" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+
+    if ! mount -t squashfs -o ro /dev/mtdblock${system_mtd_number} $ROOT_MOUNT ; then
+        fatal "Could not mount /dev/mtdblock${system_mtd_number}"
+    fi
 }
 
 ubi_rootfs_mount()
@@ -401,8 +414,10 @@ ubi_rootfs_mount()
     system_mtd_number=$(cat /proc/mtd | grep  -E "system" | awk -F : '{print $1}' | grep -o '[0-9]\+')
     ubiattach /dev/ubi_ctrl -m ${system_mtd_number}
 
-    if ! mount -t ubifs -o ro $ROOT_DEVICE $ROOT_MOUNT ; then
-        fatal "Could not mount $ROOT_DEVICE"
+    if [ -c "/dev/ubi0_0" ]; then
+        if ! mount -t ubifs -o ro /dev/ubi0_0 $ROOT_MOUNT ; then
+            fatal "Could not mount /dev/ubi0_0"
+        fi
     fi
 }
 
@@ -422,12 +437,12 @@ data_ubi_handle()
 
     # sure ubi vol exist or not
     ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
-    if [ -c "/dev/ubi2_0" ]
+    if [ -c "/dev/${1}_0" ]
     then
-      data_vol_name=`cat /sys/class/ubi/ubi2_0/name`
+      data_vol_name=`cat /sys/class/ubi/${1}_0/name`
       if [ "${data_vol_name}" = "data" ]
       then
-        mount -t ubifs /dev/ubi2_0 /data
+        mount -t ubifs /dev/${1}_0 /data
         return 0
       fi
     fi
@@ -436,14 +451,14 @@ data_ubi_handle()
     #format data
     ubiformat -y /dev/mtd${data_mtd_number}
     ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
-    ubimkvol /dev/ubi2 -m -N data
+    ubimkvol /dev/${1} -m -N data
 
-    mount -t ubifs /dev/ubi2_0 /data
+    mount -t ubifs /dev/${1}_0 /data
   else
     #format data
     ubiformat -y /dev/mtd${data_mtd_number}
     ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
-    ubimkvol /dev/ubi2 -m -N data
+    ubimkvol /dev/${1} -m -N data
 
     uenv set default_env 1
     echo -e "reboot to reset uenv ..."
