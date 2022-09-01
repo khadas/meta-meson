@@ -13,7 +13,7 @@ do_compile[noexec] = "1"
 
 do_install() {
     install -d ${D}${bindir}
-    install -m 0755 ${S}/avbtool ${D}${bindir}
+    install -m 0755 ${S}/avbtool.py ${D}${bindir}
 }
 
 
