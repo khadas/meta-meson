@@ -30,7 +30,7 @@ IMAGE_FEATURES_remove = " read-only-rootfs"
 
 VIRTUAL-RUNTIME_dev_manager = "busybox"
 
-DEPENDS_append = " android-tools-native"
+DEPENDS_append = " android-tools-native coreutils-native"
 
 PACKAGE_INSTALL += "base-files netbase ${VIRTUAL-RUNTIME_base-utils} ${VIRTUAL-RUNTIME_dev_manager} base-passwd ${ROOTFS_BOOTSTRAP_INSTALL} initramfs-meson-boot e2fsprogs "
 
