@@ -110,7 +110,8 @@ do_aml_pack() {
             fi
 
             UBOOT_TYPE="${UBOOT_MACHINE}"
-            ${AML_SCS_SIGN} --soc ${CHIPSET_NAME} \
+            local chipset_name=$(echo ${CHIPSET_NAME} | tr 'A-Z' 'a-z')
+            ${AML_SCS_SIGN} --soc ${chipset_name} \
                 --aml_key ${DEPLOY_DIR_IMAGE}/device-keys \
                 --fw_arb_cfg ${DEPLOY_DIR_IMAGE}/fw_arb.cfg \
                 --aml_img ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img \

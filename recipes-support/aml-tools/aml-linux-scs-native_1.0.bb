@@ -25,10 +25,11 @@ do_install () {
     fi
 
     if [ "${AML_SCS_SIGN_TOOL}" = "" ];then
+        local chipset_name=$(echo ${CHIPSET_NAME} | tr 'A-Z' 'a-z')
         install -d ${D}${bindir}/aml-linux-scs/bin
         install -d ${D}${bindir}/aml-linux-scs/exe4Android
         install -d ${D}${bindir}/aml-linux-scs/stool/${SOC_FAMILY}
-        install -d ${D}${bindir}/aml-linux-scs/templates/${SOC_FAMILY}/${CHIPSET_NAME}
+        install -d ${D}${bindir}/aml-linux-scs/templates/${SOC_FAMILY}/${chipset_name}
 
         wget -q -N ${AML_TOOLS_SITE}/Aml_Linux_SCS_SignTool.zip
         unzip -q -u ${WORKDIR}/aml-linux-scs-${PV}/Aml_Linux_SCS_SignTool.zip
@@ -37,7 +38,7 @@ do_install () {
         cp -rf ${WORKDIR}/aml-linux-scs-${PV}/bin/* ${D}${bindir}/aml-linux-scs/bin/
         cp -rf ${WORKDIR}/aml-linux-scs-${PV}/exe4Android/* ${D}${bindir}/aml-linux-scs/exe4Android/
         cp -rf ${WORKDIR}/aml-linux-scs-${PV}/stool/${SOC_FAMILY}/* ${D}${bindir}/aml-linux-scs/stool/${SOC_FAMILY}/
-        cp -rf ${WORKDIR}/aml-linux-scs-${PV}/templates/${SOC_FAMILY}/${CHIPSET_NAME}/* ${D}${bindir}/aml-linux-scs/templates/${SOC_FAMILY}/${CHIPSET_NAME}/
+        cp -rf ${WORKDIR}/aml-linux-scs-${PV}/templates/${SOC_FAMILY}/${chipset_name}/* ${D}${bindir}/aml-linux-scs/templates/${SOC_FAMILY}/${chipset_name}/
     fi
 }
 
