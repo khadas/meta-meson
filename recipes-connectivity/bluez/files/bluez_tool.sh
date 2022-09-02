@@ -246,6 +246,17 @@ Blue_start()
 	grep -iq "Debug=1" $configure_file > /dev/null
 	if [ $? -eq 0 ]; then
 		hcidump -w /etc/bluetooth/btsnoop.cfa &
+		cnt=10
+		while [ $cnt -gt 0 ]; do
+			if [ -f "/sys/kernel/debug/bluetooth/hci0/bt_debug_log_level" ];then
+				echo 1 >  /sys/kernel/debug/bluetooth/hci0/bt_debug_log_level
+				break
+			else
+				echo "checking bt_debug_log_level ......."
+				usleep 20000
+				cnt=$((cnt - 1))
+			fi
+		done
 	fi
 
 	#service_up
