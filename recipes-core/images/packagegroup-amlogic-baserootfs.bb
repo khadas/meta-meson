@@ -142,7 +142,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'netflix', \
         'wpeframework-plugin-netflix netflix-aml aml-netflix-esn', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', \
-        'bluetooth-mgr bluetooth-core', '', d)} \
+        'bluetooth-mgr bluetooth-core bluez-alsa bluez5-obex', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amazon-plugin', \
         'amazon-prime-plugin amazon-prime-src', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-launcher', \
@@ -154,8 +154,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     tzdata \
     tzcode \
     format-partitions \
-    bluez-alsa \
-    bluez5-obex \
     "
 
 RDEPENDS_packagegroup-amlogic-baserootfs += " \
