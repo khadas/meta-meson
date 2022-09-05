@@ -19,12 +19,15 @@ KERNEL_MODULE_AUTOLOAD += " hdr10_tmo_alg_32"
 MACHINE_EXTRA_RRECOMMENDS_remove = " wififw-qca6174 qca6174"
 KERNEL_MODULE_AUTOLOAD_remove = " btqca "
 KERNEL_MODULE_PROBECONF_remove = " btqca "
+KERNEL_MODULE_AUTOLOAD_remove = " hci_uart"
+KERNEL_MODULE_PROBECONF_remove = "hci_uart"
 
-MACHINE_EXTRA_RRECOMMENDS_append = " aml-wifi-w1 aml-bt-w1"
+MACHINE_EXTRA_RRECOMMENDS_append = " aml-wifi-w1"
 
 DISTRO_FEATURES_remove = " bt-qca "
 DISTRO_FEATURES_append = " aml-w1 "
 DISTRO_FEATURES_remove = " netflix amazon-plugin tts mediaplayer "
+DISTRO_FEATURES_remove = " bluetooth bluez5 "
 
 DISTRO_FEATURES_append = " UI_720P WesterOS_lowmem"
 DISTRO_FEATURES_append = " appmanager AsperitasDvb"
