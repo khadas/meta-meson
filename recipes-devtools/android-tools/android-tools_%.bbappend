@@ -9,6 +9,7 @@ SRC_URI += "file://adb_udc_file"
 #SRC_URI += "file://0001-adbd-enable-tcpip.patch;patchdir=system/core"
 
 SYSTEMD_AUTO_ENABLE = "enable"
+SYSTEMD_AUTO_ENABLE_aq2432 = "disable"
 SYSTEMD_SERVICE_${PN} = "adbd.service"
 
 TOOLS = " adbd"
