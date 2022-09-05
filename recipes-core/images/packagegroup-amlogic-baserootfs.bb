@@ -143,7 +143,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', \
         'bluetooth-mgr bluetooth-core bluez-alsa bluez5-obex', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amazon-plugin', \
-        'amazon-prime-plugin amazon-prime-src', '', d)} \
+        'amazon-prime-plugin amazon-prime-video', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-launcher', \
         'aml-launcher libhtmllocal htmllocal-plugin', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
