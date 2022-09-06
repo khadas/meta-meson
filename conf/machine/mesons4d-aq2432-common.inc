@@ -30,7 +30,7 @@ DISTRO_FEATURES_remove = " netflix amazon-plugin tts mediaplayer playready "
 DISTRO_FEATURES_remove = " bluetooth bluez5 "
 
 DISTRO_FEATURES_append = " UI_720P WesterOS_lowmem"
-DISTRO_FEATURES_append = " appmanager AsperitasDvb LauncherWebkit"
+DISTRO_FEATURES_append = " appmanager AsperitasDvb LauncherWebkit aamp"
 DISTRO_FEATURES_append = " fota-upgrade"
 DISTRO_FEATURES_append = " remove-test-files"
 
