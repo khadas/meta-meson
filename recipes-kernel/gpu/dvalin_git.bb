@@ -26,8 +26,8 @@ do_install() {
 
 FILES_${PN} = "mali.ko"
 # Header file provided by a separate package
-DEPENDS += "dvalin-dmaexport"
-RDEPENDS_${PN} += "dvalin-dmaexport"
+#DEPENDS += "dvalin-dmaexport"
+#RDEPENDS_${PN} += "dvalin-dmaexport"
 
 S = "${WORKDIR}/git"
 EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M=${GPU_DRV_SRC} \
