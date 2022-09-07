@@ -425,15 +425,23 @@ data_ubi_handle()
       fi
     fi
     ubidetach -p /dev/mtd${data_mtd_number}
-  else
-    uenv set factory-reset 0
-  fi
 
-  #mount data
-  ubiformat -y /dev/mtd${data_mtd_number}
-  ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
-  ubimkvol /dev/ubi2 -m -N data
-  mount -t ubifs /dev/ubi2_0 /data
+    #format data
+    ubiformat -y /dev/mtd${data_mtd_number}
+    ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
+    ubimkvol /dev/ubi2 -m -N data
+
+    mount -t ubifs /dev/ubi2_0 /data
+  else
+    #format data
+    ubiformat -y /dev/mtd${data_mtd_number}
+    ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
+    ubimkvol /dev/ubi2 -m -N data
+
+    uenv set default_env 1
+    echo -e "reboot to reset uenv ..."
+    /sbin/reboot -f
+  fi
 }
 
 mount_and_boot
