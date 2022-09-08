@@ -169,7 +169,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs += " \
 
 #For Irdeto CAS
 RDEPENDS_packagegroup-amlogic-baserootfs += " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'irdeto-sdk irdeto-hal irdeto-cashal-rel', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'irdeto-sdk irdeto-cashal-rel', '', d)} \
     "
 
 #VENC related
