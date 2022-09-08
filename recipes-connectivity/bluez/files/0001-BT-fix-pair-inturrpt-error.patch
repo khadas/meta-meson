@@ -1,0 +1,86 @@
+Index: bluez-5.55/src/device.c
+===================================================================
+--- bluez-5.55.orig/src/device.c
++++ bluez-5.55/src/device.c
+@@ -5160,6 +5160,25 @@ static void gatt_debug(const char *str,
+ 	DBG("%s", str);
+ }
+ 
++static gboolean gatt_client_delay_init(struct btd_device *device)
++{
++	static int retry = 3;
++
++	if (device->connect || main_opts.reverse_discovery) {
++		DBG("device state %d %d", device->connect, main_opts.reverse_discovery);
++		DBG("current paired state %d", device->le_state.paired);
++		if (device->le_state.paired) {
++			gatt_client_init(device);
++		} else {
++			DBG("Device not paired, pending gatt actions");
++			if (retry--)
++				return true;
++		}
++	}
++	retry = 3;
++	return false; //stop the timer
++}
++
+ static void gatt_client_init(struct btd_device *device)
+ {
+ 	gatt_client_cleanup(device);
+@@ -5343,7 +5362,14 @@ bool device_attach_att(struct btd_device
+ 		load_gatt_db(dev, btd_adapter_get_storage_dir(dev->adapter),
+ 								dstaddr);
+ 
+-	gatt_client_init(dev);
++	DBG("current paired state %d", dev->le_state.paired);
++	if (dev->le_state.paired) {
++		gatt_client_init(dev);
++	} else {
++		DBG("Timer to  start gatt_client_delay_init");
++		gatt_client_cleanup(dev);
++		g_timeout_add_seconds(1, gatt_client_delay_init, dev);
++	}
+ 	gatt_server_init(dev, database);
+ 
+ 	/*
+@@ -6048,19 +6074,28 @@ void device_bonding_complete(struct btd_
+ 
+ 	device_set_paired(device, bdaddr_type);
+ 
+-	/* If services are already resolved just reply to the pairing
+-	 * request
+-	 */
+-	if (state->svc_resolved && bonding) {
+-		/* Attept to store services for this device failed because it
+-		 * was not paired. Now that we're paired retry. */
+-		store_gatt_db(device);
++	if (bdaddr_type == BDADDR_BREDR) {
++		/* If services are already resolved just reply to the pairing
++		 * request
++		 */
++		if (state->svc_resolved && bonding) {
++			/* Attept to store services for this device failed because it
++			 * was not paired. Now that we're paired retry. */
++			store_gatt_db(device);
+ 
+-		g_dbus_send_reply(dbus_conn, bonding->msg, DBUS_TYPE_INVALID);
+-		bonding_request_free(bonding);
+-		return;
++			g_dbus_send_reply(dbus_conn, bonding->msg, DBUS_TYPE_INVALID);
++			bonding_request_free(bonding);
++			return;
++		}
++	} else {
++		/* For BLE, just reply the request, gatt services affairs would be done
++		 * at gatt_client.c. */
++		if (bonding) {
++			g_dbus_send_reply(dbus_conn, bonding->msg, DBUS_TYPE_INVALID);
++			bonding_request_free(bonding);
++			return;
++		}
+ 	}
+-
+ 	/* If we were initiators start service discovery immediately.
+ 	 * However if the other end was the initator wait a few seconds
+ 	 * before SDP. This is due to potential IOP issues if the other
