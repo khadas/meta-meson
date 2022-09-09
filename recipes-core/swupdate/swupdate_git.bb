@@ -35,14 +35,18 @@ SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "nand", "file://nand.cfg", "
 
 LTOEXTRA += "-flto-partition=none"
 
+SWUPDATE_WITH_WEBUI ?= "n"
+
 PACKAGES += " \
     ${PN}-client \
     ${PN}-lua \
     ${PN}-progress \
     ${PN}-tools \
     ${PN}-tools-hawkbit \
-    ${PN}-www \
 "
+
+PACKAGES += "${@['', '${PN}-www']['y' in d.getVar('SWUPDATE_WITH_WEBUI', True)]}"
+
 INSANE_SKIP_${PN}-lua = "dev-so"
 wwwdir ?= "/var/www/swupdate"
 
@@ -214,11 +218,13 @@ do_compile() {
 do_install () {
     (cd ${S} && oe_runmake install)
 
-    install -m 0755 -d ${D}${wwwdir}
-    if [ -d ${S}/web-app ];then
-        cp -R --no-dereference --preserve=mode,links -v ${S}/examples/www/v2/* ${D}${wwwdir}
-    else
-        install -m 0755 ${S}/www/* ${D}${wwwdir}
+    if ${@['false', 'true']['y' in d.getVar('SWUPDATE_WITH_WEBUI', True)]}; then
+        install -m 0755 -d ${D}${wwwdir}
+        if [ -d ${S}/web-app ];then
+            cp -R --no-dereference --preserve=mode,links -v ${S}/examples/www/v2/* ${D}${wwwdir}
+        else
+            install -m 0755 ${S}/www/* ${D}${wwwdir}
+        fi
     fi
 
     install -d ${D}/etc
