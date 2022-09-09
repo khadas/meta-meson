@@ -27,6 +27,8 @@ do_install() {
     install -d -m 0644 ${D}/${libdir}
     install -d -m 0644 ${D}/etc/cas/irdeto/cadata
 
+    touch ${D}/${libdir}/libird_dvb.so
+
     if [ -e ${S}/libird_dvb.so ] ; then
         install -D -m 0644 ${S}/libird_dvb.so ${D}/${libdir}
     fi
