@@ -10,4 +10,5 @@ DISTRO_FEATURES_append = " amazon-plugin"
 DISTRO_FEATURES_append = " mediaplayer"
 
 PREFERRED_VERSION_amazon-prime-video = "4.0"
+PREFERRED_VERSION_wpa-supplicant = "2.10"
 

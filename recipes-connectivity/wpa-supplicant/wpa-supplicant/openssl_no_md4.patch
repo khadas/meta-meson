@@ -1,0 +1,33 @@
+Date: Nov 15, 2017 10:24 PM
+
+From: 3f2444ef92ac72b96271482fa8df013a54ffa970 Dec 18, 2017 7:56 PM
+
+Subject: [PATCH] RDKB-14763,DELIA-24496, DELIA-24645 : remove md4 from openssl and wpa-supplicant
+	
+	remove unapproved ciphers from openssl
+	
+Source: COMCAST
+
+License: BSD-2-Clause
+
+Upstream-Status: Pending
+
+Signed-off-by: pmooney <Phil_Mooney@cable.comcast.com>
+---
+
+Index: wpa_supplicant-2.6/src/crypto/crypto_openssl.c
+===================================================================
+--- wpa_supplicant-2.6.orig/src/crypto/crypto_openssl.c
++++ wpa_supplicant-2.6/src/crypto/crypto_openssl.c
+@@ -153,7 +153,11 @@ static int openssl_digest_vector(const E
+ #ifndef CONFIG_FIPS
+ int md4_vector(size_t num_elem, const u8 *addr[], const size_t *len, u8 *mac)
+ {
++#ifndef OPENSSL_NO_MD4
+ 	return openssl_digest_vector(EVP_md4(), num_elem, addr, len, mac);
++#else
++	return -1;
++#endif
+ }
+ #endif /* CONFIG_FIPS */
+ 
