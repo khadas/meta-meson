@@ -118,8 +118,15 @@ check_set_machine_id() {
     fi
 }
 
+attach_unifykey() {
+    if [ -f /sys/class/unifykeys/attach ]; then
+        echo 1 > /sys/class/unifykeys/attach
+    fi
+}
+
 boot_root() {
     check_set_machine_id
+    attach_unifykey
     # The rootfs does not yet contain kernel modules.  Copy it!
     if [ ! -d ${ROOT_MOUNT}/lib/modules ];
     then
