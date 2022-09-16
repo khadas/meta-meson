@@ -16,6 +16,7 @@ SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "bt-qca", "file://0001-BT-qc
 SRC_URI += "file://0001-BT-fix-repeatedly-connect-disconnect.patch"
 SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "aml-w1", "file://0001-BT-add-amlbt-w1-wakeup.patch", "", d)}"
 SRC_URI += "file://0001-bluez5-fix-rcu-reconnect-1-1.patch"
+SRC_URI += "file://bluez_checkhci.sh"
 
 do_install_append(){
     install -d ${D}${bindir}
@@ -24,12 +25,13 @@ do_install_append(){
 
     install -m 0755 ${B}/client/default_agent ${D}/${bindir}
     install -m 0755 ${WORKDIR}/bluez_tool.sh ${D}/${bindir}
+    install -m 0755 ${WORKDIR}/bluez_checkhci.sh ${D}/${bindir}
     install -m 0644 ${WORKDIR}/bluez.service ${D}/${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/main.conf ${D}/${sysconfdir}/bluetooth
 
     if ${@bb.utils.contains("DISTRO_FEATURES", "aml-w1", "true", "false", d)}; then
         sed -i '/Debug/a Device=aml' ${D}${sysconfdir}/bluetooth/main.conf
-    elif ${@bb.utils.contains("DISTRO_FEATURES", "bt-qca", "true", "false", d)}; then 
+    elif ${@bb.utils.contains("DISTRO_FEATURES", "bt-qca", "true", "false", d)}; then
         sed -i '/Debug/a Device=qca' ${D}${sysconfdir}/bluetooth/main.conf
     else
         sed -i '/Debug/a Device=rtk' ${D}${sysconfdir}/bluetooth/main.conf
@@ -43,6 +45,7 @@ do_install_append(){
         sed -i '/Debug/a TTY=/dev/ttyS1' ${D}${sysconfdir}/bluetooth/main.conf
     ;;
     esac
+    sed -i '/^ExecStart=.*/i ExecStartPre=\/usr\/bin\/bluez_checkhci.sh' ${D}/${systemd_unitdir}/system/bluetooth.service
 }
 
 FILES_${PN} += "${bindir}/*"
