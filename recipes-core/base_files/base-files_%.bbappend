@@ -58,6 +58,10 @@ if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
     if [ "${ROOTFS_TYPE}" = "squashfs" ]; then
         vendor_dev="mtdblock12"
     fi
+    # if dm-verity is enabled, mount /dev/mapper/vendor(/dev/dm-1) as ro
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'true', 'false', d)}; then
+        vendor_dev="dm-1"
+    fi
 
     cat >> ${D}${sysconfdir}/fstab <<EOF
  /dev/${vendor_dev}     /vendor                    auto       defaults              0  0

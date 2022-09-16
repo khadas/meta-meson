@@ -402,10 +402,20 @@ mount_and_boot() {
 
 squashfs_rootfs_mount()
 {
-    system_mtd_number=$(cat /proc/mtd | grep  -E "system" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+    vendor_mtd_number=$(cat /proc/mtd | grep  -E "vendor" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+    VENDOR_DEVICE=/dev/mtdblock${vendor_mtd_number}
 
-    if ! mount -t squashfs -o ro /dev/mtdblock${system_mtd_number} $ROOT_MOUNT ; then
-        fatal "Could not mount /dev/mtdblock${system_mtd_number}"
+    system_mtd_number=$(cat /proc/mtd | grep  -E "system" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+    ROOT_DEVICE=/dev/mtdblock${system_mtd_number}
+
+    dm_verity_setup system ${ROOT_DEVICE} ${ROOT_MOUNT}
+    dm_verity_setup vendor ${VENDOR_DEVICE} none
+
+    echo "dm-verity is $DM_VERITY_STATUS"
+    if [ "$DM_VERITY_STATUS" = "disabled" ]; then
+        if ! mount -o ro,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
+            fatal "Could not mount $ROOT_DEVICE"
+        fi
     fi
 }
 

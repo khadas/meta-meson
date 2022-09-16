@@ -35,6 +35,10 @@ DISTRO_FEATURES_append = " fota-upgrade"
 DISTRO_FEATURES_append = " remove-test-files"
 DISTRO_FEATURES_remove = " selinux"
 
+DISTRO_FEATURES_append = " dm-verity"
+DISTRO_FEATURES_NATIVE_append = " dm-verity"
+#READONLY = "y"
+
 OVERRIDES .= ":aq2432"
 TDK_VERSION_s4 = "v3.8/dev/S805C3"
 
