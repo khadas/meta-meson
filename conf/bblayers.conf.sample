@@ -22,5 +22,6 @@ BBLAYERS ?= " \
   ##OEROOT##/meta-meson \
   ##OEROOT##/meta-thunder \
   ##OEROOT##/meta-qt5 \
-  "
+  ##OEROOT##/meta-gplv2 \
+"
 

@@ -7,5 +7,9 @@ BBMASK .= "|meta-security/recipes-core/busybox"
 # Don't need kernel patch for dm-verity(enabled by default)
 BBMASK .= "|meta-security/recipes-kernel/linux/"
 
+BBMASK .= "|meta-selinux/recipes-extended/sed/sed_4.%.bbappend"
+BBMASK .= "|meta-selinux/recipes-extended/findutils/findutils_%.bbappend"
+BBMASK .= "|meta-selinux/recipes-core/coreutils/coreutils_%.bbappend"
+
 BBMASK .= "${@bb.utils.contains('READONLY', 'y', '', '|meta-meson/recipes-core/volatile-binds/volatile-binds.bb', d)}"
 BBMASK .= "${@bb.utils.contains('READONLY', 'y', '', '|meta-thunder/meta-rdk-bsp-amlogic/recipes-extended/volatile-binds/volatile-binds.bbappend', d)}"

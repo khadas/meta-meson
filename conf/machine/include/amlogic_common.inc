@@ -62,8 +62,11 @@ PREFERRED_VERSION_libgles-eabihf-gondul-wayland-drm = "r37p0"
 PREFERRED_VERSION_vulkan-headers = "1.2.196"
 PREFERRED_VERSION_vulkan-loader = "1.2.196"
 
-WARN_QA_append = "ldflags installed-vs-shipped already-stripped pkgvarcheck"
-ERROR_QA_remove = "ldflags installed-vs-shipped already-stripped pkgvarcheck"
+#for cairo
+PREFERRED_VERSION_cairo_dunfell = "1.14.6"
+
+WARN_QA_append = "ldflags installed-vs-shipped already-stripped pkgvarcheck file-rdeps"
+ERROR_QA_remove = "ldflags installed-vs-shipped already-stripped pkgvarcheck file-rdeps"
 
 DEBUG_PREFIX_MAP = "-fdebug-prefix-map=${WORKDIR}=/usr/src/debug/${PN}/${EXTENDPE}${PV}-${PR} \
                     -fdebug-prefix-map=${STAGING_DIR_HOST}= \
