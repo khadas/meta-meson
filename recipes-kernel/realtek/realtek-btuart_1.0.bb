@@ -17,11 +17,12 @@ do_install() {
     mkdir -p ${BT_MODULE_DIR}
     install -m 0666 ${S}/hci_uart.ko ${BT_MODULE_DIR}/rtk_btuart.ko
 
-    mkdir -p ${D}/lib/firmware/rtlbt
-    install -D -m 0644 ${S}/../fw/* ${D}/lib/firmware/rtlbt
+# BT firmware is installed by realtek_btusb.bb
+#    mkdir -p ${D}/lib/firmware/rtlbt
+#    install -D -m 0644 ${S}/../fw/* ${D}/lib/firmware/rtlbt
 }
 
-FILES_${PN} = "rtk_btusb.ko /lib/firmware/rtlbt/*"
+FILES_${PN} = "rtk_btuart.ko"
 # Header file provided by a separate package
 DEPENDS += ""
 
