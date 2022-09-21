@@ -1,4 +1,4 @@
-From e3f8ae300bde7b05491e125f5a694299fc42ad06 Mon Sep 17 00:00:00 2001
+From e21f5996d99ab4a8ec1c782b4d60446f384c4492 Mon Sep 17 00:00:00 2001
 From: Bing Jiang <bing.jiang@amlogic.com>
 Date: Thu, 7 Apr 2022 19:30:48 +0800
 Subject: [PATCH] policy/modules: add refpolicy for data directory
@@ -21,14 +21,14 @@ Signed-off-by: Bing Jiang <bing.jiang@amlogic.com>
  policy/modules/system/getty.te            |   1 +
  policy/modules/system/init.te             |   1 +
  policy/modules/system/locallogin.te       |   1 +
- policy/modules/system/logging.te          |   5 +
+ policy/modules/system/logging.te          |   6 +
  policy/modules/system/modutils.te         |   4 +
  policy/modules/system/mount.if            |  17 +++
  policy/modules/system/mount.te            |   3 +-
  policy/modules/system/selinuxutil.te      |   2 +
  policy/modules/system/systemd.te          |  21 +++
  policy/modules/system/udev.te             |   4 +
- 22 files changed, 246 insertions(+), 3 deletions(-)
+ 22 files changed, 247 insertions(+), 3 deletions(-)
 
 diff --git a/policy/modules/admin/alsa.te b/policy/modules/admin/alsa.te
 index c6dcfa8cb..f06da9ac9 100644
@@ -386,7 +386,7 @@ index cc417dac3..e85d24694 100644
  fs_search_auto_mountpoints(local_login_t)
  
 diff --git a/policy/modules/system/logging.te b/policy/modules/system/logging.te
-index 43486381b..a6a7f9b4d 100644
+index 43486381b..efbee133f 100644
 --- a/policy/modules/system/logging.te
 +++ b/policy/modules/system/logging.te
 @@ -201,6 +201,8 @@ domain_use_interactive_fds(auditd_t)
@@ -406,7 +406,15 @@ index 43486381b..a6a7f9b4d 100644
  
  mls_file_write_all_levels(audisp_t)
  
-@@ -510,6 +513,8 @@ files_read_etc_files(syslogd_t)
+@@ -354,6 +357,7 @@ files_read_kernel_symbol_table(klogd_t)
+ files_map_usr_files(klogd_t)
+ files_read_usr_files(klogd_t)
+ files_getattr_usr_files(klogd_t)
++files_search_data(klogd_t)
+ 
+ dev_read_raw_memory_cond(klogd_t, allow_raw_memory_access)
+ dev_read_sysfs(klogd_t)
+@@ -510,6 +514,8 @@ files_read_etc_files(syslogd_t)
  files_read_usr_files(syslogd_t)
  files_read_var_files(syslogd_t)
  files_read_etc_runtime_files(syslogd_t)

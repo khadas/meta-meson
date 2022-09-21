@@ -9,4 +9,5 @@ SRC_URI += " \
         file://0005-policy-modules-enable-sysadm-watch-journal-files.patch \
         file://0006-policy-modules-add-refpolicy-for-data-directory.patch \
         file://0007-policy-modules-add-support-ubifs.patch \
+        file://0008-policy-modules-for-lighttpd.patch \
         "
