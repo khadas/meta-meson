@@ -136,6 +136,22 @@ create_extra_folder(){
     fi
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "do_create_device_properties; "
+
+python do_create_device_properties() {
+    prefix = 'DEVICE_PROPERTY_'
+    property_keys = (str(key).replace(prefix, '')
+                     for key in d.keys() if key.startswith(prefix))
+    with open(os.path.join(d.getVar("R", True), 'etc', 'device.properties'), 'w') as f:
+        for key in sorted(property_keys):
+            v = d.getVar(prefix + key)
+            f.write('%s=%s\n' % (key, v))
+        sdkver = d.getVar('YOCTO_SDK_VERSION')
+        if not sdkver or len(sdkver) == 0:
+            sdkver = time.strftime('%Y%m%d%H%M%S',time.localtime())
+        f.write('SDK_VERSION=%s\n' % sdkver)
+}
+
 process_for_read_only_rootfs(){
     kernel_version=$(ls ${IMAGE_ROOTFS}/lib/modules/)
 
