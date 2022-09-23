@@ -41,13 +41,13 @@ python create_avb_dm_verity_image () {
     image_deploy_dir = d.getVar('IMGDEPLOYDIR', True)
     machine = d.getVar('MACHINE', True)
 # pad to 4096 bytes to match img2simg
-    cmd = 'avbtool-dm-verity.py add_footer_without_hashtree' + ' --image ' + image_deploy_dir + '/' + dm_verity_image + '-' + machine + '.ext4' + ' --partition_name ' + name + ' --root_digest ' + verity_array['ROOT_HASH'] + ' --salt ' + verity_array['SALT'] + ' --hash_algorithm sha256 ' + ' --data_block_size ' + verity_array['DATA_BLOCK_SIZE'] + ' --hash_block_size ' + verity_array['HASH_BLOCK_SIZE'] + ' --data_size ' + verity_array['DATA_SIZE'] + ' --padding_size 4096'
+    cmd = 'avbtool-dm-verity.py add_footer_without_hashtree' + ' --image ' + image_deploy_dir + '/' + dm_verity_image + '-' + machine + '.' + dm_verity_image_type + ' --partition_name ' + name + ' --root_digest ' + verity_array['ROOT_HASH'] + ' --salt ' + verity_array['SALT'] + ' --hash_algorithm sha256 ' + ' --data_block_size ' + verity_array['DATA_BLOCK_SIZE'] + ' --hash_block_size ' + verity_array['HASH_BLOCK_SIZE'] + ' --data_size ' + verity_array['DATA_SIZE'] + ' --padding_size 4096'
     if chained == 'true':
         cmd += ' --key ' + native_dir + '/' + sysconfdir + '/' + key + ' --algorithm ' + algorithm
     bb.note(cmd)
     bb.process.run(cmd)
     if isinstance(partition_size , str) and is_numeric_base(partition_size, 10) or is_numeric_base(partition_size, 16):
-        cmd = 'avbtool-dm-verity.py resize_image' + ' --image ' + image_deploy_dir + '/' + dm_verity_image + '-' + machine + '.ext4' + ' --partition_size ' + partition_size
+        cmd = 'avbtool-dm-verity.py resize_image' + ' --image ' + image_deploy_dir + '/' + dm_verity_image + '-' + machine + '.' + dm_verity_image_type + ' --partition_size ' + partition_size
         bb.note(cmd)
         bb.process.run(cmd)
 }

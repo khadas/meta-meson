@@ -257,11 +257,19 @@ dm_verity_setup() {
     echo "setup dm-verity for ${1} partition(${2}) mount to ${3}"
     VERITY_ENV=/usr/share/${1}-dm-verity.env
 
-    VBMETA_DEVICE_REAL=${VBMETA_DEVICE}${ACTIVE_SLOT}
-    # Change /dev/block/ to /dev/
-    if [ ! -b ${VBMETA_DEVICE_REAL} ]; then
-        VBMETA_DEVICE_REAL=`echo ${VBMETA_DEVICE_REAL} | sed "s/\/block\//\//g"`
+    if [ "${root_fstype}" = "squashfs" ]; then
+        vbmeta_mtd_number=$(cat /proc/mtd | grep -E "vbmeta" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+        VBMETA_DEVICE_REAL=/dev/mtdblock${vbmeta_mtd_number}
+    else
+        VBMETA_DEVICE_REAL=${VBMETA_DEVICE}${ACTIVE_SLOT}
+        # Change /dev/block/ to /dev/
+        if [ ! -b ${VBMETA_DEVICE_REAL} ]; then
+            VBMETA_DEVICE_REAL=`echo ${VBMETA_DEVICE_REAL} | sed "s/\/block\//\//g"`
+        fi
     fi
+
+    echo "vbmeta device is $VBMETA_DEVICE_REAL"
+
     if [ -b "${VBMETA_DEVICE_REAL}" ]; then
         mkdir -p /tmp
         AVB_DM_TOOL=/usr/bin/avbtool-dm-verity.py
@@ -409,7 +417,9 @@ squashfs_rootfs_mount()
     system_mtd_number=$(cat /proc/mtd | grep  -E "system" | awk -F : '{print $1}' | grep -o '[0-9]\+')
     ROOT_DEVICE=/dev/mtdblock${system_mtd_number}
 
+    ln -sf "${ROOT_DEVICE}" "/dev/system"${ACTIVE_SLOT}
     dm_verity_setup system ${ROOT_DEVICE} ${ROOT_MOUNT}
+    ln -sf "${VENDOR_DEVICE}" "/dev/vendor"${ACTIVE_SLOT}
     dm_verity_setup vendor ${VENDOR_DEVICE} none
 
     echo "dm-verity is $DM_VERITY_STATUS"

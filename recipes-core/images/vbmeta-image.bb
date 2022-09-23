@@ -39,7 +39,7 @@ DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', ' recovery
 do_compile() {
     install -d ${DEPLOY_DIR_IMAGE}
     #if boot.img already has hash_footer, avbtool won't add again, so don't need erase hash_footer first
-    avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/boot.img --partition_size 67108864 --partition_name boot
+    avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/boot.img --partition_size ${DEVICE_PROPERTY_BOOT_PARTITION_SIZE} --partition_name boot
 
     if [ "${SIGN_RECOVERY}" = "true" ]; then
         ${SIGN_RECOVERY_CMD}
