@@ -24,10 +24,10 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic
 
 SRCREV ?= "${AUTOREV}"
 
+S = "${WORKDIR}/git"
+GPU_MODEL = "dvalin"
 MALI_ARCH="eabihf"
 MALI_ARCH:aarch64="arm64"
-
-S = "${WORKDIR}/git"
 
 inherit autotools pkgconfig
 
@@ -58,15 +58,14 @@ do_install() {
 
     install -d ${D}${libdir}
     install -d ${D}${includedir}
-    #install -m 0644 ${WORKDIR}/libMali.so ${S}/lib/eabihf/dvalin/${PV}/wayland/drm/libMali.so
+    #install -m 0644 ${WORKDIR}/libMali.so ${S}/lib/eabihf/${GPU_MODEL}/${PV}/wayland/drm/libMali.so
 
     # wayland lib
     if ${@bb.utils.contains("DISTRO_FEATURES", "low-memory", "true", "false", d)}; then
-        install -m 0755 ${S}/lib/${MALI_ARCH}/dvalin/${PV}/wayland/drm/libMali_lm.so ${D}${libdir}/libMali.so
+        install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali_lm.so ${D}${libdir}/libMali.so
     else
-        install -m 0755 ${S}/lib/${MALI_ARCH}/dvalin/${PV}/wayland/drm/libMali.so ${D}${libdir}/libMali.so
+        install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali.so ${D}${libdir}/libMali.so
     fi
-    #patchelf --set-soname libMali.so ${D}${libdir}/libMali.so
 
     ln -s libMali.so ${D}${libdir}/libEGL.so.1.4.0
     ln -s libEGL.so.1.4.0 ${D}${libdir}/libEGL.so.1
@@ -88,8 +87,10 @@ do_install() {
     ln -s libgbm.so.1.0.0 ${D}${libdir}/libgbm.so.1
     ln -s libgbm.so.1 ${D}${libdir}/libgbm.so
 
-    mkdir -p ${D}/${datadir}/vulkan/icd.d/
-    install -m 0644 ${S}/lib/${MALI_ARCH}/dvalin/${PV}/mali.json ${D}${datadir}/vulkan/icd.d/
+    mkdir -p ${D}/${datadir}/vulkan/icd.d
+    install -m 0644 ${S}/lib/${MALI_ARCH}/vulkan/${PV}/icd.d/* ${D}${datadir}/vulkan/icd.d/
+    mkdir -p ${D}/${datadir}/vulkan/implicit_layer.d
+    install -m 0644 ${S}/lib/${MALI_ARCH}/vulkan/${PV}/implicit_layer.d/* ${D}${datadir}/vulkan/implicit_layer.d/
 }
 
 FILES:${PN} += "${libdir}/*.so ${datadir}"

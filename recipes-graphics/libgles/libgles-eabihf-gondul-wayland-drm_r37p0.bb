@@ -74,8 +74,10 @@ do_install() {
     ln -s libgbm.so.1.0.0 ${D}${libdir}/libgbm.so.1
     ln -s libgbm.so.1 ${D}${libdir}/libgbm.so
 
-    mkdir -p ${D}/${datadir}/vulkan/icd.d/
-    install -m 0644 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/mali.json ${D}${datadir}/vulkan/icd.d/
+    mkdir -p ${D}/${datadir}/vulkan/icd.d
+    install -m 0644 ${S}/lib/${MALI_ARCH}/vulkan/${PV}/icd.d/* ${D}${datadir}/vulkan/icd.d/
+    mkdir -p ${D}/${datadir}/vulkan/implicit_layer.d
+    install -m 0644 ${S}/lib/${MALI_ARCH}/vulkan/${PV}/implicit_layer.d/* ${D}${datadir}/vulkan/implicit_layer.d/
 }
 
 FILES:${PN} += "${libdir}/*.so ${datadir}"
