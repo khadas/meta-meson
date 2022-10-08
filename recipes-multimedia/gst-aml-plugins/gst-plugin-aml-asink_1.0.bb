@@ -15,7 +15,6 @@ PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/"
 
-EXTRA_OECONF += "--enable-xrun-detection=yes"
 EXTRA_OECONF += "--enable-ms12=yes"
 EXTRA_OECONF += "--enable-dts=yes"
 EXTRA_OECONF += "--enable-mediasync=no"
