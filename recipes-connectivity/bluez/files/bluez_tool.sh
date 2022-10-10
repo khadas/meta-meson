@@ -40,32 +40,6 @@ function get_tty_from_conf()
 	fi
 }
 
-function set_btname()
-{
-	name_file=/etc/wifi/ap_name
-	local cnt=1
-	bt_name="amlogic"
-	while [ $cnt -lt 10 ]
-	do
-		if [ -f $name_file ];then
-			bt_name=`cat /etc/wifi/ap_name`
-			if [ "$bt_name" != "" ];then
-				break
-			fi
-		else
-			cnt=$((cnt + 1))
-			sleep 1
-		fi
-	done
-
-	if [ -f $configure_file ];then
-		sed -i -e "/Name/aName=MusicBox-$bt_name" -e "/Name/d" $configure_file
-	else
-		echo "create configure file"
-		echo "Name=MusicBox-$bt_name" > $configure_file
-		echo "Debug=0"
-	fi
-}
 
 rtk_bdaddr=/opt/bdaddr
 aml_bdaddr=/sys/module/kernel/parameters/btmac
@@ -92,100 +66,34 @@ qca_bt_init()
 {
 	modprobe hci_uart
 	usleep 300000
-	hciattach -s 115200 "$tty" qca 2> /dev/null
+	hciattach -s 115200 "$tty" qca
 }
 
 aml_bt_init()
 {
 	modprobe sdio_bt
 	usleep 200000
-	hciattach -s 115200 "$tty" aml &> /dev/null
+	hciattach -s 115200 "$tty" aml
 	usleep 100000
-}
-
-A2DP_SINK_SERVICE()
-{
-	echo "|--bluez a2dp-sink/hfp-hf service--|"
-	hciconfig hci0 up
-
-	grep "Debug=1" $configure_file > /dev/null
-	if [ $? -eq 0 ]; then
-
-	echo "|--bluez service in debug mode--|"
-		/usr/libexec/bluetooth/bluetoothd -n -d 2> /etc/bluetooth/bluetoothd.log &
-		sleep 1
-		bluealsa -p a2dp-sink -p hfp-hf 2> /etc/bluetooth/bluealsa.log &
-		usleep 200000
-		bluealsa-aplay --profile-a2dp 00:00:00:00:00:00 -d dmixer_avs_auto 2> /etc/bluetooth/bluealsa-aplay.log &
-	else
-		/usr/libexec/bluetooth/bluetoothd -n &
-		sleep 1
-		bluealsa -p a2dp-sink -p hfp-hf 2> /dev/null &
-		usleep 200000
-		bluealsa-aplay --profile-a2dp 00:00:00:00:00:00 -d dmixer_avs_auto 2> /dev/null &
-	fi
-	default_agent > /dev/null &
-	hfp_ctl &
-
-	hciconfig hci0 class 0x240408
-	for i in `seq 1 10`
-	do
-		sleep 2
-		hciconfig hci0 piscan
-		echo $(hciconfig) | grep PSCAN
-		if [ $? -eq 0 ]
-		then
-			echo "hci0 already open scan"
-			break;
-		else
-			if [ $i -eq 10 ]
-			then
-				echo "hci0 open scan fail!"
-			fi
-		fi
-	done
-	hciconfig hci0 inqparms 18:1024
-	hciconfig hci0 pageparms 18:1024
-}
-
-A2DP_SOURCE_SERVICE()
-{
-	echo "|--bluez a2dp-source service--|"
-	hciconfig hci0 up
-
-	grep "Debug=1" $configure_file > /dev/null
-	if [ $? -eq 0 ]; then
-
-	echo "|--bluez service in debug mode--|"
-		/usr/libexec/bluetooth/bluetoothd -n -d 2> /etc/bluetooth/bluetoothd.log &
-		sleep 1
-		bluealsa -p a2dp-source 2> /etc/bluetooth/bluealsa.log &
-	else
-		/usr/libexec/bluetooth/bluetoothd -n &
-		sleep 1
-		bluealsa -p a2dp-source 2> /dev/null &
-	fi
-	default_agent > /dev/null &
-}
-
-BLE_SERVICE()
-{
-	echo "|--bluez ble service--|"
-	hciconfig hci0 up
-	hciconfig hci0 noscan
-	sleep 1
-	btgatt-server &
 }
 
 service_down()
 {
 	echo "|--stop bluez service--|"
+	killall bluetoothd
 	sh bluez-alsa.sh stop
 }
 
 service_up()
 {
 	echo "|--start bluez service--|"
+	grep "Debug=1" $configure_file > /dev/null
+	if [ $? -eq 0 ]; then
+		echo "|--bluetoothd debug log on--|"
+		/usr/libexec/bluetooth/bluetoothd -n -d &
+	else
+		/usr/libexec/bluetooth/bluetoothd -n &
+	fi
 	sh bluez-alsa.sh start
 }
 
@@ -198,7 +106,6 @@ Blue_start()
 
 	echo
 	echo "|-----start bluez----|"
-	set_btname
 
 	if [ $device = "rtk" ];then
 		realtek_bt_init
