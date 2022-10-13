@@ -13,11 +13,10 @@ require aml-package.inc
 LICENSE = "MIT"
 
 IMAGE_FEATURES += "splash "
-IMAGE_FEATURES += "tools-debug "
+#IMAGE_FEATURES += "tools-debug "
 
 IMAGE_INSTALL += " \
     packagegroup-amlogic-baserootfs \
-    gdb \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'packagegroup-core-selinux auditd', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'test_tools', 'test-tools', '', d)} \
     "

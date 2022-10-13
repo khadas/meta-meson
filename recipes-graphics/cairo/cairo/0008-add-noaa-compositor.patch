@@ -1,3 +1,19 @@
+Date: Jul 07 15:25:19 2016
+
+From: c4464f6e4e862b16f4b5e3a06042aa9f8db7ad5b Jul 07 15:30:44 2016
+
+Subject: [PATCH] WKIT-551 : [WPE] Adding cairo-gl (noaa-compositor) patch in cairo module
+
+	cairo: disabling aa in cairo
+	noaa-compositor is added in cairo to support canvas page rendering properly
+
+Source: GITHUB
+
+Upstream-Status: Submitted [ https://github.com/WebPlatformForEmbedded/meta-wpe/commit/6042fbdec33bb63b7e17a6e5292a13de1b62888e ]
+
+Signed-off-by: wouterlucas <wouter@wouterlucas.com>
+---
+
 diff --git a/src/Makefile.sources b/src/Makefile.sources
 index fac24d7..9cbc14b 100644
 --- a/src/Makefile.sources
@@ -1039,3 +1055,4 @@ index cb915c8..ab87de9 100644
  cairo_private cairo_surface_t *
  _cairo_gl_white_source (void);
  
+
