@@ -6,6 +6,7 @@ SRC_URI_append = "file://0004-fix-SWPL-78539-support-vorbis.patch "
 SRC_URI_append = "file://0005-support-ac4-typefind.patch "
 SRC_URI_append = "file://0006-add-new-API-for-HDR-display-metadata.patch "
 SRC_URI_append = "file://0007-add-buf-clip-control-and-add-dump-es.patch "
+SRC_URI_append = "file://0008-support-check-buffers-count-and-time-queued-in-appsr.patch "
 
 DEPENDS += " libopus"
 RDEPENDS_${PN} += " libopus"
