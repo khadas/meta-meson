@@ -1,0 +1,2587 @@
+diff -urN coreutils-6.9.orig/lib/gnulib.mk coreutils-6.9/lib/gnulib.mk
+--- coreutils-6.9.orig/lib/gnulib.mk	2022-10-18 17:04:53.329069785 +0800
++++ coreutils-6.9/lib/gnulib.mk	2022-10-18 17:05:31.321033023 +0800
+@@ -1442,6 +1442,38 @@
+ 
+ ## end   gnulib module savewd
+ 
++## begin gnulib module selinux-at
++
++
++EXTRA_DIST += selinux-at.c selinux-at.h
++
++EXTRA_libcoreutils_a_SOURCES += selinux-at.c
++
++## end   gnulib module selinux-at
++
++## begin gnulib module selinux-h
++
++libcoreutils_a_SOURCES += se-context_.h se-selinux_.h
++
++BUILT_SOURCES += $(SELINUX_SELINUX_H)
++selinux/selinux.h: se-selinux_.h
++	mkdir -p selinux
++	cp $(srcdir)/se-selinux_.h $@-t
++	chmod a-x $@-t
++	mv $@-t $@
++MOSTLYCLEANFILES += selinux/selinux.h selinux/selinux.h-t
++
++BUILT_SOURCES += $(SELINUX_CONTEXT_H)
++selinux/context.h: se-context_.h
++	mkdir -p selinux
++	cp $(srcdir)/se-context_.h $@-t
++	chmod a-x $@-t
++	mv $@-t $@
++MOSTLYCLEANFILES += selinux/context.h selinux/context.h-t
++MOSTLYCLEANDIRS += selinux
++
++## end   gnulib module selinux-h
++
+ ## begin gnulib module setenv
+ 
+ 
+diff -urN coreutils-6.9.orig/lib/se-context_.h coreutils-6.9/lib/se-context_.h
+--- coreutils-6.9.orig/lib/se-context_.h	1970-01-01 08:00:00.000000000 +0800
++++ coreutils-6.9/lib/se-context_.h	2022-10-18 09:44:26.638640700 +0800
+@@ -0,0 +1,31 @@
++#ifndef SELINUX_CONTEXT_H
++# define SELINUX_CONTEXT_H
++
++# include <errno.h>
++/* Some systems don't have ENOSYS.  */
++# ifndef ENOSYS
++#  ifdef ENOTSUP
++#   define ENOSYS ENOTSUP
++#  else
++/* Some systems don't have ENOTSUP either.  */
++#   define ENOSYS EINVAL
++#  endif
++# endif
++
++typedef int context_t;
++static inline context_t context_new (char const *s)
++  { errno = ENOTSUP; return 0; }
++static inline char *context_str (context_t con)
++  { errno = ENOTSUP; return (void *) 0; }
++static inline void context_free (context_t c) {}
++
++static inline int context_user_set (context_t sc, char const *s)
++  { errno = ENOTSUP; return -1; }
++static inline int context_role_set (context_t sc, char const *s)
++  { errno = ENOTSUP; return -1; }
++static inline int context_range_set (context_t sc, char const *s)
++  { errno = ENOTSUP; return -1; }
++static inline int context_type_set (context_t sc, char const *s)
++  { errno = ENOTSUP; return -1; }
++
++#endif
+diff -urN coreutils-6.9.orig/lib/selinux-at.c coreutils-6.9/lib/selinux-at.c
+--- coreutils-6.9.orig/lib/selinux-at.c	1970-01-01 08:00:00.000000000 +0800
++++ coreutils-6.9/lib/selinux-at.c	2022-10-18 09:46:34.710516800 +0800
+@@ -0,0 +1,92 @@
++/* openat-style fd-relative functions for SE Linux
++   Copyright (C) 2007 Free Software Foundation, Inc.
++
++   This program is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 2, or (at your option)
++   any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software Foundation,
++   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
++
++/* written by Jim Meyering */
++
++#include <config.h>
++
++#include "selinux-at.h"
++#include "openat.h"
++
++#include <stdlib.h>
++#include <unistd.h>
++#include <errno.h>
++#include <fcntl.h>
++
++#include "dirname.h" /* solely for definition of IS_ABSOLUTE_FILE_NAME */
++#include "save-cwd.h"
++
++#include "gettext.h"
++#define _(msgid) gettext (msgid)
++
++#include "openat-priv.h"
++
++#define AT_FUNC_NAME getfileconat
++#define AT_FUNC_F1 getfilecon
++#define AT_FUNC_F2 getfilecon
++#define AT_FUNC_USE_F1_COND 1
++#define AT_FUNC_POST_FILE_PARAM_DECLS , security_context_t *con
++#define AT_FUNC_POST_FILE_ARGS        , con
++#include "at-func.c"
++#undef AT_FUNC_NAME
++#undef AT_FUNC_F1
++#undef AT_FUNC_F2
++#undef AT_FUNC_USE_F1_COND
++#undef AT_FUNC_POST_FILE_PARAM_DECLS
++#undef AT_FUNC_POST_FILE_ARGS
++
++#define AT_FUNC_NAME lgetfileconat
++#define AT_FUNC_F1 lgetfilecon
++#define AT_FUNC_F2 lgetfilecon
++#define AT_FUNC_USE_F1_COND 1
++#define AT_FUNC_POST_FILE_PARAM_DECLS , security_context_t *con
++#define AT_FUNC_POST_FILE_ARGS        , con
++#include "at-func.c"
++#undef AT_FUNC_NAME
++#undef AT_FUNC_F1
++#undef AT_FUNC_F2
++#undef AT_FUNC_USE_F1_COND
++#undef AT_FUNC_POST_FILE_PARAM_DECLS
++#undef AT_FUNC_POST_FILE_ARGS
++
++#define AT_FUNC_NAME setfileconat
++#define AT_FUNC_F1 setfilecon
++#define AT_FUNC_F2 setfilecon
++#define AT_FUNC_USE_F1_COND 1
++#define AT_FUNC_POST_FILE_PARAM_DECLS , security_context_t con
++#define AT_FUNC_POST_FILE_ARGS        , con
++#include "at-func.c"
++#undef AT_FUNC_NAME
++#undef AT_FUNC_F1
++#undef AT_FUNC_F2
++#undef AT_FUNC_USE_F1_COND
++#undef AT_FUNC_POST_FILE_PARAM_DECLS
++#undef AT_FUNC_POST_FILE_ARGS
++
++#define AT_FUNC_NAME lsetfileconat
++#define AT_FUNC_F1 lsetfilecon
++#define AT_FUNC_F2 lsetfilecon
++#define AT_FUNC_USE_F1_COND 1
++#define AT_FUNC_POST_FILE_PARAM_DECLS , security_context_t con
++#define AT_FUNC_POST_FILE_ARGS        , con
++#include "at-func.c"
++#undef AT_FUNC_NAME
++#undef AT_FUNC_F1
++#undef AT_FUNC_F2
++#undef AT_FUNC_USE_F1_COND
++#undef AT_FUNC_POST_FILE_PARAM_DECLS
++#undef AT_FUNC_POST_FILE_ARGS
+diff -urN coreutils-6.9.orig/lib/selinux-at.h coreutils-6.9/lib/selinux-at.h
+--- coreutils-6.9.orig/lib/selinux-at.h	1970-01-01 08:00:00.000000000 +0800
++++ coreutils-6.9/lib/selinux-at.h	2022-10-18 09:44:26.638640700 +0800
+@@ -0,0 +1,24 @@
++/* Prototypes for openat-style fd-relative SELinux functions
++   Copyright (C) 2007 Free Software Foundation, Inc.
++
++   This program is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 2, or (at your option)
++   any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software Foundation,
++   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
++
++#include <selinux/selinux.h>
++#include <selinux/context.h>
++
++int  getfileconat (int fd, char const *file, security_context_t *con);
++int lgetfileconat (int fd, char const *file, security_context_t *con);
++int  setfileconat (int fd, char const *file, security_context_t con);
++int lsetfileconat (int fd, char const *file, security_context_t con);
+diff -urN coreutils-6.9.orig/lib/se-selinux_.h coreutils-6.9/lib/se-selinux_.h
+--- coreutils-6.9.orig/lib/se-selinux_.h	1970-01-01 08:00:00.000000000 +0800
++++ coreutils-6.9/lib/se-selinux_.h	2022-10-18 09:44:26.638640700 +0800
+@@ -0,0 +1,54 @@
++#ifndef SELINUX_SELINUX_H
++# define SELINUX_SELINUX_H
++
++# include <sys/types.h>
++# include <errno.h>
++/* Some systems don't have ENOSYS.  */
++# ifndef ENOSYS
++#  ifdef ENOTSUP
++#   define ENOSYS ENOTSUP
++#  else
++/* Some systems don't have ENOTSUP either.  */
++#   define ENOSYS EINVAL
++#  endif
++# endif
++
++typedef unsigned short security_class_t;
++# define security_context_t char*
++# define is_selinux_enabled() 0
++
++static inline int getcon (security_context_t *con) { errno = ENOTSUP; return -1; }
++static inline void freecon (security_context_t con) {}
++
++
++static inline int getfscreatecon (security_context_t *con)
++  { errno = ENOTSUP; return -1; }
++static inline int setfscreatecon (security_context_t con)
++  { errno = ENOTSUP; return -1; }
++static inline int matchpathcon (char const *s, mode_t m,
++				security_context_t *con)
++  { errno = ENOTSUP; return -1; }
++
++static inline int getfilecon (char const *s, security_context_t *con)
++  { errno = ENOTSUP; return -1; }
++static inline int lgetfilecon (char const *s, security_context_t *con)
++  { errno = ENOTSUP; return -1; }
++static inline int setfilecon (char const *s, security_context_t con)
++  { errno = ENOTSUP; return -1; }
++static inline int lsetfilecon (char const *s, security_context_t con)
++  { errno = ENOTSUP; return -1; }
++static inline int fsetfilecon (int fd, security_context_t con)
++  { errno = ENOTSUP; return -1; }
++
++static inline int security_check_context (security_context_t con)
++  { errno = ENOTSUP; return -1; }
++static inline int security_check_context_raw (security_context_t con)
++  { errno = ENOTSUP; return -1; }
++static inline int setexeccon (security_context_t con)
++  { errno = ENOTSUP; return -1; }
++static inline int security_compute_create (security_context_t scon,
++					   security_context_t tcon,
++					   security_class_t tclass,
++					   security_context_t *newcon)
++  { errno = ENOTSUP; return -1; }
++#endif
+diff -urN coreutils-6.9.orig/m4/gnulib-comp.m4 coreutils-6.9/m4/gnulib-comp.m4
+--- coreutils-6.9.orig/m4/gnulib-comp.m4	2022-10-17 18:01:58.733357691 +0800
++++ coreutils-6.9/m4/gnulib-comp.m4	2022-10-18 15:04:53.356649272 +0800
+@@ -207,6 +207,18 @@
+   gl_SAVE_CWD
+   gl_SAVEDIR
+   gl_SAVEWD
++  # FIXME: put this in an .m4 file?
++  # For runcon.
++  AC_CHECK_HEADERS([selinux/flask.h])
++  AC_LIBOBJ([selinux-at])
++  ac_save_LIBS="$LIBS"
++    AC_SEARCH_LIBS(setfilecon, selinux,
++                   [test "$ac_cv_search_setfilecon" = "none required" ||
++                    LIB_SELINUX=$ac_cv_search_setfilecon])
++    AC_SUBST(LIB_SELINUX)
++  LIBS="$ac_save_LIBS"
++  gl_HEADERS_SELINUX_SELINUX_H
++  gl_HEADERS_SELINUX_CONTEXT_H
+   gl_FUNC_SETENV
+   gl_FUNC_UNSETENV
+   gl_SETTIME
+diff -urN coreutils-6.9.orig/m4/selinux-context-h.m4 coreutils-6.9/m4/selinux-context-h.m4
+--- coreutils-6.9.orig/m4/selinux-context-h.m4	1970-01-01 08:00:00.000000000 +0800
++++ coreutils-6.9/m4/selinux-context-h.m4	2022-10-18 09:44:26.638640700 +0800
+@@ -0,0 +1,18 @@
++# serial 1   -*- Autoconf -*-
++# Copyright (C) 2006 Free Software Foundation, Inc.
++# This file is free software; the Free Software Foundation
++# gives unlimited permission to copy and/or distribute it,
++# with or without modifications, as long as this notice is preserved.
++
++# From Jim Meyering
++# Provide <selinux/context.h>, if necessary.
++
++AC_DEFUN([gl_HEADERS_SELINUX_CONTEXT_H],
++[
++  AC_LIBSOURCES([se-context_.h])
++  # Check for <selinux/context.h>,
++  AC_CHECK_HEADERS([selinux/context.h],
++		   [SELINUX_CONTEXT_H=],
++		   [SELINUX_CONTEXT_H=selinux/context.h])
++  AC_SUBST([SELINUX_CONTEXT_H])
++])
+diff -urN coreutils-6.9.orig/m4/selinux-selinux-h.m4 coreutils-6.9/m4/selinux-selinux-h.m4
+--- coreutils-6.9.orig/m4/selinux-selinux-h.m4	1970-01-01 08:00:00.000000000 +0800
++++ coreutils-6.9/m4/selinux-selinux-h.m4	2022-10-18 09:44:26.638640700 +0800
+@@ -0,0 +1,18 @@
++# serial 1   -*- Autoconf -*-
++# Copyright (C) 2006 Free Software Foundation, Inc.
++# This file is free software; the Free Software Foundation
++# gives unlimited permission to copy and/or distribute it,
++# with or without modifications, as long as this notice is preserved.
++
++# From Jim Meyering
++# Provide <selinux/selinux.h>, if necessary.
++
++AC_DEFUN([gl_HEADERS_SELINUX_SELINUX_H],
++[
++  AC_LIBSOURCES([se-selinux_.h])
++  # Check for <selinux/selinux.h>,
++  AC_CHECK_HEADERS([selinux/selinux.h],
++		   [SELINUX_SELINUX_H=],
++		   [SELINUX_SELINUX_H=selinux/selinux.h])
++  AC_SUBST([SELINUX_SELINUX_H])
++])
+diff -urN coreutils-6.9.orig/src/chcon.c coreutils-6.9/src/chcon.c
+--- coreutils-6.9.orig/src/chcon.c	1970-01-01 08:00:00.000000000 +0800
++++ coreutils-6.9/src/chcon.c	2022-10-18 09:46:34.806516700 +0800
+@@ -0,0 +1,590 @@
++/* chcon -- change security context of files
++   Copyright (C) 2005-2007 Free Software Foundation, Inc.
++
++   This program is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 2, or (at your option)
++   any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software Foundation,
++   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
++
++#include <config.h>
++#include <stdio.h>
++#include <sys/types.h>
++#include <getopt.h>
++
++#include "system.h"
++#include "dev-ino.h"
++#include "error.h"
++#include "openat.h"
++#include "quote.h"
++#include "quotearg.h"
++#include "root-dev-ino.h"
++#include "selinux-at.h"
++#include "xfts.h"
++
++/* The official name of this program (e.g., no `g' prefix).  */
++#define PROGRAM_NAME "chcon"
++
++#define AUTHORS "Russell Coker", "Jim Meyering"
++
++enum Change_status
++{
++  CH_NOT_APPLIED,
++  CH_SUCCEEDED,
++  CH_FAILED,
++  CH_NO_CHANGE_REQUESTED
++};
++
++enum Verbosity
++{
++  /* Print a message for each file that is processed.  */
++  V_high,
++
++  /* Print a message for each file whose attributes we change.  */
++  V_changes_only,
++
++  /* Do not be verbose.  This is the default. */
++  V_off
++};
++
++/* The name the program was run with. */
++char *program_name;
++
++/* If nonzero, and the systems has support for it, change the context
++   of symbolic links rather than any files they point to.  */
++static bool affect_symlink_referent;
++
++/* If true, change the modes of directories recursively. */
++static bool recurse;
++
++/* Level of verbosity. */
++static bool verbose;
++
++/* Pointer to the device and inode numbers of `/', when --recursive.
++   Otherwise NULL.  */
++static struct dev_ino *root_dev_ino;
++
++/* The name of the context file is being given. */
++static char const *specified_context;
++
++/* Specific components of the context */
++static char const *specified_user;
++static char const *specified_role;
++static char const *specified_range;
++static char const *specified_type;
++
++/* For long options that have no equivalent short option, use a
++   non-character as a pseudo short option, starting with CHAR_MAX + 1.  */
++enum
++{
++  DEREFERENCE_OPTION = CHAR_MAX + 1,
++  NO_PRESERVE_ROOT,
++  PRESERVE_ROOT,
++  REFERENCE_FILE_OPTION
++};
++
++static struct option const long_options[] =
++{
++  {"recursive", no_argument, NULL, 'R'},
++  {"dereference", no_argument, NULL, DEREFERENCE_OPTION},
++  {"no-dereference", no_argument, NULL, 'h'},
++  {"no-preserve-root", no_argument, NULL, NO_PRESERVE_ROOT},
++  {"preserve-root", no_argument, NULL, PRESERVE_ROOT},
++  {"reference", required_argument, NULL, REFERENCE_FILE_OPTION},
++  {"user", required_argument, NULL, 'u'},
++  {"role", required_argument, NULL, 'r'},
++  {"type", required_argument, NULL, 't'},
++  {"range", required_argument, NULL, 'l'},
++  {"verbose", no_argument, NULL, 'v'},
++  {GETOPT_HELP_OPTION_DECL},
++  {GETOPT_VERSION_OPTION_DECL},
++  {NULL, 0, NULL, 0}
++};
++
++/* Given a security context, CONTEXT, derive a context_t (*RET),
++   setting any portions selected via the global variables, specified_user,
++   specified_role, etc.  */
++static int
++compute_context_from_mask (security_context_t context, context_t *ret)
++{
++  bool ok = true;
++  context_t new_context = context_new (context);
++  if (!new_context)
++    {
++      error (0, errno, _("failed to create security context: %s"),
++	     quotearg_colon (context));
++      return 1;
++    }
++
++#define SET_COMPONENT(C, comp)						\
++   do									\
++     {									\
++       if (specified_ ## comp						\
++	   && context_ ## comp ## _set ((C), specified_ ## comp))	\
++         {								\
++	    error (0, errno,						\
++		   _("failed to set %s security context component to %s"), \
++		   #comp, quote (specified_ ## comp));			\
++           ok = false;							\
++	 }								\
++     }									\
++   while (0)
++
++  SET_COMPONENT (new_context, user);
++  SET_COMPONENT (new_context, range);
++  SET_COMPONENT (new_context, role);
++  SET_COMPONENT (new_context, type);
++
++  if (!ok)
++    {
++      int saved_errno = errno;
++      context_free (new_context);
++      errno = saved_errno;
++      return 1;
++    }
++
++  *ret = new_context;
++  return 0;
++}
++
++/* Change the context of FILE, using specified components.
++   If it is a directory and -R is given, recurse.
++   Return 0 if successful, 1 if errors occurred. */
++
++static int
++change_file_context (int fd, char const *file)
++{
++  security_context_t file_context = NULL;
++  context_t context;
++  security_context_t context_string;
++  int errors = 0;
++
++  if (specified_context == NULL)
++    {
++      int status = (affect_symlink_referent
++		    ? getfileconat (fd, file, &file_context)
++		    : lgetfileconat (fd, file, &file_context));
++
++      if (status < 0 && errno != ENODATA)
++	{
++	  error (0, errno, _("failed to get security context of %s"),
++		 quote (file));
++	  return 1;
++	}
++
++      /* If the file doesn't have a context, and we're not setting all of
++	 the context components, there isn't really an obvious default.
++	 Thus, we just give up. */
++      if (file_context == NULL)
++	{
++	  error (0, 0, _("can't apply partial context to unlabeled file %s"),
++		 quote (file));
++	  return 1;
++	}
++
++      if (compute_context_from_mask (file_context, &context))
++	return 1;
++    }
++  else
++    {
++      /* FIXME: this should be done exactly once, in main.  */
++      context = context_new (specified_context);
++      if (!context)
++	abort ();
++    }
++
++  context_string = context_str (context);
++
++  if (file_context == NULL || ! STREQ (context_string, file_context))
++    {
++      int fail = (affect_symlink_referent
++		  ?  setfileconat (fd, file, context_string)
++		  : lsetfileconat (fd, file, context_string));
++
++      if (fail)
++	{
++	  errors = 1;
++	  error (0, errno, _("failed to change context of %s to %s"),
++		 quote_n (0, file), quote_n (1, context_string));
++	}
++    }
++
++  context_free (context);
++  freecon (file_context);
++
++  return errors;
++}
++
++/* Change the context of FILE.
++   Return true if successful.  This function is called
++   once for every file system object that fts encounters.  */
++
++static bool
++process_file (FTS *fts, FTSENT *ent)
++{
++  char const *file_full_name = ent->fts_path;
++  char const *file = ent->fts_accpath;
++  const struct stat *file_stats = ent->fts_statp;
++  bool ok = true;
++
++  switch (ent->fts_info)
++    {
++    case FTS_D:
++      if (recurse)
++	{
++	  if (ROOT_DEV_INO_CHECK (root_dev_ino, ent->fts_statp))
++	    {
++	      /* This happens e.g., with "chcon -R --preserve-root ... /"
++		 and with "chcon -RH --preserve-root ... symlink-to-root".  */
++	      ROOT_DEV_INO_WARN (file_full_name);
++	      /* Tell fts not to traverse into this hierarchy.  */
++	      fts_set (fts, ent, FTS_SKIP);
++	      /* Ensure that we do not process "/" on the second visit.  */
++	      ent = fts_read (fts);
++	      return false;
++	    }
++	  return true;
++	}
++      break;
++
++    case FTS_DP:
++      if (! recurse)
++	return true;
++      break;
++
++    case FTS_NS:
++      /* For a top-level file or directory, this FTS_NS (stat failed)
++	 indicator is determined at the time of the initial fts_open call.
++	 With programs like chmod, chown, and chgrp, that modify
++	 permissions, it is possible that the file in question is
++	 accessible when control reaches this point.  So, if this is
++	 the first time we've seen the FTS_NS for this file, tell
++	 fts_read to stat it "again".  */
++      if (ent->fts_level == 0 && ent->fts_number == 0)
++	{
++	  ent->fts_number = 1;
++	  fts_set (fts, ent, FTS_AGAIN);
++	  return true;
++	}
++      error (0, ent->fts_errno, _("cannot access %s"), quote (file_full_name));
++      ok = false;
++      break;
++
++    case FTS_ERR:
++      error (0, ent->fts_errno, _("%s"), quote (file_full_name));
++      ok = false;
++      break;
++
++    case FTS_DNR:
++      error (0, ent->fts_errno, _("cannot read directory %s"),
++	     quote (file_full_name));
++      ok = false;
++      break;
++
++    default:
++      break;
++    }
++
++  if (ent->fts_info == FTS_DP
++      && ok && ROOT_DEV_INO_CHECK (root_dev_ino, file_stats))
++    {
++      ROOT_DEV_INO_WARN (file_full_name);
++      ok = false;
++    }
++
++  if (ok)
++    {
++      if (verbose)
++	printf (_("changing security context of %s"),
++		quote (file_full_name));
++
++      if (change_file_context (fts->fts_cwd_fd, file) != 0)
++	ok = false;
++    }
++
++  if ( ! recurse)
++    fts_set (fts, ent, FTS_SKIP);
++
++  return ok;
++}
++
++/* Recursively operate on the specified FILES (the last entry
++   of which is NULL).  BIT_FLAGS controls how fts works.
++   Return true if successful.  */
++
++static bool
++process_files (char **files, int bit_flags)
++{
++  bool ok = true;
++
++  FTS *fts = xfts_open (files, bit_flags, NULL);
++
++  while (1)
++    {
++      FTSENT *ent;
++
++      ent = fts_read (fts);
++      if (ent == NULL)
++	{
++	  if (errno != 0)
++	    {
++	      /* FIXME: try to give a better message  */
++	      error (0, errno, _("fts_read failed"));
++	      ok = false;
++	    }
++	  break;
++	}
++
++      ok &= process_file (fts, ent);
++    }
++
++  /* Ignore failure, since the only way it can do so is in failing to
++     return to the original directory, and since we're about to exit,
++     that doesn't matter.  */
++  fts_close (fts);
++
++  return ok;
++}
++
++void
++usage (int status)
++{
++  if (status != EXIT_SUCCESS)
++    fprintf (stderr, _("Try `%s --help' for more information.\n"),
++	     program_name);
++  else
++    {
++      printf (_("\
++Usage: %s [OPTION]... CONTEXT FILE...\n\
++  or:  %s [OPTION]... [-u USER] [-r ROLE] [-l RANGE] [-t TYPE] FILE...\n\
++  or:  %s [OPTION]... --reference=RFILE FILE...\n\
++"),
++	program_name, program_name, program_name);
++      fputs (_("\
++Change the security context of each FILE to CONTEXT.\n\
++With --reference, change the security context of each FILE to that of RFILE.\n\
++\n\
++  -c, --changes          like verbose but report only when a change is made\n\
++  -h, --no-dereference   affect symbolic links instead of any referenced file\n\
++                         (available only on systems with lchown system call)\n\
++"), stdout);
++      fputs (_("\
++      --reference=RFILE  use RFILE's security context rather than specifying\n\
++                         a CONTEXT value\n\
++  -R, --recursive        operate on files and directories recursively\n\
++  -v, --verbose          output a diagnostic for every file processed\n\
++"), stdout);
++      fputs (_("\
++  -u, --user=USER        set user USER in the target security context\n\
++  -r, --role=ROLE        set role ROLE in the target security context\n\
++  -t, --type=TYPE        set type TYPE in the target security context\n\
++  -l, --range=RANGE      set range RANGE in the target security context\n\
++\n\
++"), stdout);
++      fputs (_("\
++The following options modify how a hierarchy is traversed when the -R\n\
++option is also specified.  If more than one is specified, only the final\n\
++one takes effect.\n\
++\n\
++  -H                     if a command line argument is a symbolic link\n\
++                         to a directory, traverse it\n\
++  -L                     traverse every symbolic link to a directory\n\
++                         encountered\n\
++  -P                     do not traverse any symbolic links (default)\n\
++\n\
++"), stdout);
++      fputs (HELP_OPTION_DESCRIPTION, stdout);
++      fputs (VERSION_OPTION_DESCRIPTION, stdout);
++    }
++  exit (status);
++}
++
++int
++main (int argc, char **argv)
++{
++  security_context_t ref_context = NULL;
++
++  /* Bit flags that control how fts works.  */
++  int bit_flags = FTS_PHYSICAL;
++
++  /* 1 if --dereference, 0 if --no-dereference, -1 if neither has been
++     specified.  */
++  int dereference = -1;
++
++  bool ok;
++  bool preserve_root = false;
++  bool component_specified = false;
++  char *reference_file = NULL;
++  int optc;
++
++  initialize_main (&argc, &argv);
++  program_name = argv[0];
++  setlocale (LC_ALL, "");
++  bindtextdomain (PACKAGE, LOCALEDIR);
++  textdomain (PACKAGE);
++
++  atexit (close_stdout);
++
++  while ((optc = getopt_long (argc, argv, "HLPRchvu:r:t:l:", long_options, NULL))
++	 != -1)
++    {
++      switch (optc)
++	{
++	case 'H': /* Traverse command-line symlinks-to-directories.  */
++	  bit_flags = FTS_COMFOLLOW | FTS_PHYSICAL;
++	  break;
++
++	case 'L': /* Traverse all symlinks-to-directories.  */
++	  bit_flags = FTS_LOGICAL;
++	  break;
++
++	case 'P': /* Traverse no symlinks-to-directories.  */
++	  bit_flags = FTS_PHYSICAL;
++	  break;
++
++	case 'h': /* --no-dereference: affect symlinks */
++	  dereference = 0;
++	  break;
++
++	case DEREFERENCE_OPTION: /* --dereference: affect the referent
++				    of each symlink */
++	  dereference = 1;
++	  break;
++
++	case NO_PRESERVE_ROOT:
++	  preserve_root = false;
++	  break;
++
++	case PRESERVE_ROOT:
++	  preserve_root = true;
++	  break;
++
++	case REFERENCE_FILE_OPTION:
++	  reference_file = optarg;
++	  break;
++
++	case 'R':
++	  recurse = true;
++	  break;
++
++	case 'f':
++	  /* ignore */
++	  break;
++
++	case 'v':
++	  verbose = true;
++	  break;
++
++	case 'u':
++	  specified_user = optarg;
++	  component_specified = true;
++	  break;
++
++	case 'r':
++	  specified_role = optarg;
++	  component_specified = true;
++	  break;
++
++	case 't':
++	  specified_type = optarg;
++	  component_specified = true;
++	  break;
++
++	case 'l':
++	  specified_range = optarg;
++	  component_specified = true;
++	  break;
++
++	case_GETOPT_HELP_CHAR;
++	case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
++	default:
++	  usage (EXIT_FAILURE);
++	}
++    }
++
++  if (recurse)
++    {
++      if (bit_flags == FTS_PHYSICAL)
++	{
++	  if (dereference == 1)
++	    error (EXIT_FAILURE, 0,
++		   _("-R --dereference requires either -H or -L"));
++	  affect_symlink_referent = false;
++	}
++      else
++	{
++	  if (dereference == 0)
++	    error (EXIT_FAILURE, 0, _("-R -h requires -P"));
++	  affect_symlink_referent = true;
++	}
++    }
++  else
++    {
++      bit_flags = FTS_PHYSICAL;
++      affect_symlink_referent = (dereference != 0);
++    }
++
++  if (argc - optind < (reference_file || component_specified ? 1 : 2))
++    {
++      if (argc <= optind)
++	error (0, 0, _("missing operand"));
++      else
++	error (0, 0, _("missing operand after %s"), quote (argv[argc - 1]));
++      usage (EXIT_FAILURE);
++    }
++
++  if (reference_file)
++    {
++      if (getfilecon (reference_file, &ref_context) < 0)
++	error (EXIT_FAILURE, errno, _("failed to get security context of %s"),
++	       quote (reference_file));
++
++      specified_context = ref_context;
++    }
++  else if (component_specified)
++    {
++      /* FIXME: it's already null, so this is a no-op. */
++      specified_context = NULL;
++    }
++  else
++    {
++      context_t context;
++      specified_context = argv[optind++];
++      context = context_new (specified_context);
++      if (!context)
++	error (EXIT_FAILURE, 0, _("invalid context: %s"),
++	       quotearg_colon (specified_context));
++      context_free (context);
++    }
++
++  if (reference_file && component_specified)
++    {
++      error (0, 0, _("conflicting security context specifiers given"));
++      usage (1);
++    }
++
++  if (recurse & preserve_root)
++    {
++      static struct dev_ino dev_ino_buf;
++      root_dev_ino = get_root_dev_ino (&dev_ino_buf);
++      if (root_dev_ino == NULL)
++	error (EXIT_FAILURE, errno, _("failed to get attributes of %s"),
++	       quote ("/"));
++    }
++  else
++    {
++      root_dev_ino = NULL;
++    }
++
++  ok = process_files (argv + optind, bit_flags | FTS_NOSTAT);
++
++  exit (ok ? EXIT_SUCCESS : EXIT_FAILURE);
++}
+diff -urN coreutils-6.9.orig/src/copy.c coreutils-6.9/src/copy.c
+--- coreutils-6.9.orig/src/copy.c	2022-10-18 16:50:20.793914068 +0800
++++ coreutils-6.9/src/copy.c	2022-10-18 16:52:15.937802652 +0800
+@@ -21,6 +21,7 @@
+ #include <stdio.h>
+ #include <assert.h>
+ #include <sys/types.h>
++#include <selinux/selinux.h>
+ 
+ #if HAVE_HURD_H
+ # include <hurd.h>
+@@ -302,6 +303,42 @@
+     {
+       dest_desc = open (dst_name, O_WRONLY | O_TRUNC | O_BINARY);
+ 
++      /* When using cp --preserve=context to copy to an existing destination,
++	 use the default context rather than that of the source.  Why?
++	 1) the src context may prohibit writing, and
++	 2) because it's more consistent to use the same context
++	 that is used when the destination file doesn't already exist.  */
++      if (x->preserve_security_context && 0 <= dest_desc)
++	{
++	  security_context_t con;
++	  if (getfscreatecon (&con) < 0)
++	    {
++	      error (0, errno, _("failed to get file system create context"));
++	      if (x->require_preserve_context)
++		{
++		  return_val = false;
++		  goto close_src_desc;
++		}
++	    }
++
++	  if (con)
++	    {
++	      if (fsetfilecon (dest_desc, con) < 0)
++		{
++		  error (0, errno,
++			 _("failed to set the security context of %s to %s"),
++			 quote_n (0, dst_name), quote_n (1, con));
++		  if (x->require_preserve_context)
++		    {
++		      return_val = false;
++		      freecon (con);
++		      goto close_src_desc;
++		    }
++		}
++	      freecon(con);
++	    }
++	}
++
+       if (dest_desc < 0 && x->unlink_dest_after_failed_open)
+ 	{
+ 	  if (unlink (dst_name) != 0)
+@@ -995,6 +1032,15 @@
+   putchar ('\n');
+ }
+ 
++/* A wrapper around "setfscreatecon (NULL)" that exits upon failure.  */
++static void
++restore_default_fscreatecon_or_die (void)
++{
++  if (setfscreatecon (NULL) != 0)
++    error (EXIT_FAILURE, errno,
++	   _("failed to restore the default file creation context"));
++}
++
+ /* Copy the file SRC_NAME to the file DST_NAME.  The files may be of
+    any type.  NEW_DST should be true if the file DST_NAME cannot
+    exist because its parent directory was just created; NEW_DST should
+@@ -1351,7 +1397,7 @@
+ 
+   if (x->move_mode && src_sb.st_nlink == 1)
+     {
+-	earlier_file = src_to_dest_lookup (src_sb.st_ino, src_sb.st_dev);
++      earlier_file = src_to_dest_lookup (src_sb.st_ino, src_sb.st_dev);
+     }
+   else if ((x->preserve_links
+ 	    && (1 < src_sb.st_nlink
+@@ -1541,6 +1587,38 @@
+ 
+   delayed_ok = true;
+ 
++  if (x->preserve_security_context)
++    {
++      security_context_t con;
++
++      if (0 <= lgetfilecon (src_name, &con))
++	{
++	  if (setfscreatecon (con) < 0)
++	    {
++	      error (0, errno,
++		     _("failed to set default file creation context to %s"),
++		     quote (con));
++	      if (x->require_preserve_context)
++		{
++		  freecon (con);
++		  return false;
++		}
++	    }
++	  freecon (con);
++	}
++      else
++	{
++	  if (errno != ENOTSUP && errno != ENODATA)
++	    {
++	      error (0, errno,
++		     _("failed to get security context of %s"),
++		     quote (src_name));
++	      if (x->require_preserve_context)
++		return false;
++	    }
++	}
++    }
++
+   /* In certain modes (cp's --symbolic-link), and for certain file types
+      (symlinks and hard links) it doesn't make sense to preserve metadata,
+      or it's possible to preserve only some of it.
+@@ -1770,6 +1848,9 @@
+ 	    }
+ 	}
+ 
++      if (x->preserve_security_context)
++	restore_default_fscreatecon_or_die ();
++
+       /* There's no need to preserve timestamps or permissions.  */
+       preserve_metadata = false;
+ 
+@@ -1903,6 +1984,9 @@
+ 
+ un_backup:
+ 
++  if (x->preserve_security_context)
++    restore_default_fscreatecon_or_die ();
++
+   /* We have failed to create the destination file.
+      If we've just added a dev/ino entry via the remember_copied
+      call above (i.e., unless we've just failed to create a hard link),
+diff -urN coreutils-6.9.orig/src/copy.h coreutils-6.9/src/copy.h
+--- coreutils-6.9.orig/src/copy.h	2022-10-18 16:50:20.793914068 +0800
++++ coreutils-6.9/src/copy.h	2022-10-18 16:52:15.937802652 +0800
+@@ -1,5 +1,5 @@
+ /* core functions for copying files and directories
+-   Copyright (C) 89, 90, 91, 1995-2005 Free Software Foundation.
++   Copyright (C) 89, 90, 91, 1995-2007 Free Software Foundation.
+ 
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+@@ -145,10 +145,25 @@
+ 
+   /* If true and any of the above (for preserve) file attributes cannot
+      be applied to a destination file, treat it as a failure and return
+-     nonzero immediately.  E.g. cp -p requires this be nonzero, mv requires
+-     it be zero.  */
++     nonzero immediately.  E.g. for cp -p this must be true, for mv it
++     must be false.  */
+   bool require_preserve;
+ 
++  /* If true, attempt to preserve the SELinux security context, too.
++     Set this only if the kernel is SELinux enabled.  */
++  bool preserve_security_context;
++
++  /* Useful only when preserve_security_context is true.
++     If true, a failed attempt to preserve a file's security context
++     propagates failure "out" to the caller.  If false, a failure to
++     preserve a file's security context does not change the invoking
++     application's exit status.  Give diagnostics for failed syscalls
++     regardless of this setting.  For example, with "cp --preserve=context"
++     this flag is "true", while with "cp -a", it is false.  That means
++     "cp -a" attempts to preserve any security context, but does not
++     fail if it is unable to do so.  */
++  bool require_preserve_context;
++
+   /* If true, copy directories recursively and copy special files
+      as themselves rather than copying their contents. */
+   bool recursive;
+diff -urN coreutils-6.9.orig/src/cp.c coreutils-6.9/src/cp.c
+--- coreutils-6.9.orig/src/cp.c	2022-10-17 18:01:58.733357691 +0800
++++ coreutils-6.9/src/cp.c	2022-10-18 09:46:34.882516600 +0800
+@@ -21,6 +21,7 @@
+ #include <stdio.h>
+ #include <sys/types.h>
+ #include <getopt.h>
++#include <selinux/selinux.h>
+ 
+ #include "system.h"
+ #include "argmatch.h"
+@@ -85,6 +86,9 @@
+ /* The invocation name of this program.  */
+ char *program_name;
+ 
++/* True if the kernel is SELinux enabled.  */
++static bool selinux_enabled;
++
+ /* If true, the command "cp x/e_file e_dir" uses "e_dir/x/e_file"
+    as its destination instead of the usual "e_dir/e_file." */
+ static bool parents_option = false;
+@@ -191,7 +195,7 @@
+   -p                           same as --preserve=mode,ownership,timestamps\n\
+       --preserve[=ATTR_LIST]   preserve the specified attributes (default:\n\
+                                  mode,ownership,timestamps), if possible\n\
+-                                 additional attributes: links, all\n\
++                                 additional attributes: context, links, all\n\
+ "), stdout);
+       fputs (_("\
+       --no-preserve=ATTR_LIST  don't preserve the specified attributes\n\
+@@ -749,6 +753,8 @@
+   x->preserve_links = false;
+   x->preserve_mode = false;
+   x->preserve_timestamps = false;
++  x->preserve_security_context = false;
++  x->require_preserve_context = false;
+ 
+   x->require_preserve = false;
+   x->recursive = false;
+@@ -777,18 +783,19 @@
+       PRESERVE_TIMESTAMPS,
+       PRESERVE_OWNERSHIP,
+       PRESERVE_LINK,
++      PRESERVE_CONTEXT,
+       PRESERVE_ALL
+     };
+   static enum File_attribute const preserve_vals[] =
+     {
+       PRESERVE_MODE, PRESERVE_TIMESTAMPS,
+-      PRESERVE_OWNERSHIP, PRESERVE_LINK, PRESERVE_ALL
++      PRESERVE_OWNERSHIP, PRESERVE_LINK, PRESERVE_CONTEXT, PRESERVE_ALL
+     };
+   /* Valid arguments to the `--preserve' option. */
+   static char const* const preserve_args[] =
+     {
+       "mode", "timestamps",
+-      "ownership", "links", "all", NULL
++      "ownership", "links", "context", "all", NULL
+     };
+   ARGMATCH_VERIFY (preserve_args, preserve_vals);
+ 
+@@ -824,11 +831,18 @@
+ 	  x->preserve_links = on_off;
+ 	  break;
+ 
++	case PRESERVE_CONTEXT:
++	  x->preserve_security_context = on_off;
++	  x->require_preserve_context = on_off;
++	  break;
++
+ 	case PRESERVE_ALL:
+ 	  x->preserve_mode = on_off;
+ 	  x->preserve_timestamps = on_off;
+ 	  x->preserve_ownership = on_off;
+ 	  x->preserve_links = on_off;
++	  if (selinux_enabled)
++	    x->preserve_security_context = on_off;
+ 	  break;
+ 
+ 	default:
+@@ -862,6 +876,7 @@
+ 
+   atexit (close_stdout);
+ 
++  selinux_enabled = (0 < is_selinux_enabled ());
+   cp_option_init (&x);
+ 
+   /* FIXME: consider not calling getenv for SIMPLE_BACKUP_SUFFIX unless
+@@ -1048,9 +1063,6 @@
+ 	x.dereference = DEREF_ALWAYS;
+     }
+ 
+-  /* The key difference between -d (--no-dereference) and not is the version
+-     of `stat' to call.  */
+-
+   if (x.recursive)
+     x.copy_as_regular = copy_contents;
+ 
+@@ -1059,6 +1071,14 @@
+   if (x.unlink_dest_after_failed_open & (x.hard_link | x.symbolic_link))
+     x.unlink_dest_before_opening = true;
+ 
++  if (x.preserve_security_context)
++    {
++      if (!selinux_enabled)
++	error (EXIT_FAILURE, 0,
++	       _("cannot preserve security context "
++		 "without an SELinux-enabled kernel"));
++    }
++
+   /* Allocate space for remembering copied and created files.  */
+ 
+   hash_init ();
+diff -urN coreutils-6.9.orig/src/id.c coreutils-6.9/src/id.c
+--- coreutils-6.9.orig/src/id.c	2022-10-17 18:01:58.725357699 +0800
++++ coreutils-6.9/src/id.c	2022-10-18 09:46:34.694516800 +0800
+@@ -1,5 +1,5 @@
+ /* id -- print real and effective UIDs and GIDs
+-   Copyright (C) 1989-2005 Free Software Foundation, Inc.
++   Copyright (C) 1989-2007 Free Software Foundation, Inc.
+ 
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+@@ -25,6 +25,7 @@
+ #include <pwd.h>
+ #include <grp.h>
+ #include <getopt.h>
++#include <selinux/selinux.h>
+ 
+ #include "system.h"
+ #include "error.h"
+@@ -37,6 +38,9 @@
+ 
+ int getugroups ();
+ 
++/* If nonzero, output only the SELinux context. -Z */
++static int just_context = 0;
++
+ static void print_user (uid_t uid);
+ static void print_group (gid_t gid);
+ static void print_group_list (const char *username);
+@@ -55,8 +59,13 @@
+ /* True unless errors have been encountered.  */
+ static bool ok = true;
+ 
++/* The SELinux context.  Start with a known invalid value so print_full_info
++   knows when `context' has not been set to a meaningful value.  */
++static security_context_t context = NULL;
++
+ static struct option const longopts[] =
+ {
++  {"context", no_argument, NULL, 'Z'},
+   {"group", no_argument, NULL, 'g'},
+   {"groups", no_argument, NULL, 'G'},
+   {"name", no_argument, NULL, 'n'},
+@@ -80,6 +89,7 @@
+ Print information for USERNAME, or the current user.\n\
+ \n\
+   -a              ignore, for compatibility with other versions\n\
++  -Z, --context   print only the security context of the current user\n\
+   -g, --group     print only the effective group ID\n\
+   -G, --groups    print all group IDs\n\
+   -n, --name      print a name instead of a number, for -ugG\n\
+@@ -101,6 +111,7 @@
+ main (int argc, char **argv)
+ {
+   int optc;
++  int selinux_enabled = (is_selinux_enabled () > 0);
+ 
+   /* If true, output the list of all group IDs. -G */
+   bool just_group_list = false;
+@@ -119,13 +130,22 @@
+ 
+   atexit (close_stdout);
+ 
+-  while ((optc = getopt_long (argc, argv, "agnruG", longopts, NULL)) != -1)
++  while ((optc = getopt_long (argc, argv, "agnruGZ", longopts, NULL)) != -1)
+     {
+       switch (optc)
+ 	{
+ 	case 'a':
+ 	  /* Ignore -a, for compatibility with SVR4.  */
+ 	  break;
++
++        case 'Z':
++	  /* politely decline if we're not on a selinux-enabled kernel. */
++	  if (!selinux_enabled)
++	    error (EXIT_FAILURE, 0,
++		   _("--context (-Z) works only on an SELinux-enabled kernel"));
++          just_context = 1;
++          break;
++
+ 	case 'g':
+ 	  just_group = true;
+ 	  break;
+@@ -148,19 +168,38 @@
+ 	}
+     }
+ 
+-  if (just_user + just_group + just_group_list > 1)
+-    error (EXIT_FAILURE, 0, _("cannot print only user and only group"));
++  if (1 < argc - optind)
++    {
++      error (0, 0, _("extra operand %s"), quote (argv[optind + 1]));
++      usage (EXIT_FAILURE);
++    }
+ 
+-  if (just_user + just_group + just_group_list == 0 && (use_real | use_name))
++  if (argc - optind == 1 && just_context)
+     error (EXIT_FAILURE, 0,
+-	   _("cannot print only names or real IDs in default format"));
++	   _("cannot print security context when user specified"));
++
++  if (just_context && !selinux_enabled)
++    error (EXIT_FAILURE, 0, _("\
++cannot display context when selinux not enabled or when displaying the id\n\
++of a different user"));
+ 
+-  if (argc - optind > 1)
++  /* If we are on a selinux-enabled kernel, get our context.
++     Otherwise, leave the context variable alone - it has
++     been initialized known invalid value; if we see this invalid
++     value later, we will know we are on a non-selinux kernel.  */
++  if (selinux_enabled)
+     {
+-      error (0, 0, _("extra operand %s"), quote (argv[optind + 1]));
+-      usage (EXIT_FAILURE);
++      if (getcon (&context) && just_context)
++        error (EXIT_FAILURE, 0, _("can't get process context"));
+     }
+ 
++  if (just_user + just_group + just_group_list + just_context > 1)
++    error (EXIT_FAILURE, 0, _("cannot print \"only\" of more than one choice"));
++
++  if (just_user + just_group + just_group_list == 0 && (use_real | use_name))
++    error (EXIT_FAILURE, 0,
++	   _("cannot print only names or real IDs in default format"));
++
+   if (argc - optind == 1)
+     {
+       struct passwd *pwd = getpwnam (argv[optind]);
+@@ -183,6 +222,8 @@
+     print_group (use_real ? rgid : egid);
+   else if (just_group_list)
+     print_group_list (argv[optind]);
++  else if (just_context)
++    fputs (context, stdout);
+   else
+     print_full_info (argv[optind]);
+   putchar ('\n');
+@@ -385,4 +426,6 @@
+     free (groups);
+   }
+ #endif /* HAVE_GETGROUPS */
++  if (context != NULL)
++    printf (" context=%s", context);
+ }
+diff -urN coreutils-6.9.orig/src/install.c coreutils-6.9/src/install.c
+--- coreutils-6.9.orig/src/install.c	2022-10-18 16:50:20.793914068 +0800
++++ coreutils-6.9/src/install.c	2022-10-18 16:52:15.937802652 +0800
+@@ -24,6 +24,7 @@
+ #include <signal.h>
+ #include <pwd.h>
+ #include <grp.h>
++#include <selinux/selinux.h>
+ 
+ #include "system.h"
+ #include "backupfile.h"
+@@ -35,6 +36,7 @@
+ #include "mkdir-p.h"
+ #include "modechange.h"
+ #include "quote.h"
++#include "quotearg.h"
+ #include "savewd.h"
+ #include "stat-time.h"
+ #include "utimens.h"
+@@ -49,6 +51,9 @@
+ # include <sys/wait.h>
+ #endif
+ 
++static int selinux_enabled = 0;
++static bool use_default_selinux_context = true;
++
+ #if ! HAVE_ENDGRENT
+ # define endgrent() ((void) 0)
+ #endif
+@@ -121,15 +126,28 @@
+ /* If true, install a directory instead of a regular file. */
+ static bool dir_arg;
+ 
++/* For long options that have no equivalent short option, use a
++   non-character as a pseudo short option, starting with CHAR_MAX + 1.  */
++enum
++{
++  PRESERVE_CONTEXT_OPTION = CHAR_MAX + 1
++};
++
+ static struct option const long_options[] =
+ {
+   {"backup", optional_argument, NULL, 'b'},
++  {GETOPT_SELINUX_CONTEXT_OPTION_DECL},
+   {"directory", no_argument, NULL, 'd'},
+   {"group", required_argument, NULL, 'g'},
+   {"mode", required_argument, NULL, 'm'},
+   {"no-target-directory", no_argument, NULL, 'T'},
+   {"owner", required_argument, NULL, 'o'},
+   {"preserve-timestamps", no_argument, NULL, 'p'},
++  {"preserve-context", no_argument, NULL, PRESERVE_CONTEXT_OPTION},
++  /* Continue silent support for --preserve_context until Jan 2008. FIXME-obs
++     After that, FIXME-obs: warn in, say, late 2008, and disable altogether
++     a year or two later.  */
++  {"preserve_context", no_argument, NULL, PRESERVE_CONTEXT_OPTION},
+   {"strip", no_argument, NULL, 's'},
+   {"suffix", required_argument, NULL, 'S'},
+   {"target-directory", required_argument, NULL, 't'},
+@@ -157,6 +175,7 @@
+   x->preserve_mode = false;
+   x->preserve_timestamps = false;
+   x->require_preserve = false;
++  x->require_preserve_context = false;
+   x->recursive = false;
+   x->sparse_mode = SPARSE_AUTO;
+   x->symbolic_link = false;
+@@ -170,11 +189,47 @@
+   x->stdin_tty = false;
+ 
+   x->update = false;
++  x->preserve_security_context = false;
+   x->verbose = false;
+   x->dest_info = NULL;
+   x->src_info = NULL;
+ }
+ 
++/* Modify file context to match the specified policy.
++   If an error occurs the file will remain with the default directory
++   context.  */
++static void
++setdefaultfilecon (char const *file)
++{
++  struct stat st;
++  security_context_t scontext = NULL;
++  if (selinux_enabled != 1)
++    {
++      /* Indicate no context found. */
++      return;
++    }
++  if (lstat (file, &st) != 0)
++    return;
++
++  /* If there's an error determining the context, or it has none,
++     return to allow default context */
++  if ((matchpathcon (file, st.st_mode, &scontext) != 0) ||
++      (strcmp (scontext, "<<none>>") == 0))
++    {
++      if (scontext != NULL)
++	freecon (scontext);
++      return;
++    }
++
++  if (lsetfilecon (file, scontext) < 0 && errno != ENOTSUP)
++    error (0, errno,
++	   _("warning: %s: failed to change context to %s"),
++	   quotearg_colon (file), scontext);
++
++  freecon (scontext);
++  return;
++}
++
+ /* FILE is the last operand of this command.  Return true if FILE is a
+    directory.  But report an error there is a problem accessing FILE,
+    or if FILE does not exist but would have to refer to an existing
+@@ -223,6 +278,9 @@
+   bool no_target_directory = false;
+   int n_files;
+   char **file;
++  security_context_t scontext = NULL;
++  /* set iff kernel has extra selinux system calls */
++  selinux_enabled = (0 < is_selinux_enabled ());
+ 
+   initialize_main (&argc, &argv);
+   program_name = argv[0];
+@@ -244,7 +302,7 @@
+      we'll actually use backup_suffix_string.  */
+   backup_suffix_string = getenv ("SIMPLE_BACKUP_SUFFIX");
+ 
+-  while ((optc = getopt_long (argc, argv, "bcsDdg:m:o:pt:TvS:", long_options,
++  while ((optc = getopt_long (argc, argv, "bcsDdg:m:o:pt:TvS:Z:", long_options,
+ 			      NULL)) != -1)
+     {
+       switch (optc)
+@@ -306,6 +364,27 @@
+ 	case 'T':
+ 	  no_target_directory = true;
+ 	  break;
++
++	case PRESERVE_CONTEXT_OPTION:
++	  if ( ! selinux_enabled)
++	    {
++	      error (0, 0, _("Warning: ignoring --preserve-context; "
++			     "this kernel is not SELinux-enabled."));
++	      break;
++	    }
++	  x.preserve_security_context = true;
++	  use_default_selinux_context = false;
++	  break;
++	case 'Z':
++	  if ( ! selinux_enabled)
++	    {
++	      error (0, 0, _("Warning: ignoring --context (-Z); "
++			     "this kernel is not SELinux-enabled."));
++	      break;
++	    }
++	  scontext = optarg;
++	  use_default_selinux_context = false;
++	  break;
+ 	case_GETOPT_HELP_CHAR;
+ 	case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
+ 	default:
+@@ -321,6 +400,11 @@
+     error (EXIT_FAILURE, 0,
+ 	   _("target directory not allowed when installing a directory"));
+ 
++  if (x.preserve_security_context && scontext != NULL)
++    error (EXIT_FAILURE, 0,
++	   _("cannot force target context to %s and preserve it"),
++	   quote (scontext));
++
+   if (backup_suffix_string)
+     simple_backup_suffix = xstrdup (backup_suffix_string);
+ 
+@@ -329,6 +413,11 @@
+ 				   version_control_string)
+ 		   : no_backups);
+ 
++  if (scontext && setfscreatecon (scontext) < 0)
++    error (EXIT_FAILURE, errno,
++	   _("failed to set default file creation context to %s"),
++	   quote (scontext));
++
+   n_files = argc - optind;
+   file = argv + optind;
+ 
+@@ -504,6 +593,7 @@
+ static bool
+ change_attributes (char const *name)
+ {
++  bool ok = false;
+   /* chown must precede chmod because on some systems,
+      chown clears the set[ug]id bits for non-superusers,
+      resulting in incorrect permissions.
+@@ -522,9 +612,12 @@
+   else if (chmod (name, mode) != 0)
+     error (0, errno, _("cannot change permissions of %s"), quote (name));
+   else
+-    return true;
++    ok = true;
++
++  if (use_default_selinux_context)
++    setdefaultfilecon (name);
+ 
+-  return false;
++  return ok;
+ }
+ 
+ /* Set the timestamps of file TO to match those of file FROM.
+@@ -688,6 +781,11 @@
+   -T, --no-target-directory  treat DEST as a normal file\n\
+   -v, --verbose       print the name of each directory as it is created\n\
+ "), stdout);
++      fputs (_("\
++      --preserve-context  preserve SELinux security context\n\
++  -Z, --context=CONTEXT  set SELinux security context of files and directories\n\
++"), stdout);
++
+       fputs (HELP_OPTION_DESCRIPTION, stdout);
+       fputs (VERSION_OPTION_DESCRIPTION, stdout);
+       fputs (_("\
+diff -urN coreutils-6.9.orig/src/ls.c coreutils-6.9/src/ls.c
+--- coreutils-6.9.orig/src/ls.c	2022-10-17 18:01:58.729357695 +0800
++++ coreutils-6.9/src/ls.c	2022-10-18 09:46:34.786516700 +0800
+@@ -61,6 +61,7 @@
+ #include <pwd.h>
+ #include <getopt.h>
+ #include <signal.h>
++#include <selinux/selinux.h>
+ 
+ /* Use SA_NOCLDSTOP as a proxy for whether the sigaction machinery is
+    present.  */
+@@ -167,24 +168,20 @@
+        zero.  */
+     mode_t linkmode;
+ 
++    /* SELinux security context.  */
++    security_context_t scontext;
++
+     bool stat_ok;
+ 
+     /* For symbolic link and color printing, true if linked-to file
+        exists, otherwise false.  */
+     bool linkok;
+ 
+-#if USE_ACL
+-    /* For long listings, true if the file has an access control list.  */
++    /* For long listings, true if the file has an access control list,
++       or an SELinux security context.  */
+     bool have_acl;
+-#endif
+   };
+ 
+-#if USE_ACL
+-# define FILE_HAS_ACL(F) ((F)->have_acl)
+-#else
+-# define FILE_HAS_ACL(F) 0
+-#endif
+-
+ #define LEN_STR_PAIR(s) sizeof (s) - 1, s
+ 
+ /* Null is a valid character in a color indicator (think about Epson
+@@ -320,14 +317,12 @@
+ static time_t current_time = TYPE_MINIMUM (time_t);
+ static int current_time_ns = -1;
+ 
++static bool print_scontext;
++
+ /* Whether any of the files has an ACL.  This affects the width of the
+    mode column.  */
+ 
+-#if USE_ACL
+ static bool any_has_acl;
+-#else
+-enum { any_has_acl = false };
+-#endif
+ 
+ /* The number of columns to use for columns containing inode numbers,
+    block sizes, link counts, owners, groups, authors, major device
+@@ -336,6 +331,7 @@
+ static int inode_number_width;
+ static int block_size_width;
+ static int nlink_width;
++static int scontext_width;
+ static int owner_width;
+ static int group_width;
+ static int author_width;
+@@ -787,6 +783,7 @@
+   {"time-style", required_argument, NULL, TIME_STYLE_OPTION},
+   {"color", optional_argument, NULL, COLOR_OPTION},
+   {"block-size", required_argument, NULL, BLOCK_SIZE_OPTION},
++  {"context", no_argument, 0, 'Z'},
+   {"author", no_argument, NULL, AUTHOR_OPTION},
+   {GETOPT_HELP_OPTION_DECL},
+   {GETOPT_VERSION_OPTION_DECL},
+@@ -1246,6 +1243,7 @@
+ 
+   format_needs_stat = sort_type == sort_time || sort_type == sort_size
+     || format == long_format
++    || print_scontext
+     || print_block_size;
+   format_needs_type = (! format_needs_stat
+ 		       && (recursive
+@@ -1439,6 +1437,7 @@
+   ignore_mode = IGNORE_DEFAULT;
+   ignore_patterns = NULL;
+   hide_patterns = NULL;
++  print_scontext = false;
+ 
+   /* FIXME: put this in a function.  */
+   {
+@@ -1514,7 +1513,7 @@
+   }
+ 
+   while ((c = getopt_long (argc, argv,
+-			   "abcdfghiklmnopqrstuvw:xABCDFGHI:LNQRST:UX1",
++			   "abcdfghiklmnopqrstuvw:xABCDFGHI:LNQRST:UXZ1",
+ 			   long_options, NULL)) != -1)
+     {
+       switch (c)
+@@ -1813,6 +1812,10 @@
+ 	  file_output_block_size = output_block_size = 1;
+ 	  break;
+ 
++	case 'Z':
++	  print_scontext = true;
++	  break;
++
+ 	case_GETOPT_HELP_CHAR;
+ 
+ 	case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
+@@ -2516,18 +2519,22 @@
+       struct fileinfo *f = sorted_file[i];
+       free (f->name);
+       free (f->linkname);
++      if (f->scontext)
++	{
++	  freecon (f->scontext);
++	  f->scontext = NULL;
++	}
+     }
+ 
+   cwd_n_used = 0;
+-#if USE_ACL
+   any_has_acl = false;
+-#endif
+   inode_number_width = 0;
+   block_size_width = 0;
+   nlink_width = 0;
+   owner_width = 0;
+   group_width = 0;
+   author_width = 0;
++  scontext_width = 0;
+   major_device_number_width = 0;
+   minor_device_number_width = 0;
+   file_size_width = 0;
+@@ -2589,9 +2596,11 @@
+ 				     )))))
+ 
+     {
++      /* FIXME-c99: move this decl "down", once ls.c stabilizes.  */
++      bool file_has_security_context = false;
+       /* Absolute name of this file.  */
+       char *absolute_name;
+-
++      bool do_deref;
+       int err;
+ 
+       if (name[0] == '/' || dirname[0] == 0)
+@@ -2606,6 +2615,7 @@
+ 	{
+ 	case DEREF_ALWAYS:
+ 	  err = stat (absolute_name, &f->stat);
++	  do_deref = true;
+ 	  break;
+ 
+ 	case DEREF_COMMAND_LINE_ARGUMENTS:
+@@ -2614,6 +2624,7 @@
+ 	    {
+ 	      bool need_lstat;
+ 	      err = stat (absolute_name, &f->stat);
++	      do_deref = true;
+ 
+ 	      if (dereference == DEREF_COMMAND_LINE_ARGUMENTS)
+ 		break;
+@@ -2632,9 +2643,26 @@
+ 
+ 	default: /* DEREF_NEVER */
+ 	  err = lstat (absolute_name, &f->stat);
++	  do_deref = false;
+ 	  break;
+ 	}
+ 
++      if (err == 0 && print_scontext)
++	{
++	  int attr_len = (do_deref
++			  ?  getfilecon (absolute_name, &f->scontext)
++			  : lgetfilecon (absolute_name, &f->scontext));
++	  err = (attr_len < 0);
++	  file_has_security_context = (err == 0);
++
++	  /* When requesting security context information, don't make
++	     ls fail just because the file (even a command line argument)
++	     isn't on the right type of file system.  I.e., a getfilecon
++	     failure isn't in the same class as a stat failure.  */
++	  if (err && (errno == ENOTSUP || errno == ENODATA))
++	    err = 0;
++	}
++
+       if (err != 0)
+ 	{
+ 	  /* Failure to stat a command line argument leads to
+@@ -2653,16 +2681,14 @@
+ 
+       f->stat_ok = true;
+ 
+-#if USE_ACL
+       if (format == long_format)
+ 	{
+ 	  int n = file_has_acl (absolute_name, &f->stat);
+-	  f->have_acl = (0 < n);
++	  f->have_acl = (0 < n || file_has_security_context);
+ 	  any_has_acl |= f->have_acl;
+ 	  if (n < 0)
+ 	    error (0, errno, "%s", quotearg_colon (absolute_name));
+ 	}
+-#endif
+ 
+       if (S_ISLNK (f->stat.st_mode)
+ 	  && (format == long_format || check_symlink_color))
+@@ -2738,6 +2764,13 @@
+ 	    author_width = len;
+ 	}
+ 
++      if (print_scontext)
++	{
++	  int len = f->scontext ? strlen (f->scontext) : 0;
++	  if (scontext_width < len)
++	    scontext_width = len;
++	}
++
+       {
+ 	char buf[INT_BUFSIZE_BOUND (uintmax_t)];
+ 	int len = strlen (umaxtostr (f->stat.st_nlink, buf));
+@@ -3387,7 +3420,7 @@
+   struct tm *when_local;
+ 
+   /* Compute the mode string, except remove the trailing space if no
+-     files in this directory have ACLs.  */
++     file in this directory has an ACL or SELinux security context.  */
+   if (f->stat_ok)
+     filemodestring (&f->stat, modebuf);
+   else
+@@ -3398,7 +3431,7 @@
+     }
+   if (! any_has_acl)
+     modebuf[10] = '\0';
+-  else if (FILE_HAS_ACL (f))
++  else if (f->have_acl)
+     modebuf[10] = '+';
+ 
+   switch (time_type)
+@@ -3463,7 +3496,7 @@
+ 
+   DIRED_INDENT ();
+ 
+-  if (print_owner | print_group | print_author)
++  if (print_owner | print_group | print_author | print_scontext)
+     {
+       DIRED_FPUTS (buf, stdout, p - buf);
+ 
+@@ -3476,6 +3509,10 @@
+       if (print_author)
+ 	format_user (f->stat.st_author, author_width, f->stat_ok);
+ 
++      if (print_scontext)
++	format_user_or_group ((f->scontext ? f->scontext : "?"),
++			      0, scontext_width);
++
+       p = buf;
+     }
+ 
+@@ -3812,6 +3849,10 @@
+ 	    human_readable (ST_NBLOCKS (f->stat), buf, human_output_opts,
+ 			    ST_NBLOCKSIZE, output_block_size));
+ 
++  if (print_scontext)
++    printf ("%*s ", format == with_commas ? 0 : scontext_width,
++	    (f->scontext ? f->scontext : "?"));
++
+   print_name_with_quoting (f->name, FILE_OR_LINK_MODE (f), f->linkok,
+ 			   f->stat_ok, f->filetype, NULL);
+ 
+@@ -3975,6 +4016,9 @@
+ 					  output_block_size))
+ 		: block_size_width);
+ 
++  if (print_scontext)
++    len += 1 + (format == with_commas ? strlen (f->scontext) : scontext_width);
++
+   quote_name (NULL, f->name, filename_quoting_options, &name_width);
+   len += name_width;
+ 
+@@ -4403,6 +4447,7 @@
+   -w, --width=COLS           assume screen width instead of current value\n\
+   -x                         list entries by lines instead of by columns\n\
+   -X                         sort alphabetically by entry extension\n\
++  -Z, --context              print any SELinux security context of each file\n\
+   -1                         list one file per line\n\
+ "), stdout);
+       fputs (HELP_OPTION_DESCRIPTION, stdout);
+diff -urN coreutils-6.9.orig/src/Makefile.am coreutils-6.9/src/Makefile.am
+--- coreutils-6.9.orig/src/Makefile.am	2022-10-18 17:05:08.017055572 +0800
++++ coreutils-6.9/src/Makefile.am	2022-10-18 17:05:43.025021698 +0800
+@@ -19,14 +19,15 @@
+ EXTRA_PROGRAMS = chroot df hostid nice pinky stty uname uptime users who
+ 
+ bin_SCRIPTS = groups
+-bin_PROGRAMS = [ chgrp chown chmod cp dd dircolors du \
++bin_PROGRAMS = [ chcon chgrp chown chmod cp dd dircolors du \
+   ginstall link ln dir vdir ls mkdir \
+   mkfifo mknod mv nohup readlink rm rmdir shred stat sync touch unlink \
+   cat cksum comm csplit cut expand fmt fold head join md5sum \
+   nl od paste pr ptx sha1sum sha224sum sha256sum sha384sum sha512sum \
+   shuf sort split sum tac tail tr tsort unexpand uniq wc \
+   basename date dirname echo env expr factor false \
+-  hostname id kill logname pathchk printenv printf pwd seq sleep tee \
++  hostname id kill logname pathchk printenv printf pwd \
++  runcon seq sleep tee \
+   test true tty whoami yes \
+   base64 \
+   $(OPTIONAL_BIN_PROGS) $(DF_PROG)
+@@ -60,9 +61,14 @@
+ LDADD = ../lib/libcoreutils.a $(LIBINTL) ../lib/libcoreutils.a
+ 
+ # for eaccess in lib/euidaccess.c.
+-cp_LDADD = $(LDADD) $(LIB_EACCESS)
+-ginstall_LDADD = $(LDADD) $(LIB_EACCESS)
+-mv_LDADD = $(LDADD) $(LIB_EACCESS)
++chcon_LDADD = $(LDADD) $(LIB_SELINUX)
++cp_LDADD = $(LDADD) $(LIB_EACCESS) $(LIB_SELINUX)
++ginstall_LDADD = $(LDADD) $(LIB_EACCESS) $(LIB_SELINUX)
++mkdir_LDADD = $(LDADD) $(LIB_SELINUX)
++mkfifo_LDADD = $(LDADD) $(LIB_SELINUX)
++mknod_LDADD = $(LDADD) $(LIB_SELINUX)
++mv_LDADD = $(LDADD) $(LIB_EACCESS) $(LIB_SELINUX)
++runcon_LDADD = $(LDADD) $(LIB_SELINUX)
+ pathchk_LDADD = $(LDADD) $(LIB_EACCESS)
+ rm_LDADD = $(LDADD) $(LIB_EACCESS)
+ test_LDADD = $(LDADD) $(LIB_EACCESS)
+@@ -71,12 +77,13 @@
+ 
+ # for clock_gettime and fdatasync
+ dd_LDADD = $(LDADD) $(LIB_GETHRXTIME) $(LIB_FDATASYNC)
+-dir_LDADD = $(LDADD) $(LIB_CLOCK_GETTIME)
+-ls_LDADD = $(LDADD) $(LIB_CLOCK_GETTIME)
++dir_LDADD = $(LDADD) $(LIB_CLOCK_GETTIME) $(LIB_SELINUX)
++id_LDADD = $(LDADD) $(LIB_SELINUX)
++ls_LDADD = $(LDADD) $(LIB_CLOCK_GETTIME) $(LIB_SELINUX)
+ pr_LDADD = $(LDADD) $(LIB_CLOCK_GETTIME)
+ shred_LDADD = $(LDADD) $(LIB_GETHRXTIME) $(LIB_FDATASYNC)
+ shuf_LDADD = $(LDADD) $(LIB_GETHRXTIME)
+-vdir_LDADD = $(LDADD) $(LIB_CLOCK_GETTIME)
++vdir_LDADD = $(LDADD) $(LIB_CLOCK_GETTIME) $(LIB_SELINUX)
+ 
+ ## If necessary, add -lm to resolve use of pow in lib/strtod.c.
+ sort_LDADD = $(LDADD) $(POW_LIB) $(LIB_GETHRXTIME)
+@@ -111,6 +118,8 @@
+ mv_LDADD += $(LIB_ACL)
+ ginstall_LDADD += $(LIB_ACL)
+ 
++stat_LDADD = $(LDADD) $(LIB_SELINUX)
++
+ $(PROGRAMS): ../lib/libcoreutils.a
+ 
+ SUFFIXES = .sh
+diff -urN coreutils-6.9.orig/src/mkdir.c coreutils-6.9/src/mkdir.c
+--- coreutils-6.9.orig/src/mkdir.c	2022-10-17 18:01:58.725357699 +0800
++++ coreutils-6.9/src/mkdir.c	2022-10-18 09:46:34.898516600 +0800
+@@ -1,5 +1,5 @@
+ /* mkdir -- make directories
+-   Copyright (C) 90, 1995-2002, 2004, 2005, 2006 Free Software Foundation, Inc.
++   Copyright (C) 90, 1995-2002, 2004-2007 Free Software Foundation, Inc.
+ 
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+@@ -21,6 +21,7 @@
+ #include <stdio.h>
+ #include <getopt.h>
+ #include <sys/types.h>
++#include <selinux/selinux.h>
+ 
+ #include "system.h"
+ #include "error.h"
+@@ -40,6 +41,7 @@
+ 
+ static struct option const longopts[] =
+ {
++  {GETOPT_SELINUX_CONTEXT_OPTION_DECL},
+   {"mode", required_argument, NULL, 'm'},
+   {"parents", no_argument, NULL, 'p'},
+   {"verbose", no_argument, NULL, 'v'},
+@@ -68,6 +70,8 @@
+   -m, --mode=MODE   set file mode (as in chmod), not a=rwx - umask\n\
+   -p, --parents     no error if existing, make parent directories as needed\n\
+   -v, --verbose     print a message for each created directory\n\
++  -Z, --context=CTX  set the SELinux security context of each created\n\
++                      directory to CTX\n\
+ "), stdout);
+       fputs (HELP_OPTION_DESCRIPTION, stdout);
+       fputs (VERSION_OPTION_DESCRIPTION, stdout);
+@@ -140,7 +144,9 @@
+ {
+   const char *specified_mode = NULL;
+   int optc;
++  security_context_t scontext = NULL;
+   struct mkdir_options options;
++
+   options.make_ancestor_function = NULL;
+   options.mode = S_IRWXUGO;
+   options.mode_bits = 0;
+@@ -154,7 +160,7 @@
+ 
+   atexit (close_stdout);
+ 
+-  while ((optc = getopt_long (argc, argv, "pm:v", longopts, NULL)) != -1)
++  while ((optc = getopt_long (argc, argv, "pm:vZ:", longopts, NULL)) != -1)
+     {
+       switch (optc)
+ 	{
+@@ -167,6 +173,9 @@
+ 	case 'v': /* --verbose  */
+ 	  options.created_directory_format = _("created directory %s");
+ 	  break;
++	case 'Z':
++	  scontext = optarg;
++	  break;
+ 	case_GETOPT_HELP_CHAR;
+ 	case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
+ 	default:
+@@ -180,6 +189,11 @@
+       usage (EXIT_FAILURE);
+     }
+ 
++  if (scontext && setfscreatecon (scontext) < 0)
++    error (EXIT_FAILURE, errno,
++	   _("failed to set default file creation context to %s"),
++	   quote (optarg));
++
+   if (options.make_ancestor_function || specified_mode)
+     {
+       mode_t umask_value = umask (0);
+diff -urN coreutils-6.9.orig/src/mkfifo.c coreutils-6.9/src/mkfifo.c
+--- coreutils-6.9.orig/src/mkfifo.c	2022-10-17 18:01:58.729357695 +0800
++++ coreutils-6.9/src/mkfifo.c	2022-10-18 09:46:34.906516600 +0800
+@@ -1,5 +1,5 @@
+ /* mkfifo -- make fifo's (named pipes)
+-   Copyright (C) 90, 91, 1995-2006 Free Software Foundation, Inc.
++   Copyright (C) 90, 91, 1995-2007 Free Software Foundation, Inc.
+ 
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+@@ -21,6 +21,7 @@
+ #include <stdio.h>
+ #include <getopt.h>
+ #include <sys/types.h>
++#include <selinux/selinux.h>
+ 
+ #include "system.h"
+ #include "error.h"
+@@ -37,6 +38,7 @@
+ 
+ static struct option const longopts[] =
+ {
++  {GETOPT_SELINUX_CONTEXT_OPTION_DECL},
+   {"mode", required_argument, NULL, 'm'},
+   {GETOPT_HELP_OPTION_DECL},
+   {GETOPT_VERSION_OPTION_DECL},
+@@ -57,6 +59,9 @@
+ \n\
+ "), stdout);
+       fputs (_("\
++  -Z, --context=CTX  set the SELinux security context of each NAME to CTX\n\
++"), stdout);
++      fputs (_("\
+ Mandatory arguments to long options are mandatory for short options too.\n\
+ "), stdout);
+       fputs (_("\
+@@ -76,6 +81,7 @@
+   char const *specified_mode = NULL;
+   int exit_status = EXIT_SUCCESS;
+   int optc;
++  security_context_t scontext = NULL;
+ 
+   initialize_main (&argc, &argv);
+   program_name = argv[0];
+@@ -85,13 +91,16 @@
+ 
+   atexit (close_stdout);
+ 
+-  while ((optc = getopt_long (argc, argv, "m:", longopts, NULL)) != -1)
++  while ((optc = getopt_long (argc, argv, "m:Z:", longopts, NULL)) != -1)
+     {
+       switch (optc)
+ 	{
+ 	case 'm':
+ 	  specified_mode = optarg;
+ 	  break;
++	case 'Z':
++	  scontext = optarg;
++	  break;
+ 	case_GETOPT_HELP_CHAR;
+ 	case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
+ 	default:
+@@ -105,6 +114,11 @@
+       usage (EXIT_FAILURE);
+     }
+ 
++  if (scontext && setfscreatecon (scontext) < 0)
++    error (EXIT_FAILURE, errno,
++	   _("failed to set default file creation context to %s"),
++	   quote (optarg));
++
+   newmode = (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+   if (specified_mode)
+     {
+diff -urN coreutils-6.9.orig/src/mknod.c coreutils-6.9/src/mknod.c
+--- coreutils-6.9.orig/src/mknod.c	2022-10-17 18:01:58.729357695 +0800
++++ coreutils-6.9/src/mknod.c	2022-10-18 09:46:34.906516600 +0800
+@@ -1,5 +1,5 @@
+ /* mknod -- make special files
+-   Copyright (C) 90, 91, 1995-2006 Free Software Foundation, Inc.
++   Copyright (C) 90, 91, 1995-2007 Free Software Foundation, Inc.
+ 
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+@@ -21,6 +21,7 @@
+ #include <stdio.h>
+ #include <getopt.h>
+ #include <sys/types.h>
++#include <selinux/selinux.h>
+ 
+ #include "system.h"
+ #include "error.h"
+@@ -38,6 +39,7 @@
+ 
+ static struct option const longopts[] =
+ {
++  {GETOPT_SELINUX_CONTEXT_OPTION_DECL},
+   {"mode", required_argument, NULL, 'm'},
+   {GETOPT_HELP_OPTION_DECL},
+   {GETOPT_VERSION_OPTION_DECL},
+@@ -58,6 +60,9 @@
+ Create the special file NAME of the given TYPE.\n\
+ \n\
+ "), stdout);
++      fputs(_("\
++  -Z, --context=CTX  set the SELinux security context of NAME to CTX\n\
++"), stdout);
+       fputs (_("\
+ Mandatory arguments to long options are mandatory for short options too.\n\
+ "), stdout);
+@@ -92,6 +97,7 @@
+   int optc;
+   int expected_operands;
+   mode_t node_type;
++  security_context_t scontext = NULL;
+ 
+   initialize_main (&argc, &argv);
+   program_name = argv[0];
+@@ -101,13 +107,16 @@
+ 
+   atexit (close_stdout);
+ 
+-  while ((optc = getopt_long (argc, argv, "m:", longopts, NULL)) != -1)
++  while ((optc = getopt_long (argc, argv, "m:Z:", longopts, NULL)) != -1)
+     {
+       switch (optc)
+ 	{
+ 	case 'm':
+ 	  specified_mode = optarg;
+ 	  break;
++	case 'Z':
++	  scontext = optarg;
++	  break;
+ 	case_GETOPT_HELP_CHAR;
+ 	case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
+ 	default:
+@@ -157,6 +166,11 @@
+       usage (EXIT_FAILURE);
+     }
+ 
++  if (scontext && setfscreatecon (scontext) < 0)
++    error (EXIT_FAILURE, errno,
++	   _("failed to set default file creation context to %s"),
++	   quote (optarg));
++
+   /* Only check the first character, to allow mnemonic usage like
+      `mknod /dev/rst0 character 18 0'. */
+ 
+diff -urN coreutils-6.9.orig/src/mv.c coreutils-6.9/src/mv.c
+--- coreutils-6.9.orig/src/mv.c	2022-10-17 18:01:58.729357695 +0800
++++ coreutils-6.9/src/mv.c	2022-10-18 09:46:34.878516700 +0800
+@@ -22,6 +22,7 @@
+ #include <getopt.h>
+ #include <sys/types.h>
+ #include <assert.h>
++#include <selinux/selinux.h>
+ 
+ #include "system.h"
+ #include "argmatch.h"
+@@ -113,6 +114,8 @@
+ static void
+ cp_option_init (struct cp_options *x)
+ {
++  bool selinux_enabled = (0 < is_selinux_enabled ());
++
+   x->copy_as_regular = false;  /* FIXME: maybe make this an option */
+   x->dereference = DEREF_NEVER;
+   x->unlink_dest_before_opening = false;
+@@ -126,7 +129,9 @@
+   x->preserve_links = true;
+   x->preserve_mode = true;
+   x->preserve_timestamps = true;
++  x->preserve_security_context = selinux_enabled;
+   x->require_preserve = false;  /* FIXME: maybe make this an option */
++  x->require_preserve_context = false;
+   x->recursive = true;
+   x->sparse_mode = SPARSE_AUTO;  /* FIXME: maybe make this an option */
+   x->symbolic_link = false;
+diff -urN coreutils-6.9.orig/src/runcon.c coreutils-6.9/src/runcon.c
+--- coreutils-6.9.orig/src/runcon.c	1970-01-01 08:00:00.000000000 +0800
++++ coreutils-6.9/src/runcon.c	2022-10-18 09:51:42.142219300 +0800
+@@ -0,0 +1,249 @@
++/*
++ * runcon [ context |
++ *         ( [ -c ] [ -r role ] [-t type] [ -u user ] [ -l levelrange ] )
++ *         command [arg1 [arg2 ...] ]
++ *
++ * attempt to run the specified command with the specified context.
++ *
++ * -r role  : use the current context with the specified role
++ * -t type  : use the current context with the specified type
++ * -u user  : use the current context with the specified user
++ * -l level : use the current context with the specified level range
++ * -c       : compute process transition context before modifying
++ *
++ * Contexts are interpreted as follows:
++ *
++ * Number of       MLS
++ * components    system?
++ *
++ *     1            -         type
++ *     2            -         role:type
++ *     3            Y         role:type:range
++ *     3            N         user:role:type
++ *     4            Y         user:role:type:range
++ *     4            N         error
++ */
++
++#include <config.h>
++#include <stdio.h>
++#include <getopt.h>
++#include <selinux/selinux.h>
++#include <selinux/context.h>
++#ifdef HAVE_SELINUX_FLASK_H
++# include <selinux/flask.h>
++#else
++# define SECCLASS_PROCESS 0
++#endif
++#include <sys/types.h>
++#include "system.h"
++#include "error.h"
++#include "quote.h"
++#include "quotearg.h"
++
++/* The official name of this program (e.g., no `g' prefix).  */
++#define PROGRAM_NAME "runcon"
++
++#define AUTHORS "Russell Coker"
++
++static struct option long_options[] = {
++  {"role", required_argument, NULL, 'r'},
++  {"type", required_argument, NULL, 't'},
++  {"user", required_argument, NULL, 'u'},
++  {"range", required_argument, NULL, 'l'},
++  {"compute", no_argument, NULL, 'c'},
++  {GETOPT_HELP_OPTION_DECL},
++  {GETOPT_VERSION_OPTION_DECL},
++  {NULL, 0, NULL, 0}
++};
++
++/* The name the program was run with. */
++char *program_name;
++
++void
++usage (int status)
++{
++  if (status != EXIT_SUCCESS)
++    fprintf (stderr, _("Try `%s --help' for more information.\n"),
++	     program_name);
++  else
++    {
++      printf (_("\
++Usage: %s CONTEXT COMMAND [args]\n\
++  or:  %s [ -c ] [-u USER] [-r ROLE] [-t TYPE] [-l RANGE] COMMAND [args]\n\
++"), program_name, program_name);
++      fputs (_("\
++Run a program in a different security context.\n\
++With neither CONTEXT nor COMMAND, print the current security context.\n\
++\n\
++  CONTEXT            Complete security context\n\
++  -c, --compute      compute process transition context before modifying\n\
++  -t, --type=TYPE    type (for same role as parent)\n\
++  -u, --user=USER    user identity\n\
++  -r, --role=ROLE    role\n\
++  -l, --range=RANGE  levelrange\n\
++\n\
++"), stdout);
++      fputs (HELP_OPTION_DESCRIPTION, stdout);
++      fputs (VERSION_OPTION_DESCRIPTION, stdout);
++    }
++  exit (status);
++}
++
++int
++main (int argc, char **argv, char **envp)
++{
++  char *role = NULL;
++  char *range = NULL;
++  char *user = NULL;
++  char *type = NULL;
++  char *context = NULL;
++  security_context_t cur_context = NULL;
++  security_context_t file_context = NULL;
++  security_context_t new_context = NULL;
++  bool compute_trans = false;
++
++  context_t con;
++
++  initialize_main (&argc, &argv);
++  program_name = argv[0];
++  setlocale (LC_ALL, "");
++  bindtextdomain (PACKAGE, LOCALEDIR);
++  textdomain (PACKAGE);
++
++  atexit (close_stdout);
++
++  while (1)
++    {
++      int option_index = 0;
++      int c = getopt_long (argc, argv, "+r:t:u:l:c", long_options,
++			   &option_index);
++      if (c == -1)
++	break;
++      switch (c)
++	{
++	case 'r':
++	  if (role)
++	    error (EXIT_FAILURE, 0, _("multiple roles"));
++	  role = optarg;
++	  break;
++	case 't':
++	  if (type)
++	    error (EXIT_FAILURE, 0, _("multiple types"));
++	  type = optarg;
++	  break;
++	case 'u':
++	  if (user)
++	    error (EXIT_FAILURE, 0, _("multiple users"));
++	  user = optarg;
++	  break;
++	case 'l':
++	  if (range)
++	    error (EXIT_FAILURE, 0, _("multiple levelranges"));
++	  range = optarg;
++	  break;
++	case 'c':
++	  compute_trans = true;
++	  break;
++
++	case_GETOPT_HELP_CHAR;
++	case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
++	default:
++	  usage (EXIT_FAILURE);
++	  break;
++	}
++    }
++
++  if (argc - optind == 0)
++    {
++      if (getcon (&cur_context) < 0)
++	error (EXIT_FAILURE, errno, _("failed to get current context"));
++      fputs (cur_context, stdout);
++      fputc ('\n', stdout);
++      exit (EXIT_SUCCESS);
++    }
++
++  if (!(user || role || type || range || compute_trans))
++    {
++      if (optind >= argc)
++	{
++	  error (0, 0, _("you must specify -c, -t, -u, -l, -r, or context"));
++	  usage (1);
++	}
++      context = argv[optind++];
++    }
++
++  if (optind >= argc)
++    {
++      error (0, 0, _("no command specified"));
++      usage (1);
++    }
++
++  if (is_selinux_enabled () != 1)
++    error (EXIT_FAILURE, 0,
++	   _("runcon may be used only on a SELinux kernel"));
++
++  if (context)
++    {
++      con = context_new (context);
++      if (!con)
++	error (EXIT_FAILURE, errno, _("failed to create security context: %s"),
++	       quotearg_colon (context));
++    }
++  else
++    {
++      if (getcon (&cur_context) < 0)
++	error (EXIT_FAILURE, errno, _("failed to get current context"));
++
++      /* We will generate context based on process transition */
++      if (compute_trans)
++	{
++	  /* Get context of file to be executed */
++	  if (getfilecon (argv[optind], &file_context) == -1)
++	    error (EXIT_FAILURE, errno,
++		   _("failed to get security context of %s"),
++		   quote (argv[optind]));
++	  /* compute result of process transition */
++	  if (security_compute_create (cur_context, file_context,
++				       SECCLASS_PROCESS, &new_context) != 0)
++	    error (EXIT_FAILURE, errno,
++		   _("failed to compute a new context"));
++	  /* free contexts */
++	  freecon (file_context);
++	  freecon (cur_context);
++
++	  /* set cur_context equal to new_context */
++	  cur_context = new_context;
++	}
++
++      con = context_new (cur_context);
++      if (!con)
++	error (EXIT_FAILURE, errno, _("failed to create security context: %s"),
++	       quotearg_colon (cur_context));
++      if (user && context_user_set (con, user))
++	error (EXIT_FAILURE, errno, _("failed to set new user %s"), user);
++      if (type && context_type_set (con, type))
++	error (EXIT_FAILURE, errno, _("failed to set new type %s"), type);
++      if (range && context_range_set (con, range))
++	error (EXIT_FAILURE, errno, _("failed to set new range %s"), range);
++      if (role && context_role_set (con, role))
++	error (EXIT_FAILURE, errno, _("failed to set new role %s"), role);
++    }
++
++  if (security_check_context (context_str (con)) < 0)
++    error (EXIT_FAILURE, errno, _("invalid context: %s"),
++	   quotearg_colon (context_str (con)));
++
++  if (setexeccon (context_str (con)) != 0)
++    error (EXIT_FAILURE, errno, _("unable to set security context %s"),
++	   quote (context_str (con)));
++  if (cur_context != NULL)
++    freecon (cur_context);
++
++  execvp (argv[optind], argv + optind);
++
++  {
++    int exit_status = (errno == ENOENT ? EXIT_ENOENT : EXIT_CANNOT_INVOKE);
++    error (0, errno, "%s", argv[optind]);
++    exit (exit_status);
++  }
++}
+diff -urN coreutils-6.9.orig/src/stat.c coreutils-6.9/src/stat.c
+--- coreutils-6.9.orig/src/stat.c	2022-10-17 18:01:58.733357691 +0800
++++ coreutils-6.9/src/stat.c	2022-10-18 09:46:34.654516900 +0800
+@@ -54,6 +54,7 @@
+ #elif HAVE_OS_H /* BeOS */
+ # include <fs_info.h>
+ #endif
++#include <selinux/selinux.h>
+ 
+ #include "system.h"
+ 
+@@ -158,6 +159,7 @@
+ };
+ 
+ static struct option const long_options[] = {
++  {"context", no_argument, 0, 'Z'},
+   {"dereference", no_argument, NULL, 'L'},
+   {"file-system", no_argument, NULL, 'f'},
+   {"filesystem", no_argument, NULL, 'f'}, /* obsolete and undocumented alias */
+@@ -171,6 +173,9 @@
+ 
+ char *program_name;
+ 
++/* Whether to follow symbolic links;  True for --dereference (-L).  */
++static bool follow_links;
++
+ /* Whether to interpret backslash-escape sequences.
+    True for --printf=FMT, not for --format=FMT (-c).  */
+ static bool interpret_backslash_escapes;
+@@ -394,6 +399,26 @@
+   printf (pformat, arg);
+ }
+ 
++/* Very specialized function (modifies FORMAT), just so as to avoid
++   duplicating this code between both print_statfs and print_stat.  */
++static void
++out_file_context (char const *filename, char *pformat, size_t prefix_len)
++{
++  char *scontext;
++  if ((follow_links
++       ? getfilecon (filename, &scontext)
++       : lgetfilecon (filename, &scontext)) < 0)
++    {
++      error (0, errno, _("failed to get security context of %s"),
++	     quote (filename));
++      scontext = NULL;
++    }
++  strcpy (pformat + prefix_len, "s");
++  printf (pformat, (scontext ? scontext : "?"));
++  if (scontext)
++    freecon (scontext);
++}
++
+ /* print statfs info */
+ static void
+ print_statfs (char *pformat, size_t prefix_len, char m, char const *filename,
+@@ -472,7 +497,9 @@
+     case 'd':
+       out_int (pformat, prefix_len, statfsbuf->f_ffree);
+       break;
+-
++    case 'C':
++      out_file_context (filename, pformat, prefix_len);
++      break;
+     default:
+       fputc ('?', stdout);
+       break;
+@@ -595,6 +622,9 @@
+       else
+ 	out_uint (pformat, prefix_len, statbuf->st_ctime);
+       break;
++    case 'C':
++      out_file_context (filename, pformat, prefix_len);
++      break;
+     default:
+       fputc ('?', stdout);
+       break;
+@@ -774,8 +804,7 @@
+ 
+ /* stat the file and print what we find */
+ static bool
+-do_stat (char const *filename, bool follow_links, bool terse,
+-	 char const *format)
++do_stat (char const *filename, bool terse, char const *format)
+ {
+   struct stat statbuf;
+ 
+@@ -853,6 +882,7 @@
+   %A   Access rights in human readable form\n\
+   %b   Number of blocks allocated (see %B)\n\
+   %B   The size in bytes of each block reported by %b\n\
++  %C   SELinux security context string\n\
+ "), stdout);
+       fputs (_("\
+   %d   Device number in decimal\n\
+@@ -892,6 +922,7 @@
+   %c   Total file nodes in file system\n\
+   %d   Free file nodes in file system\n\
+   %f   Free blocks in file system\n\
++  %C   SELinux security context string\n\
+ "), stdout);
+       fputs (_("\
+   %i   File System ID in hex\n\
+@@ -913,7 +944,6 @@
+ {
+   int c;
+   int i;
+-  bool follow_links = false;
+   bool fs = false;
+   bool terse = false;
+   char *format = NULL;
+@@ -927,7 +957,7 @@
+ 
+   atexit (close_stdout);
+ 
+-  while ((c = getopt_long (argc, argv, "c:fLt", long_options, NULL)) != -1)
++  while ((c = getopt_long (argc, argv, "c:fLtZ", long_options, NULL)) != -1)
+     {
+       switch (c)
+ 	{
+@@ -955,6 +985,11 @@
+ 	  terse = true;
+ 	  break;
+ 
++	case 'Z':  /* FIXME: remove in 2008, warn in 2007 */
++	  /* Ignored, for compatibility with distributions
++	     that implemented this before upstream.  */
++	  break;
++
+ 	case_GETOPT_HELP_CHAR;
+ 
+ 	case_GETOPT_VERSION_CHAR (PROGRAM_NAME, AUTHORS);
+@@ -973,7 +1008,7 @@
+   for (i = optind; i < argc; i++)
+     ok &= (fs
+ 	   ? do_statfs (argv[i], terse, format)
+-	   : do_stat (argv[i], follow_links, terse, format));
++	   : do_stat (argv[i], terse, format));
+ 
+   exit (ok ? EXIT_SUCCESS : EXIT_FAILURE);
+ }
+diff -urN coreutils-6.9.orig/src/system.h coreutils-6.9/src/system.h
+--- coreutils-6.9.orig/src/system.h	2022-10-17 18:01:58.729357695 +0800
++++ coreutils-6.9/src/system.h	2022-10-18 16:01:53.230978625 +0800
+@@ -399,6 +399,8 @@
+   "help", no_argument, NULL, GETOPT_HELP_CHAR
+ #define GETOPT_VERSION_OPTION_DECL \
+   "version", no_argument, NULL, GETOPT_VERSION_CHAR
++#define GETOPT_SELINUX_CONTEXT_OPTION_DECL \
++  "context", required_argument, NULL, 'Z'
+ 
+ #define case_GETOPT_HELP_CHAR			\
+   case GETOPT_HELP_CHAR:			\
