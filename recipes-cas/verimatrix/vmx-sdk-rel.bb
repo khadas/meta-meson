@@ -7,6 +7,7 @@ PR = "r0"
 #Only enable it in OpenLinux
 VMX_SDK_BRANCH_s4 = "m9y4-rel-linux"
 VMX_SDK_BRANCH_sc2 = "m9x4-rel-linux"
+VMX_SDK_BRANCH_aq2432 = "m9c3-rel-linux"
 
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/vmx/sdk-rel')}"
 
@@ -18,6 +19,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #VMX SDK Version depends on SoC used
 VMX_SDK_VERSION_s4 = "SDK_M9Y4_1_0_0"
 VMX_SDK_VERSION_sc2 = "SDK_M9X4_1_0_0"
+VMX_SDK_VERSION_aq2432 = "SDK_M9C3_1_0_0"
 
 do_install() {
     install -d -m 0755 ${D}/usr/lib

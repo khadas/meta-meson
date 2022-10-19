@@ -71,7 +71,9 @@ BL33_ARG += " ${@bb.utils.contains('DISTRO_FEATURES', 'AVB_recovery_partition', 
 #VMX UBOOT PATH depends on SoC
 VMX_UBOOT_PATH = "TBD"
 VMX_UBOOT_PATH_s4 = "s905y4"
-VMX_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '--bl32 vmx-sdk/bootloader/${VMX_UBOOT_PATH}/bl32/blob-bl32.bin.signed', '', d)}"
+VMX_UBOOT_PATH_aq2432 = "s805c3"
+VMX_UBOOT_NAND_OPTION = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '.nand', '', d)}"
+VMX_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '--bl32 vmx-sdk/bootloader/${VMX_UBOOT_PATH}/bl32/blob-bl32${VMX_UBOOT_NAND_OPTION}.bin.signed', '', d)}"
 
 #NAGRA UBOOT PATH depends on SoC
 NAGRA_UBOOT_PATH = "TBD"
@@ -100,7 +102,12 @@ do_compile () {
     export KCFLAGS="${KCFLAGS}"
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
-
+    bbwarn "VMX_UBOOT_PATH_s4 is set as ${VMX_UBOOT_PATH_s4}"
+    bbwarn "VMX_UBOOT_PATH_aq2432 is set as ${VMX_UBOOT_PATH_aq2432}"
+    bbwarn "UBOOT_MACHINE is set as ${UBOOT_MACHINE}"
+    bbwarn "VMX_UBOOT_PATH is set as ${VMX_UBOOT_PATH}"
+    bbwarn "MACHINE_ARCH is set as ${MACHINE_ARCH}"
+    bbwarn "VMX_UBOOT_ARG is set as ${VMX_UBOOT_ARG}"
     LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG} ${IRDETO_UBOOT_ARG}
     cp -rf build/* fip/
 }

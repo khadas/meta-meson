@@ -15,6 +15,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 VMX_REL_PATH = "TBD"
 VMX_REL_PATH_sc2 = "s905x4_linux"
 VMX_REL_PATH_s4 = "s905y4_linux"
+VMX_REL_PATH_aq2432 = "s805c3_linux"
 
 do_install() {
     mkdir -p ${D}/lib/teetz
