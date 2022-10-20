@@ -129,7 +129,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
         'wpeframework wpeframework-ui thunder-services', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'cobalt', \
-        'cobalt-plugin aml-cobalt-starboard', '', d)} \
+        'youtube-plugin', '', d)} \
     dolby-ms12 \
     aml-audio-hal \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-audio-effect', '', d)} \
