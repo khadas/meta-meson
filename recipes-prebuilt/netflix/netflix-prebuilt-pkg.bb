@@ -21,7 +21,7 @@ DEPENDS += "aml-audio-service aml-netflix-esn c-ares cjson curl elfutils \
 
 #This is for netflix-aml
 RDEPENDS_${PN} += " \
-            aml-audio-service nghttp2 playready rdkservices wpeframework \
+            aml-audio-service nghttp2 playready thunder-services wpeframework \
             wpeframework-interfaces aml-netflix-esn \
             "
 
