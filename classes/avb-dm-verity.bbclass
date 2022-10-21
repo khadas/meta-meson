@@ -23,6 +23,7 @@ python create_avb_dm_verity_image () {
     native_dir = d.getVar('STAGING_DIR_NATIVE', True)
     key = d.getVar('AVB_DMVERITY_SIGNINING_KEY', True)
     algorithm = d.getVar('AVB_DMVERITY_SIGNINING_ALGORITHM', True)
+    rollback_index = d.getVar('AVB_DMVERITY_ROLLBACK_INDEX', True)
     filename = deploy_dir_image + '/' + dm_verity_image + '.' + dm_verity_image_type + '.verity.env'
     verity_array = dict()
     try:
@@ -43,7 +44,7 @@ python create_avb_dm_verity_image () {
 # pad to 4096 bytes to match img2simg
     cmd = 'avbtool-dm-verity.py add_footer_without_hashtree' + ' --image ' + image_deploy_dir + '/' + dm_verity_image + '-' + machine + '.' + dm_verity_image_type + ' --partition_name ' + name + ' --root_digest ' + verity_array['ROOT_HASH'] + ' --salt ' + verity_array['SALT'] + ' --hash_algorithm sha256 ' + ' --data_block_size ' + verity_array['DATA_BLOCK_SIZE'] + ' --hash_block_size ' + verity_array['HASH_BLOCK_SIZE'] + ' --data_size ' + verity_array['DATA_SIZE'] + ' --padding_size 4096'
     if chained == 'true':
-        cmd += ' --key ' + native_dir + '/' + sysconfdir + '/' + key + ' --algorithm ' + algorithm
+        cmd += ' --key ' + native_dir + '/' + sysconfdir + '/' + key + ' --algorithm ' + algorithm + ' --rollback_index ' + rollback_index
     bb.note(cmd)
     bb.process.run(cmd)
     if isinstance(partition_size , str) and is_numeric_base(partition_size, 10) or is_numeric_base(partition_size, 16):

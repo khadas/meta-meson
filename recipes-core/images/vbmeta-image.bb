@@ -32,9 +32,11 @@ CHAIN_RECOVERY_CMD = " --chain_partition recovery:${DEVICE_PROPERTY_RECOVERY_ROL
 
 SIGN_RECOVERY = "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.utils.contains('DISTRO_FEATURES', 'AVB_recovery_partition','true' , 'false' ,d), '', d)}"
 AVB_RECOVERY_SIGNINING_KEY = "recovery_rsa2048.pem"
-SIGN_RECOVERY_CMD = "avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/recovery.img --partition_size ${DEVICE_PROPERTY_RECOVERY_PARTITION_SIZE}  --partition_name "recovery" --algorithm SHA256_RSA2048 --key ${STAGING_DIR_NATIVE}/${sysconfdir_native}/${AVB_RECOVERY_SIGNINING_KEY} --rollback_index 0"
+SIGN_RECOVERY_CMD = "avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/recovery.img --partition_size ${DEVICE_PROPERTY_RECOVERY_PARTITION_SIZE}  --partition_name "recovery" --algorithm SHA256_RSA2048 --key ${STAGING_DIR_NATIVE}/${sysconfdir_native}/${AVB_RECOVERY_SIGNINING_KEY} --rollback_index ${DEVICE_PROPERTY_RECOVERY_ROLLBACK_INDEX}"
 
 DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', ' recovery-image', '', d)}"
+
+VBMETA_ROLLBACK_INDEX = " --rollback_index ${DEVICE_PROPERTY_VBMETA_ROLLBACK_INDEX}"
 
 do_compile() {
     install -d ${DEPLOY_DIR_IMAGE}
@@ -53,12 +55,12 @@ do_compile() {
 
     if [ "${DM_VERITY_SUPPORT}" = "true" ]; then
         if [ "${CHAINED_PARTITION_SUPPORT}" = "true" ]; then
-            avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${CHAIN_SYSTEM_AVB_DM_VERITY} ${CHAIN_VENDOR_AVB_DM_VERITY} --rollback_index 0
+            avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${CHAIN_SYSTEM_AVB_DM_VERITY} ${CHAIN_VENDOR_AVB_DM_VERITY} ${VBMETA_ROLLBACK_INDEX}
         else
-            avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${ADD_SYSTEM_AVB_DM_VERITY} ${ADD_VENDOR_AVB_DM_VERITY} --rollback_index 0
+            avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${ADD_SYSTEM_AVB_DM_VERITY} ${ADD_VENDOR_AVB_DM_VERITY} ${VBMETA_ROLLBACK_INDEX}
         fi
     else
-            avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} --rollback_index 0
+            avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${VBMETA_ROLLBACK_INDEX}
     fi
 }
 
