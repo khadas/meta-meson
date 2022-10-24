@@ -1,0 +1,252 @@
+From 5110ac5b2812c92ca5b6e8b031bb9c062d358315 Mon Sep 17 00:00:00 2001
+From: Xueling Li <xueling.li@amlogic.com>
+Date: Tue, 18 Oct 2022 15:27:25 +0800
+Subject: [PATCH] support check buffers count and time queued in appsrc
+
+Signed-off-by: Xueling Li <xueling.li@amlogic.com>
+---
+ gst-libs/gst/app/gstappsrc.c | 140 ++++++++++++++++++++++++++++++++++-
+ gst-libs/gst/app/gstappsrc.h |   6 ++
+ 2 files changed, 145 insertions(+), 1 deletion(-)
+
+diff --git a/gst-libs/gst/app/gstappsrc.c b/gst-libs/gst/app/gstappsrc.c
+index 298c42a..ad3bfdc 100644
+--- a/gst-libs/gst/app/gstappsrc.c
++++ b/gst-libs/gst/app/gstappsrc.c
+@@ -160,7 +160,11 @@ struct _GstAppSrcPrivate
+   gboolean started;
+   gboolean reset_pos;
+   gboolean is_eos;
+-  guint64 queued_bytes;
++  guint64 queued_bytes, queued_buffers;
++  GstClockTime queued_time;
++  GstClockTime start_buffer_ts;
++  GstClockTime end_buffer_ts;
++  guint64 seek_start_position;
+   guint64 offset;
+   GstAppStreamType current_type;
+ 
+@@ -668,6 +672,11 @@ gst_app_src_flush_queued (GstAppSrc * src, gboolean retain_last_caps)
+   }
+ 
+   priv->queued_bytes = 0;
++  priv->queued_buffers = 0;
++  priv->queued_time = 0;
++  priv->start_buffer_ts = GST_CLOCK_TIME_NONE;
++  priv->end_buffer_ts = GST_CLOCK_TIME_NONE;
++  priv->seek_start_position = GST_CLOCK_TIME_NONE;
+ }
+ 
+ static void
+@@ -1083,12 +1092,14 @@ gst_app_src_do_seek (GstBaseSrc * src, GstSegment * segment)
+         desired_position, &res);
+   }
+ 
++
+   g_clear_pointer (&callbacks, callbacks_unref);
+ 
+   if (res) {
+     GST_DEBUG_OBJECT (appsrc, "flushing queue");
+     g_mutex_lock (&priv->mutex);
+     gst_app_src_flush_queued (appsrc, TRUE);
++    priv->seek_start_position = segment->position;
+     g_mutex_unlock (&priv->mutex);
+     priv->is_eos = FALSE;
+   } else {
+@@ -1270,6 +1281,7 @@ gst_app_src_create (GstBaseSrc * bsrc, guint64 offset, guint size,
+     /* return data as long as we have some */
+     if (!gst_queue_array_is_empty (priv->queue)) {
+       guint buf_size;
++      guint n_buffers = 0;
+       GstMiniObject *obj = gst_queue_array_pop_head (priv->queue);
+ 
+       if (GST_IS_CAPS (obj)) {
+@@ -1304,6 +1316,7 @@ gst_app_src_create (GstBaseSrc * bsrc, guint64 offset, guint size,
+       if (GST_IS_BUFFER (obj)) {
+         *buf = GST_BUFFER (obj);
+         buf_size = gst_buffer_get_size (*buf);
++        n_buffers = 1;
+         GST_LOG_OBJECT (appsrc, "have buffer %p of size %u", *buf, buf_size);
+       } else {
+         GstBufferList *buffer_list;
+@@ -1313,6 +1326,7 @@ gst_app_src_create (GstBaseSrc * bsrc, guint64 offset, guint size,
+         buffer_list = GST_BUFFER_LIST (obj);
+ 
+         buf_size = gst_buffer_list_calculate_size (buffer_list);
++        n_buffers = gst_buffer_list_length (buffer_list);
+ 
+         GST_LOG_OBJECT (appsrc, "have buffer list %p of size %u, %u buffers",
+             buffer_list, buf_size, gst_buffer_list_length (buffer_list));
+@@ -1322,6 +1336,42 @@ gst_app_src_create (GstBaseSrc * bsrc, guint64 offset, guint size,
+       }
+ 
+       priv->queued_bytes -= buf_size;
++      priv->queued_buffers -= n_buffers;
++
++      if (!gst_queue_array_is_empty(priv->queue)){
++        guint queue_len = gst_queue_array_get_length(priv->queue);
++        gpointer head = gst_queue_array_peek_head(priv->queue);
++        gpointer tail = gst_queue_array_peek_tail(priv->queue);
++        if (queue_len > 1){
++          if (!GST_IS_BUFFER(head)){
++              head = gst_queue_array_peek_nth(priv->queue, 1);
++          }
++          if (!GST_IS_BUFFER(tail)){
++            tail = gst_queue_array_peek_nth(priv->queue, queue_len - 2);
++          }
++        }
++
++        if (GST_IS_BUFFER(head) && GST_IS_BUFFER(tail)){
++          priv->start_buffer_ts = GST_BUFFER_PTS(head);
++          priv->end_buffer_ts = GST_BUFFER_PTS(tail);
++          GST_DEBUG_OBJECT(appsrc, "end buffer ts %"GST_TIME_FORMAT" start buffer ts %"GST_TIME_FORMAT" seek start ts %"GST_TIME_FORMAT, 
++              GST_TIME_ARGS(priv->end_buffer_ts), GST_TIME_ARGS(priv->start_buffer_ts), GST_TIME_ARGS(priv->seek_start_position));
++
++          if (priv->end_buffer_ts != GST_CLOCK_TIME_NONE && priv->start_buffer_ts != GST_CLOCK_TIME_NONE \
++              && priv->seek_start_position != GST_CLOCK_TIME_NONE) {
++            if (priv->end_buffer_ts <= priv->seek_start_position){
++              priv->queued_time = 0;
++            }else if (priv->end_buffer_ts >= priv->start_buffer_ts){
++              priv->queued_time = priv->end_buffer_ts - priv->start_buffer_ts;
++            }
++          }
++        }
++      }else{
++        priv->queued_time = 0;
++      }
++
++      GST_DEBUG_OBJECT(appsrc, "priv->queued_bytes %lld priv->queued_buffers %lld priv->queued_time(%lld) %"GST_TIME_FORMAT, 
++          priv->queued_bytes, priv->queued_buffers, priv->queued_time, GST_TIME_ARGS(priv->queued_time));
+ 
+       /* only update the offset when in random_access mode */
+       if (priv->stream_type == GST_APP_STREAM_TYPE_RANDOM_ACCESS)
+@@ -1707,6 +1757,66 @@ gst_app_src_get_current_level_bytes (GstAppSrc * appsrc)
+   return queued;
+ }
+ 
++/**
++ * gst_app_src_get_current_level_buffers:
++ * @appsrc: a #GstAppSrc
++ *
++ * Get the number of currently queued buffers inside @appsrc.
++ *
++ * Returns: The number of currently queued buffers.
++ *
++ * Since: 1.20
++ */
++guint64
++gst_app_src_get_current_level_buffers (GstAppSrc * appsrc)
++{
++  guint64 queued;
++  GstAppSrcPrivate *priv;
++
++  g_return_val_if_fail (GST_IS_APP_SRC (appsrc), -1); 
++
++  priv = appsrc->priv;
++
++  GST_OBJECT_LOCK (appsrc);
++  queued = priv->queued_buffers;
++  GST_DEBUG_OBJECT (appsrc, "current level buffers is %" G_GUINT64_FORMAT,
++      queued);
++  GST_OBJECT_UNLOCK (appsrc);
++
++  return queued;
++}
++
++/**    
++ * gst_app_src_get_current_level_time:
++ * @appsrc: a #GstAppSrc
++ *
++ * Get the amount of currently queued time inside @appsrc.
++ *
++ * Returns: The amount of currently queued time.
++ *
++ * Since: 1.20
++ */    
++GstClockTime
++gst_app_src_get_current_level_time (GstAppSrc * appsrc)
++{
++  gint64 queued;
++  GstAppSrcPrivate *priv;
++
++  g_return_val_if_fail (GST_IS_APP_SRC (appsrc), GST_CLOCK_TIME_NONE);
++
++  priv = appsrc->priv;
++
++  GST_OBJECT_LOCK (appsrc);
++  queued = priv->queued_time;
++  GST_DEBUG_OBJECT (appsrc, "current level time is %" GST_TIME_FORMAT,
++      GST_TIME_ARGS (queued));
++  GST_OBJECT_UNLOCK (appsrc);
++
++  return queued;
++}
++
++
++
+ static void
+ gst_app_src_set_latencies (GstAppSrc * appsrc, gboolean do_min, guint64 min,
+     gboolean do_max, guint64 max)
+@@ -1950,14 +2060,42 @@ gst_app_src_push_internal (GstAppSrc * appsrc, GstBuffer * buffer,
+       gst_buffer_list_ref (buflist);
+     gst_queue_array_push_tail (priv->queue, buflist);
+     priv->queued_bytes += gst_buffer_list_calculate_size (buflist);
++    priv->queued_buffers += gst_buffer_list_length (buflist);
++
++    guint buffer_cnt = gst_buffer_list_length(buflist);
++    priv->end_buffer_ts = GST_BUFFER_PTS(gst_buffer_list_get(buflist, buffer_cnt - 1));
+   } else {
+     GST_DEBUG_OBJECT (appsrc, "queueing buffer %p", buffer);
+     if (!steal_ref)
+       gst_buffer_ref (buffer);
+     gst_queue_array_push_tail (priv->queue, buffer);
+     priv->queued_bytes += gst_buffer_get_size (buffer);
++    priv->queued_buffers += 1;
++    priv->end_buffer_ts = GST_BUFFER_PTS(buffer);
+   }
+ 
++  gpointer head;
++  head = gst_queue_array_peek_head(priv->queue);
++  if (!GST_IS_BUFFER (head)){
++    head = gst_queue_array_peek_nth(priv->queue, 1);
++  }
++
++  priv->start_buffer_ts = GST_BUFFER_PTS(head);
++  GST_DEBUG_OBJECT(appsrc, "end buffer ts %"GST_TIME_FORMAT" start buffer ts %"GST_TIME_FORMAT" seek start ts %"GST_TIME_FORMAT, 
++      GST_TIME_ARGS(priv->end_buffer_ts), GST_TIME_ARGS(priv->start_buffer_ts), GST_TIME_ARGS(priv->seek_start_position));
++
++  if (priv->end_buffer_ts != GST_CLOCK_TIME_NONE && priv->start_buffer_ts != GST_CLOCK_TIME_NONE \
++      &&  priv->seek_start_position != GST_CLOCK_TIME_NONE) {
++    if (priv->end_buffer_ts <= priv->seek_start_position){
++      priv->queued_time = 0;
++    }else if (priv->end_buffer_ts >= priv->start_buffer_ts){
++      priv->queued_time = priv->end_buffer_ts - priv->start_buffer_ts;
++    }
++  }
++
++  GST_DEBUG_OBJECT(appsrc, "priv->queued_bytes %lld priv->queued_buffers %lld priv->queued_time(%lld) %"GST_TIME_FORMAT, 
++      priv->queued_bytes, priv->queued_buffers, priv->queued_time, GST_TIME_ARGS(priv->queued_time));
++
+   if ((priv->wait_status & STREAM_WAITING))
+     g_cond_broadcast (&priv->cond);
+ 
+diff --git a/gst-libs/gst/app/gstappsrc.h b/gst-libs/gst/app/gstappsrc.h
+index 2966a46..69d0947 100644
+--- a/gst-libs/gst/app/gstappsrc.h
++++ b/gst-libs/gst/app/gstappsrc.h
+@@ -154,6 +154,12 @@ guint64          gst_app_src_get_max_bytes           (GstAppSrc *appsrc);
+ GST_APP_API
+ guint64          gst_app_src_get_current_level_bytes (GstAppSrc *appsrc);
+ 
++GST_APP_API
++guint64          gst_app_src_get_current_level_buffers (GstAppSrc *appsrc);
++
++GST_APP_API
++GstClockTime     gst_app_src_get_current_level_time  (GstAppSrc *appsrc);
++
+ GST_APP_API
+ void             gst_app_src_set_latency             (GstAppSrc *appsrc, guint64 min, guint64 max);
+ 
+-- 
+2.29.2
+
