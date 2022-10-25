@@ -7,20 +7,22 @@ GROUP_SESSION=session
 chgrp $GROUP_SESSION /opt
 chmod g+rw /opt
 
-mkdir -p /opt/amazonPrime/
-chgrp $GROUP_SESSION /opt/amazonPrime/
-chmod g+rw /opt/amazonPrime/
-
 mkdir -p /tmp/amazonPrime/
 chgrp $GROUP_SESSION /tmp/amazonPrime/
 chmod g+rw /tmp/amazonPrime/
 
 chgrp $GROUP_SYSTEM /data
 chmod g+rw /data
+
+mkdir -p /data/amazonPrime/
+chgrp $GROUP_SESSION /data/amazonPrime/
+chmod g+rw /data/amazonPrime/
+
 if [ -d /data/persistent ];then
   chgrp $GROUP_SYSTEM /data/persistent
   chmod g+rw /data/persistent
 fi
+
 chgrp $GROUP_SYSTEM /run
 chmod g+rw /run
 
