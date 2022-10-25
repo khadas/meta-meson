@@ -4,9 +4,6 @@ XDG_RUNTIME_DIR=/run/user/0
 GROUP_SYSTEM=system
 GROUP_SESSION=session
 
-chgrp $GROUP_SESSION /opt
-chmod g+rw /opt
-
 mkdir -p /tmp/amazonPrime/
 chgrp $GROUP_SESSION /tmp/amazonPrime/
 chmod g+rw /tmp/amazonPrime/
