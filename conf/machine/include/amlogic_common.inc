@@ -93,6 +93,8 @@ STAGING_VERITY_DIR = "${DEPLOY_DIR_IMAGE}"
 
 #Common part
 BBMASK += "meta-aml-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
+BBMASK += "meta-aml-netflix-nrdp6/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
+BBMASK += "meta-aml-netflix-nrdp6/recipes-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
 
 XZ_COMPRESSION_LEVEL ?= "-e -M 50% -9"
 
