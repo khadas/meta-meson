@@ -1,6 +1,6 @@
 #For WesterOS
 DISTRO_FEATURES_remove = " mesa mesa-gl x11"
-DISTRO_FEATURES_append = " opencdm"
+#DISTRO_FEATURES_append = " opencdm"
 DISTRO_FEATURES_append = " westeros enable_icrypto_openssl rdkshell safec one-rdk no-rdk-deps aml-thunder"
 DISTRO_FEATURES_append = " tts"
 DISTRO_FEATURES_append = " aml-launcher"
