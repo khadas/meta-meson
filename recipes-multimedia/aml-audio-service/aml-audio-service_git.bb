@@ -20,7 +20,11 @@ PACKAGES =+ "\
 do_configure[noexec] = "1"
 inherit autotools pkgconfig systemd
 S="${WORKDIR}/git"
+
+ENABLE_APLUGIN = "no"
+EXTRA_OEMAKE:append = "${@bb.utils.contains('ENABLE_APLUGIN', 'yes', ' aplugin=y', '', d)}"
 DEPENDS += " grpc grpc-native boost aml-amaudioutils protobuf-native liblog dolby-ms12"
+DEPENDS:append = "${@bb.utils.contains('ENABLE_APLUGIN', 'yes', ' alsa-lib', '', d)}"
 RDEPENDS_${PN} += " aml-amaudioutils liblog"
 RDEPENDS_${PN}-testapps += " ${PN} liblog"
 
@@ -57,6 +61,9 @@ do_install() {
         install -m 644 -D ${S}/include/audio_if.h -t ${D}/usr/include
         install -m 644 -D ${S}/include/audio_effect_if.h -t ${D}/usr/include
         install -m 644 -D ${S}/include/audio_effect_params.h -t ${D}/usr/include
+        if ${@bb.utils.contains("ENABLE_APLUGIN", "yes", "true", "false", d)}; then
+            install -m 644 -D ${S}/libasound_module_pcm_ahal.so -t ${D}${libdir}/alsa-lib/
+        fi
         for f in ${S}/include/hardware/*.h; do \
             install -m 644 -D ${f} -t ${D}/usr/include/hardware; \
         done
