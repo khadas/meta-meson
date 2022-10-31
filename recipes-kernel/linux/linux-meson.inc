@@ -17,6 +17,13 @@ addtask copy_dtb before do_install after do_compile
 do_deploy_append () {
     DTB_PATH=`get_real_dtb_path_in_kernel multi.dtb`
     install -m 0644 ${DTB_PATH} ${DEPLOYDIR}/dtb.img
+
+    if [ -n "$(find ${DEPLOYDIR}/dtb.img -size +200k)" ]; then
+        echo "dtb.img > 200k will be gziped"
+        mv ${DEPLOYDIR}/dtb.img ${DEPLOYDIR}/dtb.img.orig
+        gzip -c ${DEPLOYDIR}/dtb.img.orig > ${DEPLOYDIR}/dtb.img
+        rm -fv ${DEPLOYDIR}/dtb.img.orig
+    fi
 }
 
 do_install_append () {
