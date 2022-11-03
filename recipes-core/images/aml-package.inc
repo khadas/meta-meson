@@ -54,6 +54,15 @@ do_aml_pack() {
     cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-img-packer/ext2simg ${DEPLOY_DIR_IMAGE}/
     cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-img-packer/res_packer ${DEPLOY_DIR_IMAGE}/
     cp -rf ${STAGING_DIR_NATIVE}${bindir}/aml-img-packer/${SOC_FAMILY}/* ${DEPLOY_DIR_IMAGE}/
+
+    #if system have generate secureboot uboot, just use it.
+    test -f ${DEPLOY_DIR_IMAGE}/u-boot.bin.device.signed && sed 's/"u-boot.bin.signed"/"u-boot.bin.device.signed"/' -i ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
+
+    if [ `grep -c "u-boot.bin.device.signed" ${DEPLOY_DIR_IMAGE}/${PACK_CONF}` -ne '0' ];then
+        echo "++ aml_image_v2 package with u-boot.bin.device.signed"
+        bbwarn "@@ aml_image_v2 package with u-boot.bin.device.signed"
+    fi
+
     if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'true', 'false', d)}; then
         if ${@bb.utils.contains('DISTRO_FEATURES','absystem','true','false', d)};then
             sed -i '$a file="vbmeta.img"           main_type="PARTITION"      sub_type="vbmeta_a"' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}

@@ -17,8 +17,19 @@ AVB_RECOVERY_PARTITION_PUBKEY = "recovery_rsa2048.avbpubkey"
 
 AVB_VBMETA_RSA_KEY = "vbmeta_rsa2048.pem"
 AVB_VBMETA_ALGORITHM = "SHA256_RSA2048"
+AVB_VBMETA_RSA_KEY = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'bl33-level-3-rsa-priv.pem', 'vbmeta_rsa2048.pem', d), \
+    'vbmeta_rsa2048.pem', d)}"
+AVB_VBMETA_RSA_KEY_PATH = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '${DEPLOY_DIR_IMAGE}', '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d), \
+    '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d)}"
+AVB_VBMETA_ALGORITHM = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'SHA256_RSA4096', 'SHA256_RSA2048', d), \
+    'SHA256_RSA2048', d)}"
 
-SIGN_VBMETA = " --key ${STAGING_DIR_NATIVE}/${sysconfdir_native}/${AVB_VBMETA_RSA_KEY} --algorithm ${AVB_VBMETA_ALGORITHM} --padding_size 4096 "
+SIGN_VBMETA = " --key ${AVB_VBMETA_RSA_KEY_PATH}/${AVB_VBMETA_RSA_KEY} --algorithm ${AVB_VBMETA_ALGORITHM} --padding_size 4096 "
+
+
 ADD_KERNEL_AVB = " --include_descriptors_from_image ${DEPLOY_DIR_IMAGE}/boot.img "
 ADD_SYSTEM_AVB_DM_VERITY = " --include_descriptors_from_image ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}-${MACHINE}.${DM_VERITY_IMAGE_TYPE} "
 ADD_VENDOR_AVB_DM_VERITY = " --include_descriptors_from_image ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}-${MACHINE}.${DM_VERITY_IMAGE_TYPE} "
@@ -40,6 +51,7 @@ VBMETA_ROLLBACK_INDEX = " --rollback_index ${DEVICE_PROPERTY_VBMETA_ROLLBACK_IND
 
 do_compile() {
     install -d ${DEPLOY_DIR_IMAGE}
+    bbwarn "---@@ SIGN_VBMETA: ${SIGN_VBMETA}"
     #if boot.img already has hash_footer, avbtool won't add again, so don't need erase hash_footer first
     avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/boot.img --partition_size ${DEVICE_PROPERTY_BOOT_PARTITION_SIZE} --partition_name boot
 
