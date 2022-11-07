@@ -133,6 +133,10 @@ create_extra_folder(){
     if [ ! -d ${IMAGE_ROOTFS}/data ];then
         mkdir -p ${IMAGE_ROOTFS}/data
     fi
+
+    if [ ! -d ${IMAGE_ROOTFS}/opt ];then
+        mkdir -p ${IMAGE_ROOTFS}/opt
+    fi
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "do_create_device_properties; "
