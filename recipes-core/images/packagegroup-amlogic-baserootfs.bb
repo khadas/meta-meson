@@ -74,6 +74,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     aml-utils-simulate-key \
     vulkan-loader \
     aml-hdmicec \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aamp', 'aamp', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'fota-upgrade', 'aml-utils-fota-upgrade', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'system-user', 'sandbox-setup', '', d)} \
