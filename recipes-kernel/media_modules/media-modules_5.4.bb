@@ -72,6 +72,7 @@ MEDIA_CONFIGS_append_sc2 = "\
 S = "${WORKDIR}/git"
 EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M="${S}/drivers" EXTRA_CFLAGS="$(cat ${STAGING_KERNEL_DIR}/gki_ext_module_predefine || true)" ${MEDIA_CONFIGS} modules'
 
+KERNEL_MODULE_AUTOLOAD += "pts_server"
 KERNEL_MODULE_AUTOLOAD += "amvdec_avs2_v4l"
 KERNEL_MODULE_AUTOLOAD += "amvdec_h265_v4l"
 KERNEL_MODULE_AUTOLOAD += "amvdec_mh264_v4l"
