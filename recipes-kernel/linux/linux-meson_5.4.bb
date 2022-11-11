@@ -43,7 +43,7 @@ SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.c
 KDIR = "aml-5.4"
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
-LINUX_VERSION ?= "5.4.180"
+LINUX_VERSION ?= "5.4.210"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
 
 PR = "r2"
