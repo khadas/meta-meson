@@ -127,6 +127,10 @@ do_aml_pack() {
             cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/vendor.${ROOTFS_TYPE}
             cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-nand-${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/sw-description
             cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand-${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+            if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'true', 'false', d)}; then
+                cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-nand-${ROOTFS_TYPE}-avb ${DEPLOY_DIR_IMAGE}/sw-description
+                cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand-${ROOTFS_TYPE}-avb ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+            fi
         else
             cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-emmc ${DEPLOY_DIR_IMAGE}/sw-description
             cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-emmc ${DEPLOY_DIR_IMAGE}/sw-package-filelist
