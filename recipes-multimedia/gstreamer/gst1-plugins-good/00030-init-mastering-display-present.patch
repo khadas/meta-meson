@@ -1,0 +1,26 @@
+From 968ce5430f5464eaddb93def9d591f3014c25108 Mon Sep 17 00:00:00 2001
+From: "fei.deng" <fei.deng@amlogic.com>
+Date: Tue, 15 Nov 2022 19:27:21 +0800
+Subject: [PATCH] init mastering display present
+
+Change-Id: I702943b4903f7682d9aad32eeeb1944836489347
+---
+ gst/matroska/matroska-ids.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gst/matroska/matroska-ids.c b/gst/matroska/matroska-ids.c
+index 5716b45..1cf0951 100644
+--- a/gst/matroska/matroska-ids.c
++++ b/gst/matroska/matroska-ids.c
+@@ -68,7 +68,7 @@ gst_matroska_track_init_video_context (GstMatroskaTrackContext ** p_context)
+   video_context->colorimetry.matrix = GST_VIDEO_COLOR_MATRIX_UNKNOWN;
+   video_context->colorimetry.transfer = GST_VIDEO_TRANSFER_UNKNOWN;
+   video_context->colorimetry.primaries = GST_VIDEO_COLOR_PRIMARIES_UNKNOWN;
+-
++  video_context->mastering_display_info_present = FALSE;
+ 
+   return TRUE;
+ }
+-- 
+2.25.1
+
