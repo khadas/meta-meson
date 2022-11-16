@@ -1,0 +1,40 @@
+From 3fe9e32da8ba31337ca83bbfb1e67e449ea904ff Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Wed, 16 Nov 2022 11:33:54 +0800
+Subject: [PATCH] gstreamer1.0-plugins-good: CB1 cslg make pts not start from 0
+ [1/1]
+
+PD#KAR-686
+
+Problem:
+cslg make pts not start from 0
+
+Solution:
+sync patch 0004-qtdemux-remove-cslg-handling.patch from rdk
+which will disable cslg inside ctts
+
+Verify:
+AH212
+---
+ gst/isomp4/qtdemux.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index 038021a..c2b35d0 100755
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -9323,9 +9323,10 @@ qtdemux_stbl_init (GstQTDemux * qtdemux, QtDemuxStream * stream, GNode * stbl)
+           stream->ctts_present = FALSE;
+           return TRUE;
+         }
+-
++#if 0
+         if (offset < cslg_least)
+           cslg_least = offset;
++#endif
+       }
+ 
+       if (cslg_least < 0)
+-- 
+2.25.1
+
