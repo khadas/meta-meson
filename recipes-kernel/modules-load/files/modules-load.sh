@@ -5,6 +5,8 @@ PATH=/lib/modules/$LINUX_VERSION/kernel
 
 if [ -e $PATH/media/dovi.ko ];then
     /sbin/insmod $PATH/media/dovi.ko
+elif [ -e /data/dovi.ko ];then
+    /sbin/insmod /data/dovi.ko
 fi
 
 if [ -e $PATH/drivers/amlogic/audioinfo/audio_data.ko ];then

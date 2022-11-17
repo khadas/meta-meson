@@ -160,28 +160,13 @@ python do_create_device_properties() {
 }
 
 process_for_read_only_rootfs(){
-    kernel_version=$(ls ${IMAGE_ROOTFS}/lib/modules/)
-
     if [ ! -f ${IMAGE_ROOTFS}/etc/wifi/rtk_station_mode ];then
         touch ${IMAGE_ROOTFS}/etc/wifi/rtk_station_mode
     fi
 
-    if [ ! -f ${IMAGE_ROOTFS}/processing_graph_dot.txt ];then
-        touch ${IMAGE_ROOTFS}/processing_graph_dot.txt
-    fi
-
-
     if [ ! -f ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22 ];then
         touch ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22
         chmod +x ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22
-    fi
-
-    if [ ! -f ${IMAGE_ROOTFS}/lib/modules/$kernel_version/kernel/media/dovi.ko ];then
-        touch ${IMAGE_ROOTFS}/lib/modules/$kernel_version/kernel/media/dovi.ko
-    fi
-
-    if [ -f ${IMAGE_ROOTFS}/${systemd_unitdir}/system/data-lib-modules-kernelVersionAmlogic-kernel-media-dovi.ko.service ];then
-        sed -i "s/kernelVersionAmlogic/$kernel_version/g" ${IMAGE_ROOTFS}/${systemd_unitdir}/system/data-lib-modules-kernelVersionAmlogic-kernel-media-dovi.ko.service
     fi
 
     if [ -f ${IMAGE_ROOTFS}/.autorelabel ];then
@@ -189,7 +174,7 @@ process_for_read_only_rootfs(){
     fi
 }
 
-ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('READONLY', 'y', 'process_for_read_only_rootfs; ', '', d)}"
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '', 'process_for_read_only_rootfs; ', d)}"
 
 inherit avb-dm-verity
 # The following is needed only if chained

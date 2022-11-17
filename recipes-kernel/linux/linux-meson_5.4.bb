@@ -34,6 +34,9 @@ SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.c
 # add config for system-user
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'system-user', 'file://system-user.cfg', '', d)}"
 
+# add config for OverlayFS
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '', 'file://disable_OverlayFS.cfg', d)}"
+
 #SRC_URI_append = " file://meson.scc \
 #            file://meson.cfg \
 #            file://meson-user-config.cfg \

@@ -20,6 +20,22 @@ VOLATILE_BINDS ?= "\
 VOLATILE_BINDS[type] = "list"
 VOLATILE_BINDS[separator] = "\n"
 
+VOLATILE_BINDS = "/data/var/lib /var/lib\n"
+VOLATILE_BINDS_append = "/data/etc/bluetooth /etc/bluetooth\n"
+VOLATILE_BINDS_append = "/data/etc/hosts /etc/hosts\n"
+VOLATILE_BINDS_append = "/data/etc/dropbear /etc/dropbear\n"
+VOLATILE_BINDS_append = "/data/etc/wifi /etc/wifi\n"
+VOLATILE_BINDS_append = "/data/etc/ld.so.cache /etc/ld.so.cache\n"
+VOLATILE_BINDS_append = "/data/etc/systemd/system/sysinit.target.wants /etc/systemd/system/sysinit.target.wants\n"
+
+EXTRA_BINDS = "/data/usr/bin/hdcp_tx22 /usr/bin/hdcp_tx22\\n"
+EXTRA_BINDS_append = "/data/lib/firmware/hdcp/firmware.le /lib/firmware/hdcp/firmware.le\\n"
+EXTRA_BINDS_append = "/data/usr/lib/libdolbyms12.so /usr/lib/libdolbyms12.so\\n"
+EXTRA_BINDS_append = "/data/usr/lib/libHwAudio_dtshd.so /usr/lib/libHwAudio_dtshd.so\\n"
+EXTRA_BINDS_append = "/data/usr/lib/libHwAudio_dcvdec.so /usr/lib/libHwAudio_dcvdec.so\\n"
+
+VOLATILE_BINDS_append = "${@bb.utils.contains('RELEASE_MODE', 'PROD', '', '${EXTRA_BINDS}', d)}"
+
 def volatile_systemd_services(d):
     services = []
     for line in oe.data.typed_value("VOLATILE_BINDS", d):
@@ -73,12 +89,16 @@ do_install () {
     install -m 0644 ${WORKDIR}/var-lib.mount ${D}${systemd_unitdir}/system/
 }
 
-do_install_append_broadband ()  {
+do_install_append() {
+    if [ -f ${D}${systemd_unitdir}/system/data-var-lib.service ];then
+        sed -i '/Before=/ s/$/ systemd-rfkill\.service/g' ${D}${systemd_unitdir}/system/data-var-lib.service
+    fi
+
     rm -f ${D}${systemd_unitdir}/system/var-lib.mount
 }
 
 do_install[dirs] = "${WORKDIR}"
 
 SYSTEMD_SERVICE_${PN} += "var-lib.mount"
-SYSTEMD_SERVICE_${PN}_remove_broadband += "var-lib.mount"
-FILES_${PN}_remove_broadband += "${systemd_unitdir}/system/var-lib.mount"
+SYSTEMD_SERVICE_${PN}_remove += "var-lib.mount"
+FILES_${PN}_remove += "${systemd_unitdir}/system/var-lib.mount"

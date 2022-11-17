@@ -34,10 +34,6 @@ DISTRO_FEATURES_append = " appmanager AsperitasDvb LauncherWebkit aamp"
 DISTRO_FEATURES_append = " fota-upgrade"
 DISTRO_FEATURES_append = " remove-test-files"
 
-DISTRO_FEATURES_append = " dm-verity"
-DISTRO_FEATURES_NATIVE_append = " dm-verity"
-#READONLY = "y"
-
 RDEPENDS_packagegroup-amlogic-baserootfs_remove = "libhtmllocal htmllocal-plugin"
 
 OVERRIDES .= ":aq2432"

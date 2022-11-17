@@ -76,10 +76,6 @@ DISTRO_FEATURES_append = "${EXTRA_BLUETOOTH_STUFF}"
 
 TDK_VERSION_s4 = "v3.8/dev/S805X2"
 
-# dm-verity
-#DISTRO_FEATURES_append = " dm-verity"
-#DISTRO_FEATURES_NATIVE_append = " dm-verity"
-
 # For YouTube Cert. Now it's for 2023
 DEVICE_PROPERTY_FIRMWARE_VERSION = "1.0.0"
 DEVICE_PROPERTY_MODEL_NAME = "NA"

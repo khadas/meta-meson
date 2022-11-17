@@ -32,7 +32,7 @@ do_install_append_sc2 () {
  /dev/factory           /factory                   auto       defaults              0  0
 EOF
 
-    if [ "${READONLY}" = "y" ];then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', 'false', 'true', d)}; then
         cat >> ${D}${sysconfdir}/fstab <<EOF
             tmpfs                /var/cache        tmpfs      defaults,nosuid,nodev,noexec              0  0
 EOF
@@ -84,7 +84,7 @@ EOF
 fi
 
 
-    if [ "${READONLY}" = "y" ];then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', 'false', 'true', d)}; then
         cat >> ${D}${sysconfdir}/fstab <<EOF
             tmpfs                /var/cache        tmpfs      defaults,nosuid,nodev,noexec              0  0
 EOF
@@ -119,6 +119,19 @@ do_install_append_t5d () {
  /dev/${vendor_dev}     /vendor                    auto       defaults              0  0
  /dev/factory           /factory                   auto       defaults              0  0
 EOF
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', 'false', 'true', d)}; then
+        cat >> ${D}${sysconfdir}/fstab <<EOF
+            tmpfs                /var/cache        tmpfs      defaults,nosuid,nodev,noexec              0  0
+EOF
+        sed -i '/^ *\/dev\/root/ d' ${D}${sysconfdir}/fstab
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'true', 'false', d)}; then
+        sed -i '$a \  /dev/tee          /tee/         ext4        defcontext=system_u:object_r:usr_t,defaults,x-systemd.automount,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
+    else
+        sed -i '$a \  /dev/tee          /tee/         ext4        defaults,x-systemd.automount,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
+    fi
 }
 FILES_${PN}_append_t5d = " /vendor/* /factory/* "
 dirs755_append_t5d = " /vendor /factory "
@@ -140,6 +153,19 @@ do_install_append_t5w () {
  /dev/${vendor_dev}     /vendor                    auto       defaults              0  0
  /dev/factory           /factory                   auto       defaults              0  0
 EOF
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', 'false', 'true', d)}; then
+        cat >> ${D}${sysconfdir}/fstab <<EOF
+            tmpfs                /var/cache        tmpfs      defaults,nosuid,nodev,noexec              0  0
+EOF
+        sed -i '/^ *\/dev\/root/ d' ${D}${sysconfdir}/fstab
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'true', 'false', d)}; then
+        sed -i '$a \  /dev/tee          /tee/         ext4        defcontext=system_u:object_r:usr_t,defaults,x-systemd.automount,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
+    else
+        sed -i '$a \  /dev/tee          /tee/         ext4        defaults,x-systemd.automount,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
+    fi
 }
 FILES_${PN}_append_t5w = " /vendor/* /factory/* "
 dirs755_append_t5w = " /vendor /factory "

@@ -77,11 +77,6 @@ DISTRO_FEATURES_append = "${EXTRA_BLUETOOTH_STUFF}"
 
 TDK_VERSION_s4 = "v3.8/dev/S905C3"
 
-#READONLY = "y"
-# dm-verity
-DISTRO_FEATURES_append = " ${@bb.utils.contains('READONLY', 'y', 'dm-verity', '', d)}"
-DISTRO_FEATURES_NATIVE_append = " ${@bb.utils.contains('READONLY', 'y', 'dm-verity', '', d)}"
-
 # For YouTube Cert. Now it's for 2023
 DEVICE_PROPERTY_FIRMWARE_VERSION = "1.0.0"
 DEVICE_PROPERTY_MODEL_NAME = "OTT-4K-Ref"

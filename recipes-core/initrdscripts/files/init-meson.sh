@@ -17,6 +17,7 @@ DM_DEV_COUNT=0
 ACTIVE_SLOT=""
 root_fstype="ext4"
 VBMETA_DEVICE=""
+OverlayFS="enabled"
 
 early_setup() {
     mkdir -p /proc
@@ -73,7 +74,7 @@ read_args() {
 #on read-only rootfs, .autorelabel can not be deleted, so move this file under /data, in this situation,
 #if do factory reset, selinux relabel will happen again
 selinux_relabel() {
-    if [ -e $ROOT_MOUNT/read-only ]; then
+    if [ "$OverlayFS" = "disabled" ]; then
         if [ ! -e $ROOT_MOUNT/data/.autorelabel ] && [ -f /sbin/setfiles ]; then
             echo "selinux relabel"
             touch $ROOT_MOUNT/data/.autorelabel
@@ -89,7 +90,9 @@ selinux_relabel() {
             chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data
             chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/
             chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/machine-id
-            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /lost+found
+            if [ -f /lost+found ]; then
+                chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /lost+found
+            fi
 
             rm ${ROOT_MOUNT}/.autorelabel
         fi
@@ -97,7 +100,7 @@ selinux_relabel() {
 }
 
 check_set_machine_id() {
-    if [ -e $ROOT_MOUNT/read-only ]; then
+    if [ "$OverlayFS" = "disabled" ]; then
         if [ ! -e ${ROOT_MOUNT}/data/etc/machine-id ];then
             mkdir -p $ROOT_MOUNT/data/etc
             if [ -f  ${ROOT_MOUNT}/etc/machine-id ]; then
@@ -341,9 +344,8 @@ mount_and_boot() {
         fi
     fi
 
-    if touch $ROOT_MOUNT/bin 2>/dev/null || [ -e $ROOT_MOUNT/read-only ]; then
+    if touch $ROOT_MOUNT/bin 2>/dev/null; then
         # The root image is read-write, directly boot it up.
-        echo "read-only, skip overlay"
         if [ "${root_fstype}" = "ext4" ]; then
             data_ext4_handle $ROOT_MOUNT/data
         else
@@ -358,8 +360,6 @@ mount_and_boot() {
         union_fs_type="overlay"
     elif grep -q -w "aufs" /proc/filesystems; then
         union_fs_type="aufs"
-    else
-        union_fs_type=""
     fi
 
     # make a union mount if possible
@@ -399,7 +399,13 @@ mount_and_boot() {
         fi
         ;;
     "")
-        mount -t tmpfs -o rw,noatime,mode=755 tmpfs $ROOT_MOUNT/media
+        echo "OverlayFS is disabled"
+        OverlayFS="disabled"
+        if [ "${root_fstype}" = "ext4" ]; then
+            data_ext4_handle $ROOT_MOUNT/data
+        else
+            data_yaffs2_handle $ROOT_MOUNT/data
+        fi
         ;;
     esac
 

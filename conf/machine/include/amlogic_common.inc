@@ -116,3 +116,18 @@ SPLASH ?= "psplash"
 
 #wpeframework system uer mode
 DISTRO_FEATURES_append = " system-user"
+
+#Production Mode
+#Disable overlay readonly rootfs
+#Use dm-verity to verify rootfs
+#Disable tty console
+#Disable adb
+#Disable thunder UI
+#Disable ssh, telnet and related ports
+#RELEASE_MODE = " PROD"
+
+#Overlay Filesystem
+DISTRO_FEATURES_append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', '', 'OverlayFS', d)}"
+
+# dm-verity
+DISTRO_FEATURES_append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', 'dm-verity', '', d)}"

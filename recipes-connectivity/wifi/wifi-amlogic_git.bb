@@ -22,9 +22,9 @@ do_install() {
         sed -i '/\/usr\/bin\/wifi_power/a ExecStart=\/sbin\/modprobe vlsicomm conf_path=\/etc\/wifi\/w1' ${D}${systemd_unitdir}/system/wifi.service
     fi
 
-    #when connect wifi AP, wpa-supplicant need rename /etc/wpa_supplicant.conf, which can not on read-only /etc partition.
-    #so when enable read-only, let wpa-supplicant to find wpa_supplicant under /data instead of /etc
-    if [ "${READONLY}" = "y" ];then
+    #when connect wifi AP, wpa-supplicant need rename /etc/wpa_supplicant.conf, can't write /etc partition on read-only rootfs
+    #let wpa-supplicant to find wpa_supplicant under /data instead of /etc
+    if ${@bb.utils.contains("DISTRO_FEATURES", "OverlayFS", "false", "true", d)}; then
         WPA_PATH="/data/persistent"
         sed -i "s#/etc/wpa_supplicant.conf#$WPA_PATH/wpa_supplicant.conf#g" ${D}${systemd_unitdir}/system/wifi.service
         sed -i "/^ExecStart=\/usr\/sbin\/wpa_supplicant/i \ExecStart=/bin/sh -c 'if [ ! -e $WPA_PATH/wpa_supplicant.conf ]; then mkdir -p $WPA_PATH;cp --preserve=context /etc/wpa_supplicant.conf $WPA_PATH/; fi'" ${D}${systemd_unitdir}/system/wifi.service
