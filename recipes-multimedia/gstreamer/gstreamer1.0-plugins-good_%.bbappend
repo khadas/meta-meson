@@ -28,4 +28,4 @@ SRC_URI_append = "file://00027-add-case-to-parse-display-metadata.patch "
 SRC_URI_append = "file://00028-fix_SWPL-90736_check_dv_blel_for_mp4.patch "
 SRC_URI_append = "file://00029-qtdemux-remove-cslg-handling.patch "
 SRC_URI_append = "file://00030-init-mastering-display-present.patch "
-
+SRC_URI_append = "file://00031-add-case-18-for-ARIB-STD-B67-to-show-hdr-info.patch "
