@@ -98,6 +98,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'gstreamer1', \
         'gstreamer1.0-plugins-good \
         gstreamer1.0-plugins-bad \
+        gstreamer1.0-plugins-ugly \
         gst-plugin-aml-asink \
         gst-plugin-video-sink \
         gst-plugin-aml-v4l2dec \
