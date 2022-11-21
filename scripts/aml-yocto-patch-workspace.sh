@@ -122,7 +122,7 @@ if check_input_param; then
         elif [ -d $SOURCE_PATH/$PatchFolder ] && [ -n "$ADVANCE_MODE" ]; then
             PROJ_PATH=$SOURCE_PATH/$PatchFolder
         else
-            echo "$SOURCE_PATH/$PatchFolder not exist"
+            echo -e "\033[31m $SOURCE_PATH/$PatchFolder not exist !!!  Please check. \033[0m"
             continue
         fi
         for Patch in $(find $AML_PATCHES_PATH/$PatchFolder -maxdepth 1 -name '*.patch' -printf "%P\n" | sort | xargs)
