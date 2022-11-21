@@ -31,6 +31,9 @@ do_install() {
         mesonsc2-*ah221*)
            CHIPFAMILY=S905C2
         ;;
+        mesons4d-*aq243*)
+          CHIPFAMILY=S805C3
+        ;;
         mesons4-*)
           CHIPFAMILY=S905Y4
         ;;

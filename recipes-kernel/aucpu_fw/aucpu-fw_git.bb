@@ -32,6 +32,9 @@ do_install() {
         mesons4d-*ap232*)
           FWSRCDIR=S905C3
         ;;
+        mesons4d-*aq243*)
+          FWSRCDIR=S805C3
+        ;;
         mesons4-*ap*)
           FWSRCDIR=S905Y4
         ;;
