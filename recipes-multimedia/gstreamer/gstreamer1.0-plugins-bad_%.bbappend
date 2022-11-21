@@ -12,3 +12,6 @@ DEPENDS += "gst-aml-drmbufferpool-plugins"
 
 PACKAGECONFIG[vulkan] = ""
 
+PACKAGECONFIG_remove = "smoothstreaming"
+
+
