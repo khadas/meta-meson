@@ -21,6 +21,7 @@ SOC_ap222 = "s905y4"
 SOC_ap223 = "s905y4"
 SOC_ah212 = "s905x4"
 SOC_aq222 = "s805x2"
+SOC_ap232 = "s905c3"
 SOC_pxp = "p1_pxp"
 
 S = "${WORKDIR}/git/"
