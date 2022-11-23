@@ -7,6 +7,7 @@ SRC_URI_append = "file://0005-support-parse-EXT-X-MAP-for-m3u8.patch "
 SRC_URI_append = "file://0006-get-more-data-if-offset-is-larger-than-buffer-size-in-h264parser.patch "
 SRC_URI_append = "file://0007-do-not-advance-fragment-when-downloading-header.patch "
 SRC_URI_append = "file://0008-add-new-registration-id-444f5649-for-tsdemux.patch "
+SRC_URI_append = "file://0009-add-gap-time-of-pcr-to-last-pcr.patch "
 
 DEPENDS += "gst-aml-drmbufferpool-plugins"
 
