@@ -20,6 +20,11 @@ if [ -d /data/persistent ];then
   chmod g+rw /data/persistent
 fi
 
+if [ -c /dev/nand_env ];then
+  chgrp disk /dev/nand_env
+  chmod g+rw /dev/nand_env
+fi
+
 chgrp $GROUP_SYSTEM /run
 chmod g+rw /run
 
