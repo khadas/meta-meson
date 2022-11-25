@@ -129,6 +129,13 @@ BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-netflix"
 EOF
     fi
 
+    # Add meta-aml-netflix-nrdp6 only if a machine configuration choosed from different layer
+    if [ -d ${MESON_ROOT_PATH}/meta-aml-netflix-nrdp6 ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-aml-netflix-nrdp6[^-]') -eq 0 ]; then
+      cat >> conf/bblayers.conf <<EOF
+BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-netflix-nrdp6"
+EOF
+    fi
+
     if [ -d ${MESON_ROOT_PATH}/meta-selinux ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-selinux[^-]') -eq 0 ]; then
             cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-selinux"

@@ -8,6 +8,7 @@ DISTRO_FEATURES_append = " aml-thunder"
 DISTRO_FEATURES_append = " cobalt"
 DISTRO_FEATURES_append = " amazon-plugin"
 DISTRO_FEATURES_append = " mediaplayer"
+DISTRO_FEATURES_append = " netflix6"
 
 PREFERRED_VERSION_amazon-prime-video = "4.0"
 PREFERRED_VERSION_wpa-supplicant = "2.10"
