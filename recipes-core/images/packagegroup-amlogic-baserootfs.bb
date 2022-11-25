@@ -130,7 +130,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'westeros westeros-soc-drm westeros-sink', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
         'wpeframework wpeframework-ui thunder-services', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'cobalt', \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'youtube', \
         'youtube-plugin', '', d)} \
     dolby-ms12 \
     aml-audio-hal \
@@ -146,7 +146,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         'wpeframework-plugin-netflix-nrdp6 netflix-nrdp6-aml aml-netflix-esn', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', \
         'bluetooth-mgr bluetooth-core bluez-alsa bluez5-obex', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'amazon-plugin', \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'amazon', \
         'amazon-prime-plugin amazon-prime-video', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-launcher', \
         'aml-launcher libhtmllocal htmllocal-plugin', '', d)} \
@@ -159,7 +159,7 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
 
 RDEPENDS_packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amazon-prebuilt-pkg', 'amazon-prebuilt-pkg', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'cobalt-prebuilt-pkg', 'cobalt-prebuilt-pkg', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'youtube-prebuilt-pkg', 'youtube-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'netflix-prebuilt-pkg', 'netflix-prebuilt-pkg', '', d)} \
     "
 

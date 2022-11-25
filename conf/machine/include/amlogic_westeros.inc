@@ -5,8 +5,8 @@ DISTRO_FEATURES_append = " westeros enable_icrypto_openssl rdkshell safec one-rd
 DISTRO_FEATURES_append = " tts"
 DISTRO_FEATURES_append = " aml-launcher"
 DISTRO_FEATURES_append = " aml-thunder"
-DISTRO_FEATURES_append = " cobalt"
-DISTRO_FEATURES_append = " amazon-plugin"
+DISTRO_FEATURES_append = " youtube"
+DISTRO_FEATURES_append = " amazon"
 DISTRO_FEATURES_append = " mediaplayer"
 DISTRO_FEATURES_append = " netflix6"
 
