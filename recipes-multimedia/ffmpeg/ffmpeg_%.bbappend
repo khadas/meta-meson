@@ -75,6 +75,8 @@ EXTRA_OECONF_append = " \
     --disable-decoder=vp8_rkmpp          \
     --disable-decoder=vp9_rkmpp          \
     --disable-decoder=wcmv               \
+    --disable-decoder=wmv1               \
+    --disable-decoder=wmv2               \
     --disable-decoder=wmv3_crystalhd     \
     --disable-decoder=zerocodec          \
     --disable-decoder=zlib               \
@@ -245,6 +247,8 @@ EXTRA_OECONF_append = " \
     --disable-encoder=vp8_vaapi          \
     --disable-encoder=vp9_vaapi          \
     --disable-encoder=vp9_qsv            \
+    --disable-encoder=wmv1               \
+    --disable-encoder=wmv2               \
     --enable-libxml2                     \
     --disable-libsmbclient               \
     --disable-protocol=libsmbclient      \
