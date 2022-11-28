@@ -16,6 +16,7 @@ SRC_URI_append = "file://0014-support-DTS-parse.patch "
 SRC_URI_append = "file://0016-calculate-a-appropriate-pts-when-no-timestamp.patch "
 SRC_URI_append = "file://0017-fix_SWPL-83356_gstmkv.patch "
 SRC_URI_append = "file://0018-ts-streams-prefer-tsdemux-to-avdemux-mpegts.patch "
+SRC_URI_append = "file://0019-CF1-do-not-use-avdemux-when-container-is-wav.patch "
 
 
 
