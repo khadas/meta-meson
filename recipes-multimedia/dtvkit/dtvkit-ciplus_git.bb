@@ -10,7 +10,7 @@ LICENSE = "CLOSED"
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-DEPENDS = "libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 curl freetype openssl aml-mp-sdk"
+DEPENDS = "libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 curl freetype openssl aml-mp-sdk optee-userspace"
 
 
 do_configure[noexec] = "1"

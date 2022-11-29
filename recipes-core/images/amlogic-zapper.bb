@@ -69,6 +69,7 @@ IMAGE_INSTALL += " \
     aml-audio-hal \
     aml-mp-sdk \
     dtvkit-release-prebuilt \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', 'android-rpcservice', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-iptv', 'aml-iptv-firmware ffmpeg-ctc', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '', 'aml-dtvdemod aml-afd', d), '', d)} \
