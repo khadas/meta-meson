@@ -26,11 +26,11 @@ do_populate_lic[noexec] = "1"
 do_install () {
 	mkdir -p ${D}/usr/bin
 	mkdir -p ${D}/usr/lib/pkgconfig
-	mkdir -p ${D}/lib/teetz
+	mkdir -p ${D}/lib/optee_armtz
 	mkdir -p ${D}/usr/include/playready
 	mkdir -p ${D}/usr/include/playready3.3
 
-    install -m 0644 ${S}/prebuilt-v3.3/noarch/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz
+    install -m 0644 ${S}/prebuilt-v3.3/noarch/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz
     install -m 0644 ${S}/prebuilt-v3.3/noarch/pkgconfig/playready.pc ${D}/usr/lib/pkgconfig
     install -m 0644 ${S}/prebuilt-v3.3/arm.aapcs-linux.hard/libplayready-3.3.so ${D}/usr/lib
     install -m 0644 ${S}/prebuilt-v3.3/arm.aapcs-linux.hard/libplayready33p* ${D}/usr/lib
@@ -40,7 +40,7 @@ do_install () {
     cp -rf ${S}/prebuilt-v3.3/noarch/include/playready3.3_sw/* ${D}/usr/include/playready3.3/
 }
 
-FILES_${PN} += "/lib/teetz/*"
+FILES_${PN} += "/lib/optee_armtz/*"
 FILES_${PN} += "/video/*"
 FILES_${PN} += "${libdir}/*"
 

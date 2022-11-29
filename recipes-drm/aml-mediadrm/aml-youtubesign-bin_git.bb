@@ -22,13 +22,13 @@ TA_TARGET="noarch"
 do_install_append() {
     install -d -m 0755 ${D}${libdir}
     install -d -m 0755 ${D}/usr/include
-    install -d -m 0755 ${D}/lib/teetz
-    install -D -m 0755 ${S}/youtubesign-bin/prebuilt/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
+    install -d -m 0755 ${D}/lib/optee_armtz
+    install -D -m 0755 ${S}/youtubesign-bin/prebuilt/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
     install -D -m 0644 ${S}/youtubesign-bin/prebuilt/${ARM_TARGET}/*.so ${D}${libdir}
     install -D -m 0644 ${S}/youtubesign-bin/prebuilt/noarch/include/* ${D}/usr/include/
 }
 
-FILES_${PN} += "${libdir}/*.so /lib/teetz/* ${includedir}/*"
+FILES_${PN} += "${libdir}/*.so /lib/optee_armtz/* ${includedir}/*"
 FILES_${PN}-dev = "${includedir}/* "
 INSANE_SKIP_${PN} = "ldflags dev-so dev-elf already-stripped"
 INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf already-stripped"

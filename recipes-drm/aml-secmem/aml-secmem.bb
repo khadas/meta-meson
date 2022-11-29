@@ -21,15 +21,15 @@ TA_TARGET="noarch"
 do_install() {
     install -d -m 0755 ${D}${libdir}
     install -d -m 0755 ${D}/usr/include
-    install -d -m 0755 ${D}/lib/teetz
+    install -d -m 0755 ${D}/lib/optee_armtz
     install -d -m 0755 ${D}/usr/bin
 
-    install -D -m 0755 ${S}/libsecmem-bin/prebuilt/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
+    install -D -m 0755 ${S}/libsecmem-bin/prebuilt/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
     install -D -m 0644 ${S}/libsecmem-bin/prebuilt/${TA_TARGET}/include/*.h ${D}/usr/include
 #    install -D -m 0755 ${S}/libsecmem-bin/prebuilt/${ARM_TARGET}/secmem_test ${D}/usr/bin
     install -D -m 0644 ${S}/libsecmem-bin/prebuilt/${ARM_TARGET}/libsecmem.so ${D}${libdir}
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/* ${includedir}/* /lib/teetz/*"
+FILES_${PN} = "${libdir}/* ${bindir}/* ${includedir}/* /lib/optee_armtz/*"
 FILES_${PN}-dev = "${includedir}/* "
 INSANE_SKIP_${PN} = "already-stripped"

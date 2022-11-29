@@ -18,16 +18,16 @@ VMX_REL_PATH_s4 = "s905y4_linux"
 VMX_REL_PATH_aq2432 = "s805c3_linux"
 
 do_install() {
-    mkdir -p ${D}/lib/teetz
+    mkdir -p ${D}/lib/optee_armtz
     install -d -m 0644 ${D}/usr/lib
     install -d -m 0644 ${D}/usr/bin
     install -d -m 0644 ${D}/usr/include
     install -D -m 0644 ${S}/${VMX_REL_PATH}/lib/* ${D}/usr/lib
-    install -D -m 0644 ${S}/${VMX_REL_PATH}/ta/* ${D}/lib/teetz
+    install -D -m 0644 ${S}/${VMX_REL_PATH}/ta/* ${D}/lib/optee_armtz
     install -D -m 0755 ${S}/${VMX_REL_PATH}/vmx-indiv/* ${D}/usr/bin
     install -D -m 0644 ${S}/${VMX_REL_PATH}/include/* ${D}/usr/include
 }
 
-FILES_${PN} = "${libdir}/* /usr/lib/* /usr/bin/* /lib/teetz/*"
+FILES_${PN} = "${libdir}/* /usr/lib/* /usr/bin/* /lib/optee_armtz/*"
 FILES_${PN}-dev = "${includedir}/* "
 INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"

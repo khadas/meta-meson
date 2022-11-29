@@ -46,13 +46,13 @@ do_install() {
     install ${S}/${ARM_TARGET}/libdmx_client_linux.so ${D}${libdir}/libdmx_client.so
     install -m 0644 ${S}/include/* ${D}/${includedir}
 
-    install -d ${D}/lib/teetz
-    install -m 0644 ${S}/ta/v3.8/dev/${CHIPFAMILY}/b472711b-3ada-4c37-8c2a-7c64d8af0223.ta ${D}/lib/teetz
+    install -d ${D}/lib/optee_armtz
+    install -m 0644 ${S}/ta/v3.8/dev/${CHIPFAMILY}/b472711b-3ada-4c37-8c2a-7c64d8af0223.ta ${D}/lib/optee_armtz
 }
 
 INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
 INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
 
-FILES_${PN} += " ${bindir}/* ${libdir}/*.so ${libdir}/teetz/*.ta /lib/teetz/*.ta"
+FILES_${PN} += " ${bindir}/* ${libdir}/*.so ${libdir}/teetz/*.ta /lib/optee_armtz/*.ta"
 FILES_${PN}-dev = "${includedir}/* "
 

@@ -26,7 +26,7 @@ do_compile() {
 
 do_install() {
     # install headers
-    install -d -m 0755 ${D}/lib/teetz
+    install -d -m 0755 ${D}/lib/optee_armtz
     install -d -m 0755 ${D}${libdir}
     install -d -m 0755 ${D}${bindir}
 
@@ -36,10 +36,10 @@ do_install() {
 
     install -D -m 0755 ${S}/out/ca/tee_secpu_fw_load ${D}${bindir}
     install -D -m 0755 ${S}/out/lib/*.so ${D}${libdir}
-    install -D -m 0755 ${S}/ta/${TDK_VERSION_NEW}/*.ta ${D}/lib/teetz/
+    install -D -m 0755 ${S}/ta/${TDK_VERSION_NEW}/*.ta ${D}/lib/optee_armtz/
 }
 
-FILES_${PN} += "/lib/teetz/* ${bindir}/*"
+FILES_${PN} += "/lib/optee_armtz/* ${bindir}/*"
 FILES_${PN} += "${libdir}/*"
 FILES_${PN}-dev = " "
 INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"

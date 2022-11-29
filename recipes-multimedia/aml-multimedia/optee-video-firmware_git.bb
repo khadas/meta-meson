@@ -21,9 +21,9 @@ do_compile[noexec] = "1"
 do_install () {
 	mkdir -p ${D}/usr/bin
 	mkdir -p ${D}${libdir}
-	mkdir -p ${D}/lib/teetz
+	mkdir -p ${D}/lib/optee_armtz
 
-    install -m 0644 ${S}/${TA_ARCH}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz
+    install -m 0644 ${S}/${TA_ARCH}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz
     install -m 0644 ${S}/${TAR_ARCH}/libtee_preload_fw.so  ${D}${libdir}
     install -m 0755 ${S}/${TAR_ARCH}/tee_preload_fw  ${D}/usr/bin
 
@@ -32,7 +32,7 @@ do_install () {
     install -m 0644 ${WORKDIR}/videoFirmwarePreload.service ${D}${systemd_unitdir}/system/
 }
 
-FILES_${PN} = "/lib/teetz/* ${libdir}/* /usr/bin/*"
+FILES_${PN} = "/lib/optee_armtz/* ${libdir}/* /usr/bin/*"
 FILES_${PN}-dev = ""
 INSANE_SKIP_${PN} = "ldflags dev-elf already-stripped"
 

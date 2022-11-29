@@ -24,10 +24,10 @@ do_install() {
     # install headers
     install -d -m 0755 ${D}/lib/firmware/hdcp/
     touch ${D}/lib/firmware/hdcp/firmware.le
-    install -d -m 0755 ${D}/lib/teetz
+    install -d -m 0755 ${D}/lib/optee_armtz
     install -d -m 0755 ${D}/usr/bin
     install -D -m 0755 ${S}/ca/bin${ARM_TARGET}/tee_hdcp ${D}/usr/bin/
-    install -D -m 0755 ${S}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
+    install -D -m 0755 ${S}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
     if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
         install -D -m 0644 ${WORKDIR}/aml_hdcp.service ${D}${systemd_unitdir}/system/aml_hdcp.service
         if [ "${@bb.utils.contains("DISTRO_FEATURES", "amlogic-tv", "yes", "no", d)}" = "yes"  ]; then
@@ -38,6 +38,6 @@ do_install() {
 }
 
 SYSTEMD_SERVICE_${PN} = "aml_hdcp.service "
-FILES_${PN} += "/lib/teetz/* /usr/bin/* /lib/firmware/hdcp/*"
+FILES_${PN} += "/lib/optee_armtz/* /usr/bin/* /lib/firmware/hdcp/*"
 INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"
 INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf"
