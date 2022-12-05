@@ -139,7 +139,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     aml-efuse \
     tinyalsa-tools \
     aml-audio-service aml-audio-service-testapps \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'tts', 'wpeframework-plugin-amltts', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'netflix', \
         'wpeframework-plugin-netflix netflix-aml aml-netflix-esn', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'netflix6', \
