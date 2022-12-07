@@ -17,6 +17,9 @@ do_install() {
         sed -i 's@PATH/.*/dvb_demux.ko@PATH/media/aml_hardware_dmx.ko@' ${D}/etc/modules-load.sh
         ;;
     esac
+    if ${@bb.utils.contains('DISTRO_FEATURES','amlogic-tv','true','false', d)}; then
+        sed -i 's/dovi.ko/dovi_tv.ko/' ${D}/etc/modules-load.sh
+    fi
 }
 
 do_install_append() {
