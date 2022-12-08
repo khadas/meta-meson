@@ -96,6 +96,7 @@ KCFLAGS +=" -DCONFIG_YOCTO "
 
 SOC = "TBD"
 SOC_aq2432 = "s805c3"
+SOC_ap222 = "s905y4"
 do_compile () {
     cd ${S}
     cp -f fip/mk .
