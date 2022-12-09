@@ -931,18 +931,19 @@ class ImageHandler(object):
                                   struct.calcsize(ImageChunk.FORMAT)))
     self._read_header()
 
-  def append_raw(self, data):
+  def append_raw(self, data, multiple_block_size=True):
     """Appends a RAW chunk to the sparse file.
-
-    The length of the given data must be a multiple of the block size.
-
+    The length of the given data must be a multiple of the block size,
+    unless |multiple_block_size| is False.
     Arguments:
       data: Data to append as bytes.
-
+      multiple_block_size: whether to check the length of the
+        data is a multiple of the block size.
     Raises:
       OSError: If ImageHandler was initialized in read-only mode.
     """
-    assert len(data) % self.block_size == 0
+    if multiple_block_size:
+      assert len(data) % self.block_size == 0
 
     if self._read_only:
       raise OSError('ImageHandler is in read-only mode.')
@@ -3716,7 +3717,12 @@ class Avb(object):
       # Ensure image is multiple of data_block_size.
       rounded_image_size = round_to_multiple(image.image_size, data_block_size)
       if rounded_image_size > image.image_size:
-        image.append_raw('\0' * (rounded_image_size - image.image_size))
+        # If we need to round up the image size, it means the length of the
+        # data to append is not a multiple of block size.
+        # Setting multiple_block_size to false, so append_raw() will not
+        # require it.
+        image.append_raw(b'\0' * (rounded_image_size - image.image_size),
+                         multiple_block_size=False)
 
       if root_digest:
         root_digest = binascii.unhexlify(root_digest);
@@ -3761,15 +3767,7 @@ class Avb(object):
       if check_at_most_once:
         ht_desc.flags |= AvbHashtreeDescriptor.FLAGS_CHECK_AT_MOST_ONCE
 
-      if padding_size != 0:
-          padding_needed = (round_to_multiple(tree_size, padding_size) -
-                  tree_size)
-      else:
-          padding_needed = (round_to_multiple(tree_size, image.block_size) -
-                  tree_size)
-      hash_tree_padding = b'\0' * padding_needed
-      image.append_raw(hash_tree_padding)
-      len_hashtree_and_fec = len(hash_tree_padding) + tree_size
+      len_hashtree_and_fec = tree_size
 
       ht_desc_to_setup = None
       if setup_as_rootfs_from_kernel:
