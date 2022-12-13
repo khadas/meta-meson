@@ -10,6 +10,7 @@ SRC_URI_append = "file://0008-add-new-registration-id-444f5649-for-tsdemux.patch
 SRC_URI_append = "file://0009-add-gap-time-of-pcr-to-last-pcr.patch "
 SRC_URI_append = "file://0010-do-not-create-pts-in-h264parser-when-pts-is-invalid.patch "
 SRC_URI_append = "file://0011-fx-not-found-start-code-issue-in-one-buffer.patch "
+SRC_URI_append = "file://0012-tsdemux-send-event-AML-SET-MAX-BYTE-SIZE.patch "
 
 DEPENDS += "gst-aml-drmbufferpool-plugins"
 
