@@ -105,19 +105,11 @@ do_compile () {
     export KCFLAGS="${KCFLAGS}"
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
-    bbwarn "VMX_UBOOT_PATH_s4 is set as ${VMX_UBOOT_PATH_s4}"
-    bbwarn "VMX_UBOOT_PATH_aq2432 is set as ${VMX_UBOOT_PATH_aq2432}"
-    bbwarn "UBOOT_MACHINE is set as ${UBOOT_MACHINE}"
-    bbwarn "VMX_UBOOT_PATH is set as ${VMX_UBOOT_PATH}"
-    bbwarn "MACHINE_ARCH is set as ${MACHINE_ARCH}"
-    bbwarn "VMX_UBOOT_ARG is set as ${VMX_UBOOT_ARG}"
     LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG} ${IRDETO_UBOOT_ARG}
     cp -rf build/* fip/
 
     if [ "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', 'true', 'false', d)}" = "true" ] &&\
            [ "${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'true', 'false', d)}" = "true" ] ; then
-        bbwarn "--@@ install bl33 ras key to ${DEPLOY_DIR_IMAGE}"
-        bbwarn "pem source is ${S}/bl33/v2019/board/amlogic/${UBOOT_TYPE%_config}/device-keys/fip/rsa/${SOC}/rootrsa-0/key/bl33-level-3-rsa-priv.pem"
         mkdir -p ${DEPLOY_DIR_IMAGE}
         cp ${S}/bl33/v2019/board/amlogic/${UBOOT_TYPE%_config}/device-keys/fip/rsa/${SOC}/rootrsa-0/key/bl33-level-3-rsa-priv.pem ${DEPLOY_DIR_IMAGE}
     fi

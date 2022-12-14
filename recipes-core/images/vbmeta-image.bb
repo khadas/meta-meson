@@ -51,7 +51,6 @@ VBMETA_ROLLBACK_INDEX = " --rollback_index ${DEVICE_PROPERTY_VBMETA_ROLLBACK_IND
 
 do_compile() {
     install -d ${DEPLOY_DIR_IMAGE}
-    bbwarn "---@@ SIGN_VBMETA: ${SIGN_VBMETA}"
     #if boot.img already has hash_footer, avbtool won't add again, so don't need erase hash_footer first
     avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/boot.img --partition_size ${DEVICE_PROPERTY_BOOT_PARTITION_SIZE} --partition_name boot
 
