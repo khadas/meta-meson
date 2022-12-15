@@ -13,4 +13,12 @@ install -m 0644 ${WORKDIR}/network/20-ethernet.network ${D}/etc/systemd/network
 install -m 0644 ${WORKDIR}/network/21-wlan.network ${D}/etc/systemd/network
 sed -i '/HandlePowerKey/c\HandlePowerKey=ignore' ${D}/etc/systemd/logind.conf
 sed -i '/pam_selinux/s/^/#&/g' ${D}/etc/pam.d/systemd-user
+#below settings to avoid journalctl logs drop
+sed -i '$a\RateLimitInterval=0' ${D}/etc/systemd/journald.conf
+sed -i '$a\RateLimitBurst=0' ${D}/etc/systemd/journald.conf
+}
+
+do_install_append_aq2432() {
+  sed -i '$a RuntimeMaxUse=64K' ${D}/etc/systemd/journald.conf
+  sed -i '$a RuntimeMaxFileSize=64K' ${D}/etc/systemd/journald.conf
 }
