@@ -15,6 +15,8 @@ ARM_TARGET_aarch64 = "lib64"
 #use head version, ?= conditonal operator can be control revision in external rdk-next.conf like configuration file
 SRCREV ?= "${AUTOREV}"
 
+TDK_VERSION_t5w = "v3.8/dev/T962D4"
+
 CONFIG = "config_ah212.xml"
 CONFIG_ah212 = "config_ah212.xml"
 CONFIG_ah232 = "config_ah232.xml"
@@ -38,7 +40,7 @@ do_install () {
 	mkdir -p ${D}/usr/include/dtvkit/midware/stb/inc
 	mkdir -p ${D}/usr/include/dtvkit/platform/inc
 	mkdir -p ${D}/usr/include/dtvkit/hw/inc
-
+	mkdir -p ${D}/lib/teetz
 	mkdir -p ${D}/etc/
 
     install -D -m 0644 ${S}/inc/DVBCore/include/dvbcore/dvb/inc/*.h ${D}/usr/include/dtvkit/dvb/inc
@@ -59,9 +61,13 @@ do_install () {
     install -m 0644 ${S}/dtvkit.service ${D}/${systemd_unitdir}/system
     install -D -m 0644 ${S}/config/${CONFIG} ${D}/etc/config.xml
     install -D -m 0644 ${S}/config/*.json  ${D}/etc/
+    echo "TDK_VERSION is ${TDK_VERSION}"
+    if [ -f "${S}/ta/${TDK_VERSION}/*.ta" ];then
+       install -D -m 0755 ${S}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
+    fi
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/*"
+FILES_${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/* /lib/teetz/* "
 FILES_${PN}-dev = "${includedir}/* "
 
 INSANE_SKIP_${PN} = "ldflags already-stripped"
