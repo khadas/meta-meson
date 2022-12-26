@@ -161,6 +161,13 @@ BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-openembedded/meta-perl"
 EOF
     fi
 
+# Add meta-aml-apps only if not already present.
+    if [ -d ${MESON_ROOT_PATH}/meta-aml-apps ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-aml-apps[^-]') -eq 0 ]; then
+        cat >> conf/bblayers.conf <<EOF
+BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-apps"
+EOF
+    fi
+
     unset NEED_A6432_SUPPORT
     if [ -n "$(echo $TARGET_MACHINE | grep -- lib32)" ]; then
       NEED_A6432_SUPPORT=y
