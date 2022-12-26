@@ -91,19 +91,6 @@ VENDOR_DM_VERITY_IMAGE = "vendor-image"
 DM_VERITY_IMAGE_TYPE = "ext4"
 STAGING_VERITY_DIR = "${DEPLOY_DIR_IMAGE}"
 
-#Common part
-BBMASK += "meta-aml-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
-BBMASK += "meta-aml-netflix-nrdp6/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
-BBMASK += "meta-aml-netflix-nrdp6/recipes-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
-
-#Special case for Zapper
-BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '|meta-meson/recipes-graphics/qt5/qtbase_%d.bbappend', '', d)}"
-BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '|meta-meson/recipes-security/refpolicy/refpolicy-%.bbappend', '', d)}"
-
-#Special case for BSP
-BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-bsp', '|meta-meson/recipes-graphics/qt5/qtbase_%d.bbappend', '', d)}"
-BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-bsp', '|meta-meson/recipes-security/refpolicy/refpolicy-%.bbappend', '', d)}"
-
 XZ_COMPRESSION_LEVEL ?= "-e -M 50% -9"
 
 VIRTUAL-RUNTIME_init_manager ?= "systemd"
@@ -116,6 +103,12 @@ SPLASH ?= "psplash"
 
 #wpeframework system uer mode
 DISTRO_FEATURES_append = " system-user"
+
+# enable selinux
+DISTRO_FEATURES_append = " acl xattr pam selinux"
+# set the policy
+PREFERRED_PROVIDER_virtual/refpolicy ?= "refpolicy-standard"
+DEFAULT_ENFORCING = "permissive"
 
 #Production Mode
 #Disable overlay readonly rootfs

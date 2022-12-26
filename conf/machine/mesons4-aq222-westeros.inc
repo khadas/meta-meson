@@ -60,12 +60,6 @@ DISTRO_FEATURES_append = " aml-dtv "
 DISTRO_FEATURES_append = " recovery "
 DISTRO_FEATURES_append = " swupdate "
 
-# enable selinux
-DISTRO_FEATURES_append = " acl xattr pam selinux"
-# set the policy
-PREFERRED_PROVIDER_virtual/refpolicy ?= "refpolicy-standard"
-DEFAULT_ENFORCING = "permissive"
-
 OVERRIDES .= ":aq222:s4:onepass"
 MACHINEOVERRIDES .= ":client"
 
