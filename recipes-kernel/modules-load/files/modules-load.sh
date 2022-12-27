@@ -30,3 +30,6 @@ fi
 if [ -e $PATH/drivers/amlogic/ca_cert/aml-ca-cert.ko ];then
     /sbin/insmod $PATH/drivers/amlogic/ca_cert/aml-ca-cert.ko
 fi
+
+# attach for register FE
+echo attach > /sys/class/aml_dvb_extern/demod_debug
