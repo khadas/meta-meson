@@ -5,6 +5,7 @@ INHERIT += "externalsrc"
 EXTERNALSRC_pn-irdeto-sdk = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-sdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-sdk')) else ''}"
 EXTERNALSRC_pn-irdeto-hal = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/hal' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/hal')) else ''}"
 EXTERNALSRC_pn-irdeto-cashal-rel = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-cashal-rel' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-cashal-rel')) else ''}"
+EXTERNALSRC_pn-irdeto-tests = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-tests' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-tests')) else ''}"
 
 EXTERNALSRC_pn-nagra-sdk = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/nagra/nagra-sdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/nagra/nagra-sdk')) else ''}"
 EXTERNALSRC_pn-nagra-cert-prebuilt = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/nagra/nagra-sdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/nagra/nagra-sdk')) else ''}"
