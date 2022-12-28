@@ -62,9 +62,13 @@ do_install() {
 			done
 		fi
 	fi
+	if ${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', 'true', 'false', d)}; then
+		install -d ${D}/firmware/
+		install -m 0644 ${S}/firmware/remote_ota.bin ${D}/firmware/
+	fi
 }
 
-FILES_${PN} = " /etc/*"
+FILES_${PN} = " /etc/* /firmware/*"
 FILES_${PN}_pxp = " /p1_pxp/*"
 FILES_${PN}-dev = " "
 PACKAGE_ARCH = "${MACHINE_ARCH}"
