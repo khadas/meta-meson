@@ -20,6 +20,7 @@ ARM_TARGET_aarch64 ="ca_export_arm64"
 do_install() {
     mkdir -p ${D}${bindir}
     install -m 0755 ${S}/${ARM_TARGET}/bin/tee-supplicant ${D}${bindir}
+    install -m 0755 ${S}/${ARM_TARGET}/bin/tee_stest ${D}${bindir}
 
     mkdir -p ${D}${libdir}
     install -m 0755 ${S}/${ARM_TARGET}/lib/libteec.so ${D}${libdir}/libteec.so.1.0
