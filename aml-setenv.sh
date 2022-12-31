@@ -142,6 +142,17 @@ BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-selinux"
 EOF
     fi
 
+    if [ -d ${MESON_ROOT_PATH}/meta-thunder ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-thunder[^-]') -eq 0 ]; then
+            cat >> conf/bblayers.conf <<EOF
+BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-thunder"
+EOF
+    fi
+    if [ -d ${MESON_ROOT_PATH}/meta-qt5 ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-qt5[^-]') -eq 0 ]; then
+            cat >> conf/bblayers.conf <<EOF
+BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-qt5"
+EOF
+    fi
+
     if [ -d ${MESON_ROOT_PATH}/meta-security ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-security[^-]') -eq 0 ]; then
             cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-security"

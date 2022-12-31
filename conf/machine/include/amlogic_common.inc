@@ -96,6 +96,11 @@ BBMASK += "meta-aml-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbapp
 BBMASK += "meta-aml-netflix-nrdp6/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
 BBMASK += "meta-aml-netflix-nrdp6/recipes-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
 
+#Special case for Zapper
+BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '|meta-meson/recipes-graphics/qt5/qtbase_%d.bbappend', '', d)}"
+BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '|meta-meson/recipes-security/refpolicy/refpolicy-%.bbappend', '', d)}"
+
+
 XZ_COMPRESSION_LEVEL ?= "-e -M 50% -9"
 
 VIRTUAL-RUNTIME_init_manager ?= "systemd"
