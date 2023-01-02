@@ -241,9 +241,7 @@ data_ext4_handle() {
            echo -e "factory reset, Formating $ROOT_RWDEVICE to ext4 ..."
            yes 2>/dev/null | mkfs.ext4 -q -m 0 $ROOT_RWDEVICE
            sync
-           uenv set default_env 1
-           echo -e "reboot to reset uenv ..."
-           /sbin/reboot -f
+           uenv set factory-reset 0
         fi
     fi
 
@@ -478,10 +476,7 @@ data_ubi_handle()
         ubiformat -y /dev/mtd${data_mtd_number}
         ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
         ubimkvol /dev/${1} -m -N data
-
-        uenv set default_env 1
-        echo -e "reboot to reset uenv ..."
-        /sbin/reboot -f
+        uenv set factory-reset 0
     fi
 }
 
@@ -494,10 +489,7 @@ data_yaffs2_handle()
         mount | grep 'data' && echo "Already mounted" && return 0
     else
         flash_erase /dev/mtd${data_mtd_number} 0 0
-
-        uenv set default_env 1
-        echo -e "reboot to reset uenv ..."
-        /sbin/reboot -f
+        uenv set factory-reset 0
     fi
 
     #mount data
