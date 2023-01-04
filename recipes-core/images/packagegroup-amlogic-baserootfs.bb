@@ -104,7 +104,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
         gst-plugin-aml-v4l2dec \
         gst-aml-drm-plugins \
         gstreamer1.0-libav \
-        gst-player \
         ', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'weston', \
         'wayland \
