@@ -71,6 +71,8 @@ IMAGE_INSTALL += " \
     aml-pqserver \
     aml-audio-service aml-audio-service-testapps \
     aml-audio-hal \
+    aml-mp-sdk \
+    dtvkit-release-prebuilt \
 "
 
 IMAGE_INSTALL += " \
@@ -79,7 +81,6 @@ IMAGE_INSTALL += " \
 
 #    icu \
 #    aml-libdvr \
-#    aml-mp-sdk \
 #    aml-subtitleserver \
 #    dolby-ms12 \
 #
