@@ -3,6 +3,7 @@ DEPENDS_append_aarch64 = " libgcc"
 KERNEL_CC_append_aarch64 = " ${TOOLCHAIN_OPTIONS}"
 KERNEL_LD_append_aarch64 = " ${TOOLCHAIN_OPTIONS}"
 #KERNEL_IMAGE_SYMLINK_NAME = "Image-${MACHINE}"
+RDEPENDS_${KERNEL_PACKAGE_NAME}-base = ""
 
 ############from linux-dtb.inc
 do_compile_append() {

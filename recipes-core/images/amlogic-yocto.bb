@@ -26,6 +26,8 @@ IMAGE_INSTALL += " \
 # unicode locale support
 IMAGE_INSTALL_append = " glibc-utils localedef"
 
+PACKAGE_EXCLUDE = " kernel-devicetree"
+
 MACHINE_IMAGE_NAME ?= "${PN}"
 IMAGE_FEATURES_remove = " read-only-rootfs"
 
