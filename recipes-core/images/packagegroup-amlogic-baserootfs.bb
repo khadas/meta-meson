@@ -96,7 +96,8 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-libvpcodec', 'libvpcodec h264bitstream libion', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-libvphevcodec', 'libvphevcodec libge2d libion', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gstreamer1', \
-        'gstreamer1.0-plugins-good \
+        'gstreamer1.0-plugins-base \
+        gstreamer1.0-plugins-good \
         gstreamer1.0-plugins-bad \
         gstreamer1.0-plugins-ugly \
         gst-plugin-aml-asink \
