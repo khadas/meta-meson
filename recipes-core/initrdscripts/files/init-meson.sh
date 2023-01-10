@@ -470,20 +470,16 @@ data_ubi_handle()
             fi
         fi
         ubidetach -p /dev/mtd${data_mtd_number}
-
-        #format data
-        ubiformat -y /dev/mtd${data_mtd_number}
-        ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
-        ubimkvol /dev/${1} -m -N data
-
-        mount -t ubifs /dev/${1}_0 /data
     else
-        #format data
-        ubiformat -y /dev/mtd${data_mtd_number}
-        ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
-        ubimkvol /dev/${1} -m -N data
         uenv set factory-reset 0
     fi
+
+    #format data
+    ubiformat -y /dev/mtd${data_mtd_number}
+    ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
+    ubimkvol /dev/${1} -m -N data
+
+    mount -t ubifs /dev/${1}_0 /data
 }
 
 data_yaffs2_handle()
