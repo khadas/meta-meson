@@ -65,12 +65,35 @@ IMAGE_INSTALL += " \
     modules-load \
     aml-ubootenv \
     aml-utils-simulate-key \
+    vulkan-loader \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'playready', 'playready', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace tee-supplicant optee-video-firmware aml-provision', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'widevine', 'aml-mediadrm-widevine', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'gstreamer1', \
+        'gstreamer1.0-plugins-good \
+        gstreamer1.0-plugins-bad \
+        gstreamer1.0-plugins-ugly \
+        gst-plugin-aml-asink \
+        gst-plugin-video-sink \
+        gst-plugin-aml-v4l2dec \
+        gst-aml-drm-plugins \
+        gstreamer1.0-libav \
+        gst-player \
+        ', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'weston', \
+        'wayland \
+        weston-init \
+        meson-display \
+        fbscripts \
+        ', '', d)} \
+    pulseaudio \
     aml-pqserver \
     aml-audio-service aml-audio-service-testapps \
     aml-audio-hal \
+    openssh \
+    sshfs-fuse \
 "
 
 IMAGE_INSTALL += " \
