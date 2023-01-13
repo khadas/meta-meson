@@ -24,16 +24,19 @@ do_compile() {
   cd ${S}
   cp -af ../meson_drm.h ${STAGING_DIR_TARGET}${includedir}
   cp -af ../drm_fourcc.h ${STAGING_DIR_TARGET}${includedir}
+  cd ../
   oe_runmake  all
 }
 
 do_install() {
+  cd ${S}
   install -d ${D}${libdir}
   install -d ${D}${bindir}
   install -d ${D}${includedir}/libdrm_meson
   install -m 0644 ${S}/libdrm_meson.so ${D}${libdir}
   install -m 755  ${S}/meson_drm_test ${D}${bindir}
   install -m 755  ${S}/meson_drm_display_test ${D}${bindir}
+  install -m 755  ${S}/../drm-setcrtc/drm_setcrtc ${D}${bindir}
   install -m 0644 ${S}/meson_drmif.h ${D}${includedir}
   install -m 0644 ${S}/meson_drm_util.h ${D}${includedir}
   install -m 0644 ${S}/../meson_drm.h ${D}${includedir}/libdrm_meson
@@ -44,7 +47,7 @@ do_install() {
   install -m 0644 ${S}/meson_drm_event.h ${D}${includedir}/libdrm_meson
 }
 
-FILES_${PN} = "${libdir}/*"
+FILES_${PN} = "${libdir}/*  ${bindir}/"
 FILES_${PN}-dev = "${includedir}/*"
 INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
 INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
