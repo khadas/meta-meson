@@ -1,4 +1,5 @@
-SUMMARY = "Amlogic Yocto Image"
+SUMMARY = "Amlogic Yocto ZapperPlus Image"
+LICENSE = "MIT"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
@@ -10,16 +11,134 @@ IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', \
 
 require aml-package.inc
 
-LICENSE = "MIT"
-
 IMAGE_FEATURES += "splash "
 #IMAGE_FEATURES += "tools-debug "
 
 IMAGE_INSTALL += " \
-    packagegroup-amlogic-baserootfs \
+    cpufrequtils \
+    htop \
+    toybox \
+    sqlite3 \
+    icu \
+    libarchive \
+    libunwind \
+    libdaemon \
+    libffi \
+    libfastjson \
+    glibc \
+    expat \
+    tinyalsa \
+    alsa-utils \
+    dnsmasq \
+    bash \
+    dhcpcd \
+    systemd \
+    bash \
+    curl \
+    dropbear \
+    e2fsprogs \
+    e2fsprogs-e2fsck \
+    e2fsprogs-mke2fs \
+    e2fsprogs-tune2fs \
+    fuse-exfat \
+    exfat-utils \
+    ntfs-3g \
+    glib-2.0 \
+    gnutls \
+    jansson \
+    libgcrypt \
+    libgpg-error \
+    libpcre \
+    libsoup-2.4 \
+    libxml2 \
+    neon \
+    popt \
+    spawn-fcgi \
+    yajl \
+    procps \
+    systemd \
+    libnl \
+    dbus \
+    faad2 \
+    libopus \
+    android-tools \
+    aml-hdcp \
+    liblog \
+    android-tools-logcat \
+    iw \
+    wpa-supplicant \
+    wifi-amlogic \
+    procrank \
+    zram \
+    modules-load \
+    system-config \
+    aml-libdvr \
+    aml-mp-sdk \
+    aml-pqserver \
+    aml-subtitleserver \
+    aml-ubootenv \
+    aml-utils-simulate-key \
+    vulkan-loader \
+    aml-hdmicec \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aamp', 'aamp', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'fota-upgrade', 'aml-utils-fota-upgrade', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'system-user', 'sandbox-setup', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'aml-cas-hal aml-secdmx', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-tvserver', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit', 'dtvkit-release-prebuilt', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', 'android-rpcservice', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'wfd-hdcp', 'wfd-hdcp', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'tee-supplicant', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-video-firmware', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'widevine', 'aml-mediadrm-widevine', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'gstreamer1', \
+        'gstreamer1.0-plugins-base \
+        gstreamer1.0-plugins-good \
+        gstreamer1.0-plugins-bad \
+        gstreamer1.0-plugins-ugly \
+        gst-plugin-aml-asink \
+        gst-plugin-video-sink \
+        gst-plugin-aml-v4l2dec \
+        gst-aml-drm-plugins \
+        gstreamer1.0-libav \
+        ', '', d)} \
+    pulseaudio \
+    ffmpeg \
+    libopus \
+    playscripts \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'westeros', \
+        'westeros westeros-soc-drm westeros-sink', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
+        'wpeframework wpeframework-ui thunder-services', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'youtube', \
+        'youtube-plugin', '', d)} \
+    dolby-ms12 \
+    aml-audio-hal \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-audio-effect', '', d)} \
+    aml-provision \
+    aml-efuse \
+    tinyalsa-tools \
+    aml-audio-service aml-audio-service-testapps \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-launcher', \
+        'aml-launcher', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
+        'aml-dial', '', d)} \
+    tzdata \
+    tzcode \
+    format-partitions \
+    "
+
+IMAGE_INSTALL += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'AsperitasDvb', 'webkitbrowser-plugin lighttpd asperitas-dvb', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'youtube-prebuilt-pkg', 'youtube-prebuilt-pkg', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'irdeto-sdk irdeto-cashal-rel', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'auditd', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', bb.utils.contains('DISTRO_FEATURES', 'selinux-debug', \
-    'packagegroup-core-selinux', 'packagegroup-selinux-minimal selinux-autorelabel', d), '', d)} \
+    'packagegroup-core-selinux', 'packagegroup-selinux-minimal', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'test_tools', 'test-tools', '', d)} \
     "
 
@@ -94,7 +213,6 @@ python version_hook(){
 }
 
 python create_version_file() {
-
     version_file = os.path.join(d.getVar("R", True), 'version.txt')
     image_name = d.getVar("IMAGE_NAME", True)
     machine = d.getVar("MACHINE", True).upper()
@@ -152,14 +270,11 @@ python do_create_device_properties() {
     with open(os.path.join(d.getVar("R", True), 'etc', 'device.properties'), 'w') as f:
         for key in sorted(property_keys):
             v = d.getVar(prefix + key)
-            if not key.startswith('PERSIST_'):
-                key = 'ro.' + key
-            key = key.lower().replace('_', '.')
             f.write('%s=%s\n' % (key, v))
         sdkver = d.getVar('YOCTO_SDK_VERSION')
         if not sdkver or len(sdkver) == 0:
             sdkver = time.strftime('%Y%m%d%H%M%S',time.localtime())
-        f.write('ro.sdk.version=%s\n' % sdkver)
+        f.write('SDK_VERSION=%s\n' % sdkver)
 }
 
 process_for_read_only_rootfs(){

@@ -34,7 +34,7 @@ DISTRO_FEATURES_append = " appmanager AsperitasDvb LauncherWebkit aamp"
 DISTRO_FEATURES_append = " fota-upgrade"
 DISTRO_FEATURES_append = " remove-test-files"
 
-RDEPENDS_packagegroup-amlogic-baserootfs_remove = "libhtmllocal htmllocal-plugin"
+DM_VERITY_IMAGE = "${@bb.utils.contains('MULTTILIBS', 'multilib:lib32', 'lib32-amlogic-zapperplus', 'amlogic-zapperplus', d)}"
 
 OVERRIDES .= ":aq2432"
 TDK_VERSION_s4 = "v3.8/dev/S805C3"
