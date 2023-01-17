@@ -152,11 +152,14 @@ python do_create_device_properties() {
     with open(os.path.join(d.getVar("R", True), 'etc', 'device.properties'), 'w') as f:
         for key in sorted(property_keys):
             v = d.getVar(prefix + key)
+            if not key.startswith('PERSIST_'):
+                key = 'ro.' + key
+            key = key.lower().replace('_', '.')
             f.write('%s=%s\n' % (key, v))
         sdkver = d.getVar('YOCTO_SDK_VERSION')
         if not sdkver or len(sdkver) == 0:
             sdkver = time.strftime('%Y%m%d%H%M%S',time.localtime())
-        f.write('SDK_VERSION=%s\n' % sdkver)
+        f.write('ro.sdk.version=%s\n' % sdkver)
 }
 
 process_for_read_only_rootfs(){
