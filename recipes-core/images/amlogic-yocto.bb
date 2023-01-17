@@ -19,7 +19,7 @@ IMAGE_INSTALL += " \
     packagegroup-amlogic-baserootfs \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'auditd', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', bb.utils.contains('DISTRO_FEATURES', 'selinux-debug', \
-    'packagegroup-core-selinux', 'packagegroup-selinux-minimal', d), '', d)} \
+    'packagegroup-core-selinux', 'packagegroup-selinux-minimal selinux-autorelabel', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'test_tools', 'test-tools', '', d)} \
     "
 
