@@ -1,4 +1,4 @@
-From e21f5996d99ab4a8ec1c782b4d60446f384c4492 Mon Sep 17 00:00:00 2001
+From 1d55f449f1c92509312b3b95e47b35ec546be491 Mon Sep 17 00:00:00 2001
 From: Bing Jiang <bing.jiang@amlogic.com>
 Date: Thu, 7 Apr 2022 19:30:48 +0800
 Subject: [PATCH] policy/modules: add refpolicy for data directory
@@ -6,9 +6,9 @@ Subject: [PATCH] policy/modules: add refpolicy for data directory
 Change-Id: I711b11b153c50300d8b2aa3aaaaf82b89bd3b7bb
 Signed-off-by: Bing Jiang <bing.jiang@amlogic.com>
 ---
- policy/modules/admin/alsa.te              |   2 +
+ policy/modules/admin/alsa.te              |   3 +
  policy/modules/kernel/files.fc            |   4 +-
- policy/modules/kernel/files.if            | 163 ++++++++++++++++++++++
+ policy/modules/kernel/files.if            | 181 ++++++++++++++++++++++
  policy/modules/kernel/files.te            |   6 +
  policy/modules/services/avahi.te          |   1 +
  policy/modules/services/bluetooth.te      |   2 +
@@ -16,35 +16,36 @@ Signed-off-by: Bing Jiang <bing.jiang@amlogic.com>
  policy/modules/services/dnsmasq.te        |   1 +
  policy/modules/services/networkmanager.te |   4 +
  policy/modules/services/ntp.te            |   2 +
- policy/modules/services/rpcbind.te        |   3 +
+ policy/modules/services/rpcbind.te        |   4 +
  policy/modules/system/authlogin.te        |   1 +
  policy/modules/system/getty.te            |   1 +
  policy/modules/system/init.te             |   1 +
  policy/modules/system/locallogin.te       |   1 +
- policy/modules/system/logging.te          |   6 +
+ policy/modules/system/logging.te          |  11 ++
  policy/modules/system/modutils.te         |   4 +
- policy/modules/system/mount.if            |  17 +++
+ policy/modules/system/mount.if            |  17 ++
  policy/modules/system/mount.te            |   3 +-
  policy/modules/system/selinuxutil.te      |   2 +
- policy/modules/system/systemd.te          |  21 +++
- policy/modules/system/udev.te             |   4 +
- 22 files changed, 247 insertions(+), 3 deletions(-)
+ policy/modules/system/systemd.te          |  24 +++
+ policy/modules/system/udev.te             |   5 +
+ 22 files changed, 276 insertions(+), 3 deletions(-)
 
 diff --git a/policy/modules/admin/alsa.te b/policy/modules/admin/alsa.te
-index c6dcfa8cb..f06da9ac9 100644
+index c6dcfa8cb..927bd4147 100644
 --- a/policy/modules/admin/alsa.te
 +++ b/policy/modules/admin/alsa.te
-@@ -93,6 +93,8 @@ files_read_usr_files(alsa_t)
+@@ -93,6 +93,9 @@ files_read_usr_files(alsa_t)
  files_search_var_lib(alsa_t)
  files_map_usr_files(alsa_t)
  files_map_etc_files(alsa_t)
 +files_read_data_files(alsa_t)
 +files_search_data(alsa_t)
++files_map_data_files(alsa_t)
  
  fs_getattr_tmpfs(alsa_t)
  
 diff --git a/policy/modules/kernel/files.fc b/policy/modules/kernel/files.fc
-index dacd11edf..5ba2665a5 100644
+index 712ceecc1..4710e1945 100644
 --- a/policy/modules/kernel/files.fc
 +++ b/policy/modules/kernel/files.fc
 @@ -276,8 +276,8 @@ ifndef(`distro_redhat',`
@@ -59,10 +60,10 @@ index dacd11edf..5ba2665a5 100644
  /data/lost\+found/.*		<<none>>
  
 diff --git a/policy/modules/kernel/files.if b/policy/modules/kernel/files.if
-index e335f1f89..e3484540c 100644
+index e335f1f89..5d47d05e5 100644
 --- a/policy/modules/kernel/files.if
 +++ b/policy/modules/kernel/files.if
-@@ -7870,3 +7870,166 @@ interface(`files_mounton_vendor',`
+@@ -7870,3 +7870,184 @@ interface(`files_mounton_vendor',`
  
  	allow $1 vendor_t:dir mounton;
  ')
@@ -83,6 +84,24 @@ index e335f1f89..e3484540c 100644
 +	')
 +
 +	allow $1 tee_t:dir getattr;
++')
++
++########################################
++## <summary>
++##	Get attributes of the factory directory.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`files_getattr_factory_dirs',`
++	gen_require(`
++		type factory_t;
++	')
++
++	allow $1 factory_t:dir getattr;
 +')
 +
 +########################################
@@ -230,7 +249,7 @@ index e335f1f89..e3484540c 100644
 +	allow $1 data_t:system module_load;
 +')
 diff --git a/policy/modules/kernel/files.te b/policy/modules/kernel/files.te
-index 7a0be4f0e..d7e34c737 100644
+index 02fea9f40..e2673f943 100644
 --- a/policy/modules/kernel/files.te
 +++ b/policy/modules/kernel/files.te
 @@ -242,6 +242,12 @@ tunable_policy(`allow_execmod',`
@@ -324,16 +343,17 @@ index c42258f50..2707801a2 100644
  fs_getattr_all_fs(ntpd_t)
  fs_search_auto_mountpoints(ntpd_t)
 diff --git a/policy/modules/services/rpcbind.te b/policy/modules/services/rpcbind.te
-index 808f8904f..9b1a43b6c 100644
+index 808f8904f..ce03f97fc 100644
 --- a/policy/modules/services/rpcbind.te
 +++ b/policy/modules/services/rpcbind.te
-@@ -67,6 +67,9 @@ dev_read_cpu_online(rpcbind_t)
+@@ -67,6 +67,10 @@ dev_read_cpu_online(rpcbind_t)
  domain_use_interactive_fds(rpcbind_t)
  
  files_read_etc_runtime_files(rpcbind_t)
 +files_read_usr_files(rpcbind_t)
 +files_read_data_files(rpcbind_t)
 +files_search_data(rpcbind_t)
++files_map_data_files(rpcbind_t)
  
  auth_use_nsswitch(rpcbind_t)
  
@@ -386,19 +406,29 @@ index cc417dac3..e85d24694 100644
  fs_search_auto_mountpoints(local_login_t)
  
 diff --git a/policy/modules/system/logging.te b/policy/modules/system/logging.te
-index 43486381b..efbee133f 100644
+index 43486381b..dae789f16 100644
 --- a/policy/modules/system/logging.te
 +++ b/policy/modules/system/logging.te
-@@ -201,6 +201,8 @@ domain_use_interactive_fds(auditd_t)
+@@ -113,6 +113,8 @@ corecmd_search_bin(auditctl_t)
+ files_getattr_all_dirs(auditctl_t)
+ files_getattr_all_files(auditctl_t)
+ files_read_etc_files(auditctl_t)
++files_read_data_files(auditctl_t)
++files_map_data_files(auditctl_t)
+ 
+ kernel_read_kernel_sysctls(auditctl_t)
+ kernel_read_proc_symlinks(auditctl_t)
+@@ -201,6 +203,9 @@ domain_use_interactive_fds(auditd_t)
  files_read_etc_files(auditd_t)
  files_list_usr(auditd_t)
  files_map_etc_files(auditd_t)
 +files_read_data_files(auditd_t)
 +files_search_data(auditd_t)
++files_map_data_files(auditd_t)
  
  init_telinit(auditd_t)
  
-@@ -278,6 +280,7 @@ files_read_etc_runtime_files(audisp_t)
+@@ -278,6 +283,7 @@ files_read_etc_runtime_files(audisp_t)
  files_getattr_usr_files(audisp_t)
  files_map_usr_files(audisp_t)
  files_read_usr_files(audisp_t)
@@ -406,20 +436,22 @@ index 43486381b..efbee133f 100644
  
  mls_file_write_all_levels(audisp_t)
  
-@@ -354,6 +357,7 @@ files_read_kernel_symbol_table(klogd_t)
+@@ -354,6 +360,8 @@ files_read_kernel_symbol_table(klogd_t)
  files_map_usr_files(klogd_t)
  files_read_usr_files(klogd_t)
  files_getattr_usr_files(klogd_t)
 +files_search_data(klogd_t)
++files_manage_data_files(klogd_t)
  
  dev_read_raw_memory_cond(klogd_t, allow_raw_memory_access)
  dev_read_sysfs(klogd_t)
-@@ -510,6 +514,8 @@ files_read_etc_files(syslogd_t)
+@@ -510,6 +518,9 @@ files_read_etc_files(syslogd_t)
  files_read_usr_files(syslogd_t)
  files_read_var_files(syslogd_t)
  files_read_etc_runtime_files(syslogd_t)
 +files_read_data_files(syslogd_t)
 +files_search_data(syslogd_t)
++files_map_data_files(syslogd_t)
  files_map_usr_files(syslogd_t)
  files_machineid_read(syslogd_t)
  # /initrd is not umounted before minilog starts
@@ -505,21 +537,22 @@ index 09fef149b..39494f6cc 100644
  fs_getattr_all_xattr_fs(setfiles_t)
  fs_getattr_cgroup(setfiles_t)
 diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
-index f0102358b..ac5c1ce4e 100644
+index f0102358b..59403a5fa 100644
 --- a/policy/modules/system/systemd.te
 +++ b/policy/modules/system/systemd.te
-@@ -378,6 +378,10 @@ files_read_boot_files(systemd_generator_t)
+@@ -378,6 +378,11 @@ files_read_boot_files(systemd_generator_t)
  files_search_all_mountpoints(systemd_generator_t)
  files_list_usr(systemd_generator_t)
  files_getattr_vendor_dirs(systemd_generator_t)
 +files_getattr_tee_dirs(systemd_generator_t)
++files_getattr_factory_dirs(systemd_generator_t)
 +files_read_usr_files(systemd_generator_t)
 +files_map_usr_files(systemd_generator_t)
 +files_manage_data_files(systemd_generator_t)
  
  fs_list_efivars(systemd_generator_t)
  fs_getattr_xattr_fs(systemd_generator_t)
-@@ -400,6 +404,7 @@ kernel_read_system_state(systemd_generator_t)
+@@ -400,6 +405,7 @@ kernel_read_system_state(systemd_generator_t)
  kernel_read_kernel_sysctls(systemd_generator_t)
  
  storage_raw_read_fixed_disk(systemd_generator_t)
@@ -527,7 +560,7 @@ index f0102358b..ac5c1ce4e 100644
  
  systemd_log_parse_environment(systemd_generator_t)
  
-@@ -433,6 +438,9 @@ files_read_etc_files(systemd_hostnamed_t)
+@@ -433,6 +439,9 @@ files_read_etc_files(systemd_hostnamed_t)
  files_read_usr_files(systemd_hostnamed_t)
  files_getattr_usr_files(systemd_hostnamed_t)
  files_map_usr_files(systemd_hostnamed_t)
@@ -537,7 +570,7 @@ index f0102358b..ac5c1ce4e 100644
  
  seutil_read_file_contexts(systemd_hostnamed_t)
  
-@@ -566,6 +574,7 @@ files_map_usr_files(systemd_logind_t)
+@@ -566,6 +575,7 @@ files_map_usr_files(systemd_logind_t)
  files_read_usr_files(systemd_logind_t)
  files_getattr_usr_files(systemd_logind_t)
  files_manage_etc_runtime_files(systemd_logind_t)
@@ -545,17 +578,18 @@ index f0102358b..ac5c1ce4e 100644
  
  fs_getattr_cgroup(systemd_logind_t)
  fs_getattr_tmpfs(systemd_logind_t)
-@@ -750,6 +759,9 @@ dev_read_sysfs(systemd_modules_load_t)
+@@ -750,6 +760,10 @@ dev_read_sysfs(systemd_modules_load_t)
  
  files_read_etc_files(systemd_modules_load_t)
  files_vendor_search(systemd_modules_load_t)
 +files_read_usr_files(systemd_modules_load_t)
 +files_read_data_files(systemd_modules_load_t)
 +files_search_data(systemd_modules_load_t)
++files_map_data_files(systemd_modules_load_t)
  
  modutils_read_module_config(systemd_modules_load_t)
  modutils_read_module_deps(systemd_modules_load_t)
-@@ -807,6 +819,7 @@ files_map_usr_files(systemd_networkd_t)
+@@ -807,6 +821,7 @@ files_map_usr_files(systemd_networkd_t)
  files_read_usr_files(systemd_networkd_t)
  files_getattr_usr_files(systemd_networkd_t)
  files_machineid_read(systemd_networkd_t)
@@ -563,16 +597,17 @@ index f0102358b..ac5c1ce4e 100644
  
  auth_use_nsswitch(systemd_networkd_t)
  
-@@ -1084,6 +1097,8 @@ files_map_usr_files(systemd_rfkill_t)
+@@ -1084,6 +1099,9 @@ files_map_usr_files(systemd_rfkill_t)
  files_read_usr_files(systemd_rfkill_t)
  files_getattr_usr_files(systemd_rfkill_t)
  files_manage_usr_files(systemd_rfkill_t)
 +files_read_data_files(systemd_rfkill_t)
 +files_search_data(systemd_rfkill_t)
++files_map_data_files(systemd_rfkill_t)
  
  # Allow reading /run/udev/data/+rfkill:rfkill0
  udev_read_runtime_files(systemd_rfkill_t)
-@@ -1128,6 +1143,7 @@ files_map_etc_files(systemd_resolved_t)
+@@ -1128,6 +1146,7 @@ files_map_etc_files(systemd_resolved_t)
  files_map_usr_files(systemd_resolved_t)
  files_read_usr_files(systemd_resolved_t)
  files_getattr_usr_files(systemd_resolved_t)
@@ -580,7 +615,7 @@ index f0102358b..ac5c1ce4e 100644
  fs_search_tmpfs(systemd_resolved_t)
  
  init_dgram_send(systemd_resolved_t)
-@@ -1162,6 +1178,7 @@ kernel_use_fds(systemd_sessions_t)
+@@ -1162,6 +1181,7 @@ kernel_use_fds(systemd_sessions_t)
  files_map_usr_files(systemd_sessions_t)
  files_read_usr_files(systemd_sessions_t)
  files_getattr_usr_files(systemd_sessions_t)
@@ -588,7 +623,7 @@ index f0102358b..ac5c1ce4e 100644
  
  selinux_get_enforce_mode(systemd_sessions_t)
  selinux_get_fs_mount(systemd_sessions_t)
-@@ -1186,6 +1203,7 @@ allow systemd_sysusers_t self:unix_dgram_socket sendto;
+@@ -1186,6 +1206,7 @@ allow systemd_sysusers_t self:unix_dgram_socket sendto;
  
  files_manage_etc_files(systemd_sysusers_t)
  files_map_etc_files(systemd_sysusers_t)
@@ -596,7 +631,7 @@ index f0102358b..ac5c1ce4e 100644
  
  kernel_read_kernel_sysctls(systemd_sysusers_t)
  kernel_use_fds(systemd_sysusers_t)
-@@ -1253,6 +1271,7 @@ files_relabelfrom_home(systemd_tmpfiles_t)
+@@ -1253,6 +1274,7 @@ files_relabelfrom_home(systemd_tmpfiles_t)
  files_relabelto_home(systemd_tmpfiles_t)
  files_relabelto_etc_dirs(systemd_tmpfiles_t)
  files_map_etc_files(systemd_tmpfiles_t)
@@ -604,7 +639,7 @@ index f0102358b..ac5c1ce4e 100644
  
  files_manage_non_auth_files(systemd_tmpfiles_t)
  files_relabel_non_auth_files(systemd_tmpfiles_t)
-@@ -1361,6 +1380,7 @@ files_map_usr_files(systemd_update_done_t)
+@@ -1361,6 +1383,7 @@ files_map_usr_files(systemd_update_done_t)
  files_getattr_usr_files(systemd_update_done_t)
  files_rw_usr_dirs(systemd_update_done_t)
  files_manage_usr_files(systemd_update_done_t)
@@ -612,7 +647,7 @@ index f0102358b..ac5c1ce4e 100644
  
  seutil_read_file_contexts(systemd_update_done_t)
  
-@@ -1455,6 +1475,7 @@ fs_getattr_tmpfs(systemd_user_runtime_dir_t)
+@@ -1455,6 +1478,7 @@ fs_getattr_tmpfs(systemd_user_runtime_dir_t)
  fs_list_tmpfs(systemd_user_runtime_dir_t)
  fs_unmount_tmpfs(systemd_user_runtime_dir_t)
  fs_relabelfrom_tmpfs_dirs(systemd_user_runtime_dir_t)
@@ -621,10 +656,10 @@ index f0102358b..ac5c1ce4e 100644
  kernel_read_kernel_sysctls(systemd_user_runtime_dir_t)
  kernel_use_fds(systemd_user_runtime_dir_t)
 diff --git a/policy/modules/system/udev.te b/policy/modules/system/udev.te
-index 02ce2e8c9..8074e9ea1 100644
+index 02ce2e8c9..af96f827f 100644
 --- a/policy/modules/system/udev.te
 +++ b/policy/modules/system/udev.te
-@@ -415,6 +415,10 @@ dev_read_urand(udevadm_t)
+@@ -415,6 +415,11 @@ dev_read_urand(udevadm_t)
  
  files_read_etc_files(udevadm_t)
  files_read_usr_files(udevadm_t)
@@ -632,6 +667,7 @@ index 02ce2e8c9..8074e9ea1 100644
 +files_read_data_files(udevadm_t)
 +files_search_data(udevadm_t)
 +files_getattr_data_dirs(udevadm_t)
++files_map_data_files(udevadm_t)
  
  corecmd_search_bin(udevadm_t)
  

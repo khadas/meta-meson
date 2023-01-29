@@ -1,4 +1,4 @@
-From 55bdebf6d9ad758fbd3866946a852741f2391b49 Mon Sep 17 00:00:00 2001
+From 5dc0646cab20bb23cdc46eb463c3f130c2ec68fa Mon Sep 17 00:00:00 2001
 From: Bing Jiang <bing.jiang@amlogic.com>
 Date: Mon, 29 Nov 2021 12:36:20 +0800
 Subject: [PATCH] policy/modules: update for amlogic yocto
@@ -7,9 +7,9 @@ Change-Id: Ie09b9c36589801c9981cde50add7e62615ef6657
 ---
  policy/modules/admin/alsa.te              |  3 +
  policy/modules/kernel/devices.if          | 18 ++++++
- policy/modules/kernel/files.fc            | 20 +++++++
+ policy/modules/kernel/files.fc            | 28 +++++++++
  policy/modules/kernel/files.if            | 73 +++++++++++++++++++++++
- policy/modules/kernel/files.te            | 18 ++++++
+ policy/modules/kernel/files.te            | 24 ++++++++
  policy/modules/roles/sysadm.if            | 18 ++++++
  policy/modules/roles/sysadm.te            |  9 +++
  policy/modules/services/avahi.te          |  4 ++
@@ -31,7 +31,7 @@ Change-Id: Ie09b9c36589801c9981cde50add7e62615ef6657
  policy/modules/system/systemd.if          | 19 ++++++
  policy/modules/system/systemd.te          | 54 +++++++++++++++++
  policy/modules/system/udev.te             |  2 +
- 26 files changed, 383 insertions(+), 2 deletions(-)
+ 26 files changed, 397 insertions(+), 2 deletions(-)
 
 diff --git a/policy/modules/admin/alsa.te b/policy/modules/admin/alsa.te
 index 09d590add..c6dcfa8cb 100644
@@ -81,10 +81,10 @@ index 406b29796..d41a3e1b0 100644
 +	allow $1 tee_device_t:chr_file { read write };
 +')
 diff --git a/policy/modules/kernel/files.fc b/policy/modules/kernel/files.fc
-index f69900945..dacd11edf 100644
+index f69900945..712ceecc1 100644
 --- a/policy/modules/kernel/files.fc
 +++ b/policy/modules/kernel/files.fc
-@@ -274,3 +274,23 @@ ifndef(`distro_redhat',`
+@@ -274,3 +274,31 @@ ifndef(`distro_redhat',`
  /var/tmp/systemd-private-[^/]+/tmp	-d	gen_context(system_u:object_r:tmp_t,s0-mls_systemhigh)
  /var/tmp/systemd-private-[^/]+/tmp/.*	<<none>>
  /var/tmp/vi\.recover	-d	gen_context(system_u:object_r:tmp_t,s0)
@@ -105,6 +105,14 @@ index f69900945..dacd11edf 100644
 +# /tee
 +/tee		-d	gen_context(system_u:object_r:tee_t,s0)
 +/tee(/.*)?		gen_context(system_u:object_r:tee_t,s0)
++/tee/lost\+found	-d	gen_context(system_u:object_r:lost_found_t,mls_systemhigh)
++/tee/lost\+found/.*		<<none>>
++
++# /factory
++/factory		-d	gen_context(system_u:object_r:factory_t,s0)
++/factory(/.*)?		gen_context(system_u:object_r:factory_t,s0)
++/factory/lost\+found	-d	gen_context(system_u:object_r:lost_found_t,mls_systemhigh)
++/factory/lost\+found/.*		<<none>>
 +
 +# /machineid_t
 +/etc/machine-id		gen_context(system_u:object_r:machineid_t,s0)
@@ -190,10 +198,10 @@ index ad19738b3..9429709f6 100644
 +	allow $1 vendor_t:dir getattr;
 +')
 diff --git a/policy/modules/kernel/files.te b/policy/modules/kernel/files.te
-index efa03289d..7a0be4f0e 100644
+index efa03289d..02fea9f40 100644
 --- a/policy/modules/kernel/files.te
 +++ b/policy/modules/kernel/files.te
-@@ -241,3 +241,21 @@ allow files_unconfined_type file_type:filesystem { mount remount unmount getattr
+@@ -241,3 +241,27 @@ allow files_unconfined_type file_type:filesystem { mount remount unmount getattr
  tunable_policy(`allow_execmod',`
  	allow files_unconfined_type file_type:file execmod;
  ')
@@ -209,6 +217,12 @@ index efa03289d..7a0be4f0e 100644
 +#
 +type tee_t;
 +files_type(tee_t)
++
++#
++# factory_t is the type for the factory directories.
++#
++type factory_t;
++files_type(factory_t)
 +
 +#
 +# machineid_t is the type for the machine-id.

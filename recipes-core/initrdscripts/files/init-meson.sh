@@ -372,9 +372,9 @@ mount_and_boot() {
         else
             echo "mount overlay"
             if [ "${root_fstype}" = "ubifs" ]; then
-                data_ubi_handle ubi2
+                data_ubi_handle ubi2 /data
             elif [ "${root_fstype}" = "squashfs" ]; then
-                data_ubi_handle ubi0
+                data_ubi_handle ubi0 /data
             else
                 data_ext4_handle /data
             fi
@@ -403,8 +403,11 @@ mount_and_boot() {
         OverlayFS="disabled"
         if [ "${root_fstype}" = "ext4" ]; then
             data_ext4_handle $ROOT_MOUNT/data
-        else
-            data_yaffs2_handle $ROOT_MOUNT/data
+        elif [ "${root_fstype}" = "ubifs" ]; then
+            data_ubi_handle ubi2 $ROOT_MOUNT/data
+        elif [ "${root_fstype}" = "squashfs" ]; then
+            # data_yaffs2_handle $ROOT_MOUNT/data
+            data_ubi_handle ubi0 $ROOT_MOUNT/data
         fi
         ;;
     esac
@@ -456,7 +459,7 @@ data_ubi_handle()
 {
     data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
 
-    mkdir -p /data
+    mkdir -p $2
     if ! uenv get factory-reset | grep -q 'value:\[1\]'; then
         mount | grep 'data' && echo "Already mounted" && return 0
 
@@ -465,7 +468,7 @@ data_ubi_handle()
         if [ -c "/dev/${1}_0" ]; then
             data_vol_name=`cat /sys/class/ubi/${1}_0/name`
             if [ "${data_vol_name}" = "data" ]; then
-                mount -t ubifs /dev/${1}_0 /data
+                mount -t ubifs /dev/${1}_0 $2
                 return 0
             fi
         fi
@@ -479,7 +482,7 @@ data_ubi_handle()
     ubiattach /dev/ubi_ctrl -m ${data_mtd_number}
     ubimkvol /dev/${1} -m -N data
 
-    mount -t ubifs /dev/${1}_0 /data
+    mount -t ubifs /dev/${1}_0 $2
 }
 
 data_yaffs2_handle()
