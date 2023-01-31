@@ -154,3 +154,4 @@ EXTERNALSRC_pn-amazon-prime-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty
 EXTERNALSRC_pn-arka = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/arka' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/arka')) else ''}"
 EXTERNALSRC_pn-aml-iptv-firmware = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_iptv_firmware' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_iptv_firmware')) else ''}"
 EXTERNALSRC_pn-ffmpeg-ctc = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg_ctc' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg_ctc')) else ''}"
+EXTERNALSRC_pn-aml-dvb-ota = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb_ota' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb_ota')) else ''}"

@@ -39,6 +39,23 @@ do_install() {
     install -m 0755 ${S}/include/am_adp/am_evt.h ${D}${includedir}/am_adp
     install -m 0755 ${S}/include/am_adp/am_types.h ${D}${includedir}/am_adp
     install -m 0755 ${S}/include/am_adp/am_userdata.h ${D}${includedir}/am_adp
+
+    install -d ${D}${includedir}/am_adp
+    install -D -m 0644 ${S}/include/am_adp/*.h -t ${D}${includedir}/am_adp
+    install -d ${D}${includedir}/am_adp/libdvbsi
+    install -D -m 0644 ${S}/include/am_adp/libdvbsi/*.h ${D}${includedir}/am_adp/libdvbsi
+    install -d ${D}${includedir}/am_adp/libdvbsi/tables
+    install -D -m 0644 ${S}/include/am_adp/libdvbsi/tables/*.h ${D}${includedir}/am_adp/libdvbsi/tables
+    install -d ${D}${includedir}/am_adp/libdvbsi/descriptors
+    install -D -m 0644 ${S}/include/am_adp/libdvbsi/descriptors/*.h ${D}${includedir}/am_adp/libdvbsi/descriptors
+    install -D -m 0644 ${S}/am_adp/libam_adp.so ${D}${libdir}
+    install -D -m 0644 ${S}/am_adp/libam_adp.a ${D}${libdir}
+    install -d ${D}${includedir}/am_mw
+    install -D -m 0644 ${S}/include/am_mw/*.h -t ${D}${includedir}/am_mw
+    install -d ${D}${includedir}/am_mw/atsc
+    install -D -m 0644 ${S}/include/am_mw/atsc/*.h -t ${D}${includedir}/am_mw/atsc
+    install -D -m 0644 ${S}/am_mw/libam_mw.so ${D}${libdir}
+    install -D -m 0644 ${S}/am_mw/libam_mw.a ${D}${libdir}
 }
 
 FILES_${PN} = "${libdir}/* ${bindir}/*"
