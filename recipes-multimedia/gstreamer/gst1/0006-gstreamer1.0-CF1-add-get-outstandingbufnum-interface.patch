@@ -1,0 +1,156 @@
+diff --git a/gst/gstbufferpool.c b/gst/gstbufferpool.c
+index 18545e3..7f24256 100644
+--- a/gst/gstbufferpool.c
++++ b/gst/gstbufferpool.c
+@@ -531,12 +531,11 @@ gst_buffer_pool_set_active (GstBufferPool * pool, gboolean active)
+      * freed when they are released */
+     outstanding = g_atomic_int_get (&priv->outstanding);
+     GST_LOG_OBJECT (pool, "outstanding buffers %d", outstanding);
++    priv->active = FALSE;
+     if (outstanding >= 0) {
+       if (!do_stop (pool))
+         goto stop_failed;
+     }
+-
+-    priv->active = FALSE;
+   }
+   GST_BUFFER_POOL_UNLOCK (pool);
+ 
+@@ -1185,18 +1184,18 @@ flushing:
+ static inline void
+ dec_outstanding (GstBufferPool * pool)
+ {
+-  if (g_atomic_int_dec_and_test (&pool->priv->outstanding)) {
+-    /* all buffers are returned to the pool, see if we need to free them */
+-    if (GST_BUFFER_POOL_IS_FLUSHING (pool)) {
+-      /* take the lock so that set_active is not run concurrently */
+-      GST_BUFFER_POOL_LOCK (pool);
+-      /* now that we have the lock, check if we have been de-activated with
+-       * outstanding buffers */
+-      if (!pool->priv->active)
+-        do_stop (pool);
+-
+-      GST_BUFFER_POOL_UNLOCK (pool);
+-    }
++  GST_DEBUG_OBJECT(pool, "outstanding pool->priv->outstanding:%d, is_flushing:%d, is_active:%d",
++                   pool->priv->outstanding, GST_BUFFER_POOL_IS_FLUSHING (pool), pool->priv->active);
++  g_atomic_int_dec_and_test (&pool->priv->outstanding);
++
++  /* all buffers are returned to the pool, see if we need to free them */
++  if (GST_BUFFER_POOL_IS_FLUSHING (pool)) {
++    /* take the lock so that set_active is not run concurrently */
++    GST_BUFFER_POOL_LOCK (pool);
++    /* now that we have the lock, check if we have been de-activated with
++     * outstanding buffers */
++    if (!pool->priv->active)
++      do_stop (pool);    GST_BUFFER_POOL_UNLOCK (pool);
+   }
+ }
+ 
+@@ -1414,3 +1413,89 @@ gst_buffer_pool_set_flushing (GstBufferPool * pool, gboolean flushing)
+ done:
+   GST_BUFFER_POOL_UNLOCK (pool);
+ }
++
++gint
++gst_buffer_pool_get_outstanding_num (GstBufferPool *pool)
++{
++  gint ret;
++  GstBufferPoolPrivate *priv;
++
++  priv = pool->priv;
++
++  GST_BUFFER_POOL_LOCK (pool);
++  ret = priv->cur_buffers;
++  GST_BUFFER_POOL_UNLOCK (pool);
++
++  return ret;
++}
++
++gboolean
++gst_buffer_pool_increase_max_num (GstBufferPool *pool, guint inc)
++{
++  gboolean result;
++  GstBufferPoolClass *pclass;
++  GstBufferPoolPrivate *priv;
++  GstStructure *config;
++  GstCaps *caps;
++  guint size, min_buffers, cur_buffers, old_max_buffers;
++
++  g_return_val_if_fail (GST_IS_BUFFER_POOL (pool), FALSE);
++
++  GST_BUFFER_POOL_LOCK (pool);
++
++ if (!(config = gst_buffer_pool_get_config(pool)))
++    goto get_config_error;
++
++  GST_DEBUG_OBJECT(pool, "got pool config %" GST_PTR_FORMAT, config);
++  if (gst_buffer_pool_config_get_params(config, &caps, &size, &min_buffers, &old_max_buffers) == FALSE)
++      goto get_config_params_error;
++
++  if (inc == 0)
++      goto max_num_unchanged;
++
++  gst_buffer_pool_config_set_params (config, caps, size, min_buffers, old_max_buffers + inc);
++  GST_DEBUG_OBJECT(pool, "update pool config to %" GST_PTR_FORMAT, config);
++
++  priv = pool->priv;
++  pclass = GST_BUFFER_POOL_GET_CLASS (pool);
++  /* set the new config */
++  cur_buffers = priv->cur_buffers;
++  if (G_LIKELY (pclass->set_config))
++    result = pclass->set_config (pool, config);
++  else
++    result = FALSE;
++  priv->cur_buffers = cur_buffers;
++
++  /* save the config regardless of the result so user can read back the
++   * modified config and evaluate if the changes are acceptable */
++  if (priv->config)
++    gst_structure_free (priv->config);
++  priv->config = config;
++  if (result) {
++    /* now we are configured */
++    priv->configured = TRUE;
++  }
++  GST_BUFFER_POOL_UNLOCK (pool);
++  GST_INFO_OBJECT(pool, "update max buffer(%d) size ret:%d", inc, result);
++  return result;
++get_config_error:
++  {
++    GST_ERROR_OBJECT(pool, "get pool config error");
++    GST_BUFFER_POOL_UNLOCK (pool);
++    return FALSE;
++  }
++get_config_params_error:
++  {
++    GST_ERROR_OBJECT(pool, "get pool config params error");
++    gst_structure_free (config);
++    GST_BUFFER_POOL_UNLOCK (pool);
++    return FALSE;
++  }
++max_num_unchanged:
++  {
++    GST_WARNING_OBJECT (pool, "inc num is %d, max buffer num unchanged", inc);
++    gst_structure_free (config);
++    GST_BUFFER_POOL_UNLOCK (pool);
++    return TRUE;
++  }
++}
+diff --git a/gst/gstbufferpool.h b/gst/gstbufferpool.h
+index 0efd24f..e4af6ef 100644
+--- a/gst/gstbufferpool.h
++++ b/gst/gstbufferpool.h
+@@ -251,6 +251,12 @@ GstFlowReturn    gst_buffer_pool_acquire_buffer  (GstBufferPool *pool, GstBuffer
+ GST_API
+ void             gst_buffer_pool_release_buffer  (GstBufferPool *pool, GstBuffer *buffer);
+ 
++GST_API
++gint             gst_buffer_pool_get_outstanding_num  (GstBufferPool *pool);
++
++GST_API
++gboolean         gst_buffer_pool_increase_max_num  (GstBufferPool *pool, guint inc);
++
+ G_END_DECLS
+ 
+ #endif /* __GST_BUFFER_POOL_H__ */

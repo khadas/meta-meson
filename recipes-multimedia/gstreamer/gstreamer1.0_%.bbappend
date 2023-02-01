@@ -4,3 +4,4 @@ SRC_URI_append = "file://0002-modfiy-free-sequence-to-resolve-video-switch-probl
 SRC_URI_append = "file://0003-gstreamer-clcok-adjust-issue.patch "
 SRC_URI_append = "file://0004-do-not-post-buffering-in-multiqueue.patch "
 SRC_URI_append = "file://0005-multiqueue-handle-event-AML-SET-MAX-BYTE-SIZE.patch "
+SRC_URI_append = "file://0006-gstreamer1.0-CF1-add-get-outstandingbufnum-interface.patch "
