@@ -14,7 +14,12 @@ if [ -z $BUILD_DIR ]; then
 	BUILD_DIR="build"
 fi
 
-DEFCONFIG_ARRAY=($(pushd $MESON_PATH/conf/machine 2>&1 >> /dev/null; find -name '*\.conf' | sed 's@./@@' | sed 's@\.conf@@' | sort))
+if [ -n "$1" ] && [ $(echo "$1" | grep -v  '-') ]; then
+    DEFCONFIG_ARRAY=($(pushd $MESON_PATH/conf/machine 2>&1 >> /dev/null; find -name "*$1*\.conf" | sed 's@./@@' | sed 's@\.conf@@' | sort))
+    shift
+else
+    DEFCONFIG_ARRAY=($(pushd $MESON_PATH/conf/machine 2>&1 >> /dev/null; find -name '*\.conf' | sed 's@./@@' | sed 's@\.conf@@' | sort))
+fi
 
 DEFCONFIG_ARRAY_LEN=${#DEFCONFIG_ARRAY[@]}
 
