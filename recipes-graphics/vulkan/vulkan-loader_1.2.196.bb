@@ -34,4 +34,4 @@ PACKAGECONFIG[wayland] = "-DBUILD_WSI_WAYLAND_SUPPORT=OFF, -DBUILD_WSI_WAYLAND_S
 # Can't be built with ccache
 CCACHE_DISABLE = "1"
 
-FILES_${PN} = "${libdir}/lib*${SOLIBS}"
+FILES:${PN} = "${libdir}/lib*${SOLIBS}"

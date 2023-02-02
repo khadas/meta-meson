@@ -16,8 +16,7 @@ do_install() {
     install -m 0755 ${WORKDIR}/system-config.sh ${D}/${bindir}
 }
 
+FILES:${PN} += "${bindir}/*"
+FILES:${PN} += "${systemd_unitdir}/system/*"
 
-FILES_${PN} += "${bindir}/*"
-FILES_${PN} += "${systemd_unitdir}/system/*"
-
-SYSTEMD_SERVICE_${PN} += "system-config.service"
+SYSTEMD_SERVICE:${PN} += "system-config.service"

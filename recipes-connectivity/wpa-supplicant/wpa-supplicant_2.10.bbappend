@@ -1,6 +1,6 @@
 include wpa-supplicant.inc
 
-do_configure_append () {
+do_configure:append () {
    echo "CONFIG_WEP=y" >> wpa_supplicant/.config
 }
 

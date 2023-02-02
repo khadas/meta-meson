@@ -26,7 +26,7 @@ EXTRA_OECMAKE += " \
 TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -I${STAGING_INCDIR}/directfb', ' ', d)}"
 TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -DMEDIASYNC_FOR_SUBTITLE  -DUSE_DFB', ' -DMEDIASYNC_FOR_SUBTITLE -DUSE_WAYLAND', d)}"
 
-RDEPENDS_${PN} = " liblog libbinder aml-zvbi cairo aml-mediahal-sdk"
+RDEPENDS:${PN} = " liblog libbinder aml-zvbi cairo aml-mediahal-sdk"
 
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
               TARGET_DIR=${D} \
@@ -48,15 +48,15 @@ EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
 #    fi
 #}
 
-do_install_append() {
+do_install:append() {
     if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
         install -D -m 0644 ${WORKDIR}/subtitleserver.service ${D}${systemd_unitdir}/system/subtitleserver.service
     fi
 }
 
-SYSTEMD_SERVICE_${PN} = "subtitleserver.service"
+SYSTEMD_SERVICE:${PN} = "subtitleserver.service"
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

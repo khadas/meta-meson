@@ -6,10 +6,10 @@ PR = "r0"
 
 #Only enable it in OpenLinux
 #IRDETO_BRANCH = "TBD"
-#IRDETO_BRANCH_sc2 = "openlinux/sc2-msr4-linux"
-#IRDETO_BRANCH_s4 = "openlinux/s4d-msr4-linux"
-#SRC_URI_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'git://${AML_GIT_ROOT_OP}/irdeto-sdk.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=${IRDETO_BRANCH}','', d)}"
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/aml-patches/vendor/irdeto/irdeto-sdk')}"
+#IRDETO_BRANCH:sc2 = "openlinux/sc2-msr4-linux"
+#IRDETO_BRANCH:s4 = "openlinux/s4d-msr4-linux"
+#SRC_URI:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'git://${AML_GIT_ROOT_OP}/irdeto-sdk.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=${IRDETO_BRANCH}','', d)}"
+SRC_URI:append = " ${@get_patch_list_with_path('${COREBASE}/aml-patches/vendor/irdeto/irdeto-sdk')}"
 
 PN = 'irdeto-sdk'
 SRCREV ?= "${AUTOREV}"
@@ -18,9 +18,9 @@ S = "${WORKDIR}/git"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 IRDETO_PATH = "TBD"
-IRDETO_PATH_sc2 = "v3/dev/S905C2/signed"
-IRDETO_PATH_s4 = "s905c3"
-IRDETO_PATH_aq2432 = "s805c3"
+IRDETO_PATH:sc2 = "v3/dev/S905C2/signed"
+IRDETO_PATH:s4 = "s905c3"
+IRDETO_PATH:aq2432 = "s805c3"
 
 do_install() {
     install -d -m 0755 ${D}/usr/lib
@@ -32,6 +32,6 @@ do_install() {
     install -D -m 0644 ${S}/include/*.h ${D}/usr/include
 }
 
-FILES_${PN} = "${libdir}/* /lib/optee_armtz/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* /lib/optee_armtz/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"

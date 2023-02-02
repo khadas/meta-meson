@@ -3,7 +3,7 @@ SECTION = "VMX Library"
 LICENSE = "CLOSED"
 
 # The current directory is expected to the location where ace yocto package is untarred
-FILESEXTRAPATHS_prepend := "${THISDIR}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}:"
 SRC_URI = "file://vmx-lib/ \
           "
 PV = "1.0"
@@ -11,8 +11,8 @@ PR = "r0"
 S = "${WORKDIR}"
 
 VMX_LIBPATH = "NotSupport"
-VMX_LIBPATH_sc2 = "s905x4"
-VMX_LIBPATH_s4 = "s905y4"
+VMX_LIBPATH:sc2 = "s905x4"
+VMX_LIBPATH:s4 = "s905y4"
 
 do_install() {
     install -d -m 0755 ${D}/usr/lib
@@ -26,6 +26,6 @@ do_install() {
     install -D -m 0644 ${S}/${VMX_LIBPATH}/ta/cb4066f7-e18f-4fb9-b6b1-9511bd319ebc.ta ${D}/lib/optee_armtz
 }
 
-FILES_${PN} = "${libdir}/* /usr/lib/* /lib/optee_armtz/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* /usr/lib/* /lib/optee_armtz/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"

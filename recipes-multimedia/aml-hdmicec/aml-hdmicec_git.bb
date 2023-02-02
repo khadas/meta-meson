@@ -8,13 +8,13 @@ PV = "${SRCPV}"
 SRC_URI +="file://hdmicontrol.service"
 
 DEPENDS = " libbinder liblog aml-audio-service"
-RDEPENDS_${PN} = " liblog libbinder aml-audio-service"
+RDEPENDS:${PN} = " liblog libbinder aml-audio-service"
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 #inherit autotools pkgconfig systemd
 S="${WORKDIR}/git"
 ARM_TARGET = "32"
-ARM_TARGET_aarch64 = "64"
+ARM_TARGET:aarch64 = "64"
 
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
                 TARGET_DIR=${D} \
@@ -36,9 +36,9 @@ do_install() {
     fi
     install -m 0644 ${S}/include/*.h ${D}${includedir}
 }
-#SYSTEMD_SERVICE_${PN} = "hdmicontrol.service "
+#SYSTEMD_SERVICE:${PN} = "hdmicontrol.service "
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

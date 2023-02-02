@@ -10,7 +10,7 @@ DEPENDS += "libdrm udev"
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/libdrm_amlogic;protocol=${AML_GIT_PROTOCOL};branch=master;"
 
 #For common patches
-#SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/libdrm_amlogic')}"
+#SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/libdrm_amlogic')}"
 
 S = "${WORKDIR}/git/meson"
 
@@ -48,8 +48,8 @@ do_install() {
   install -m 0644 ${S}/meson_drm_settings.h ${D}${includedir}/libdrm_meson
 }
 
-FILES_${PN} = "${libdir}/*  ${bindir}/"
-FILES_${PN}-dev = "${includedir}/*"
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/*  ${bindir}/"
+FILES:${PN}-dev = "${includedir}/*"
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"
 

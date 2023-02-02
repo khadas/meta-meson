@@ -3,7 +3,7 @@ SECTION = "core"
 LICENSE = "CLOSED"
 
 SRC_URI = " file://ext4format@.service"
-SRC_URI_append = " file://format-to-ext4.sh"
+SRC_URI:append = " file://format-to-ext4.sh"
 
 inherit systemd
 
@@ -11,7 +11,7 @@ S = "${WORKDIR}"
 
 SYSTEMD_AUTO_ENABLE ?= "${@bb.utils.contains('DISTRO_FEATURES','systemd','enable','',d)}"
 SYSTEMD_PACKAGES += "${@bb.utils.contains('DISTRO_FEATURES','systemd','${PN}','',d)}"
-SYSTEMD_SERVICE_${PN} = "${@bb.utils.contains('DISTRO_FEATURES','systemd','ext4format@.service','',d)}"
+SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES','systemd','ext4format@.service','',d)}"
 
 do_install() {
 	install -d ${D}${bindir}
@@ -20,4 +20,4 @@ do_install() {
 	install -m 0644 ${WORKDIR}/ext4format@.service ${D}${systemd_unitdir}/system/
 }
 
-FILES_${PN} += " ${bindir}/* ${systemd_unitdir}/* "
+FILES:${PN} += " ${bindir}/* ${systemd_unitdir}/* "

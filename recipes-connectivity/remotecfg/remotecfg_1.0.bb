@@ -24,6 +24,6 @@ do_install () {
 }
 
 SYSTEMD_AUTO_ENABLE = "disable"
-SYSTEMD_SERVICE_${PN} = "remotecfg.service "
-FILES_${PN} += "${sysconfdir}/* ${bindir}/*"
+SYSTEMD_SERVICE:${PN} = "remotecfg.service "
+FILES:${PN} += "${sysconfdir}/* ${bindir}/*"
 

@@ -20,11 +20,11 @@ do_install() {
     install -m 0666 ${S}/${DHD_MODULE_PATH}/dhd.ko ${WIFIDIR}
 }
 
-#do_compile_append() {
+#do_compile:append() {
 #    oe_runmake -C ${STAGING_KERNEL_DIR} M="${S}/${DHD_MODULE_PATH}" ${AP6XXX_KCONFIGS} modules
 #}
 
-FILES_${PN} = "dhd.ko"
+FILES:${PN} = "dhd.ko"
 # Header file provided by a separate package
 DEPENDS += ""
 

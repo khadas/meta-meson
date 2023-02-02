@@ -10,10 +10,10 @@ PV = "git${SRCPV}"
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 ARM_TARGET = "32"
-ARM_TARGET_aarch64 = "64"
+ARM_TARGET:aarch64 = "64"
 
 PREBUILT_TARGET = ""
-PREBUILT_TARGET_aq2432 = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'aq2432_zapper', 'aq2432', d)}"
+PREBUILT_TARGET:aq2432 = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'aq2432_zapper', 'aq2432', d)}"
 
 S = "${WORKDIR}/git"
 do_install() {

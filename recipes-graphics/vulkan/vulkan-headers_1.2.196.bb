@@ -16,4 +16,4 @@ REQUIRED_DISTRO_FEATURES = "vulkan"
 inherit cmake features_check
 
 PACKAGES += "vulkan-registry"
-FILES_vulkan-registry = "${datadir}/vulkan/registry"
+FILES:vulkan-registry = "${datadir}/vulkan/registry"

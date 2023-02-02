@@ -2,7 +2,7 @@ SUMMARY = "create vbmeta.img for AVB"
 LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 DOLBY_PROP = " --prop dovi_hash:3cd93647bdd864b4ae1712d57a7de3153e3ee4a4dfcfae5af8b1b7d999b93c5a "
 
@@ -45,7 +45,7 @@ SIGN_RECOVERY = "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.utils.co
 AVB_RECOVERY_SIGNINING_KEY = "recovery_rsa2048.pem"
 SIGN_RECOVERY_CMD = "avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/recovery.img --partition_size ${DEVICE_PROPERTY_RECOVERY_PARTITION_SIZE}  --partition_name "recovery" --algorithm SHA256_RSA2048 --key ${STAGING_DIR_NATIVE}/${sysconfdir_native}/${AVB_RECOVERY_SIGNINING_KEY} --rollback_index ${DEVICE_PROPERTY_RECOVERY_ROLLBACK_INDEX}"
 
-DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', ' recovery-image', '', d)}"
+DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', ' recovery-image', '', d)}"
 
 VBMETA_ROLLBACK_INDEX = " --rollback_index ${DEVICE_PROPERTY_VBMETA_ROLLBACK_INDEX}"
 

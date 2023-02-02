@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #PATCHTOOL = "git"
 
 DEPENDS += " liblog openssl"
-RDEPENDS_${PN} += " liblog openssl"
+RDEPENDS:${PN} += " liblog openssl"
 
 EXTRA_OEMAKE = "STAGING_DIR=${STAGING_DIR_TARGET} \
 		  TARGET_DIR=${D} \
@@ -18,10 +18,10 @@ DISABLE_STATIC = ""
 SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
 
-#FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
-#SRC_URI_append = " file://ffmpeg_ctc/0001-do-not-install-pkgconfig.patch;patch=1;"
-#SRC_URI_append = " file://ffmpeg_ctc/0002-do-remove-config-headfile.patch;patch=2;"
-#SRC_URI_append = " file://ffmpeg_ctc/0003-add-execute-permission-for-configure-files.patch"
+#FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+#SRC_URI:append = " file://ffmpeg_ctc/0001-do-not-install-pkgconfig.patch;patch=1;"
+#SRC_URI:append = " file://ffmpeg_ctc/0002-do-remove-config-headfile.patch;patch=2;"
+#SRC_URI:append = " file://ffmpeg_ctc/0003-add-execute-permission-for-configure-files.patch"
 
 EXTRA_FFCONF = " \
 	--disable-ffmpeg \
@@ -126,10 +126,10 @@ do_install() {
     ${STRIP} -s ${D}${libdir}/libffmpeg_ctc.so
 }
 
-FILES_${PN} = "${bindir}/*"
-FILES_${PN} += " ${bindir}/* ${libdir}/*.so"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} += " ldflags already-stripped"
-INSANE_SKIP_${PN}-dev += "dev-elf"
+FILES:${PN} = "${bindir}/*"
+FILES:${PN} += " ${bindir}/* ${libdir}/*.so"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} += " ldflags already-stripped"
+INSANE_SKIP:${PN}-dev += "dev-elf"
 
 

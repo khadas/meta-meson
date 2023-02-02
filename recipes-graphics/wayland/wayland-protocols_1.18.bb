@@ -19,4 +19,4 @@ UPSTREAM_CHECK_URI = "https://wayland.freedesktop.org/releases.html"
 inherit allarch autotools pkgconfig
 
 PACKAGES = "${PN}"
-FILES_${PN} += "${datadir}/pkgconfig/wayland-protocols.pc"
+FILES:${PN} += "${datadir}/pkgconfig/wayland-protocols.pc"

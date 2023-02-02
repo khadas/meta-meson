@@ -4,10 +4,10 @@ LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/linux/multimedia/audio_server;protocol=${AML_GIT_PROTOCOL};branch=master"
-SRC_URI_append = " file://audioserver.service"
+SRC_URI:append = " file://audioserver.service"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/hal_audio_service')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/hal_audio_service')}"
 
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
@@ -25,8 +25,8 @@ ENABLE_APLUGIN = "no"
 EXTRA_OEMAKE:append = "${@bb.utils.contains('ENABLE_APLUGIN', 'yes', ' aplugin=y', '', d)}"
 DEPENDS += " grpc grpc-native boost aml-amaudioutils protobuf-native liblog dolby-ms12"
 DEPENDS:append = "${@bb.utils.contains('ENABLE_APLUGIN', 'yes', ' alsa-lib', '', d)}"
-RDEPENDS_${PN} += " aml-amaudioutils liblog"
-RDEPENDS_${PN}-testapps += " ${PN} liblog"
+RDEPENDS:${PN} += " aml-amaudioutils liblog"
+RDEPENDS:${PN}-testapps += " ${PN} liblog"
 
 export TARGET_DIR = "${D}"
 export HOST_DIR = "${STAGING_DIR_NATIVE}/usr/"
@@ -84,9 +84,9 @@ EOF
     fi
 }
 
-SYSTEMD_SERVICE_${PN} = "audioserver.service "
-FILES_${PN} = "${libdir}/* ${bindir}/audio_server /etc/systemd/system.conf.d/* "
-FILES_${PN}-testapps = "\
+SYSTEMD_SERVICE:${PN} = "audioserver.service "
+FILES:${PN} = "${libdir}/* ${bindir}/audio_server /etc/systemd/system.conf.d/* "
+FILES:${PN}-testapps = "\
                         ${bindir}/audio_client_test \
                         ${bindir}/audio_client_test_ac3 \
                         ${bindir}/halplay \
@@ -100,8 +100,8 @@ FILES_${PN}-testapps = "\
                         ${bindir}/start_arc \
                         ${bindir}/test_arc \
                         "
-FILES_${PN}-testapps-dev = ""
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-testapps = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN}-testapps-dev = ""
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-testapps = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

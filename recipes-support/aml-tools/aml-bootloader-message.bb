@@ -26,5 +26,5 @@ do_install() {
     install -m 0755 ${S}/bootloader_slot ${D}${bindir}
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "

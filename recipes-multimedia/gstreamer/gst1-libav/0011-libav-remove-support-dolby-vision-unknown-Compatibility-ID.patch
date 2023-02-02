@@ -1,7 +1,7 @@
 From 289fb3dbe3911251ca7679deb18d17e9261a2978 Mon Sep 17 00:00:00 2001
 From: "fei.deng" <fei.deng@amlogic.com>
 Date: Tue, 26 Apr 2022 19:34:21 +0800
-Subject: [PATCH] libav remove support dolby vision unknow Compatibility ID
+Subject: [PATCH] libav remove support dolby vision unknown Compatibility ID
 
 Change-Id: Ib97c2aa2d642bc8b4f2ce72b267208638ea48867
 ---

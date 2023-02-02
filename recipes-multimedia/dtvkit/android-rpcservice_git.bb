@@ -4,7 +4,7 @@ LICENSE = "CLOSED"
 #LIC_FILES_CHKSUM = "file://${COREBASE}/../${AML_META_LAYER}/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 ARM_TARGET = "lib32"
-ARM_TARGET_aarch64 = "lib64"
+ARM_TARGET:aarch64 = "lib64"
 #SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/android-rpcservice;protocol=${AML_GIT_PROTOCOL};branch=p-amlogic"
 #dtvkit-ciplus dtvkit-dsmcc  dtvkit-mheg5
 
@@ -12,7 +12,7 @@ SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 DEPENDS = "dtvkit-dvbcore dtvkit-amlogic   jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 curl freetype openssl aml-mp-sdk aml-subtitleserver"
-RDEPENDS_${PN} = "aml-mediahal-sdk  aml-subtitleserver aml-libdvr  libbinder liblog "
+RDEPENDS:${PN} = "aml-mediahal-sdk  aml-subtitleserver aml-libdvr  libbinder liblog "
 
 do_configure[noexec] = "1"
 inherit autotools pkgconfig
@@ -46,5 +46,5 @@ do_install() {
     oe_runmake -C ${S} install
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "

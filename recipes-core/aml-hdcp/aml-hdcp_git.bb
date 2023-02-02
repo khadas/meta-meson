@@ -3,10 +3,10 @@ LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/hdcp;protocol=${AML_GIT_PROTOCOL};branch=projects/buildroot/tdk-v2.4"
-SRC_URI_append = " file://aml_hdcp.service"
+SRC_URI:append = " file://aml_hdcp.service"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/hdcp')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/hdcp')}"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -18,7 +18,7 @@ S = "${WORKDIR}/git"
 DEPENDS += "optee-userspace"
 
 inherit autotools pkgconfig systemd
-ARM_TARGET_aarch64 = "64"
+ARM_TARGET:aarch64 = "64"
 
 do_install() {
     # install headers
@@ -37,7 +37,7 @@ do_install() {
     fi
 }
 
-SYSTEMD_SERVICE_${PN} = "aml_hdcp.service "
-FILES_${PN} += "/lib/optee_armtz/* /usr/bin/* /lib/firmware/hdcp/*"
-INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"
-INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf"
+SYSTEMD_SERVICE:${PN} = "aml_hdcp.service "
+FILES:${PN} += "/lib/optee_armtz/* /usr/bin/* /lib/firmware/hdcp/*"
+INSANE_SKIP:${PN} = "ldflags dev-so dev-elf"
+INSANE_SKIP:${PN}-dev = "ldflags dev-so dev-elf"

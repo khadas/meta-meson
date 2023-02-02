@@ -25,7 +25,7 @@ do_install () {
     install -m 0644 -D ${S}/testApi ${D}${bindir}
 }
 
-FILES_${PN} = " ${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/*"
-INSANE_SKIP_${PN} = "dev-so"
-INSANE_SKIP_${PN}-dev = "dev-elf dev-so"
+FILES:${PN} = " ${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/*"
+INSANE_SKIP:${PN} = "dev-so"
+INSANE_SKIP:${PN}-dev = "dev-elf dev-so"

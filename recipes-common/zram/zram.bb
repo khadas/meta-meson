@@ -9,7 +9,7 @@ SRC_URI += "file://zram.sh"
 
 ZRAM_FRACTION ?= "25"
 
-do_install_append(){
+do_install:append(){
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/zram.service ${D}/${systemd_unitdir}/system
 
@@ -18,7 +18,7 @@ do_install_append(){
     sed -ri 's/(FRACTION=)[^a]*/\1${ZRAM_FRACTION}/' ${D}/${bindir}/zram.sh
 }
 
-FILES_${PN} += "${bindir}/*"
-FILES_${PN} += "${systemd_unitdir}/system/*"
+FILES:${PN} += "${bindir}/*"
+FILES:${PN} += "${systemd_unitdir}/system/*"
 
-SYSTEMD_SERVICE_${PN} += "zram.service"
+SYSTEMD_SERVICE:${PN} += "zram.service"

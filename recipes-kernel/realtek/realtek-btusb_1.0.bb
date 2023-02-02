@@ -21,7 +21,7 @@ do_install() {
     install -D -m 0644 ${S}/../fw/* ${D}/lib/firmware/rtlbt
 }
 
-FILES_${PN} = "rtk_btusb.ko /lib/firmware/rtlbt/*"
+FILES:${PN} = "rtk_btusb.ko /lib/firmware/rtlbt/*"
 # Header file provided by a separate package
 DEPENDS += ""
 

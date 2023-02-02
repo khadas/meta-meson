@@ -17,7 +17,7 @@ EXTRA_OEMAKE=" STAGING_DIR=${STAGING_DIR_TARGET} \
                  TARGET_DIR=${D} \
                  "
 ARM_TARGET="arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 ="aarch64.lp64."
+ARM_TARGET:aarch64 ="aarch64.lp64."
 TA_TARGET="noarch"
 
 do_install() {
@@ -30,9 +30,9 @@ do_install() {
     install -m 0644 ${S}/ta/v3.8/dev/${CHIPSET_NAME}/b472711b-3ada-4c37-8c2a-7c64d8af0223.ta ${D}/lib/optee_armtz
 }
 
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"
 
-FILES_${PN} += " ${bindir}/* ${libdir}/*.so ${libdir}/teetz/*.ta /lib/optee_armtz/*.ta"
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} += " ${bindir}/* ${libdir}/*.so ${libdir}/teetz/*.ta /lib/optee_armtz/*.ta"
+FILES:${PN}-dev = "${includedir}/* "
 

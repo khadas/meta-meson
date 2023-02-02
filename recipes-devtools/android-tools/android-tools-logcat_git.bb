@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${THISDIR}/android-tools-logcat/LICENSE-2.0;md5=3b83e
 
 #DEPENDS = "aml-amaudioutils"
 DEPENDS = "liblog"
-RDEPENDS_${PN} = "liblog"
+RDEPENDS:${PN} = "liblog"
 
 SRCREV = "${AUTOREV}"
 
@@ -17,7 +17,7 @@ PV = "${SRCPV}"
 SRC_URI += "file://LICENSE-2.0"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
 
 S = "${WORKDIR}/git/logcat"
 

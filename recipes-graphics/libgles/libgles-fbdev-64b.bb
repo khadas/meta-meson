@@ -10,13 +10,13 @@ do_populate_lic[noexec] = "1"
 # explicitly depends upon them.
 EXCLUDE_FROM_WORLD = "1"
 PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl"
-RPROVIDES_${PN} += "libGLESv2.so()(64bit) libEGL.so()(64bit) libGLESv1_CM.so()(64bit) libMali.so"
+RPROVIDES:${PN} += "libGLESv2.so()(64bit) libEGL.so()(64bit) libGLESv1_CM.so()(64bit) libMali.so"
 DEPENDS += "patchelf-native"
 
 SRCREV = "ff2ef217a995bba2fd9b4337f38bb0dfcf3f3ccc"
 VERSION = "r7p0"
 SRC_URI = "git://git.myamlogic.com/linux/amlogic/mali-linux.git;nobranch=1"
-MIRRORS_prepend += "git://git.myamlogic.com/linux/amlogic/mali-linux.git git://git@openlinux.amlogic.com/yocto/platform/hardware/arm/mali-linux.git;protocol=ssh; \n"
+MIRRORS:prepend += "git://git.myamlogic.com/linux/amlogic/mali-linux.git git://git@openlinux.amlogic.com/yocto/platform/hardware/arm/mali-linux.git;protocol=ssh; \n"
 
 S = "${WORKDIR}/git"
 
@@ -57,6 +57,6 @@ do_install() {
     ln -s libGLESv2.so.2 ${D}${libdir}/libGLESv2.so
 }
 
-FILES_${PN} += "${libdir}/*.so"
-FILES_${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
-INSANE_SKIP_${PN} = "ldflags dev-so"
+FILES:${PN} += "${libdir}/*.so"
+FILES:${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
+INSANE_SKIP:${PN} = "ldflags dev-so"

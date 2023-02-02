@@ -6,9 +6,9 @@ SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/dvb_ota')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/dvb_ota')}"
 DEPENDS = " aml-dvb"
-RDEPENDS_${PN} += "aml-dvb"
+RDEPENDS:${PN} += "aml-dvb"
 
 do_configure[noexec] = "1"
 inherit autotools pkgconfig
@@ -35,7 +35,7 @@ do_install() {
     install -D -m 0644 ${S}/config/${CONFIG} ${D}/etc/dvb_ota.conf
 }
 
-FILES_${PN} = "${bindir}/* ${sysconfdir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${bindir}/* ${sysconfdir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

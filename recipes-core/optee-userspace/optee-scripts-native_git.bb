@@ -1,6 +1,6 @@
 DESCRIPTION = "optee and tee-supplicant"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 include ../../recipes-shared/optee.inc
 
 inherit native
@@ -23,7 +23,7 @@ do_install() {
     esac
 }
 
-FILES_${PN} = "${STAGING_DIR_NATIVE}/tdk/scripts/* ${STAGING_DIR_NATIVE}/tdk/keys/*  "
+FILES:${PN} = "${STAGING_DIR_NATIVE}/tdk/scripts/* ${STAGING_DIR_NATIVE}/tdk/keys/*  "
 SYSROOT_DIRS_NATIVE += "${STAGING_DIR_NATIVE}/tdk/scripts/ ${STAGING_DIR_NATIVE}/tdk/keys/  "
 
 

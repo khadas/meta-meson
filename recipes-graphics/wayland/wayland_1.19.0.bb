@@ -28,23 +28,23 @@ EXTRA_OECONF_class-native = "--disable-documentation --disable-libraries"
 
 # Wayland installs a M4 macro for other projects to use, which uses the target
 # pkg-config to find files.  Replace pkg-config with pkg-config-native.
-do_install_append_class-native() {
+do_install:append:class-native() {
   sed -e 's,PKG_CHECK_MODULES(.*),,g' \
       -e 's,$PKG_CONFIG,pkg-config-native,g' \
       -i ${D}/${datadir}/aclocal/wayland-scanner.m4
 }
 
-sysroot_stage_all_append_class-target () {
+sysroot_stage_all:append:class-target () {
 	rm ${SYSROOT_DESTDIR}/${datadir}/aclocal/wayland-scanner.m4
 	cp ${STAGING_DATADIR_NATIVE}/aclocal/wayland-scanner.m4 ${SYSROOT_DESTDIR}/${datadir}/aclocal/
 }
 
-FILES_${PN} = "${libdir}/*${SOLIBS}"
-FILES_${PN}-dev += "${bindir} ${datadir}/wayland"
+FILES:${PN} = "${libdir}/*${SOLIBS}"
+FILES:${PN}-dev += "${bindir} ${datadir}/wayland"
 
 BBCLASSEXTEND = "native nativesdk"
 
-do_install_append () {
+do_install:append () {
   rm -f ${D}${libdir}/libwayland-egl*
   rm -f ${D}${libdir}/pkgconfig/wayland-egl.pc
 }

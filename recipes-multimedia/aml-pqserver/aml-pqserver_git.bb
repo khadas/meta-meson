@@ -11,7 +11,7 @@ SRC_URI +="file://pqserver.service"
 SRC_URI +="file://pqserver_precheck.sh"
 
 DEPENDS = " libbinder liblog sqlite3 aml-audio-service "
-RDEPENDS_${PN} = " liblog libbinder aml-audio-service"
+RDEPENDS:${PN} = " liblog libbinder aml-audio-service"
 do_configure[noexec] = "1"
 inherit autotools pkgconfig systemd
 S="${WORKDIR}/git"
@@ -44,9 +44,9 @@ do_install() {
         install -m 755 ${WORKDIR}/pqserver_precheck.sh ${D}/usr/bin/
     fi
 }
-SYSTEMD_SERVICE_${PN} = "pqserver.service "
+SYSTEMD_SERVICE:${PN} = "pqserver.service "
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

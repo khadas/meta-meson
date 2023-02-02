@@ -14,12 +14,12 @@ ROOTFS_TYPE = "ext4"
 IMAGE_GEN_DEBUGFS = "1"
 IMAGE_FSTYPES_DEBUGFS = ""
 SERIAL_CONSOLES = "921600;ttyS0"
-SERIAL_CONSOLES_t5w = "115200;ttyS0"
-SERIAL_CONSOLES_t3 = "115200;ttyS0"
+SERIAL_CONSOLES:t5w = "115200;ttyS0"
+SERIAL_CONSOLES:t3 = "115200;ttyS0"
 
 PREFERRED_PROVIDER_virtual/kernel ?= "linux-meson"
-KERNEL_IMAGETYPE_aarch64 = "Image.gz"
-KERNEL_IMAGETYPE_armv7a = "uImage"
+KERNEL_IMAGETYPE:aarch64 = "Image.gz"
+KERNEL_IMAGETYPE:armv7a = "uImage"
 UBOOT_SUFFIX = "bin"
 MACHINE_FEATURES = "usbgadget usbhost vfat "
 IMAGE_BOOT_FILES ?= "u-boot.${UBOOT_SUFFIX}"
@@ -27,11 +27,11 @@ INITRAMFS_FSTYPES = "cpio.gz"
 
 #KERNEL_MODULE_AUTOLOAD += "mali"
 TDK_VERSION = "v3.8"
-TDK_VERSION_t5d = "v2.4"
-TDK_VERSION_sc2 = "v3.8/dev/S905X4"
-TDK_VERSION_t7 = "v3.8/dev/A311D2"
-TDK_VERSION_s4 = "v3.8/dev/S905Y4"
-TDK_VERSION_t3 = "v3.8/dev/T965D4"
+TDK_VERSION:t5d = "v2.4"
+TDK_VERSION:sc2 = "v3.8/dev/S905X4"
+TDK_VERSION:t7 = "v3.8/dev/A311D2"
+TDK_VERSION:s4 = "v3.8/dev/S905Y4"
+TDK_VERSION:t3 = "v3.8/dev/T965D4"
 
 #Widevine Version
 WIDEVINE_VERSION = "16"
@@ -62,8 +62,8 @@ PREFERRED_VERSION_vulkan-loader = "1.2.196"
 #for cairo
 PREFERRED_VERSION_cairo_dunfell = "1.14.6"
 
-WARN_QA_append = "ldflags installed-vs-shipped already-stripped pkgvarcheck file-rdeps"
-ERROR_QA_remove = "ldflags installed-vs-shipped already-stripped pkgvarcheck file-rdeps"
+WARN_QA:append = "ldflags installed-vs-shipped already-stripped pkgvarcheck file-rdeps"
+ERROR_QA:remove = "ldflags installed-vs-shipped already-stripped pkgvarcheck file-rdeps"
 
 DEBUG_PREFIX_MAP = "-fdebug-prefix-map=${WORKDIR}=/usr/src/debug/${PN}/${EXTENDPE}${PV}-${PR} \
                     -fdebug-prefix-map=${STAGING_DIR_HOST}= \
@@ -72,7 +72,7 @@ DEBUG_PREFIX_MAP = "-fdebug-prefix-map=${WORKDIR}=/usr/src/debug/${PN}/${EXTENDP
 
 HOSTTOOLS_NONFATAL += "bc cc c++ bison repo python"
 
-DISABLE_STATIC_pn-libevent = ""
+DISABLE_STATIC:pn-libevent = ""
 
 AML_RDK_PREBUILT_SITE ?= "http://10.18.11.6/shanghai/image/linux-distro/Public/YOCTO/prebuilt/"
 AML_TOOLS_SITE ?= "http://10.18.11.120:8000/Tools"
@@ -107,10 +107,10 @@ KERNEL_MODULE_AUTOLOAD += "gpio_keypad adc_keypad reg_access"
 SPLASH ?= "psplash"
 
 #wpeframework system uer mode
-DISTRO_FEATURES_append = " system-user"
+DISTRO_FEATURES:append = " system-user"
 
 # enable selinux
-DISTRO_FEATURES_append = " acl xattr pam selinux"
+DISTRO_FEATURES:append = " acl xattr pam selinux"
 # set the policy
 PREFERRED_PROVIDER_virtual/refpolicy ?= "refpolicy-standard"
 DEFAULT_ENFORCING = "permissive"
@@ -125,9 +125,9 @@ DEFAULT_ENFORCING = "permissive"
 #RELEASE_MODE = " PROD"
 
 #Overlay Filesystem
-DISTRO_FEATURES_append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', '', 'OverlayFS', d)}"
+DISTRO_FEATURES:append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', '', 'OverlayFS', d)}"
 
 # dm-verity
-DISTRO_FEATURES_append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', 'dm-verity', '', d)}"
+DISTRO_FEATURES:append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', 'dm-verity', '', d)}"
 
-DISTRO_FEATURES_append = " adb dropbear"
+DISTRO_FEATURES:append = " adb dropbear"

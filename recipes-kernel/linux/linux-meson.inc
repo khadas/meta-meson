@@ -17,7 +17,7 @@ do_copy_dtb() {
 addtask copy_dtb before do_install after do_compile
 #addtask install_headers after do_install before do_deploy
 
-do_deploy_append () {
+do_deploy:append () {
     DTB_PATH=`get_real_dtb_path_in_kernel multi.dtb`
     install -m 0644 ${DTB_PATH} ${DEPLOYDIR}/dtb.img
 
@@ -29,11 +29,11 @@ do_deploy_append () {
     fi
 }
 
-do_install_append () {
+do_install:append () {
     oe_runmake -C ${B} CC="${KERNEL_CC}" headers_install INSTALL_HDR_PATH=${D}/usr/include/linux-meson/
 }
 
-sysroot_stage_all_append() {
+sysroot_stage_all:append() {
     sysroot_stage_dir ${D}/usr/include/linux-meson ${SYSROOT_DESTDIR}/usr/include/linux-meson
 
 }
@@ -47,4 +47,4 @@ do_create_lib32_symlink() {
 
 addtask create_lib32_symlink after do_populate_sysroot before do_package
 
-FILES_${PN}-dev += " /usr/include/linux-meson/* "
+FILES:${PN}-dev += " /usr/include/linux-meson/* "

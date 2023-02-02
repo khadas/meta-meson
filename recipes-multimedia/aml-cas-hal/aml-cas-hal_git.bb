@@ -7,13 +7,13 @@ SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/cas-hal')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/cas-hal')}"
 DEPENDS += "aml-audio-service aml-mediahal-sdk aml-libdvr liblog"
 
 do_configure[noexec] = "1"
 inherit autotools pkgconfig
 S="${WORKDIR}/git"
-RDEPENDS_${PN} += "aml-audio-service aml-mediahal-sdk aml-libdvr liblog"
+RDEPENDS:${PN} += "aml-audio-service aml-mediahal-sdk aml-libdvr liblog"
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET}\
 	      TARGET_DIR=${D} \
 	      "
@@ -36,7 +36,7 @@ do_install() {
     install -m 0755 ${S}/cas_hal_test_bin ${D}${bindir}
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

@@ -5,7 +5,7 @@ LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/drmplayer-bin/prebuilt')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/drmplayer-bin/prebuilt')}"
 #PV = "git${SRCPV}"
 
 S = "${WORKDIR}/git"
@@ -24,7 +24,7 @@ EXTRA_OEMAKE=" STAGING_DIR=${STAGING_DIR_TARGET} \
                  TARGET_DIR=${D} \
                  "
 ARM_TARGET = "arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 = "aarch64.lp64."
+ARM_TARGET:aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
 do_install() {
@@ -38,9 +38,9 @@ do_install() {
 
 }
 
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"
 
-FILES_${PN} += " ${bindir}/* ${libdir}/*.so"
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} += " ${bindir}/* ${libdir}/*.so"
+FILES:${PN}-dev = "${includedir}/* "
 

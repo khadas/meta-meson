@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
-SRC_URI_append = " file://52dvb.rules"
+SRC_URI:append = " file://52dvb.rules"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -28,7 +28,7 @@ do_install() {
     install -m 0755 ${WORKDIR}/52dvb.rules ${D}/etc/udev/rules.d
 }
 
-FILES_${PN} = " \
+FILES:${PN} = " \
         /lib/firmware/aucpu_fw.bin \
         /etc/udev/rules.d/52dvb.rules \
         "

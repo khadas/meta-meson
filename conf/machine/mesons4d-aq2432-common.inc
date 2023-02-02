@@ -11,33 +11,33 @@ UBOOT_MACHINE = "s4_aq2432_config"
 #Default is EMMC
 KERNEL_DEVICETREE = "s4d_s805c3_aq2432_linux_512m.dtb"
 
-KERNEL_MODULE_AUTOLOAD_remove = " cxd2856_fe_64 r836_fe_64 av2018_fe_64 "
-KERNEL_MODULE_AUTOLOAD_remove = " hdr10_tmo_alg_64"
+KERNEL_MODULE_AUTOLOAD:remove = " cxd2856_fe_64 r836_fe_64 av2018_fe_64 "
+KERNEL_MODULE_AUTOLOAD:remove = " hdr10_tmo_alg_64"
 KERNEL_MODULE_AUTOLOAD += " cxd2856_fe_32 r836_fe_32 av2018_fe_32 "
 KERNEL_MODULE_AUTOLOAD += " hdr10_tmo_alg_32"
 
-MACHINE_EXTRA_RRECOMMENDS_remove = " wififw-qca6174 qca6174"
-KERNEL_MODULE_AUTOLOAD_remove = " btqca "
-KERNEL_MODULE_PROBECONF_remove = " btqca "
-KERNEL_MODULE_AUTOLOAD_remove = " hci_uart"
-KERNEL_MODULE_PROBECONF_remove = "hci_uart"
+MACHINE_EXTRA_RRECOMMENDS:remove = " wififw-qca6174 qca6174"
+KERNEL_MODULE_AUTOLOAD:remove = " btqca "
+KERNEL_MODULE_PROBECONF:remove = " btqca "
+KERNEL_MODULE_AUTOLOAD:remove = " hci_uart"
+KERNEL_MODULE_PROBECONF:remove = "hci_uart"
 
-MACHINE_EXTRA_RRECOMMENDS_append = " aml-wifi-w1"
+MACHINE_EXTRA_RRECOMMENDS:append = " aml-wifi-w1"
 
-DISTRO_FEATURES_remove = " bt-qca "
-DISTRO_FEATURES_append = " aml-w1 "
-DISTRO_FEATURES_remove = " netflix netflix6 amazon tts mediaplayer playready "
-DISTRO_FEATURES_remove = " bluetooth bluez5 "
+DISTRO_FEATURES:remove = " bt-qca "
+DISTRO_FEATURES:append = " aml-w1 "
+DISTRO_FEATURES:remove = " netflix netflix6 amazon tts mediaplayer playready "
+DISTRO_FEATURES:remove = " bluetooth bluez5 "
 
-DISTRO_FEATURES_append = " UI_720P WesterOS_lowmem"
-DISTRO_FEATURES_append = " appmanager AsperitasDvb LauncherWebkit aamp"
-DISTRO_FEATURES_append = " fota-upgrade swupdate-download"
-DISTRO_FEATURES_append = " remove-test-files"
+DISTRO_FEATURES:append = " UI_720P WesterOS_lowmem"
+DISTRO_FEATURES:append = " appmanager AsperitasDvb LauncherWebkit aamp"
+DISTRO_FEATURES:append = " fota-upgrade swupdate-download"
+DISTRO_FEATURES:append = " remove-test-files"
 
 DM_VERITY_IMAGE = "${@bb.utils.contains('MULTTILIBS', 'multilib:lib32', 'lib32-amlogic-zapperplus', 'amlogic-zapperplus', d)}"
 
 OVERRIDES .= ":aq2432"
-TDK_VERSION_s4 = "v3.8/dev/S805C3"
+TDK_VERSION:s4 = "v3.8/dev/S805C3"
 
 ZRAM_FRACTION = "35"
 

@@ -1,6 +1,6 @@
 SUMMARY = "Graphics abstraction library for the Linux Framebuffer Device"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += "\
             file://0006-add-amlgfx-for-directfb.patch \
@@ -14,7 +14,7 @@ SRC_URI += "\
 
 PACKAGECONFIG += "drmkms"
 
-EXTRA_OECONF_remove ="--with-gfxdrivers=none"
+EXTRA_OECONF:remove ="--with-gfxdrivers=none"
 
 EXTRA_OECONF += "--with-gfxdrivers=amlgfx \
                  --with-inputdrivers=linuxinput,ps2mouse,serialmouse \
@@ -24,7 +24,7 @@ EXTRA_OECONF += "--with-gfxdrivers=amlgfx \
                  --with-tests \
                  "
 
-do_install_append() {
+do_install:append() {
     install -d ${D}/etc/
     install -D -m 0644 ${WORKDIR}/directfbrc ${D}/etc/directfbrc
     if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'true', 'false', d)}
@@ -37,5 +37,5 @@ do_install_append() {
 }
 
 
-FILES_${PN}-dev += "${libdir}/directfb-${RV}/gfxdrivers/*.la"
-FILES_${PN} += "${libdir}/directfb-${RV}/gfxdrivers/*.so /etc/*"
+FILES:${PN}-dev += "${libdir}/directfb-${RV}/gfxdrivers/*.la"
+FILES:${PN} += "${libdir}/directfb-${RV}/gfxdrivers/*.so /etc/*"

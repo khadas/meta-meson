@@ -45,9 +45,9 @@ def volatile_systemd_services(d):
         services.append("%s.service" % what[1:].replace("/", "-"))
     return " ".join(services)
 
-SYSTEMD_SERVICE_${PN} = "${@volatile_systemd_services(d)}"
+SYSTEMD_SERVICE:${PN} = "${@volatile_systemd_services(d)}"
 
-FILES_${PN} += "${systemd_unitdir}/system/*.service"
+FILES:${PN} += "${systemd_unitdir}/system/*.service"
 
 do_compile () {
     while read spec mountpoint; do
@@ -89,16 +89,15 @@ do_install () {
     install -m 0644 ${WORKDIR}/var-lib.mount ${D}${systemd_unitdir}/system/
 }
 
-do_install_append() {
+do_install:append() {
     if [ -f ${D}${systemd_unitdir}/system/data-var-lib.service ];then
         sed -i '/Before=/ s/$/ systemd-rfkill\.service/g' ${D}${systemd_unitdir}/system/data-var-lib.service
     fi
-
     rm -f ${D}${systemd_unitdir}/system/var-lib.mount
 }
 
 do_install[dirs] = "${WORKDIR}"
 
-SYSTEMD_SERVICE_${PN} += "var-lib.mount"
-SYSTEMD_SERVICE_${PN}_remove += "var-lib.mount"
-FILES_${PN}_remove += "${systemd_unitdir}/system/var-lib.mount"
+SYSTEMD_SERVICE:${PN} += "var-lib.mount"
+SYSTEMD_SERVICE:${PN}:remove += "var-lib.mount"
+FILES:${PN}:remove += "${systemd_unitdir}/system/var-lib.mount"

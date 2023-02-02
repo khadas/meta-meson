@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #SRC_URI = "git://${COREBASE}/../aml-comp/vendor/amlogic/secpu_fw_loader;protocal=file;rev=refs/remotes/amlogic/amlogic-dev"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/secpu_fw_loader')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/secpu_fw_loader')}"
 
 SRCREV = "${AUTOREV}"
 
@@ -39,8 +39,8 @@ do_install() {
     install -D -m 0755 ${S}/ta/${TDK_VERSION_NEW}/*.ta ${D}/lib/optee_armtz/
 }
 
-FILES_${PN} += "/lib/optee_armtz/* ${bindir}/*"
-FILES_${PN} += "${libdir}/*"
-FILES_${PN}-dev = " "
-INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"
-INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf"
+FILES:${PN} += "/lib/optee_armtz/* ${bindir}/*"
+FILES:${PN} += "${libdir}/*"
+FILES:${PN}-dev = " "
+INSANE_SKIP:${PN} = "ldflags dev-so dev-elf"
+INSANE_SKIP:${PN}-dev = "ldflags dev-so dev-elf"

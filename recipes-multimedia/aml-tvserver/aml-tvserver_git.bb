@@ -10,7 +10,7 @@ PV = "${SRCPV}"
 SRC_URI +="file://tvserver.service"
 
 DEPENDS = " libbinder sqlite3 aml-audio-service"
-RDEPENDS_${PN} = " liblog libbinder aml-audio-service"
+RDEPENDS:${PN} = " liblog libbinder aml-audio-service"
 do_configure[noexec] = "1"
 inherit autotools pkgconfig systemd
 S="${WORKDIR}/git"
@@ -37,10 +37,10 @@ do_install() {
     #install ${WORKDIR}/hdcp_rx22 ${D}${bindir}
 
 }
-SYSTEMD_SERVICE_${PN} = "tvserver.service "
+SYSTEMD_SERVICE:${PN} = "tvserver.service "
 #SYSTEMD_SERVICE_${PN} = "tvserver.service hdcprx.service"
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

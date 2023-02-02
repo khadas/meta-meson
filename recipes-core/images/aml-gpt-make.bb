@@ -2,7 +2,7 @@ SUMMARY = "generate gpt.bin"
 LICENSE = "CLOSED"
 LIC_FILES_CHKSUM=""
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += "file://partition_table.txt"
 
 PARTITION_TABLE = "partition_table.txt"

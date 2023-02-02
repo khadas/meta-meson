@@ -1,7 +1,7 @@
 SUMMARY = "Amlogic Yocto Zapper Image"
 LICENSE = "MIT"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 IMAGECLASS ?=  "core-image"
 
 inherit ${IMAGECLASS}
@@ -90,8 +90,8 @@ IMAGE_INSTALL += " \
 PACKAGE_INSTALL += "base-files base-passwd initramfs-meson-boot udev-extraconf "
 
 MACHINE_IMAGE_NAME ?= "${PN}"
-IMAGE_FEATURES_remove = " read-only-rootfs"
-DEPENDS_append = " android-tools-native"
+IMAGE_FEATURES:remove = " read-only-rootfs"
+DEPENDS:append = " android-tools-native"
 
 #reduce this value to reserve space for DM-verity/AVB meta-data at the end of partition(64M)
 IMAGE_ROOTFS_SIZE = "983040"

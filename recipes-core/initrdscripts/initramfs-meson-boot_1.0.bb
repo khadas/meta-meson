@@ -2,7 +2,7 @@ SUMMARY = "Meson init script"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 DEPENDS = "virtual/kernel"
-#RDEPENDS_${PN} = "udev udev-extraconf"
+#RDEPENDS:${PN} = "udev udev-extraconf"
 SRC_URI = "file://init-meson.sh"
 
 PR = "r0"
@@ -37,11 +37,11 @@ do_install() {
     fi
 }
 
-do_install_append_t5w() {
+do_install:append:t5w() {
     sed -i '/boot_root(/a\\tattach_unifykey' ${D}/init
 }
 
-FILES_${PN} += " /init /dev "
+FILES:${PN} += " /init /dev "
 
 # Due to kernel dependency
 PACKAGE_ARCH = "${MACHINE_ARCH}"

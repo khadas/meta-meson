@@ -22,7 +22,7 @@ do_install() {
 #    install -D -m 0644 ${S}/../fw/* ${D}/lib/firmware/rtlbt
 }
 
-FILES_${PN} = "rtk_btuart.ko"
+FILES:${PN} = "rtk_btuart.ko"
 # Header file provided by a separate package
 DEPENDS += ""
 

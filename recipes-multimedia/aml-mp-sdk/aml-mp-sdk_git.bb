@@ -9,11 +9,11 @@ DEPENDS += "aml-amaudioutils liblog aml-libdvr aml-mediahal-sdk aml-cas-hal aml-
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/common/aml_mp_sdk;protocol=${AML_GIT_PROTOCOL};branch=master;"
 #SRC_URI = "file://aml-comp/multimedia/aml_mp_sdk;protocol=file;branch=master;"
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_mp_sdk')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_mp_sdk')}"
 SRCREV = "${AUTOREV}"
 #DEPENDS += "libbinder"
 S="${WORKDIR}/git/"
-RDEPENDS_${PN} += "aml-amaudioutils liblog aml-libdvr aml-mediahal-sdk aml-cas-hal aml-subtitleserver"
+RDEPENDS:${PN} += "aml-amaudioutils liblog aml-libdvr aml-mediahal-sdk aml-cas-hal aml-subtitleserver"
 EXTRA_OEMAKE = "STAGING_DIR=${STAGING_DIR_TARGET} \
 		  TARGET_DIR=${D} \
 		"
@@ -32,8 +32,8 @@ EXTRA_OEMAKE = "STAGING_DIR=${STAGING_DIR_TARGET} \
 #}
 
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "ldflags"
-INSANE_SKIP_${PN}-dev = "dev-elf dev-so"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "ldflags"
+INSANE_SKIP:${PN}-dev = "dev-elf dev-so"
 

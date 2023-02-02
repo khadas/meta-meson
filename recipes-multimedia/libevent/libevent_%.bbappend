@@ -1,1 +1,1 @@
-CFLAGS_append = " -fPIC "
+CFLAGS:append = " -fPIC "

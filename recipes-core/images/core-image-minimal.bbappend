@@ -2,15 +2,15 @@ inherit image
 SDKEXTCLASS ?= "${@['populate_sdk', 'populate_sdk_ext']['linux' in d.getVar("SDK_OS", True)]}"
 inherit ${SDKEXTCLASS}
 
-DEPENDS_append = " android-tools-native"
-DEPENDS_append = "${@bb.utils.contains("DISTRO_FEATURES", "FIT", " u-boot-tools-native dtc-native", "" ,d)}"
+DEPENDS:append = " android-tools-native"
+DEPENDS:append = "${@bb.utils.contains("DISTRO_FEATURES", "FIT", " u-boot-tools-native dtc-native", "" ,d)}"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += " file://boot-template.its"
 
 #IMAGE_INSTALL = "udev busybox ${ROOTFS_PKGMANAGE_BOOTSTRAP}"
 IMAGE_INSTALL = "busybox"
-IMAGE_INSTALL_append = "\
+IMAGE_INSTALL:append = "\
                     initramfs-meson-boot \
                     aml-ubootenv \
                     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'policycoreutils-setfiles', '', d)} \
@@ -25,8 +25,8 @@ IMAGE_INSTALL_append = "\
 #AVB with DM-verity
 AVB_DM_VERITY = '${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('DISTRO_FEATURES', 'AVB', 'true', 'False' ,d), 'False', d)}'
 
-IMAGE_INSTALL_append += '${@'python3 avbtool-dm-verity' if AVB_DM_VERITY == 'true'  else ''}'
-#IMAGE_INSTALL_append_aarch64 = "\
+IMAGE_INSTALL:append += '${@'python3 avbtool-dm-verity' if AVB_DM_VERITY == 'true'  else ''}'
+#IMAGE_INSTALL:append:aarch64 = "\
 #                    kernel-modules \
 #                    gpu \
 #                    kmod \
@@ -34,7 +34,7 @@ IMAGE_INSTALL_append += '${@'python3 avbtool-dm-verity' if AVB_DM_VERITY == 'tru
 #                    ${CORE_IMAGE_EXTRA_INSTALL} \
 #                    "
 
-IMAGE_INSTALL_append = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' cryptsetup lvm2-udevrules ', '', d)}"
+IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' cryptsetup lvm2-udevrules ', '', d)}"
 
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 
@@ -56,7 +56,7 @@ python __anonymous () {
     d.delVarFlag('do_unpack', 'noexec')
 }
 
-do_rootfs_append () {
+do_rootfs:append () {
     import shutil
     rootfsdir = d.getVar('IMAGE_ROOTFS', True) or ""
     bootdir = "%s/boot" % rootfsdir
@@ -105,7 +105,7 @@ do_bundle_initramfs_dtb[nostamp] = "1"
 
 do_rootfs[depends] += "android-tools-native:do_populate_sysroot"
 do_rootfs[depends] += "${@bb.utils.contains("DISTRO_FEATURES", "FIT", " u-boot-tools-native:do_populate_sysroot dtc-native:do_populate_sysroot", "" ,d)}"
-IMAGE_ROOTFS_EXTRA_SPACE_append = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", " + 4096", "" ,d)}"
+IMAGE_ROOTFS_EXTRA_SPACE:append = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", " + 4096", "" ,d)}"
 
 deploy_verity_hash() {
     if [ -f ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env ]; then

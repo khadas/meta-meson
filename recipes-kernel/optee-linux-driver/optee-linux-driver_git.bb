@@ -16,11 +16,11 @@ do_install() {
     install -m 0666 ${S}/linuxdriver/optee/optee_armtz.ko ${MODULE_DIR}
 }
 
-FILES_${PN} = "optee_armtz.ko optee.ko"
+FILES:${PN} = "optee_armtz.ko optee.ko"
 # Header file provided by a separate package
 DEPENDS += ""
 
-TARGET_ARGS_armv7a=" KERNEL_A32_SUPPORT=true"
+TARGET_ARGS:armv7a=" KERNEL_A32_SUPPORT=true"
 do_compile() {
     unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
     export ${TARGET_ARGS}

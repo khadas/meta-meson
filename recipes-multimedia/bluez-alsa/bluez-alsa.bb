@@ -23,7 +23,7 @@ S  = "${WORKDIR}/git"
 
 DEPENDS += "alsa-lib bluez5 systemd glib-2.0 sbc"
 DEPENDS += "aml-audio-service"
-RDEPENDS_${PN} += "aml-audio-service"
+RDEPENDS:${PN} += "aml-audio-service"
 
 PACKAGECONFIG[debug]  = "--enable-debug"
 #PACKAGECONFIG[datadir]  = "--datadir=/etc"

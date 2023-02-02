@@ -5,11 +5,11 @@ PV = "git${SRCPV}"
 PR = "r0"
 
 #Only enable it in OpenLinux
-#SRC_URI_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'git://${AML_GIT_ROOT_OP}/irdeto-cashal-rel.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=projects/openlinux/source','', d)}"
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/aml-patches/../vendor/irdeto/irdeto-cashal-rel')}"
+#SRC_URI:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'git://${AML_GIT_ROOT_OP}/irdeto-cashal-rel.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=projects/openlinux/source','', d)}"
+SRC_URI:append = " ${@get_patch_list_with_path('${COREBASE}/aml-patches/../vendor/irdeto/irdeto-cashal-rel')}"
 
 DEPENDS = "liblog aml-secmem aml-mediahal-sdk irdeto-sdk aml-cas-hal cjson optee-userspace"
-RDEPENDS_${PN} += ""
+RDEPENDS:${PN} += ""
 
 PN = 'irdeto-cashal-rel'
 SRCREV ?= "${AUTOREV}"
@@ -42,6 +42,6 @@ do_install() {
 
 }
 
-FILES_${PN} = "${libdir}/* /usr/lib/* ${bindir}/* /etc/cas/irdeto/cadata/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* /usr/lib/* ${bindir}/* /etc/cas/irdeto/cadata/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"

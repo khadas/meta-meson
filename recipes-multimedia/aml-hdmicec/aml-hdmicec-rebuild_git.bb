@@ -7,7 +7,7 @@ SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 DEPENDS = " libbinder liblog aml-audio-service"
-RDEPENDS_${PN} = " liblog libbinder aml-audio-service"
+RDEPENDS:${PN} = " liblog libbinder aml-audio-service"
 do_configure[noexec] = "1"
 EXTERNALSRC="${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdmicec'}"
 AML_HDMICEC_DIR="${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdmicec'}"
@@ -29,7 +29,7 @@ do_compile() {
     oe_runmake  all
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

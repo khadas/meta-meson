@@ -8,7 +8,7 @@ DEPENDS = "liblog boost"
 #SRC_URI = "git://${AML_GIT_ROOT}/linux/multimedia/amaudioutils;protocol=${AML_GIT_PROTOCOL};branch=master"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_amaudioutils')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_amaudioutils')}"
 
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
@@ -22,7 +22,7 @@ export AML_AMAUDIOUTILS_STAGING_DIR = "${D}"
 export AML_AMAUDIOUTILS_TARGET_DIR = "${D}"
 export AML_AMAUDIOUTILS_BR2_ARCH = "${TARGET_ARCH}"
 export TARGET_DIR = "${D}"
-EXTRA_FLAGS_aarch64="TOOLCHAIN_NEON_SUPPORT=n"
+EXTRA_FLAGS:aarch64="TOOLCHAIN_NEON_SUPPORT=n"
 
 EXTRA_OEMAKE="${EXTRA_FLAGS} STAGING_DIR=${D} \
                   TARGET_DIR=${D} \
@@ -46,7 +46,7 @@ do_install() {
 	install -m 644 ${S}/include/IpcBuffer/*.h ${D}/usr/include/IpcBuffer/
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

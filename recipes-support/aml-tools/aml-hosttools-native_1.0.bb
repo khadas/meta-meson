@@ -16,4 +16,4 @@ do_install () {
     install -d ${D}${bindir}
     install -m 0755 ${S}/kernel/dtbTool_64 ${D}${bindir}/dtbTool
 }
-FILES_${PN} = "${bindir}/*"
+FILES:${PN} = "${bindir}/*"

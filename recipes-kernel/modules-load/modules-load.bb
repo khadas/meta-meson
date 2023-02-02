@@ -4,7 +4,7 @@ SUMMARY = "Post process modules load"
 LICENSE = "CLOSED"
 LIC_FILES_CHKSUM=""
 
-SRC_URI_append = " file://modules-load.sh"
+SRC_URI:append = " file://modules-load.sh"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -17,8 +17,8 @@ do_install() {
     fi
 }
 
-do_install_append_t5d() {
+do_install:append:t5d() {
     sed -i 's@PATH/.*/dvb_demux.ko@PATH/media/aml_hardware_dmx.ko@' ${D}/etc/modules-load.sh
 }
 
-FILES_${PN} = " /etc/modules-load.sh"
+FILES:${PN} = " /etc/modules-load.sh"

@@ -1,22 +1,22 @@
 SUMMARY = "amlogic playready"
 LICENSE = "CLOSED"
 DEPENDS = "optee-userspace bzip2 libxml2 aml-secmem aml-mediahal-sdk curl"
-RDEPENDS_${PN} = "libbz2 curl"
+RDEPENDS:${PN} = "libbz2 curl"
 
-FILESEXTRAPATHS_preppend := "${THISDIR}/files/:"
+FILESEXTRAPATHS:preppend := "${THISDIR}/files/:"
 
 #SRC_URI = "git://${AML_GIT_ROOT_PR}/vendor/playready.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=linux-3.x-amlogic"
 #SRC_URI += " file://0001-playready-add-headers-for-build-1-1.patch;patchdir=${WORKDIR}/git"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/playready-bin')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/playready-bin')}"
 
 #SRCREV="bb62070629f62c580b32cdfe2cfaa3928611d6f3"
 #use head version, ?= conditonal operator can be control revision in external rdk-next.conf like configuration file
 SRCREV ?= "${AUTOREV}"
 
 ARM_TARGET = "arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 = "aarch64.lp64."
+ARM_TARGET:aarch64 = "aarch64.lp64."
 
 S = "${WORKDIR}/git"
 
@@ -45,10 +45,10 @@ do_install () {
     ln -s playready ${D}/usr/include/playready4.4
 }
 
-FILES_${PN} += "/lib/optee_armtz/*"
-FILES_${PN} += "/video/*"
-FILES_${PN} += "${libdir}/*"
+FILES:${PN} += "/lib/optee_armtz/*"
+FILES:${PN} += "/video/*"
+FILES:${PN} += "${libdir}/*"
 
 FILES_SOLIBSDEV = ""
 
-INSANE_SKIP_${PN} = "ldflags dev-so already-stripped"
+INSANE_SKIP:${PN} = "ldflags dev-so already-stripped"

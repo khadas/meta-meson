@@ -1,7 +1,7 @@
 SUMMARY = "Amlogic Yocto BSP Image"
 LICENSE = "MIT"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 IMAGECLASS ?=  "core-image"
 
 inherit ${IMAGECLASS}
@@ -130,11 +130,11 @@ IMAGE_INSTALL += " \
     "
 
 #Add ubifs tools
-RDEPENDS_packagegroup-amlogic-baserootfs += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)}"
+RDEPENDS:packagegroup-amlogic-baserootfs += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)}"
 
 MACHINE_IMAGE_NAME ?= "${PN}"
-IMAGE_FEATURES_remove = " read-only-rootfs"
-DEPENDS_append = " android-tools-native"
+IMAGE_FEATURES:remove = " read-only-rootfs"
+DEPENDS:append = " android-tools-native"
 
 #reduce this value to reserve space for DM-verity/AVB meta-data at the end of partition(64M)
 IMAGE_ROOTFS_SIZE = "983040"

@@ -8,7 +8,7 @@ DEPENDS += "libion"
 DEPENDS += "libvphevcodec"
 DEPENDS += "libge2d"
 
-RDEPENDS_${PN} = " libge2d"
+RDEPENDS:${PN} = " libge2d"
 
 inherit autotools pkgconfig
 
@@ -28,7 +28,7 @@ do_install() {
     install -D -m 0755 ${S}/libgstamlh265venc.so ${D}${libdir}/gstreamer-1.0/
 }
 
-FILES_${PN} = " ${libdir}/* "
-FILES_${PN}-dev = " ${includedir}/* \
+FILES:${PN} = " ${libdir}/* "
+FILES:${PN}-dev = " ${includedir}/* \
                     /usr/lib/pkgconfig/* \
     "

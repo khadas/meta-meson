@@ -18,7 +18,7 @@ do_install() {
     install -m 0666 ${S}/rtl8723BU/8723bu.ko ${WIFIDIR}
 }
 
-FILES_${PN} = "8723bu.ko"
+FILES:${PN} = "8723bu.ko"
 # Header file provided by a separate package
 DEPENDS += ""
 

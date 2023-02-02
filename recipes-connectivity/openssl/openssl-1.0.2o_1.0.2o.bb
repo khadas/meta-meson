@@ -4,7 +4,7 @@ require openssl-1.0.2o.inc
 # if they are available.
 DEPENDS += "cryptodev-linux"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/${BPN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 
 CFLAG += "-DHAVE_CRYPTODEV -DUSE_CRYPTODEV_DIGESTS -DOPENSSL_USE_IPV6 -DIPV6_DONTFRAG -DIPV6_MTUDISCOVER -DIPV6_MTU -DIPV6_PMTUDISC_DO -DIPV6_MTU_DISCOVER"
 
@@ -51,14 +51,14 @@ PACKAGES =+ " \
 	${PN}-engines-dbg \
 	"
 
-FILES_${PN}-engines = "${libdir}/ssl/engines/*.so ${libdir}/engines"
-FILES_${PN}-engines-dbg = "${libdir}/ssl/engines/.debug"
+FILES:${PN}-engines = "${libdir}/ssl/engines/*.so ${libdir}/engines"
+FILES:${PN}-engines-dbg = "${libdir}/ssl/engines/.debug"
 
 # The crypto_use_bigint patch means that perl's bignum module needs to be
 # installed, but some distributions (for example Fedora 23) don't ship it by
 # default.  As the resulting error is very misleading check for bignum before
 # building.
-do_configure_prepend() {
+do_configure:prepend() {
 	if ! perl -Mbigint -e true; then
 		bbfatal "The perl module 'bignum' was not found but this is required to build openssl.  Please install this module (often packaged as perl-bignum) and re-run bitbake."
 	fi

@@ -7,9 +7,9 @@ S = "${WORKDIR}"
 inherit pkgconfig
 
 DEPENDS := "zlib openssl"
-RDEPENDS_${PN} += "aml-utils-usb-monitor "
+RDEPENDS:${PN} += "aml-utils-usb-monitor "
 
-#FILESEXTRAPATHS_prepend := "${WORKDIR}/debian/patches:"
+#FILESEXTRAPATHS:prepend := "${WORKDIR}/debian/patches:"
 
 LIC_FILES_CHKSUM = "file://${WORKDIR}/debian/copyright;md5=141efd1050596168ca05ced04e4f498b"
 
@@ -39,7 +39,7 @@ SRC_URI[debian.md5sum] = "214cce305149326ca1aa661ef2b54886"
 SYSTEMD_AUTO_ENABLE = "enable"
 SYSTEMD_SERVICE_${PN} = "adbd.service"
 
-FILES_${PN} += "${systemd_unitdir}/system/adbd.service"
+FILES:${PN} += "${systemd_unitdir}/system/adbd.service"
 
 ADB_UDC = "ff400000.dwc2_a"
 ADB_UDC:s4 = "fdd00000.dwc2_a"

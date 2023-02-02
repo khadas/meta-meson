@@ -18,7 +18,7 @@ do_install() {
     install -m 0666 ${S}/rtl88x2CU/88x2cu.ko ${WIFIDIR}
 }
 
-FILES_${PN} = "88x2cu.ko"
+FILES:${PN} = "88x2cu.ko"
 # Header file provided by a separate package
 DEPENDS += ""
 

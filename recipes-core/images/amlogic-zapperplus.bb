@@ -1,7 +1,7 @@
 SUMMARY = "Amlogic Yocto ZapperPlus Image"
 LICENSE = "MIT"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 IMAGECLASS ?= " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'selinux-image', 'core-image', d)} "
 inherit ${IMAGECLASS}
@@ -145,16 +145,16 @@ IMAGE_INSTALL += " \
 "
 
 # unicode locale support
-IMAGE_INSTALL_append = " glibc-utils localedef"
+IMAGE_INSTALL:append = " glibc-utils localedef"
 
 PACKAGE_EXCLUDE = " kernel-devicetree"
 
 MACHINE_IMAGE_NAME ?= "${PN}"
-IMAGE_FEATURES_remove = " read-only-rootfs"
+IMAGE_FEATURES:remove = " read-only-rootfs"
 
 VIRTUAL-RUNTIME_dev_manager = "busybox"
 
-DEPENDS_append = " android-tools-native coreutils-native"
+DEPENDS:append = " android-tools-native coreutils-native"
 
 PACKAGE_INSTALL += "base-files netbase ${VIRTUAL-RUNTIME_base-utils} ${VIRTUAL-RUNTIME_dev_manager} base-passwd ${ROOTFS_BOOTSTRAP_INSTALL} initramfs-meson-boot udev-extraconf e2fsprogs "
 

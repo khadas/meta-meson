@@ -1,4 +1,4 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files/:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files/:"
 
 SRCREV = "ab544262da956499abbb8b9efa565c962b4c8e3b"
 SRC_URI += " \
@@ -6,7 +6,7 @@ SRC_URI += " \
             file://0002-Add-add-key-by-keyid.patch \
            "
 
-do_install_prepend() {
+do_install:prepend() {
     export PREFIX=""
     export BINDIR=""
 }

@@ -1,7 +1,7 @@
 SUMMARY = "amlogic dvb ota for dtvkit prebuilt"
 LICENSE = "CLOSED"
 DEPENDS = "${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', ' android-rpcservice', 'dtvkit-release-prebuilt', d)} "
-RDEPENDS_${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', ' android-rpcservice', 'dtvkit-release-prebuilt', d)} "
+RDEPENDS:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', ' android-rpcservice', 'dtvkit-release-prebuilt', d)} "
 
 ARM_TARGET = "lib32"
 ARM_TARGET_aarch64 = "lib64"
@@ -20,8 +20,8 @@ do_install () {
     fi
 }
 
-FILES_${PN} = "${libdir}/*  "
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} = "${libdir}/*  "
+FILES:${PN}-dev = "${includedir}/* "
 
-INSANE_SKIP_${PN} = "ldflags already-stripped"
-INSANE_SKIP_${PN}-dev = "dev-elf dev-so"
+INSANE_SKIP:${PN} = "ldflags already-stripped"
+INSANE_SKIP:${PN}-dev = "dev-elf dev-so"

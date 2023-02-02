@@ -29,6 +29,6 @@ do_install() {
     install -m 0644 libamlavsync.so ${D}${libdir}
 }
 
-FILES_${PN} = "${bindir}/* ${libdir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "ldflags"
+FILES:${PN} = "${bindir}/* ${libdir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "ldflags"

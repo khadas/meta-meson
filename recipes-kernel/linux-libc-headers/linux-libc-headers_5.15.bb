@@ -1,6 +1,6 @@
 require linux-libc-headers.inc
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files_515:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files_515:"
 
 
 SRC_URI:append:libc-musl = "\

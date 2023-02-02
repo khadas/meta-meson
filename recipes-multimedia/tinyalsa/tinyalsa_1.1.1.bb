@@ -34,4 +34,4 @@ do_install() {
 }
 
 PACKAGES =+ "${PN}-tools"
-FILES_${PN}-tools = "${bindir}/*"
+FILES:${PN}-tools = "${bindir}/*"

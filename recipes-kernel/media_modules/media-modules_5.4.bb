@@ -9,7 +9,7 @@ MBRANCH = "amlogic-5.4-dev"
 
 #For common patches
 MDIR = "media_modules"
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-5.4/amlogic/${MDIR}')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-5.4/amlogic/${MDIR}')}"
 SRCREV ?= "${AUTOREV}"
 PV ?= "5.4"
 
@@ -26,7 +26,7 @@ do_install() {
     install -m 0666 ${MEDIA_MODULES_UCODE_BIN} ${FIRMWAREDIR}
 }
 
-FILES_${PN} = " \
+FILES:${PN} = " \
         /lib/firmware/video/video_ucode.bin \
         "
 
@@ -55,15 +55,15 @@ MEDIA_CONFIGS = " \
                  CONFIG_AMLOGIC_MEDIA_ENHANCEMENT_DOLBYVISION=y \
                  CONFIG_AMLOGIC_MEDIA_GE2D=y \
                  "
-MEDIA_CONFIGS_append_t3 = "\
+MEDIA_CONFIGS:append:t3 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_MULTI=m \
                  "
-MEDIA_CONFIGS_append_t7 = "\
+MEDIA_CONFIGS:append:t7 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_MULTI=m \
                  "
-MEDIA_CONFIGS_append_sc2 = "\
+MEDIA_CONFIGS:append:sc2 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  "
 
@@ -103,9 +103,9 @@ KERNEL_MODULE_AUTOLOAD += "amvdec_ports"
 #KERNEL_MODULE_AUTOLOAD += "aml_hardware_dmx"
 #KERNEL_MODULE_AUTOLOAD += "vpu"
 
-KERNEL_MODULE_AUTOLOAD_append_t3 = " encoder jpegenc amvenc_multi"
-KERNEL_MODULE_AUTOLOAD_append_t7 = " encoder jpegenc amvenc_multi"
-KERNEL_MODULE_AUTOLOAD_append_sc2 = " encoder jpegenc vpu"
+KERNEL_MODULE_AUTOLOAD:append:t3 = " encoder jpegenc amvenc_multi"
+KERNEL_MODULE_AUTOLOAD:append:t7 = " encoder jpegenc amvenc_multi"
+KERNEL_MODULE_AUTOLOAD:append:sc2 = " encoder jpegenc vpu"
 
 # Skip auto loading for Zapper project
 MODULE_AUTOLOAD_ZAPPER_SKIP = "\
@@ -132,7 +132,7 @@ MODULE_AUTOLOAD_ZAPPER_SKIP = "\
   amvdec_ports \
 "
 
-KERNEL_MODULE_AUTOLOAD_remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${MODULE_AUTOLOAD_ZAPPER_SKIP}', '', d)}"
+KERNEL_MODULE_AUTOLOAD:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${MODULE_AUTOLOAD_ZAPPER_SKIP}', '', d)}"
 
 KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
 module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"

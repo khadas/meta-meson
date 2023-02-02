@@ -9,10 +9,10 @@ do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
 SOC_FAMILY = "TBD"
-SOC_FAMILY_s4 = "s4"
-SOC_FAMILY_t5d = "t5d"
-SOC_FAMILY_t5w = "t5w"
-SOC_FAMILY_sc2 = "sc2"
+SOC_FAMILY:s4 = "s4"
+SOC_FAMILY:t5d = "t5d"
+SOC_FAMILY:t5w = "t5w"
+SOC_FAMILY:sc2 = "sc2"
 
 PR = "r1"
 
@@ -28,4 +28,4 @@ do_install () {
 		install -m 0644 -D ${file} ${D}${bindir}/aml-swupdate/${SOC_FAMILY}/${file}
 	done
 }
-FILES_${PN} = "${bindir}/aml-swupdate/*"
+FILES:${PN} = "${bindir}/aml-swupdate/*"

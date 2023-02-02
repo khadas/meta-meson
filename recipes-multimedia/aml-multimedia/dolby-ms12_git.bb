@@ -13,7 +13,7 @@ inherit autotools pkgconfig
 S = "${WORKDIR}/git/dolby_ms12_release/src"
 
 ARM_TARGET = "arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 = "aarch64.lp64."
+ARM_TARGET:aarch64 = "aarch64.lp64."
 
 do_install() {
     install -d -m 0755 ${D}${bindir}
@@ -27,7 +27,7 @@ do_install() {
 
 FILES_SOLIBSDEV = ""
 
-RDEPENDS_${PN} = "optee-userspace"
-FILES_${PN} += "${libdir}/*.so ${bindir}/* /lib/optee_armtz/*"
-#FILES_${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
-INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"
+RDEPENDS:${PN} = "optee-userspace"
+FILES:${PN} += "${libdir}/*.so ${bindir}/* /lib/optee_armtz/*"
+#FILES:${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
+INSANE_SKIP:${PN} = "ldflags dev-so dev-elf"

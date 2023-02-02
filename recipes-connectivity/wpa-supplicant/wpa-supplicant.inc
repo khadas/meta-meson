@@ -1,12 +1,12 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
-PACKAGECONFIG_remove = "gnutls"
-PACKAGECONFIG_append = " openssl"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+PACKAGECONFIG:remove = "gnutls"
+PACKAGECONFIG:append = " openssl"
 
 inherit systemd
 
 SRC_URI += " file://wpa_supplicant.service "
 
-do_configure_append () {
+do_configure:append () {
    # Add the "-fPIC" option to CFLAGS to allow the Pace WiFi HAL module to link against wpa-supplicant
    echo "CFLAGS += -fPIC" >> wpa_supplicant/.config
 
@@ -22,7 +22,7 @@ do_configure_append () {
    sed -i -- 's/CONFIG_DRIVER_HOSTAP=y/\#CONFIG_DRIVER_HOSTAPAP=y/' wpa_supplicant/.config
 }
 
-do_install_append () {
+do_install:append () {
    if ${@bb.utils.contains("DISTRO_FEATURES", "systemd", "true", "false", d)}
    then
        install -d ${D}${systemd_unitdir}/system
@@ -41,5 +41,5 @@ do_install_append () {
 }
 
 FILES_SOLIBSDEV = ""
-FILES_${PN} += "${libdir}/libwpa_client.so"
-SYSTEMD_SERVICE_${PN} = "wpa_supplicant.service"
+FILES:${PN} += "${libdir}/libwpa_client.so"
+SYSTEMD_SERVICE:${PN} = "wpa_supplicant.service"

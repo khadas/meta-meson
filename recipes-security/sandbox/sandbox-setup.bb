@@ -16,7 +16,7 @@ do_install() {
     install -m 0755 ${WORKDIR}/sandbox-setup ${D}/${bindir}
 }
 
-FILES_${PN} += "${bindir}/*"
-FILES_${PN} += "${systemd_unitdir}/system/*"
+FILES:${PN} += "${bindir}/*"
+FILES:${PN} += "${systemd_unitdir}/system/*"
 
-SYSTEMD_SERVICE_${PN} += "sandbox-setup.service"
+SYSTEMD_SERVICE:${PN} += "sandbox-setup.service"

@@ -8,7 +8,7 @@ PACKAGES = "\
     packagegroup-amlogic-baserootfs \
     "
 
-RDEPENDS_packagegroup-amlogic-baserootfs = "\
+RDEPENDS:packagegroup-amlogic-baserootfs = "\
     cpufrequtils \
     htop \
     toybox \
@@ -156,42 +156,42 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     format-partitions \
     "
 
-RDEPENDS_packagegroup-amlogic-baserootfs += " \
+RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amazon-prebuilt-pkg', 'amazon-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'youtube-prebuilt-pkg', 'youtube-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'netflix-prebuilt-pkg', 'netflix-prebuilt-pkg', '', d)} \
     "
 
 #For Nagra CAS
-RDEPENDS_packagegroup-amlogic-baserootfs += " \
+RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk nagra-cashal-rel nagra-cert-prebuilt', '', d)} \
     "
 
 #For Irdeto CAS
-RDEPENDS_packagegroup-amlogic-baserootfs += " \
+RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'irdeto-sdk irdeto-cashal-rel', '', d)} \
     "
 
 #VENC related
-RDEPENDS_packagegroup-amlogic-baserootfs += " \
+RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libjpeg', 'gst-plugin-venc-jpeg', '', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libvpcodec', 'gst-plugin-venc-h264', '', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libvphevcodec', 'gst-plugin-venc-h265', '', d), '', d)} \
    "
 
 #For AsperitasDvb
-RDEPENDS_packagegroup-amlogic-baserootfs += " \
+RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'AsperitasDvb', 'webkitbrowser-plugin lighttpd asperitas-dvb', '', d)} \
     "
 
 #Add ubifs tools
-RDEPENDS_packagegroup-amlogic-baserootfs += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)}"
+RDEPENDS:packagegroup-amlogic-baserootfs += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)}"
 
 #Handle no widevine case
-RDEPENDS_packagegroup-amlogic-baserootfs_remove = "${@bb.utils.contains('DISTRO_FEATURES', 'widevine', '', 'gst-aml-drm-plugins', d)}"
+RDEPENDS:packagegroup-amlogic-baserootfs:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'widevine', '', 'gst-aml-drm-plugins', d)}"
 
 # For FBE
-RDEPENDS_packagegroup-amlogic-baserootfs += " \
+RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'FBE', 'keyutils fscryptctl', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'FBE', 'trusted-key-tee', '', d)} \
     "

@@ -1,6 +1,6 @@
 inherit python3native
 
-DEPENDS_append = " meson-native ninja-native"
+DEPENDS:append = " meson-native ninja-native"
 
 # As Meson enforces out-of-tree builds we can just use cleandirs
 B = "${WORKDIR}/build"
@@ -40,7 +40,7 @@ MESON_TARGET_ENDIAN = "${@bb.utils.contains('TUNE_FEATURES', 'bigendian', 'big',
 EXTRA_OEMESON += "${PACKAGECONFIG_CONFARGS}"
 
 MESON_CROSS_FILE = ""
-MESON_CROSS_FILE_class-target = "--cross-file ${WORKDIR}/meson.cross"
+MESON_CROSS_FILE:class-target = "--cross-file ${WORKDIR}/meson.cross"
 
 def meson_array(var, d):
     return "', '".join(d.getVar(var, True).split()).join(("'", "'"))

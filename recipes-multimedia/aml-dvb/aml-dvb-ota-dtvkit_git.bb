@@ -7,7 +7,7 @@ SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 DEPENDS = " aml-dvb android-rpcservice liblog jsoncpp"
-RDEPENDS_${PN} = " aml-dvb android-rpcservice liblog jsoncpp"
+RDEPENDS:${PN} = " aml-dvb android-rpcservice liblog jsoncpp"
 
 do_configure[noexec] = "1"
 inherit autotools pkgconfig
@@ -31,6 +31,6 @@ do_install() {
     oe_runmake -C glue_dtvkit install
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
 

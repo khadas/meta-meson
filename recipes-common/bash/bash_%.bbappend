@@ -1,2 +1,2 @@
-INSANE_SKIP_${PN}-ptest += "build-deps"
+INSANE_SKIP:${PN}-ptest += "build-deps"
 

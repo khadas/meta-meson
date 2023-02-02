@@ -1,4 +1,4 @@
-do_install_append () {
+do_install:append () {
   if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
     cat << EOF >> ${D}${sysconfdir}/profile
 # workaround to clear resize output
@@ -15,7 +15,7 @@ EOF
   fi
 }
 
-do_install_append_sc2 () {
+do_install:append:sc2 () {
     mkdir -p ${D}/vendor
     mkdir -p ${D}/factory
 
@@ -45,11 +45,11 @@ EOF
         sed -i '$a \  /dev/tee          /tee/         ext4        defaults,x-systemd.automount,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
     fi
 }
-FILES_${PN}_append_sc2 = " /vendor/* /factory/* "
-dirs755_append_sc2 = " /vendor /factory "
+FILES:${PN}:append:sc2 = " /vendor/* /factory/* "
+dirs755:append:sc2 = " /vendor /factory "
 
 #/*-----------------------S4 STB--------------------------------------*/
-do_install_append_s4 () {
+do_install:append:s4 () {
     mkdir -p ${D}/vendor
     mkdir -p ${D}/factory
 
@@ -104,11 +104,11 @@ if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'false', 'true', d)}; then
     fi
 fi
 }
-FILES_${PN}_append_s4 = " /vendor/* /factory/* "
-dirs755_append_s4 = " /vendor /factory "
+FILES:${PN}:append:s4 = " /vendor/* /factory/* "
+dirs755:append:s4 = " /vendor /factory "
 
 #/*-----------------------T5D TV----------------------------------*/
-do_install_append_t5d () {
+do_install:append:t5d () {
     mkdir -p ${D}/vendor
     mkdir -p ${D}/factory
 
@@ -138,11 +138,11 @@ EOF
         sed -i '$a \  /dev/tee          /tee/         ext4        defaults,x-systemd.automount,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
     fi
 }
-FILES_${PN}_append_t5d = " /vendor/* /factory/* "
-dirs755_append_t5d = " /vendor /factory "
+FILES:${PN}:append:t5d = " /vendor/* /factory/* "
+dirs755:append:t5d = " /vendor /factory "
 
 #/*-----------------------T5W TV----------------------------------*/
-do_install_append_t5w () {
+do_install:append:t5w () {
     mkdir -p ${D}/vendor
     mkdir -p ${D}/factory
 
@@ -172,11 +172,11 @@ EOF
         sed -i '$a \  /dev/tee          /tee/         ext4        defaults,x-systemd.automount,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
     fi
 }
-FILES_${PN}_append_t5w = " /vendor/* /factory/* "
-dirs755_append_t5w = " /vendor /factory "
+FILES:${PN}:append:t5w = " /vendor/* /factory/* "
+dirs755:append:t5w = " /vendor /factory "
 
 #/*-----------------------T3 TV----------------------------------*/
-do_install_append_t3 () {
+do_install:append:t3 () {
     mkdir -p ${D}/vendor
     mkdir -p ${D}/factory
     cat >> ${D}${sysconfdir}/fstab <<EOF
@@ -184,11 +184,11 @@ do_install_append_t3 () {
  /dev/factory           /factory                   auto       defaults              0  0
 EOF
 }
-FILES_${PN}_append_t3 = " /vendor/* /factory/* "
-dirs755_append_t3 = " /vendor /factory "
+FILES:${PN}:append:t3 = " /vendor/* /factory/* "
+dirs755:append:t3 = " /vendor /factory "
 
 #/*-----------------------T7----------------------------------*/
-do_install_append_t7 () {
+do_install:append:t7 () {
     mkdir -p ${D}/vendor
     mkdir -p ${D}/factory
     cat >> ${D}${sysconfdir}/fstab <<EOF
@@ -196,7 +196,7 @@ do_install_append_t7 () {
  /dev/factory           /factory                   auto       defaults              0  0
 EOF
 }
-FILES_${PN}_append_t7 = " /vendor/* /factory/* "
-dirs755_append_t7 = " /vendor /factory "
+FILES:${PN}:append:t7 = " /vendor/* /factory/* "
+dirs755:append:t7 = " /vendor /factory "
 
-INSANE_SKIP_${PN} = "dev-so"
+INSANE_SKIP:${PN} = "dev-so"

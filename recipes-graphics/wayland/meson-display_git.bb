@@ -13,19 +13,19 @@ inherit autotools pkgconfig
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/meson_display;protocol=${AML_GIT_PROTOCOL};branch=master;"
 
 #For common patches
-#SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/meson_display')}"
+#SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/meson_display')}"
 
 S = "${WORKDIR}/git/meson-display"
 
 #do_package_qa[noexec] = "1"
 
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN} += "/usr/lib/gstreamer-1.0/*"
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN} += "/usr/lib/gstreamer-1.0/*"
+FILES:${PN}-dev = "${includedir}/* "
 
-INSANE_SKIP_${PN}-dev = "dev-so"
-INSANE_SKIP_${PN} = "ldflags dev-so "
+INSANE_SKIP:${PN}-dev = "dev-so"
+INSANE_SKIP:${PN} = "ldflags dev-so "
 
 INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_SYSROOT_STRIP = "1"

@@ -2,7 +2,7 @@ DESCRIPTION = "liblog for android tools"
 PR = "r0"
 LICENSE = "Apache-2.0"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/android-tools-logcat:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/android-tools-logcat:"
 
 LIC_FILES_CHKSUM = "file://${THISDIR}/android-tools-logcat/LICENSE-2.0;md5=3b83ef96387f14655fc854ddc3c6bd57"
 
@@ -15,7 +15,7 @@ PV = "${SRCPV}"
 SRC_URI += "file://LICENSE-2.0"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
 
 S = "${WORKDIR}/git/liblog"
 
@@ -32,7 +32,7 @@ do_install(){
     cp -ra ${S}/include/* ${D}${includedir}
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
 
-INSANE_SKIP_${PN}-dev = "dev-so"
+INSANE_SKIP:${PN}-dev = "dev-so"

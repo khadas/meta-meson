@@ -36,5 +36,5 @@ do_install () {
 	install -m 0755 ${B}/procrank ${D}${bindir}
 }
 
-FILES_${PN} = "${bindir}/*"
-INSANE_SKIP_${PN} = "ldflags"
+FILES:${PN} = "${bindir}/*"
+INSANE_SKIP:${PN} = "ldflags"

@@ -7,10 +7,10 @@ SYSTEMD_AUTO_ENABLE = "enable"
 
 inherit systemd
 
-RDEPENDS_${PN} += "aml-utils-wifi-power "
+RDEPENDS:${PN} += "aml-utils-wifi-power "
 
-SYSTEMD_SERVICE_${PN} = "wifi.service"
-FILES_${PN} += "${systemd_unitdir}/system/wifi.service"
+SYSTEMD_SERVICE:${PN} = "wifi.service"
+FILES:${PN} += "${systemd_unitdir}/system/wifi.service"
 
 do_install() {
     install -d ${D}/${sysconfdir}/wifi

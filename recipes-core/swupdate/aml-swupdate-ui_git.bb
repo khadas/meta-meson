@@ -29,4 +29,4 @@ do_install() {
     install -m 0644 ${WORKDIR}/ota_directfbrc ${D}/etc
 }
 
-FILES_${PN} = " /usr/bin/* /etc/*"
+FILES:${PN} = " /usr/bin/* /etc/*"

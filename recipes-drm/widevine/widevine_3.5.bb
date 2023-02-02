@@ -65,4 +65,4 @@ do_clean[noexec] = "1"
 do_buildclean[noexec] = "1"
 
 FILES_SOLIBSDEV = ""
-FILES_${PN} += "${libdir}/*.so ${includedir}/ ${includedir}/host/ ${bindir}/widevine_ce_cdm_unittest"
+FILES:${PN} += "${libdir}/*.so ${includedir}/ ${includedir}/host/ ${bindir}/widevine_ce_cdm_unittest"

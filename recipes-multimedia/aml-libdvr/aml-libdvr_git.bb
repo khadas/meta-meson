@@ -7,9 +7,9 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 #For common patches
 
-SRC_URI_append = "${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libdvr')}"
+SRC_URI:append = "${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libdvr')}"
 DEPENDS += "aml-audio-service aml-mediahal-sdk liblog aml-dvb"
-RDEPENDS_${PN} += "aml-audio-service aml-mediahal-sdk liblog aml-dvb"
+RDEPENDS:${PN} += "aml-audio-service aml-mediahal-sdk liblog aml-dvb"
 
 #do_compile[noexec] = "1"
 
@@ -25,7 +25,7 @@ PV = "git${SRCPV}"
 S = "${WORKDIR}/git"
 
 ARM_TARGET = "arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 = "aarch64.lp64."
+ARM_TARGET:aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
 
@@ -48,7 +48,7 @@ do_install() {
     install -m 0644 ${S}/include/list.h ${D}${includedir}/
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

@@ -6,10 +6,10 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/mediahal_sdk;protocol=${AML_GIT_PROTOCOL};branch=linux-master"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/mediahal-sdk')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/mediahal-sdk')}"
 
 DEPENDS += "aml-audio-service libdrm-meson wayland"
-RDEPENDS_${PN} += "aml-audio-service libdrm-meson"
+RDEPENDS:${PN} += "aml-audio-service libdrm-meson"
 
 #do_compile[noexec] = "1"
 
@@ -20,7 +20,7 @@ PV = "git${SRCPV}"
 S = "${WORKDIR}/git"
 
 ARM_TARGET = "arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 = "aarch64.lp64."
+ARM_TARGET:aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
@@ -54,7 +54,7 @@ do_install() {
 }
 
 
-FILES_${PN} = "${libdir}/* ${includedir}/* /usr/bin/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf already-stripped"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${includedir}/* /usr/bin/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf already-stripped"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

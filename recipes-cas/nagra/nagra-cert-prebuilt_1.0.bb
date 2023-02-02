@@ -5,8 +5,8 @@ LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM=""
 
 #Only enable it in OpenLinux
-#SRC_URI_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'git://${AML_GIT_ROOT_OP}/nagra-sdk-nocs.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=projects/openlinux/v3.6','', d)}"
-SRC_URI_append = " ${@get_patch_list_with_path('${COREBASE}/aml-patches/vendor/nagra/nagra-sdk')}"
+#SRC_URI:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'git://${AML_GIT_ROOT_OP}/nagra-sdk-nocs.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=projects/openlinux/v3.6','', d)}"
+SRC_URI:append = " ${@get_patch_list_with_path('${COREBASE}/aml-patches/vendor/nagra/nagra-sdk')}"
 
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
@@ -26,6 +26,6 @@ do_install() {
     install -m 0755 ${S}/lib/ko/nocs-ca-cert-create-devnode.sh ${MODULE_DIR}/ca_cert
 }
 
-FILES_${PN} += "amlsec_mkl.ko aml-ca-cert.ko"
-FILES_${PN} += "/lib/modules/${KERNEL_VERSION}/kernel/drivers/amlogic/ca_cert/nocs-ca-cert-create-devnode.sh"
-FILES_${PN} += "/lib/modules/${KERNEL_VERSION}/kernel/drivers/amlogic/sec_mkl/amlsec-mkl-create-devnode.sh"
+FILES:${PN} += "amlsec_mkl.ko aml-ca-cert.ko"
+FILES:${PN} += "/lib/modules/${KERNEL_VERSION}/kernel/drivers/amlogic/ca_cert/nocs-ca-cert-create-devnode.sh"
+FILES:${PN} += "/lib/modules/${KERNEL_VERSION}/kernel/drivers/amlogic/sec_mkl/amlsec-mkl-create-devnode.sh"

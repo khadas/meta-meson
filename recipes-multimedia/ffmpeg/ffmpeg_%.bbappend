@@ -16,12 +16,12 @@ SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
 #SRC_URI = " git://${AML_GIT_ROOT}/platform/external/ffmpeg-aml;protocol=${AML_GIT_PROTOCOL};branch=s-amlogic"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI = " file://0001-do-remove-config-headfile.patch"
 
 TARGET_CFLAGS += "-DAMFFMPEG"
 
-EXTRA_OECONF_append = " \
+EXTRA_OECONF:append = " \
     --disable-gpl \
     --disable-libx264 \
     --disable-ffprobe \
@@ -260,10 +260,10 @@ EXTRA_OECONF_append = " \
 "
 
 DEPENDS += " libxml2 "
-RDEPENDS_${PN} += " libxml2 "
+RDEPENDS:${PN} += " libxml2 "
 
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"
 
-FILES_${PN} += " ${libdir}/*.so ${libdir}/*.so.* "
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} += " ${libdir}/*.so ${libdir}/*.so.* "
+FILES:${PN}-dev = "${includedir}/* "

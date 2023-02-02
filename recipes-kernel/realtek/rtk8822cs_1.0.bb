@@ -19,7 +19,7 @@ do_install() {
     install -m 0666 ${S}/rtl88x2CS/8822cs.ko ${WIFIDIR}
 }
 
-FILES_${PN} = "8822cs.ko"
+FILES:${PN} = "8822cs.ko"
 # Header file provided by a separate package
 DEPENDS += ""
 

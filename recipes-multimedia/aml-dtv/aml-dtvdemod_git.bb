@@ -17,4 +17,4 @@ do_install() {
 	install -m 0666 ${DTV_DEMOD_BIN} ${FIRMWAREDIR}
 }
 
-FILES_${PN} = " /lib/firmware/dtvdemod/dtvdemod_t2.bin "
+FILES:${PN} = " /lib/firmware/dtvdemod/dtvdemod_t2.bin "

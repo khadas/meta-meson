@@ -3,7 +3,7 @@ LICENSE = "CLOSED"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_commonlib;protocol=${AML_GIT_PROTOCOL};branch=master;"
 
-RDEPENDS_${PN} += "aml-ubootenv"
+RDEPENDS:${PN} += "aml-ubootenv"
 
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
@@ -24,5 +24,5 @@ do_install() {
     install -m 0755 ${B}/uenv ${D}${bindir}
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "

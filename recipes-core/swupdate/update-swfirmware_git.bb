@@ -33,6 +33,6 @@ do_install() {
     fi
 }
 
-FILES_${PN} += "${bindir}/*"
-FILES_${PN} += "@bb.utils.contains("DISTRO_FEATURES", "swupdate-download", "/etc/swupdate/*", "", d)"
-FILES_${PN} += "@bb.utils.contains("DISTRO_FEATURES", "swupdate-dvb-ota", "/etc/swupdate/*", "", d)"
+FILES:${PN} += "${bindir}/*"
+FILES:${PN} += "@bb.utils.contains("DISTRO_FEATURES", "swupdate-download", "/etc/swupdate/*", "", d)"
+FILES:${PN} += "@bb.utils.contains("DISTRO_FEATURES", "swupdate-dvb-ota", "/etc/swupdate/*", "", d)"

@@ -9,7 +9,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=5ebcb90236d1ad640558c3d3cd3035df \
                     file://wpa_supplicant/wpa_supplicant.c;beginline=1;endline=12;md5=76306a95306fee9a976b0ac1be70f705"
 
 DEPENDS = "dbus libnl"
-RRECOMMENDS_${PN} = "wpa-supplicant-passphrase wpa-supplicant-cli"
+RRECOMMENDS:${PN} = "wpa-supplicant-passphrase wpa-supplicant-cli"
 
 PACKAGECONFIG ??= "gnutls"
 PACKAGECONFIG[gnutls] = ",,gnutls libgcrypt"
@@ -25,9 +25,9 @@ SRC_URI = "http://w1.fi/releases/wpa_supplicant-${PV}.tar.gz \
            file://0001-Install-wpa_passphrase-when-not-disabled.patch \
            "
 SRC_URI[sha256sum] = "20df7ae5154b3830355f8ab4269123a87affdea59fe74fe9292a91d0d7e17b2f"
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
-PACKAGECONFIG_remove = "gnutls"
-PACKAGECONFIG_append = " openssl"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
+PACKAGECONFIG:remove = "gnutls"
+PACKAGECONFIG:append = " openssl"
 
 inherit systemd
 
@@ -38,7 +38,7 @@ S = "${WORKDIR}/wpa_supplicant-${PV}"
 
 EXTRA_OEMAKE = "'LIBDIR=${libdir}' 'INCDIR=${includedir}' 'BINDIR=${sbindir}'"
 
-PACKAGES_prepend = "wpa-supplicant-passphrase wpa-supplicant-cli "
+PACKAGES:prepend = "wpa-supplicant-passphrase wpa-supplicant-cli "
 FILES:${PN}-passphrase = "${sbindir}/wpa_passphrase"
 FILES:${PN}-cli = "${sbindir}/wpa_cli"
 FILES:${PN}-lib = "${libdir}/libwpa_client*${SOLIBSDEV}"

@@ -7,9 +7,9 @@ SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/dvb')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/dvb')}"
 DEPENDS = " aml-zvbi sqlite3 alsa-lib"
-RDEPENDS_${PN} += "aml-zvbi sqlite3 alsa-lib"
+RDEPENDS:${PN} += "aml-zvbi sqlite3 alsa-lib"
 
 do_configure[noexec] = "1"
 inherit autotools pkgconfig
@@ -58,7 +58,7 @@ do_install() {
     install -D -m 0644 ${S}/am_mw/libam_mw.a ${D}${libdir}
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

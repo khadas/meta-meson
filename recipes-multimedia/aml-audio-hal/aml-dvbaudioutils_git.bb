@@ -8,11 +8,11 @@ SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_audio_hal')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_audio_hal')}"
 EXTRA_OEMAKE = "TARGET_DIR=${D} STAGING_DIR=${D}"
 
 DEPENDS += "liblog aml-amaudioutils alsa-lib"
-RDEPENDS_${PN} += "liblog"
+RDEPENDS:${PN} += "liblog"
 do_compile () {
     cd ${S}/dtv_audio_utils
     oe_runmake -j1 ${EXTRA_OEMAKE} all
@@ -33,7 +33,7 @@ do_install () {
 S="${WORKDIR}/git"
 TARGET_CFLAGS += "-fPIC"
 
-FILES_${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

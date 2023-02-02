@@ -22,7 +22,7 @@ do_install() {
     install -m 0644 ${S}/project_w1/vmac/aml_wifi_rf*.txt ${D}/etc/wifi/w1/
 }
 
-FILES_${PN} = "vlsicomm.ko aml_sdio.ko /etc/wifi/w1/*"
+FILES:${PN} = "vlsicomm.ko aml_sdio.ko /etc/wifi/w1/*"
 # Header file provided by a separate package
 DEPENDS += ""
 

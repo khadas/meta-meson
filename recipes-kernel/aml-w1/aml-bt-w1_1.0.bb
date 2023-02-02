@@ -5,8 +5,8 @@ LICENSE = "GPLv2"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/hardware/amlogic/bluetooth.git;protocol=${AML_GIT_PROTOCOL};branch=r-amlogic"
-SRC_URI_append = " file://a2dp_mode_cfg.txt"
-SRC_URI_append = " file://aml_bt_rf.txt"
+SRC_URI:append = " file://a2dp_mode_cfg.txt"
+SRC_URI:append = " file://aml_bt_rf.txt"
 
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
@@ -24,7 +24,7 @@ do_install() {
     install -m 0644 ${WORKDIR}/a2dp_mode_cfg.txt ${D}/etc/bluetooth/w1/
 }
 
-FILES_${PN} = "sdio_bt.ko /etc/bluetooth/w1/*"
+FILES:${PN} = "sdio_bt.ko /etc/bluetooth/w1/*"
 # Header file provided by a separate package
 DEPENDS += ""
 

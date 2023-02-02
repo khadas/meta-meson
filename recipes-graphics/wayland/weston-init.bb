@@ -25,9 +25,9 @@ inherit allarch update-rc.d features_check systemd
 # rdepends on weston which depends on virtual/egl
 REQUIRED_DISTRO_FEATURES = "opengl"
 
-RDEPENDS_${PN} = "weston kbd"
+RDEPENDS:${PN} = "weston kbd"
 
 INITSCRIPT_NAME = "weston"
 INITSCRIPT_PARAMS = "start 9 5 2 . stop 20 0 1 6 ."
 
-SYSTEMD_SERVICE_${PN} = "weston.service"
+SYSTEMD_SERVICE:${PN} = "weston.service"

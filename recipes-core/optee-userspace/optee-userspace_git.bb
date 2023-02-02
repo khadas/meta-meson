@@ -1,9 +1,9 @@
 DESCRIPTION = "optee "
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 include ../../recipes-shared/optee.inc
 
-#SRC_URI_append = " ${@get_patch_list('${THISDIR}/${PN}')}"
+#SRC_URI:append = " ${@get_patch_list('${THISDIR}/${PN}')}"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -15,7 +15,7 @@ PACKAGES =+ "\
 #PR = "${INC_PR}.1"
 
 ARM_TARGET="ca_export_arm"
-ARM_TARGET_aarch64 ="ca_export_arm64"
+ARM_TARGET:aarch64 ="ca_export_arm64"
 
 do_install() {
     mkdir -p ${D}${bindir}
@@ -39,12 +39,12 @@ do_install() {
     esac
 }
 
-FILES_${PN} += " ${libdir}/* "
+FILES:${PN} += " ${libdir}/* "
 
-FILES_${PN} += "${bindir}/tee-supplicant"
+FILES:${PN} += "${bindir}/tee-supplicant"
 
-FILES_${PN}-dev = ""
-FILES_${PN}-securebl32 += " /usr/share/tdk/secureos/*"
+FILES:${PN}-dev = ""
+FILES:${PN}-securebl32 += " /usr/share/tdk/secureos/*"
 
-INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"
+INSANE_SKIP:${PN} = "ldflags dev-so dev-elf"
 

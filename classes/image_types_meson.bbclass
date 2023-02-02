@@ -34,6 +34,6 @@ wic_command_s400 () {
 	dd if=${DEPLOY_DIR_IMAGE}/u-boot.bin of=$out${IMAGE_NAME_SUFFIX}.wic conv=notrunc bs=512 seek=1
 }
 
-IMAGE_CMD_wic_append () {
+IMAGE_CMD_wic:append () {
 	${WIC_COMMAND}
 }

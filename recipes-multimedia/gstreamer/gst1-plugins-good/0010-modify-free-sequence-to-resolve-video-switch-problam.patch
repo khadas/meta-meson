@@ -1,7 +1,7 @@
 From 38c977ac7cde7dfc9d77fe6cf534b5b8b8676cb6 Mon Sep 17 00:00:00 2001
 From: "yichen.li" <yichen.li@amlogic.com>
 Date: Wed, 22 Sep 2021 17:17:13 +0800
-Subject: [PATCH] modfiy free sequence to resolve video switch problam
+Subject: [PATCH] modify free sequence to resolve video switch problam
 
 ---
  sys/v4l2/gstv4l2bufferpool.c | 13 +++++++------

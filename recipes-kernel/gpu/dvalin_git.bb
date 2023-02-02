@@ -10,7 +10,7 @@ VER = "r37p0"
 PV = "${VER}git${SRCPV}"
 
 PROVIDES += "virtual/gpu"
-RPROVIDES_${PN} += "gpu"
+RPROVIDES:${PN} += "gpu"
 GPU_ARCH = "bifrost"
 GPU_DRV_SRC = "${S}/${GPU_ARCH}/${VER}/kernel/drivers/gpu/arm/midgard"
 GPU_LOW_MEM ?= "0"
@@ -24,10 +24,10 @@ do_install() {
     install -m 0666 ${GPU_DRV_SRC}/mali_kbase.ko ${GPUDIR}/mali.ko
 }
 
-FILES_${PN} = "mali.ko"
+FILES:${PN} = "mali.ko"
 # Header file provided by a separate package
 #DEPENDS += "dvalin-dmaexport"
-#RDEPENDS_${PN} += "dvalin-dmaexport"
+#RDEPENDS:${PN} += "dvalin-dmaexport"
 
 S = "${WORKDIR}/git"
 EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M=${GPU_DRV_SRC} \

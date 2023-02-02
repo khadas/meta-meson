@@ -4,7 +4,7 @@ LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 DEPENDS = "bzip2 libxml2"
-RDEPENDS_${PN} = "libbz2 optee-userspace"
+RDEPENDS:${PN} = "libbz2 optee-userspace"
 include aml-multimedia.inc
 
 SRC_URI += "file://videoFirmwarePreload.service"
@@ -13,7 +13,7 @@ SRC_URI += "file://videoFirmwarePreload.service"
 S = "${WORKDIR}/git/secfirmload/secloadbin"
 TA_ARCH = "noarch"
 TAR_ARCH = "arm.aapcs-linux.hard"
-TAR_ARCH_aarch64 = "aarch64.lp64."
+TAR_ARCH:aarch64 = "aarch64.lp64."
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -32,10 +32,10 @@ do_install () {
     install -m 0644 ${WORKDIR}/videoFirmwarePreload.service ${D}${systemd_unitdir}/system/
 }
 
-FILES_${PN} = "/lib/optee_armtz/* ${libdir}/* /usr/bin/*"
-FILES_${PN}-dev = ""
-INSANE_SKIP_${PN} = "ldflags dev-elf already-stripped"
+FILES:${PN} = "/lib/optee_armtz/* ${libdir}/* /usr/bin/*"
+FILES:${PN}-dev = ""
+INSANE_SKIP:${PN} = "ldflags dev-elf already-stripped"
 
-FILES_${PN} += "${systemd_unitdir}/system/videoFirmwarePreload.service"
-SYSTEMD_SERVICE_${PN} = "videoFirmwarePreload.service"
+FILES:${PN} += "${systemd_unitdir}/system/videoFirmwarePreload.service"
+SYSTEMD_SERVICE:${PN} = "videoFirmwarePreload.service"
 inherit systemd

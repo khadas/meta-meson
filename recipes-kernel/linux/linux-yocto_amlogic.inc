@@ -1,12 +1,12 @@
 DEPENDS += "xz-native bc-native aml-hosttools-native rsync-native"
-DEPENDS_append_aarch64 = " libgcc"
-KERNEL_CC_append_aarch64 = " ${TOOLCHAIN_OPTIONS}"
-KERNEL_LD_append_aarch64 = " ${TOOLCHAIN_OPTIONS}"
+DEPENDS:append:aarch64 = " libgcc"
+KERNEL_CC:append:aarch64 = " ${TOOLCHAIN_OPTIONS}"
+KERNEL_LD:append:aarch64 = " ${TOOLCHAIN_OPTIONS}"
 #KERNEL_IMAGE_SYMLINK_NAME = "Image-${MACHINE}"
-RDEPENDS_${KERNEL_PACKAGE_NAME}-base = ""
+RDEPENDS:${KERNEL_PACKAGE_NAME}-base = ""
 
 ############from linux-dtb.inc
-do_compile_append() {
+do_compile:append() {
         for DTB in ${KERNEL_DEVICETREE}; do
                  if echo ${DTB} | grep -q '/dts/'; then
                                 bbwarn "${DTB} contains the full path to the the dts file, but only the dtb name should be used."

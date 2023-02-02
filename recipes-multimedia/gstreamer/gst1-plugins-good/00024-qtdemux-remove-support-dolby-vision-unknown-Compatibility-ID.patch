@@ -1,7 +1,7 @@
 From 716ec8348a29f2a7a87092ea4b4fc1a126a3d4f6 Mon Sep 17 00:00:00 2001
 From: "fei.deng" <fei.deng@amlogic.com>
 Date: Tue, 26 Apr 2022 20:38:04 +0800
-Subject: [PATCH] qtdemux remove support dolby vision unknow Compatibility ID
+Subject: [PATCH] qtdemux remove support dolby vision unknown Compatibility ID
 
 Change-Id: I94b056d0336d0a8ff26764773595ff9f40aae3d9
 ---

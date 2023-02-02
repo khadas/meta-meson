@@ -10,11 +10,11 @@ do_populate_lic[noexec] = "1"
 # explicitly depends upon them.
 EXCLUDE_FROM_WORLD = "1"
 PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl"
-RPROVIDES_${PN} += "libGLESv2.so libEGL.so libGLESv1_CM.so libMali.so"
+RPROVIDES:${PN} += "libGLESv2.so libEGL.so libGLESv1_CM.so libMali.so"
 DEPENDS += "patchelf-native"
 
 # Add wayland
-RPROVIDES_${PN} += "libwayland-egl.so"
+RPROVIDES:${PN} += "libwayland-egl.so"
 
 SRCREV = "4ee50d25ba1dfc340f23e312fb07f42f64eb05e3"
 SRC_URI = "git://git@openlinux.amlogic.com/yocto/platform/hardware/arm/mali-linux.git;protocol=ssh;branch=r6p1-RDK"
@@ -63,6 +63,6 @@ do_install() {
     ln -s libwayland-egl.so.0 ${D}${libdir}/libwayland-egl.so
 }
 
-FILES_${PN} += "${libdir}/*.so"
-FILES_${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
-INSANE_SKIP_${PN} = "ldflags dev-so"
+FILES:${PN} += "${libdir}/*.so"
+FILES:${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
+INSANE_SKIP:${PN} = "ldflags dev-so"

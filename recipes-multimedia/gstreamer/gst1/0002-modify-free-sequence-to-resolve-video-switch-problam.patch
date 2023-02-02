@@ -1,7 +1,7 @@
 From 1096801ecd9c1c05407a9129b02884f357c035c0 Mon Sep 17 00:00:00 2001
 From: "yichen.li" <yichen.li@amlogic.com>
 Date: Wed, 22 Sep 2021 17:28:39 +0800
-Subject: [PATCH] modfiy-free-sequence-to-resolve-video-switch-problam
+Subject: [PATCH] modify-free-sequence-to-resolve-video-switch-problam
 
 ---
  gst/gstbufferpool.c | 2 +-

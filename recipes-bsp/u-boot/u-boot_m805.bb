@@ -12,7 +12,7 @@ do_configure[noexec] = "1"
 
 PR = "r1"
 PV = "m805+git${SRCPV}"
-PATH_append = ":/opt/gnutools/arc-4.8-amlogic-20130904-r2/bin/:/opt/CodeSourcery/Sourcery_G++_Lite/bin/"
+PATH:append = ":/opt/gnutools/arc-4.8-amlogic-20130904-r2/bin/:/opt/CodeSourcery/Sourcery_G++_Lite/bin/"
 
 do_compile () {
     cd ${S}

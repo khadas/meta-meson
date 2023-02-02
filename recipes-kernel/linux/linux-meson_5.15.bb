@@ -4,19 +4,19 @@ require linux-meson.inc
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
 
 #We still need patch even in external src mode
-SRCTREECOVEREDTASKS_remove = "do_patch"
-FILESEXTRAPATHS_prepend := "${THISDIR}/5.15:"
+SRCTREECOVEREDTASKS:remove = "do_patch"
+FILESEXTRAPATHS:prepend := "${THISDIR}/5.15:"
 
 # aq2432 zapper needs its own defconfig
-FILESEXTRAPATHS_prepend_aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.15/aq2432_zapper:', '${THISDIR}/5.15/aq2432:', d)}"
+FILESEXTRAPATHS:prepend:aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.15/aq2432_zapper:', '${THISDIR}/5.15/aq2432:', d)}"
 
 KBRANCH = "bringup/amlogic-5.15/s4da1_2_2_20220407"
 #SRC_URI = "git://${AML_GIT_ROOT}/kernel/common.git;protocol=${AML_GIT_PROTOCOL};branch=${KBRANCH};"
-SRC_URI_append = " file://modules_install.sh"
-SRC_URI_append = " file://extra_modules_install.sh"
-SRC_URI_append_sc2 = " file://sc2.cfg"
-SRC_URI_append_s4 = " file://s4.cfg"
-SRC_URI_append_aq2432 = " file://defconfig"
+SRC_URI:append = " file://modules_install.sh"
+SRC_URI:append = " file://extra_modules_install.sh"
+SRC_URI:append:sc2 = " file://sc2.cfg"
+SRC_URI:append:s4 = " file://s4.cfg"
+SRC_URI:append:aq2432 = " file://defconfig"
 
 SRC_URI += "file://common.cfg"
 
@@ -28,7 +28,7 @@ SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.c
 
 #For common patches
 KDIR = "aml-5.15"
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
 LINUX_VERSION ?= "5.15.78"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
@@ -57,19 +57,19 @@ GKI_DEFCONFIG_PATH_kernel32 = "${S}/common_drivers/arch/arm/configs"
 GKI_AML_CONFIG_PATH = "${S}/common_drivers/arch/${ARCH}/configs"
 
 SOC = ""
-SOC_sc2 = "sc2"
-SOC_s4 = "s4"
-SOC_t3 = "t3"
-SOC_t7 = "t7"
+SOC:sc2 = "sc2"
+SOC:s4 = "s4"
+SOC:t3 = "t3"
+SOC:t7 = "t7"
 
 
-do_install_append () {
+do_install:append () {
     oe_runmake -C ${STAGING_KERNEL_DIR}/${1} CC="${KERNEL_CC}" LD="${KERNEL_LD}" O=${B} M=${1} KERNEL_SRC=${S} INSTALL_MOD_PATH=${D} INSTALL_MOD_STRIP=1 modules_install
     NAND_FLAG="${@bb.utils.contains('DISTRO_FEATURES', 'nand', "true", "false", d)}";
     bash ${WORKDIR}/modules_install.sh ${D} ${STAGING_KERNEL_DIR}/common_drivers/ ${KERNEL_VERSION} ${NAND_FLAG} ${SOC}
 }
 
-do_compile_prepend () {
+do_compile:prepend () {
     export MODULES_STAGING_DIR=${D}
     export COMMON_DRIVERS_DIR=./common_drivers
     echo "arch: ${ARCH}"
@@ -79,15 +79,15 @@ do_compile_prepend () {
     fi
 }
 
-do_configure_prepend () {
+do_configure:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
 }
 
-do_kernel_configme_prepend () {
+do_kernel_configme:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
 }
 
-do_kernel_metadata_prepend () {
+do_kernel_metadata:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
 
     install -m 755 ${WORKDIR}/extra_modules_install.sh ${STAGING_KERNEL_DIR}/
@@ -95,21 +95,21 @@ do_kernel_metadata_prepend () {
     KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLGOIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI10_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKIDEBUG_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
 }
 
-do_compile_kernelmodules_prepend () {
+do_compile_kernelmodules:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
     export MODULES_STAGING_DIR=${D}
 }
 
-do_compile_kernelmodules_append () {
+do_compile_kernelmodules:append () {
     export COMMON_DRIVERS_DIR=./common_drivers
     export MODULES_STAGING_DIR=${D}
 }
 
-do_install_prepend () {
+do_install:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
 }
 
-do_deploy_append() {
+do_deploy:append() {
          if [ ${MODULE_TARBALL_DEPLOY} = "1" ] && (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
                  mkdir -p ${D}${root_prefix}/modules
                  tar -cvzf $deployDir/kernel-modules-${MODULE_TARBALL_NAME}.tgz -C ${D}${root_prefix} modules
@@ -155,4 +155,4 @@ KERNEL_MODULE_AUTOLOAD += "amlogic-snd-codec-tas5707"
 KERNEL_MODULE_AUTOLOAD += "cfg80211"
 KERNEL_MODULE_AUTOLOAD += "mac80211"
 
-FILES_${PN} += "modules/*"
+FILES:${PN} += "modules/*"

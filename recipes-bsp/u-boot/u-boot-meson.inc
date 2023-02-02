@@ -16,10 +16,10 @@ SOURCE_DATE_EPOCH = ""
 # Some versions of u-boot use .bin and others use .img.  By default use .bin
 # but enable individual recipes to change this value.
 UBOOT_SUFFIX ?= "bin"
-UBOOT_SUFFIX_sc2 ?= "bin.signed"
-UBOOT_SUFFIX_t7 ?= "bin.signed"
-UBOOT_SUFFIX_s4 ?= "bin.signed"
-UBOOT_SUFFIX_t3 ?= "bin.signed"
+UBOOT_SUFFIX:sc2 ?= "bin.signed"
+UBOOT_SUFFIX:t7 ?= "bin.signed"
+UBOOT_SUFFIX:s4 ?= "bin.signed"
+UBOOT_SUFFIX:t3 ?= "bin.signed"
 UBOOT_IMAGE ?= "u-boot-${MACHINE}-${PV}-${PR}.${UBOOT_SUFFIX}"
 UBOOT_BINARY ?= "u-boot.${UBOOT_SUFFIX}"
 UBOOT_SYMLINK ?= "u-boot-${MACHINE}.${UBOOT_SUFFIX}"
@@ -71,7 +71,7 @@ do_install () {
     fi
 }
 
-FILES_${PN} = "/boot ${sysconfdir}"
+FILES:${PN} = "/boot ${sysconfdir}"
 FILESPATH =. "${FILE_DIRNAME}/u-boot-git/${MACHINE}:"
 
 do_deploy () {

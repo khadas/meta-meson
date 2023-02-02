@@ -1,12 +1,12 @@
 SUMMARY = "amlogic wfd hdcp"
 LICENSE = "CLOSED"
 DEPENDS = "optee-userspace bzip2 libxml2 aml-secmem aml-mediahal-sdk"
-RDEPENDS_${PN} = "libbz2"
+RDEPENDS:${PN} = "libbz2"
 
-FILESEXTRAPATHS_preppend := "${THISDIR}/files/:"
+FILESEXTRAPATHS:preppend := "${THISDIR}/files/:"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/libwfd_hdcp-bin')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/libwfd_hdcp-bin')}"
 
 #SRCREV="bb62070629f62c580b32cdfe2cfaa3928611d6f3"
 #use head version, ?= conditonal operator can be control revision in external rdk-next.conf like configuration file
@@ -17,7 +17,7 @@ S = "${WORKDIR}/git"
 PATCHTOOL="git"
 
 ARM_TARGET="arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 ="aarch64.lp64."
+ARM_TARGET:aarch64 ="aarch64.lp64."
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -37,9 +37,9 @@ do_install () {
     cp -rf ${S}/prebuilt/noarch/include/* ${D}/usr/include/wfd_hdcp/
 }
 
-FILES_${PN} += "/lib/optee_armtz/*"
-FILES_${PN} += "${libdir}/*"
+FILES:${PN} += "/lib/optee_armtz/*"
+FILES:${PN} += "${libdir}/*"
 
 FILES_SOLIBSDEV = ""
 
-INSANE_SKIP_${PN} = "ldflags dev-so"
+INSANE_SKIP:${PN} = "ldflags dev-so"

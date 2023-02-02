@@ -7,10 +7,10 @@ inherit image
 SDKEXTCLASS ?= "${@['populate_sdk', 'populate_sdk_ext']['linux' in d.getVar("SDK_OS", True)]}"
 inherit ${SDKEXTCLASS}
 
-DEPENDS_append = " android-tools-native"
+DEPENDS:append = " android-tools-native"
 
 IMAGE_INSTALL = "udev busybox"
-IMAGE_INSTALL_append = "\
+IMAGE_INSTALL:append = "\
                     initramfs-recovery \
                     fuse-exfat \
                     exfat-utils \
@@ -23,16 +23,16 @@ IMAGE_INSTALL_append = "\
                     ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', 'e2fsprogs',d)} \
                    "
 
-IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
+IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
             "aml-bootloader-message \
             libconfig \
             aml-swupdate-ui \
             swupdate", "", d)}"
 
-IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate-download", \
+IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate-download", \
             " wpa-supplicant wifi-amlogic ", "", d)}"
 
-IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate-dvb-ota", \
+IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate-dvb-ota", \
             " tuner-prebuilt \
             modules-load \
             aucpu-fw \
@@ -58,7 +58,7 @@ python __anonymous () {
     d.delVarFlag('do_unpack', 'noexec')
 }
 
-do_rootfs_append () {
+do_rootfs:append () {
     import shutil
     rootfsdir = d.getVar('IMAGE_ROOTFS', True) or ""
     bootdir = "%s/boot" % rootfsdir
@@ -80,7 +80,7 @@ addtask bundle_initramfs_dtb before do_image_complete after do_image_cpio do_unp
 do_bundle_initramfs_dtb[nostamp] = "1"
 
 do_rootfs[depends] += "android-tools-native:do_populate_sysroot"
-IMAGE_ROOTFS_EXTRA_SPACE_append = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", " + 4096", "" ,d)}"
+IMAGE_ROOTFS_EXTRA_SPACE:append = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", " + 4096", "" ,d)}"
 
 ROOTFS_POSTPROCESS_COMMAND += "delete_unused_items_from_fstab; "
 

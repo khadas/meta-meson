@@ -26,4 +26,4 @@ do_install() {
     install -m 0755 ${WORKDIR}/set_display_mode.sh ${D}${sysconfdir}/display
 }
 
-RDEPENDS_${PN} += "gawk"
+RDEPENDS:${PN} += "gawk"

@@ -2,7 +2,7 @@ DESCRIPTION = "libatrace"
 PR = "r0"
 LICENSE = "Apache-2.0"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/android-tools-libatrace:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/android-tools-libatrace:"
 
 LIC_FILES_CHKSUM = "file://${THISDIR}/android-tools-libatrace/LICENSE-2.0;md5=3b83ef96387f14655fc854ddc3c6bd57"
 
@@ -17,7 +17,7 @@ SRC_URI += "file://LICENSE-2.0"
 PROVIDES = "libatrace"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
 
 S = "${WORKDIR}/git/libatrace"
 
@@ -37,7 +37,7 @@ do_install(){
     cp -ra ${S}/*.h ${D}${includedir}
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
 
-INSANE_SKIP_${PN}-dev = "dev-so"
+INSANE_SKIP:${PN}-dev = "dev-so"

@@ -23,4 +23,4 @@ do_install() {
     install -m 0755 ${S}/cpuburn ${D}${bindir}/cpuburn
 }
 
-FILES_${PN} = "${bindir}/cpuburn"
+FILES:${PN} = "${bindir}/cpuburn"

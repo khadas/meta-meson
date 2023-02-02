@@ -23,5 +23,5 @@ do_install () {
     install -m 0644 -D ${S}/libion.so ${D}${libdir}
 }
 
-FILES_${PN} = " ${libdir}/*"
-FILES_${PN}-dev = "${includedir}/*"
+FILES:${PN} = " ${libdir}/*"
+FILES:${PN}-dev = "${includedir}/*"

@@ -9,19 +9,19 @@ do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
 SOC_FAMILY = "TBD"
-SOC_FAMILY_sc2 = "sc2"
-SOC_FAMILY_t7 = "t7"
-SOC_FAMILY_s4 = "s4"
-SOC_FAMILY_t5d = "t5d"
-SOC_FAMILY_t5w = "t5w"
-SOC_FAMILY_t3 = "t3"
+SOC_FAMILY:sc2 = "sc2"
+SOC_FAMILY:t7 = "t7"
+SOC_FAMILY:s4 = "s4"
+SOC_FAMILY:t5d = "t5d"
+SOC_FAMILY:t5w = "t5w"
+SOC_FAMILY:t3 = "t3"
 
 SOC_BOARD = "default"
-SOC_BOARD_ah232 = "ah232"
-SOC_BOARD_ah221 = "ah221"
-SOC_BOARD_aq222 = "aq222"
-SOC_BOARD_ap232 = "ap232"
-SOC_BOARD_aq2432 = "aq2432"
+SOC_BOARD:ah232 = "ah232"
+SOC_BOARD:ah221 = "ah221"
+SOC_BOARD:aq222 = "aq222"
+SOC_BOARD:ap232 = "ap232"
+SOC_BOARD:aq2432 = "aq2432"
 
 PR = "r3"
 
@@ -47,4 +47,4 @@ do_install () {
         install -m 0644 -D ${S}/${SOC_FAMILY}/logo_img_files/${SOC_BOARD}/bootup.bmp ${D}${bindir}/aml-img-packer/${SOC_FAMILY}/logo_img_files/bootup.bmp
     fi
 }
-FILES_${PN} = "${bindir}/aml-img-packer/*"
+FILES:${PN} = "${bindir}/aml-img-packer/*"

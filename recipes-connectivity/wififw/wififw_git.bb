@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/amlogic/wifi.git;protocol=${AML_GIT_PROTOCOL};branch=n-amlogic"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-4.9/amlogic/wifi')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-4.9/amlogic/wifi')}"
 
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
@@ -129,70 +129,70 @@ do_install() {
 	install -D -m 0644 ${S}/qcom/config/qca6174/bt/* ${D}${base_libdir}/firmware/qca_bt/
 }
 
-FILES_${PN}-ap6181 = "\
+FILES:${PN}-ap6181 = "\
                 ${sysconfdir}/wifi/6181/*"\
 
-FILES_${PN}-ap6210 = "\
+FILES:${PN}-ap6210 = "\
                 ${sysconfdir}/wifi/6210/* \
                 ${sysconfdir}/bluetooth/bcm20710a1.hcd"
 
-FILES_${PN}-ap6476 = "\
+FILES:${PN}-ap6476 = "\
                 ${sysconfdir}/wifi/6476/* \
                 ${sysconfdir}/bluetooth/bcm2076b1.hcd"
 
-FILES_${PN}-ap6493 = "\
+FILES:${PN}-ap6493 = "\
                 ${sysconfdir}/wifi/6493/*"
 
-FILES_${PN}-ap6256 = "\
+FILES:${PN}-ap6256 = "\
                 ${sysconfdir}/wifi/6256/*"
 
-FILES_${PN}-ap6398 = "\
+FILES:${PN}-ap6398 = "\
                 ${sysconfdir}/wifi/6398/* \
                 ${sysconfdir}/bluetooth/BCM4359C0SR2.hcd"
 
-FILES_${PN}-ap6330 = "\
+FILES:${PN}-ap6330 = "\
                 ${sysconfdir}/wifi/6330/* \
                 ${sysconfdir}/bluetooth/bcm40183b2.hcd"
 
-FILES_${PN}-bcm40181 = "\
+FILES:${PN}-bcm40181 = "\
                 ${sysconfdir}/wifi/40181/*"
 
-FILES_${PN}-bcm40183 = "\
+FILES:${PN}-bcm40183 = "\
                 ${sysconfdir}/wifi/40183/*"
 
-FILES_${PN}-ap62x2 = "\
+FILES:${PN}-ap62x2 = "\
                 ${sysconfdir}/wifi/62x2/* \
                 ${sysconfdir}/bluetooth/bcm43241b4.hcd"
 
-FILES_${PN}-ap6335 = "\
+FILES:${PN}-ap6335 = "\
                 ${sysconfdir}/wifi/6335/* \
                 ${sysconfdir}/bluetooth/bcm4335c0.hcd"
 
-FILES_${PN}-ap6234 = "\
+FILES:${PN}-ap6234 = "\
                 ${sysconfdir}/wifi/6234/* \
                 ${sysconfdir}/bluetooth/bcm43341b0.hcd"
 
-FILES_${PN}-ap6441 = "\
+FILES:${PN}-ap6441 = "\
                 ${sysconfdir}/wifi/6441/* \
                 ${sysconfdir}/bluetooth/bcm43341b0.hcd"
 
-FILES_${PN}-ap6212 = "\
+FILES:${PN}-ap6212 = "\
                 ${sysconfdir}/wifi/6212/*\
                 ${sysconfdir}/bluetooth/bcm43438a0.hcd"
 
-FILES_${PN}-bcm4354 = "\
+FILES:${PN}-bcm4354 = "\
                ${sysconfdir}/wifi/4354/* \
                ${sysconfdir}/bluetooth/bcm4354a1.hcd"
 
-FILES_${PN}-bcm4356 = " \
+FILES:${PN}-bcm4356 = " \
                 ${sysconfdir}/wifi/4356/* \
                 ${sysconfdir}/bluetooth/bcm4356a2.hcd"
 
-FILES_${PN}-bcm43458 = " \
+FILES:${PN}-bcm43458 = " \
                 ${sysconfdir}/bluetooth/BCM4345C0.hcd \
                 ${sysconfdir}/wifi/43458/*"
 
-FILES_${PN}-qca6174= " \
+FILES:${PN}-qca6174= " \
                 ${sysconfdir}/bluetooth/qca6174/* \
                 ${base_libdir}/firmware/qca_bt/* \
                 ${sysconfdir}/wifi/qca6174/*"

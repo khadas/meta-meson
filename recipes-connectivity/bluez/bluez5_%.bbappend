@@ -1,5 +1,5 @@
 inherit systemd
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += "file://0001-bluez5_utils-add-qca9377-bt-support-1-3.patch"
 SRC_URI += "file://0001-BT-add-qca6174-bt-support-2-3.patch"
@@ -21,7 +21,7 @@ SRC_URI += "file://0001-BT-fix-pair-inturrpt-error.patch"
 
 TTY = "ttyS1"
 
-do_install_append(){
+do_install:append(){
     install -d ${D}${bindir}
     install -d ${D}/${systemd_unitdir}/system
     install -d ${D}/${sysconfdir}/bluetooth
@@ -44,10 +44,10 @@ do_install_append(){
     sed -i '/^ExecStart=.*/d' ${D}/${systemd_unitdir}/system/bluetooth.service
 }
 
-FILES_${PN} += "${bindir}/*"
-FILES_${PN} += "${systemd_unitdir}/system/*"
-FILES_${PN}-obex += "${bindir}/obexctl"
+FILES:${PN} += "${bindir}/*"
+FILES:${PN} += "${systemd_unitdir}/system/*"
+FILES:${PN}-obex += "${bindir}/obexctl"
 
-SYSTEMD_SERVICE_${PN} += "bluez.service"
+SYSTEMD_SERVICE:${PN} += "bluez.service"
 
-RDEPENDS_${PN}-obex_append_libc-glibc = " glibc-gconv-utf-16"
+RDEPENDS:${PN}-obex:append:libc-glibc = " glibc-gconv-utf-16"

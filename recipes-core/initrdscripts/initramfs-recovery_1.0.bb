@@ -2,7 +2,7 @@ SUMMARY = "recovery init script"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 DEPENDS = "virtual/kernel"
-RDEPENDS_${PN} = "udev udev-extraconf"
+RDEPENDS:${PN} = "udev udev-extraconf"
 SRC_URI = "file://init-recovery"
 
 PR = "r0"
@@ -23,7 +23,7 @@ do_install() {
     fi
 }
 
-FILES_${PN} += " /init /dev "
+FILES:${PN} += " /init /dev "
 
 # Due to kernel dependency
 PACKAGE_ARCH = "${MACHINE_ARCH}"

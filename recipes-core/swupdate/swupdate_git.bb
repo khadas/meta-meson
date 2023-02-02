@@ -7,8 +7,8 @@ DEPENDS += "aml-ubootenv aml-bootloader-message libconfig"
 # https://sbabic.github.io/swupdate/licensing.html
 # rst form: file://doc/source/licensing.rst
 LICENSE = "GPLv2+ & LGPLv2+ & MIT"
-LICENSE_${PN}-lua = "LGPLv2+"
-LICENSE_${PN}-www = "MIT"
+LICENSE:${PN}-lua = "LGPLv2+"
+LICENSE:${PN}-www = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSES/GPL-2.0-only.txt;md5=4ee23c52855c222cba72583d301d2338 \
                     file://LICENSES/LGPL-2.1-or-later.txt;md5=4fbd65380cdd255951079008b364516c \
                     file://LICENSES/MIT.txt;md5=838c366f69b72c5df05c96dff79b35f2 \
@@ -50,28 +50,28 @@ PACKAGES += " \
 
 PACKAGES += "${@['', '${PN}-www']['y' in d.getVar('SWUPDATE_WITH_WEBUI', True)]}"
 
-INSANE_SKIP_${PN}-lua = "dev-so"
+INSANE_SKIP:${PN}-lua = "dev-so"
 wwwdir ?= "/var/www/swupdate"
 
 # tools is now an empty meta package for backward compatibility
 ALLOW_EMPTY_${PN}-tools = "1"
 
-FILES_${PN}-client = "${bindir}/swupdate-client"
-FILES_${PN}-lua += "${libdir}/lua/"
-FILES_${PN}-progress = " \
+FILES:${PN}-client = "${bindir}/swupdate-client"
+FILES:${PN}-lua += "${libdir}/lua/"
+FILES:${PN}-progress = " \
     ${bindir}/swupdate-progress \
 "
-FILES_${PN}-tools-hawkbit = " \
+FILES:${PN}-tools-hawkbit = " \
     ${bindir}/swupdate-hawkbitcfg \
     ${bindir}/swupdate-sendtohawkbit \
 "
-FILES_${PN}-www = " \
+FILES:${PN}-www = " \
     ${libdir}/swupdate/conf.d/*mongoose* \
     ${wwwdir}/* \
 "
 
 # The tools package is deprecated, it is an empty meta package for backward compatibility
-RDEPENDS_${PN}-tools += "${PN}-client ${PN}-progress ${PN}-tools-hawkbit"
+RDEPENDS:${PN}-tools += "${PN}-client ${PN}-progress ${PN}-tools-hawkbit"
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
@@ -248,4 +248,4 @@ do_install () {
 }
 
 SYSTEMD_PACKAGES = "${PN} ${PN}-progress"
-SYSTEMD_SERVICE_${PN} = "swupdate.service"
+SYSTEMD_SERVICE:${PN} = "swupdate.service"

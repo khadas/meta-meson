@@ -25,6 +25,6 @@ do_install () {
     install -m 0644 -D ${S}/ge2d_feature_test ${D}${bindir}
 }
 
-FILES_${PN} = " ${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/*"
-INSANE_SKIP_${PN} = "dev-so"
+FILES:${PN} = " ${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/*"
+INSANE_SKIP:${PN} = "dev-so"

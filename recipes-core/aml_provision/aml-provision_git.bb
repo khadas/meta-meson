@@ -4,10 +4,10 @@ LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/provision;protocol=${AML_GIT_PROTOCOL};branch=projects/buildroot/tdk-v2.4"
-SRC_URI_append = " file://aml_key_inject.service"
+SRC_URI:append = " file://aml_key_inject.service"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/provision')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/provision')}"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -17,7 +17,7 @@ PV = "${SRCPV}"
 
 S = "${WORKDIR}/git"
 DEPENDS += "optee-userspace"
-ARM_TARGET_aarch64 = "64"
+ARM_TARGET:aarch64 = "64"
 
 inherit autotools pkgconfig systemd
 
@@ -35,9 +35,9 @@ do_install() {
     install -D -m 0644 ${WORKDIR}/aml_key_inject.service ${D}${systemd_unitdir}/system/aml_key_inject.service
 }
 
-SYSTEMD_SERVICE_${PN} = "aml_key_inject.service "
-FILES_${PN} += "/lib/optee_armtz/* /usr/bin/*"
-FILES_${PN} += "${libdir}/*"
-FILES_${PN}-dev = " "
-INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"
-INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf"
+SYSTEMD_SERVICE:${PN} = "aml_key_inject.service "
+FILES:${PN} += "/lib/optee_armtz/* /usr/bin/*"
+FILES:${PN} += "${libdir}/*"
+FILES:${PN}-dev = " "
+INSANE_SKIP:${PN} = "ldflags dev-so dev-elf"
+INSANE_SKIP:${PN}-dev = "ldflags dev-so dev-elf"

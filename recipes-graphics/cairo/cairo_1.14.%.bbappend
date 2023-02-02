@@ -1,4 +1,4 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 # Only apply this workaround for dvalin and gondul GPUs
 # Once arm has fixed shader garbage issue in mali side, this patch can be removed

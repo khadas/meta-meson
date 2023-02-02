@@ -1,4 +1,4 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:${THISDIR}/android-tools-adbd:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/android-tools-adbd:"
 
 SRC_URI += "file://cutils.mk;subdir=${BPN}"
 
@@ -9,8 +9,8 @@ SRC_URI += "file://adb_udc_file"
 #SRC_URI += "file://0001-adbd-enable-tcpip.patch;patchdir=system/core"
 
 SYSTEMD_AUTO_ENABLE = "enable"
-SYSTEMD_AUTO_ENABLE_aq2432 = "disable"
-SYSTEMD_SERVICE_${PN} = "adbd.service"
+SYSTEMD_AUTO_ENABLE:aq2432 = "disable"
+SYSTEMD_SERVICE:${PN} = "adbd.service"
 
 TOOLS = " adbd"
 ADB_UDC = "ff400000.dwc2_a"
@@ -19,7 +19,7 @@ ADB_UDC:sc2 = "fdd00000.dwc2_a"
 ADB_UDC:t7 = "fdd00000.crgudc2"
 ADB_UDC:t3 = "fdf00000.dwc2_a"
 
-do_install_append() {
+do_install:append() {
 
     if echo ${TOOLS} | grep -q "cutils" ; then
         install -d ${D}${libdir}
@@ -41,5 +41,5 @@ do_install_append() {
         sed "s@ff400000.dwc2_a@${ADB_UDC}@" -i ${D}/etc/adb_udc_file
     fi
 }
-INSANE_SKIP_${PN}-dev += "dev-elf ldflags"
-FILES_${PN}-dev += "${includedir}/cutils"
+INSANE_SKIP:${PN}-dev += "dev-elf ldflags"
+FILES:${PN}-dev += "${includedir}/cutils"

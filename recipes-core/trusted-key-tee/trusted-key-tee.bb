@@ -2,7 +2,7 @@ SUMMARY = "Startup script and systemd unit file for trusted key with tee backend
 LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI  = " file://trusted-key-tee.service"
 
 S = "${WORKDIR}"
@@ -15,6 +15,6 @@ do_install() {
 
 inherit allarch systemd
 
-RDEPENDS_${PN} = "optee-userspace"
-SYSTEMD_SERVICE_${PN} = "trusted-key-tee.service"
-FILES_${PN} += "${systemd_unitdir}/system/trusted-key-tee.service"
+RDEPENDS:${PN} = "optee-userspace"
+SYSTEMD_SERVICE:${PN} = "trusted-key-tee.service"
+FILES:${PN} += "${systemd_unitdir}/system/trusted-key-tee.service"

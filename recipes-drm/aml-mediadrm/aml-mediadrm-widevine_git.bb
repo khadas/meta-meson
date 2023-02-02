@@ -1,7 +1,7 @@
 DESCRIPTION = "widevine DRM"
 
 LICENSE = "CLOSED"
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -12,7 +12,7 @@ PROVIDES = "widevine"
 #SRC_URI = "git://${AML_GIT_ROOT_WV}/vendor/widevine;protocol=${AML_GIT_PROTOCOL};branch=amlogic-linux;destsuffix=git/widevine-bin"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm')}"
 
 SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
@@ -22,7 +22,7 @@ DEPENDS = "optee-userspace aml-secmem aml-mediahal-sdk"
 inherit autotools pkgconfig
 
 ARM_TARGET = "arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 = "aarch64.lp64."
+ARM_TARGET:aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
 def get_widevine_version(datastore):
@@ -48,7 +48,7 @@ do_install() {
     install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${ARM_TARGET}/liboemcrypto.so ${D}${libdir}
     install -D -m 0755 ${S}/widevine-bin/${WIDEVINE_VER}/${ARM_TARGET}/widevine_ce_cdm_unittest ${D}/usr/bin
 }
-FILES_${PN} += "${libdir}/*.so /lib/optee_armtz/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "ldflags dev-so dev-elf already-stripped"
-INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf already-stripped"
+FILES:${PN} += "${libdir}/*.so /lib/optee_armtz/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "ldflags dev-so dev-elf already-stripped"
+INSANE_SKIP:${PN}-dev = "ldflags dev-so dev-elf already-stripped"

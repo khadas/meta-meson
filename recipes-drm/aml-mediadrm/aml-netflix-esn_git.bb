@@ -1,7 +1,7 @@
 DESCRIPTION = "amlogic netflix esn bin"
 
 LICENSE = "CLOSED"
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -16,19 +16,19 @@ S = "${WORKDIR}/git"
 
 #inherit autotools pkgconfig
 ARM_TARGET = "arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 = "aarch64.lp64."
+ARM_TARGET:aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
-do_install_append() {
+do_install:append() {
     install -d -m 0755 ${D}/usr/bin
     install -d -m 0755 ${D}/lib/optee_armtz
     install -D -m 0755 ${S}/netflix_ta-bin/prebuilt/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
     install -D -m 0755 ${S}/netflix_ta-bin/prebuilt/${ARM_TARGET}/esn_provision ${D}/usr/bin/
 }
 
-FILES_${PN} += "${bindir}/* /lib/optee_armtz/* ${includedir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "ldflags dev-so dev-elf already-stripped"
-INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf already-stripped"
+FILES:${PN} += "${bindir}/* /lib/optee_armtz/* ${includedir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "ldflags dev-so dev-elf already-stripped"
+INSANE_SKIP:${PN}-dev = "ldflags dev-so dev-elf already-stripped"
 
-RDEPENDS_${PN} += "optee-userspace"
+RDEPENDS:${PN} += "optee-userspace"

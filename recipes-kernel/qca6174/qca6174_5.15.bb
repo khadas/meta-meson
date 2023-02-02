@@ -10,7 +10,7 @@ SRC_URI += "file://nvm_tlv_3.2.bin"
 SRC_URI += "file://rampatch_tlv_3.2.tlv"
 
 #For common patches
-#SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-4.9/wifi/qualcomm/drivers/qca6174')}"
+#SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-4.9/wifi/qualcomm/drivers/qca6174')}"
 
 SRCREV ?= "${AUTOREV}"
 PV = "5.15"
@@ -30,9 +30,9 @@ do_install() {
 #    install -D -m 0644 ${WORKDIR}/rampatch_tlv_3.2.tlv ${D}/lib/firmware/
 }
 
-FILES_${PN} = "wlan.ko"
+FILES:${PN} = "wlan.ko"
 DEPENDS += ""
-FILES_${PN} += "/lib/firmware"
+FILES:${PN} += "/lib/firmware"
 
 S = "${WORKDIR}/git"
 

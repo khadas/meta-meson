@@ -16,7 +16,7 @@ SRC_URI += "file://binder.service"
 SRC_URI += "file://binder.sh"
 
 #For common patches
-#SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
+#SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
 
 S = "${WORKDIR}/git/libbinder"
 
@@ -45,7 +45,7 @@ do_install(){
     install -m 0755 ${WORKDIR}/binder.sh ${D}/${bindir}
 }
 
-do_install_append(){
+do_install:append(){
     if ${@bb.utils.contains("DISTRO_FEATURES", "system-user", "true", "false", d)}
     then
         sed -i '/ln -sf/a\chmod g+rw /dev/binder' ${D}/${bindir}/binder.sh
@@ -53,12 +53,12 @@ do_install_append(){
     fi
 }
 
-SYSTEMD_SERVICE_${PN} = "binder.service"
+SYSTEMD_SERVICE:${PN} = "binder.service"
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-FILES_${PN} += "${systemd_unitdir}/system/binder.service"
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+FILES:${PN} += "${systemd_unitdir}/system/binder.service"
 
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"
 

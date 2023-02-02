@@ -8,7 +8,7 @@ PV = "git${SRCPV}"
 #For common patches
 S = "${WORKDIR}/git/aml_deviceproperty"
 
-RPROVIDES_${PN} += " libamldeviceproperty.so"
+RPROVIDES:${PN} += " libamldeviceproperty.so"
 
 do_compile(){
     ${MAKE} -C ${S}
@@ -21,7 +21,7 @@ do_install(){
     cp -ra ${S}/aml_device_property.h ${D}${includedir}
 }
 
-FILES_${PN} = "${libdir}/* ${bindir}/*"
-FILES_${PN}-dev = "${includedir}/* "
+FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN}-dev = "${includedir}/* "
 
-INSANE_SKIP_${PN}-dev = "dev-so"
+INSANE_SKIP:${PN}-dev = "dev-so"

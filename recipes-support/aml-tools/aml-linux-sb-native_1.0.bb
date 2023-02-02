@@ -4,13 +4,13 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 inherit native
 
-DEPENDS_append = "wget-native unzip-native"
+DEPENDS:append = "wget-native unzip-native"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
 SOC_FAMILY = "TBD"
-SOC_FAMILY_t5d = "t5d"
+SOC_FAMILY:t5d = "t5d"
 
 S = "${WORKDIR}/aml-linux-sb"
 
@@ -39,5 +39,5 @@ do_install () {
     fi
 }
 
-FILES_${PN} = "${bindir}/aml-linux-sb/*"
-INSANE_SKIP_${PN}_append = "already-stripped"
+FILES:${PN} = "${bindir}/aml-linux-sb/*"
+INSANE_SKIP:${PN}:append = "already-stripped"

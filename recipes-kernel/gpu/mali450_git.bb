@@ -11,7 +11,7 @@ SRCREV = "1848b13f54bddebd646c35307db669cd0052db48"
 do_configure[noexec] = "1"
 
 PROVIDES += "virtual/gpu"
-RPROVIDES_${PN} += "gpu"
+RPROVIDES:${PN} += "gpu"
 GPU_ARCH = "utgard"
 
 do_install() {
@@ -20,7 +20,7 @@ do_install() {
     mkdir -p ${GPUDIR}
     install -m 0666 ${S}/${GPU_ARCH}/${PV}/mali.ko ${GPUDIR}
 }
-FILES_${PN} = "mali.ko"
+FILES:${PN} = "mali.ko"
 # Header file provided by a separate package
 DEPENDS += ""
 

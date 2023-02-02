@@ -8,15 +8,15 @@ PV = "git${SRCPV}"
 PR = "r0"
 
 #Only enable it in OpenLinux
-#SRC_URI_append = " ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'git://${AML_GIT_ROOT_OP}/nagra-sdk-nocs.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=projects/openlinux/v3.6','', d)}"
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/nagra/nagra-sdk')}"
+#SRC_URI:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'git://${AML_GIT_ROOT_OP}/nagra-sdk-nocs.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=projects/openlinux/v3.6','', d)}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/nagra/nagra-sdk')}"
 
 PN = 'nagra-sdk'
 SRCREV ?= "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 ARM_TARGET = "usr/lib"
-ARM_TARGET_aarch64 = "usr/lib64"
+ARM_TARGET:aarch64 = "usr/lib64"
 
 do_install() {
     install -d -m 0755 ${D}/lib/optee_armtz
@@ -27,6 +27,6 @@ do_install() {
     install -D -m 0644 ${S}/lib/ta/${CHIPSET_NAME}/efdfed0c-a6bd-44d3-9c64-de426fc5fb89.ta ${D}/lib/optee_armtz
 }
 
-FILES_${PN} = "${libdir}/* /usr/lib/* /lib/optee_armtz/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
+FILES:${PN} = "${libdir}/* /usr/lib/* /lib/optee_armtz/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"

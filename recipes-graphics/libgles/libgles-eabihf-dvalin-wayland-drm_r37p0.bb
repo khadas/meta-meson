@@ -1,7 +1,7 @@
 DESCRIPTION = "libGLES with wayland for 32bit Mali dvalin (Drm)"
 
 LICENSE = "CLOSED"
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -11,21 +11,21 @@ do_populate_lic[noexec] = "1"
 # explicitly depends upon them.
 EXCLUDE_FROM_WORLD = "1"
 PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl virtual/libgbm virtual/mesa virtual/mesa-gl"
-RPROVIDES_${PN} += "libGLESv2.so libEGL.so libGLESv1_CM.so libMali.so"
+RPROVIDES:${PN} += "libGLESv2.so libEGL.so libGLESv1_CM.so libMali.so"
 DEPENDS += "patchelf-native libdrm wayland"
 
 # Add wayland
-RPROVIDES_${PN} += "libwayland-egl.so"
+RPROVIDES:${PN} += "libwayland-egl.so"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/linux/amlogic/meson_mali.git;protocol=${AML_GIT_PROTOCOL};branch=master;"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/meson_mali')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/meson_mali')}"
 
 SRCREV ?= "${AUTOREV}"
 
 MALI_ARCH="eabihf"
-MALI_ARCH_aarch64="arm64"
+MALI_ARCH:aarch64="arm64"
 
 S = "${WORKDIR}/git"
 
@@ -92,6 +92,6 @@ do_install() {
     install -m 0644 ${S}/lib/${MALI_ARCH}/dvalin/${PV}/mali.json ${D}${datadir}/vulkan/icd.d/
 }
 
-FILES_${PN} += "${libdir}/*.so ${datadir}"
-FILES_${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
-INSANE_SKIP_${PN} = "ldflags dev-so already-stripped"
+FILES:${PN} += "${libdir}/*.so ${datadir}"
+FILES:${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
+INSANE_SKIP:${PN} = "ldflags dev-so already-stripped"

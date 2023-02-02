@@ -5,9 +5,9 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-CONFFILES_${PN} = "${sysconfdir}/xdg/weston/weston.ini"
+CONFFILES:${PN} = "${sysconfdir}/xdg/weston/weston.ini"
 
-FILES_${PN} = "${sysconfdir}/xdg/weston/weston.ini"
+FILES:${PN} = "${sysconfdir}/xdg/weston/weston.ini"
 
 PACKAGES = "${PN}"
 

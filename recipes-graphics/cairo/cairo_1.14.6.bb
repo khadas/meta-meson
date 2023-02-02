@@ -9,8 +9,8 @@ SRC_URI[sha256sum] = "613cb38447b76a93ff7235e17acd55a78b52ea84a9df128c3f2257f8ea
 
 PACKAGES =+ "cairo-gobject cairo-script-interpreter cairo-perf-utils"
 
-SUMMARY_${PN} = "The Cairo 2D vector graphics library"
-DESCRIPTION_${PN} = "Cairo is a multi-platform library providing anti-aliased \
+SUMMARY:${PN} = "The Cairo 2D vector graphics library"
+DESCRIPTION:${PN} = "Cairo is a multi-platform library providing anti-aliased \
 vector-based rendering for multiple target backends. Paths consist \
 of line segments and cubic splines and can be rendered at any width \
 with various join and cap styles. All colors may be specified with \
@@ -18,23 +18,23 @@ optional translucence (opacity/alpha) and combined using the \
 extended Porter/Duff compositing algebra as found in the X Render \
 Extension."
 
-SUMMARY_cairo-gobject = "The Cairo library GObject wrapper library"
-DESCRIPTION_cairo-gobject = "A GObject wrapper library for the Cairo API."
+SUMMARY:cairo-gobject = "The Cairo library GObject wrapper library"
+DESCRIPTION:cairo-gobject = "A GObject wrapper library for the Cairo API."
 
-SUMMARY_cairo-script-interpreter = "The Cairo library script interpreter"
-DESCRIPTION_cairo-script-interpreter = "The Cairo script interpreter implements \
+SUMMARY:cairo-script-interpreter = "The Cairo library script interpreter"
+DESCRIPTION:cairo-script-interpreter = "The Cairo script interpreter implements \
 CairoScript.  CairoScript is used by tracing utilities to enable the ability \
 to replay rendering."
 
-DESCRIPTION_cairo-perf-utils = "The Cairo library performance utilities"
+DESCRIPTION:cairo-perf-utils = "The Cairo library performance utilities"
 
-FILES_${PN} = "${libdir}/libcairo.so.*"
-FILES_${PN}-dev += "${libdir}/cairo/*.so"
-FILES_${PN}-gobject = "${libdir}/libcairo-gobject.so.*"
-FILES_${PN}-script-interpreter = "${libdir}/libcairo-script-interpreter.so.*"
-FILES_${PN}-perf-utils = "${bindir}/cairo-trace ${libdir}/cairo/*.la ${libdir}/cairo/libcairo-trace.so.*"
+FILES:${PN} = "${libdir}/libcairo.so.*"
+FILES:${PN}-dev += "${libdir}/cairo/*.so"
+FILES:${PN}-gobject = "${libdir}/libcairo-gobject.so.*"
+FILES:${PN}-script-interpreter = "${libdir}/libcairo-script-interpreter.so.*"
+FILES:${PN}-perf-utils = "${bindir}/cairo-trace ${libdir}/cairo/*.la ${libdir}/cairo/libcairo-trace.so.*"
 
-do_install_append () {
+do_install:append () {
 	rm -rf ${D}${bindir}/cairo-sphinx
 	rm -rf ${D}${libdir}/cairo/cairo-fdr*
 	rm -rf ${D}${libdir}/cairo/cairo-sphinx*

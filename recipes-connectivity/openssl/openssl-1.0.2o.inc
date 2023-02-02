@@ -10,10 +10,10 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=f9a8f968107345e0b75aa8c2ecaa7ec8"
 
 DEPENDS = "makedepend-native hostperl-runtime-native"
 
-DEPENDS_remove_daisy = "hostperl-runtime-native"
-DEPENDS_append_daisy = " perl-native-runtime"
+DEPENDS:remove_daisy = "hostperl-runtime-native"
+DEPENDS:append_daisy = " perl-native-runtime"
 
-DEPENDS_append_class-target = " openssl-native"
+DEPENDS:append_class-target = " openssl-native"
 
 PROVIDES += "openssl10"
 
@@ -38,9 +38,9 @@ EXTRA_OECONF += "no-hw"
 EXTRA_OECONF += "no-srp"
 EXTRA_OECONF += "no-idea"
 EXTRA_OECONF += "no-rc4"
-EXTRA_OECONF_remove += "--disable-static"
+EXTRA_OECONF:remove += "--disable-static"
 
-AR_append = " r"
+AR:append = " r"
 TERMIO_libc-musl = "-DTERMIOS"
 TERMIO ?= "-DTERMIO"
 # Avoid binaries being marked as requiring an executable stack since it
@@ -98,23 +98,23 @@ do_install[postfuncs] += "install_relative_symlinks"
 # ----------------------------------------------------------------------------
 
 PACKAGES =+ "libcrypto-1.0.2o libssl-1.0.2o ${PN}-misc openssl-conf-1.0.2o"
-FILES_libcrypto = "${libdir}/libcrypto${SOLIBS}"
-FILES_libssl = "${libdir}/libssl${SOLIBS}"
-FILES_${PN} =+ " ${libdir}/ssl/*"
-FILES_${PN}-misc = "${libdir}/ssl/misc"
-RDEPENDS_${PN}-misc = "${@bb.utils.contains('PACKAGECONFIG', 'perl', 'perl', '', d)}"
-FILES_${PN}-dev += "${libdir}/libcrypto${SOLIBSDEV}"
+FILES:libcrypto = "${libdir}/libcrypto${SOLIBS}"
+FILES:libssl = "${libdir}/libssl${SOLIBS}"
+FILES:${PN} =+ " ${libdir}/ssl/*"
+FILES:${PN}-misc = "${libdir}/ssl/misc"
+RDEPENDS:${PN}-misc = "${@bb.utils.contains('PACKAGECONFIG', 'perl', 'perl', '', d)}"
+FILES:${PN}-dev += "${libdir}/libcrypto${SOLIBSDEV}"
 
 # Add the openssl.cnf file to the openssl-conf package.  Make the libcrypto
 # package RRECOMMENDS on this package.  This will enable the configuration
 # file to be installed for both the base openssl package and the libcrypto
 # package since the base openssl package depends on the libcrypto package.
-FILES_openssl-conf = "${sysconfdir}/ssl/openssl.cnf"
+FILES:openssl-conf = "${sysconfdir}/ssl/openssl.cnf"
 CONFFILES_openssl-conf = "${sysconfdir}/ssl/openssl.cnf"
 RRECOMMENDS_libcrypto += "openssl-conf"
-RDEPENDS_${PN}-ptest += "${PN}-misc make perl perl-module-filehandle bc"
+RDEPENDS:${PN}-ptest += "${PN}-misc make perl perl-module-filehandle bc"
 
-do_configure_prepend_darwin () {
+do_configure:prepend:darwin () {
 	sed -i -e '/version-script=openssl\.ld/d' Configure
 }
 
@@ -207,7 +207,7 @@ do_configure () {
 	make depend
 }
 
-do_compile_prepend_class-target () {
+do_compile:prepend_class-target () {
     sed -i 's/\((OPENSSL=\)".*"/\1"openssl"/' Makefile
 }
 
@@ -270,7 +270,7 @@ do_install_ptest () {
 	install util/shlib_wrap.sh     ${D}${PTEST_PATH}/util
 }
 
-do_install_append_class-native() {
+do_install:append_class-native() {
 	create_wrapper ${D}${bindir}/openssl \
 	    OPENSSL_CONF=${libdir}/ssl/openssl.cnf \
 	    SSL_CERT_DIR=${libdir}/ssl/certs \

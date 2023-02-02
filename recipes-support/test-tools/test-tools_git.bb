@@ -24,5 +24,5 @@ do_install() {
     install -m 0644 ${WORKDIR}/test_tools_autoreboot.service ${D}/${systemd_unitdir}/system/
 }
 
-FILES_${PN} = "/test_plan/* /etc/* "
-SYSTEMD_SERVICE_${PN} = "test_tools.service test_tools_autoreboot.service"
+FILES:${PN} = "/test_plan/* /etc/* "
+SYSTEMD_SERVICE:${PN} = "test_tools.service test_tools_autoreboot.service"
