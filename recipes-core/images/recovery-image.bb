@@ -33,6 +33,12 @@ IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
 IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate-download", \
             " wpa-supplicant wifi-amlogic ", "", d)}"
 
+IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate-dvb-ota", \
+            " tuner-prebuilt \
+            modules-load \
+            aucpu-fw \
+            aml-dvb-ota", "", d)}"
+
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 
 python __anonymous () {

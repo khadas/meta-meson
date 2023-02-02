@@ -6,6 +6,7 @@ data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep
 SWUPDATE_PATH=/mnt/swupdate/
 SWUPDATE_FILE_PATH=""
 OTA_FILE_FLAG=$SWUPDATE_PATH/enable-network-ota
+DVB_OTA_FILE_FLAG=$SWUPDATE_PATH/enable-dvb-ota
 
 system_mtd_number=$(cat /proc/mtd | grep  -E "system" | awk -F : '{print $1}' | grep -o '[0-9]\+')
 case $system_mtd_number in
@@ -184,6 +185,58 @@ elif [ -f "$OTA_FILE_FLAG" ]; then
 
     read -t 5 -p "Rebooting...^-^..."
     if [ $? != 0 ]; then
+        reboot -f
+    fi
+elif [ -f "$DVB_OTA_FILE_FLAG" ]; then
+    wait_time=90
+    ping_time=0
+    while [ $ping_time -lt $wait_time ]
+    do
+        echo "Tried $ping_time seconds"
+        if [ -e /dev/dvb0.frontend0 ]; then
+            DVB_DEV_READY=1
+            break;
+        else
+            echo "dvb device not ready, cost 1 second"
+            sleep 1
+            let ping_time++
+        fi
+    done
+
+    if [ -n "$DVB_DEV_READY" ]; then
+        show_swupdateui
+        if [ -f /usr/bin/dvb_ota.sh ]; then
+            /usr/bin/dvb_ota.sh start /tmp/software.swu $(cat $DVB_OTA_FILE_FLAG 2>/dev/null)
+            dvbota_result=$?
+            echo "dvbota result: $dvbota_result"
+            if [ $dvbota_result ]; then
+                if [ "${1}" = "ubifs" ]; then
+                    swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem -i /tmp/software.swu
+                else
+                    swupdate -l 6 -k /etc/swupdate-public.pem -i /tmp/software.swu
+                fi
+                if [ $? != 0 ]; then
+                    echo "dvbota swupdate software.swu from data failed!"
+                else
+                    echo "dvbota swupdate software.swu from data success!"
+                    echo "dvbota swupdate will reboot!"
+                fi
+            else
+                echo "dvbota failed, please check the log:/tmp/log.dvb_ota."
+            fi
+        else
+            echo "/usr/bin/dvb_ota.sh not found for dvb ota."
+        fi
+    fi
+
+    sync
+
+    read -t 5 -p "Rebooting ..."
+    if [ $? != 0 ]; then
+        rm $SWUPDATE_FILE_PATH
+        rm -rf $SWUPDATE_PATH
+        umount /mnt
+        urlmisc clean
         reboot -f
     fi
 else

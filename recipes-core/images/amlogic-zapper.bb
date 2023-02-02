@@ -56,6 +56,7 @@ IMAGE_INSTALL += " \
     tinyalsa-tools \
     glibc-utils \
     localedef \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware aml-bootloader-message', '', d)} \
 "
 
 IMAGE_INSTALL += " \
