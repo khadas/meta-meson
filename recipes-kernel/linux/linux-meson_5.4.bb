@@ -33,6 +33,8 @@ SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.c
 
 # add config for system-user
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'system-user', 'file://system-user.cfg', '', d)}"
+# Enable trusted-key(TEE backend)in the kernel if FBE is enabled
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'FBE', 'file://trusted-key-tee.cfg', '', d)}"
 
 # add config for OverlayFS
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '', 'file://disable_OverlayFS.cfg', d)}"

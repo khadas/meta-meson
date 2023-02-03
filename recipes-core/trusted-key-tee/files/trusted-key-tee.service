@@ -1,0 +1,13 @@
+[Unit]
+Description=Trusted Key(TEE)
+After=tee-supplicant.service
+
+[Service]
+# trusted.ko should be inserted in ramdisk
+# for setup of FBE for /data. Error status should be ignored.
+ExecStart=-/sbin/modprobe trusted
+ExecStop=/sbin/modprobe -r trusted
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

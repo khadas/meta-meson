@@ -189,3 +189,9 @@ RDEPENDS_packagegroup-amlogic-baserootfs += "${@bb.utils.contains('DISTRO_FEATUR
 
 #Handle no widevine case
 RDEPENDS_packagegroup-amlogic-baserootfs_remove = "${@bb.utils.contains('DISTRO_FEATURES', 'widevine', '', 'gst-aml-drm-plugins', d)}"
+
+# For FBE
+RDEPENDS_packagegroup-amlogic-baserootfs += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'FBE', 'keyutils fscryptctl', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'FBE', 'trusted-key-tee', '', d)} \
+    "

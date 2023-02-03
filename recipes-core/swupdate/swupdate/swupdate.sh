@@ -4,6 +4,7 @@
 data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
 
 SWUPDATE_PATH=/mnt/swupdate/
+SWUPDATE_FILE_PATH=""
 OTA_FILE_FLAG=$SWUPDATE_PATH/enable-network-ota
 
 system_mtd_number=$(cat /proc/mtd | grep  -E "system" | awk -F : '{print $1}' | grep -o '[0-9]\+')
@@ -61,14 +62,20 @@ else
     mount -t ubifs /dev/ubi0_0 /mnt
 fi
 
-if [ -f "/mnt/software.swu" ]; then
-    echo "find software.swu in data, now start update......"
+if [[ -f "/mnt/software.swu" ]]; then
+    SWUPDATE_FILE_PATH=/mnt/software.swu
+elif [[ -f "/mnt/unencrypted/software.swu" ]]; then
+    SWUPDATE_FILE_PATH=/mnt/unencrypted/software.swu
+fi
+
+if [[ ! -z "$SWUPDATE_FILE_PATH" ]]; then
+    echo "find software.swu in data($(dirname $SWUPDATE_FILE_PATH)), now start update......"
     export TMPDIR=/mnt
     show_swupdateui
     if [ "${1}" = "ubifs" ]; then
-        swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem -i /mnt/software.swu
+        swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem -i $SWUPDATE_FILE_PATH
     else
-        swupdate -l 6 -k /etc/swupdate-public.pem -i /mnt/software.swu
+        swupdate -l 6 -k /etc/swupdate-public.pem -i $SWUPDATE_FILE_PATH
     fi
     if [ $? != 0 ]; then
         echo "swupdate software.swu from data failed!"
@@ -76,7 +83,7 @@ if [ -f "/mnt/software.swu" ]; then
         umount /mnt
     else
         echo "swupdate software.swu from data sucess!"
-        rm /mnt/software.swu
+        rm $SWUPDATE_FILE_PATH
         umount /mnt
         urlmisc clean
         sync
