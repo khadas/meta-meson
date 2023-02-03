@@ -17,9 +17,7 @@ PACKAGECONFIG += "drmkms"
 EXTRA_OECONF_remove ="--with-gfxdrivers=none"
 
 EXTRA_OECONF += "--with-gfxdrivers=amlgfx \
-                 --with-inputdrivers=keyboard \
-                 --with-inputdrivers=ps2mouse \
-                 --with-inputdrivers=serialmouse \
+                 --with-inputdrivers=keyboard,ps2mouse,serialmouse \
                  --enable-debug-support \
                  --enable-debug \
                  --enable-trace \

@@ -1,0 +1,282 @@
+From 12788509e0074fa0e55289de3389e1f4068469e0 Mon Sep 17 00:00:00 2001
+From: HenryLee <henry_1_lee@163.com>
+Date: Thu, 2 Feb 2023 17:59:44 +0800
+Subject: [PATCH] Customer Test
+
+Signed-off-by: HenryLee <henry_1_lee@163.com>
+---
+ src/Makefile.am    |   9 +++
+ src/input_sample.c | 146 +++++++++++++++++++++++++++++++++++++++++++++
+ src/text.c         |  81 +++++++++++++++++++++++++
+ 3 files changed, 236 insertions(+)
+ create mode 100644 src/input_sample.c
+ create mode 100644 src/text.c
+
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 8e389a1..8a88ebf 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -56,6 +56,8 @@ bin_PROGRAMS = \
+ 	df_texture \
+ 	df_window \
+ 	df_stereo3d \
++	input_sample \
++	text \
+ 	pss \
+ 	$(STEREO_API_PROGS) \
+ 	$(WATER_PROGS)
+@@ -144,5 +146,12 @@ df_window_LDADD  = $(LIBADDS) -lm
+ df_stereo3d_SOURCES = df_stereo3d.c
+ df_stereo3d_LDADD  = $(LIBADDS) -lm
+ 
++input_sample_SOURCES = input_sample.c
++input_sample_LDADD = $(LIBADDS)
++
++text_SOURCES = text.c
++text_LDADD = $(LIBADDS)
++
+ pss_SOURCES = pss.c
+ pss_LDADD = $(LIBADDS) -lm
++
+diff --git a/src/input_sample.c b/src/input_sample.c
+new file mode 100644
+index 0000000..8b489e7
+--- /dev/null
++++ b/src/input_sample.c
+@@ -0,0 +1,146 @@
++#include <directfb.h>
++#include <stdio.h>
++
++typedef struct _DeviceInfo DeviceInfo;
++
++struct _DeviceInfo {
++     DFBInputDeviceID           device_id;
++     DFBInputDeviceDescription  desc;
++     DeviceInfo                *next;
++};
++
++const char *
++get_device_name( DeviceInfo       *devices,
++                 DFBInputDeviceID  device_id )
++{
++     while (devices) {
++          if (devices->device_id == device_id)
++          {
++               printf("-- get_device_name <%s> for id <%d> \n",devices->desc.name,device_id);
++               return devices->desc.name;
++          }
++          devices = devices->next;
++     }
++
++     return "<unknown>";
++}
++
++DFBInputDeviceTypeFlags
++get_device_type( DeviceInfo       *devices,
++                 DFBInputDeviceID  device_id )
++{
++     while (devices) {
++        if (devices->device_id == device_id)
++        {
++            printf("-- get_device_type <%d> for id <%d> \n",devices->desc.type,device_id);
++            return devices->desc.type;
++        }
++        devices = devices->next;
++     }
++
++     return DIDTF_NONE;
++}
++
++static DFBEnumerationResult
++enum_input_device( DFBInputDeviceID           device_id,
++                   DFBInputDeviceDescription  desc,
++                   void                      *data )
++{
++     DeviceInfo **devices = data;
++     DeviceInfo  *device;
++
++     printf("-- enum_input_device found with id <%d> \n",device_id);
++
++     device = malloc( sizeof(DeviceInfo) );
++
++     device->device_id = device_id;
++     device->desc      = desc;
++     device->next      = *devices;
++
++     *devices = device;
++
++     get_device_name(device,device_id);
++     get_device_type(device,device_id);
++
++     return DFENUM_OK;
++}
++
++
++
++int main( int argc, char *argv[] )
++{
++    DFBResult ret;
++    IDirectFB *dfb;
++    IDirectFBEventBuffer *buffer;
++    DFBInputEvent event;
++    DeviceInfo            *devices = NULL;
++    
++    printf("Entry\n");
++    /* Initialize DirectFB */
++    ret = DirectFBInit( &argc, &argv );
++    if (ret != DFB_OK) {
++        fprintf( stderr, "DirectFBInit failed\n" );
++        return ret;
++    }
++    printf("DirectFBInit\n");
++
++    /* Create the DirectFB interface */
++    ret = DirectFBCreate( &dfb );
++    if (ret != DFB_OK) {
++        fprintf( stderr, "DirectFBCreate failed\n" );
++        return ret;
++    }
++
++    printf("DirectFBCreate\n");
++
++    dfb->EnumInputDevices( dfb, enum_input_device, &devices );
++
++    /* Create the event buffer */
++    ret = dfb->CreateInputEventBuffer( dfb, DICAPS_ALL /*DICAPS_KEYS*/, DFB_TRUE, &buffer );
++    if (ret != DFB_OK) {
++        fprintf( stderr, "CreateInputEventBuffer failed\n" );
++        return ret;
++    }
++    printf("CreateInputEventBuffer - Now wait\n");
++    printf("wait 0\n");
++    /* Main loop */
++    while (1) {
++        /* Wait for an event */
++        printf("wait\n");
++        ret = buffer->WaitForEvent( buffer );
++        if (ret != DFB_OK) {
++            fprintf( stderr, "WaitForEvent failed\n" );
++            break;
++        }
++
++        /* Get the event */
++        while (buffer->GetEvent( buffer, DFB_EVENT(&event) ) == DFB_OK) {
++            printf("GetEvent type <%u> , key <%u>\n",event.type,event.key_symbol);
++            /* Handle the event */
++            switch (event.type) {
++                case DIET_KEYPRESS:
++                    printf( "Key pressed: %u\n", event.key_symbol );
++                    break;
++                case DIET_KEYRELEASE:
++                    printf( "Key released: %u\n", event.key_symbol );
++                    break;
++                case DIET_BUTTONPRESS:
++                    printf( "---DIET_BUTTONRELEASE---: %u\n", event.key_symbol );
++                    break;
++                case DIET_BUTTONRELEASE:
++                    printf( "---DIET_BUTTONRELEASE---: %u\n", event.key_symbol );
++                    break;
++                case DIET_AXISMOTION:
++                    printf( "---MOUSE DIET_AXISMOTION---: %u\n", event.key_symbol );
++                default:
++                    break;
++            }
++        }
++    }
++
++    /* Clean up */
++    buffer->Release( buffer );
++    dfb->Release( dfb );
++    return ret;
++}
++
+diff --git a/src/text.c b/src/text.c
+new file mode 100644
+index 0000000..4e54b28
+--- /dev/null
++++ b/src/text.c
+@@ -0,0 +1,81 @@
++#include <directfb.h>
++#include <stdio.h>
++
++int main( int argc, char *argv[] )
++{
++    DFBResult ret;
++    IDirectFB *dfb;
++    IDirectFBSurface *primary;
++    DFBSurfaceDescription dsc;
++    int width, height;
++    DFBFontDescription font_dsc;
++    IDirectFBFont *font;
++
++    /* Initialize DirectFB */
++    ret = DirectFBInit( &argc, &argv );
++    if (ret != DFB_OK) {
++        fprintf( stderr, "DirectFBInit failed\n" );
++        return ret;
++    }
++
++    /* Create the DirectFB interface */
++    ret = DirectFBCreate( &dfb );
++    if (ret != DFB_OK) {
++        fprintf( stderr, "DirectFBCreate failed\n" );
++        return ret;
++    }
++
++    /* Get the primary surface */
++    dsc.flags = DSDESC_CAPS;
++    dsc.caps = DSCAPS_PRIMARY | DSCAPS_FLIPPING;
++    ret = dfb->CreateSurface( dfb, &dsc, &primary );
++    if (ret != DFB_OK) {
++        fprintf( stderr, "CreateSurface failed\n" );
++        return ret;
++    }
++
++    printf("Init 1\n");
++
++    /* Get the surface size */
++    primary->GetSize( primary, &width, &height );
++
++    /* Load a font */
++    font_dsc.flags = DFDESC_HEIGHT;
++    font_dsc.height = 30;
++    ret = dfb->CreateFont( dfb, DATADIR"/fonts/decker.ttf", &font_dsc, &font );
++	//ret = dfb->CreateFont( dfb, "TlwgTypo-Bold.ttf", &font_dsc, &font );
++    if (ret != DFB_OK) {
++        fprintf( stderr, "CreateFont failed\n" );
++        return ret;
++    }
++
++    printf("Init 2\n");
++
++	primary->SetColor(primary, 0x0, 0x0, 0x0, 0xff);
++	primary->FillRectangle(primary, 0, 0, width, height);
++	primary->SetColor(primary, 0x80, 0x0, 0x20, 0xff);
++
++    /* Set the font on the primary surface */
++    primary->SetFont( primary, font );
++
++    /* Clear the surface */
++    primary->Clear( primary, 0, 0, 0, 0 );
++
++    /* Draw a string */
++    primary->DrawString( primary, "Hello, DirectFB!", -1, width/2, height/2, DSTF_CENTER );
++
++    printf("Init 3\n");
++    /* Flip the surface */
++    //primary->Flip( primary, NULL, DSFLIP_WAITFORSYNC );
++    primary->Flip( primary, NULL, DSFLIP_NONE );
++
++    /* Wait for the user to exit */
++    getchar();
++
++    /* Clean up */
++    font->Release( font );
++    primary->Release( primary );
++    dfb->Release( dfb );
++    return ret;
++}
++
+-- 
+2.25.1
+
