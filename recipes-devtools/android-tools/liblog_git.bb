@@ -28,8 +28,7 @@ do_compile(){
 do_install(){
     install -d ${D}${libdir}
     install -d ${D}${includedir}
-    install -m 0644 ${S}/liblog.so ${D}${libdir}
-    #install -m 0644 ${S}/lib/* ${D}${libdir}
+    install -m 0644 ${S}/liblog*.so* ${D}${libdir}
     cp -ra ${S}/include/* ${D}${includedir}
 }
 
