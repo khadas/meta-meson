@@ -13,7 +13,7 @@ ARM_TARGET = "32"
 ARM_TARGET_aarch64 = "64"
 
 PREBUILT_TARGET = ""
-PREBUILT_TARGET_aq2432 = "aq2432"
+PREBUILT_TARGET_aq2432 = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'aq2432_zapper', 'aq2432', d)}"
 
 S = "${WORKDIR}/git"
 do_install() {
