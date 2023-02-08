@@ -1,0 +1,11 @@
+[Unit]
+Description=Arka DVB application
+Requires=dtvkit_low_mem.service
+After=dtvkit_low_mem.service
+
+[Service]
+
+ExecStart=/usr/bin/Arka
+
+[Install]
+WantedBy=multi-user.target

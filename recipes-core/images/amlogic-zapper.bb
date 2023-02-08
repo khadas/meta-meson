@@ -56,6 +56,7 @@ IMAGE_INSTALL += " \
     tinyalsa-tools \
     glibc-utils \
     localedef \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'arka', '', d)} \
 "
 
 IMAGE_INSTALL += " \

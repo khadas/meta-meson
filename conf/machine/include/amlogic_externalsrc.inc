@@ -148,3 +148,4 @@ EXTERNALSRC_pn-gst-plugin-venc-h265 = "${@'${MESON_ROOT_PATH}/aml-comp/multimedi
 EXTERNALSRC_pn-aml-launcher = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/yocto-launcher'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/yocto-launcher')]}"
 EXTERNALSRC_pn-youtube-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/thunder-services/Cobalt' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/thunder-services/Cobalt')) else ''}"
 EXTERNALSRC_pn-amazon-prime-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/amazon-plugin' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/amazon-plugin')) else ''}"
+EXTERNALSRC_pn-arka = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/arka' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/arka')) else ''}"
