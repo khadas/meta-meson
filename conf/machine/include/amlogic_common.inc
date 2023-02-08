@@ -124,3 +124,5 @@ DISTRO_FEATURES_append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', '', 'Ove
 
 # dm-verity
 DISTRO_FEATURES_append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', 'dm-verity', '', d)}"
+
+DISTRO_FEATURES_append = " adb dropbear"

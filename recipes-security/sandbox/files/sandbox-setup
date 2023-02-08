@@ -1,6 +1,5 @@
 #!/bin/sh
 
-XDG_RUNTIME_DIR=/run/user/0
 GROUP_SYSTEM=system
 GROUP_SESSION=session
 
@@ -44,12 +43,3 @@ chmod -R g+rw /sys/module/drm/parameters/
 chgrp -R $GROUP_SYSTEM /sys/module/aml_drm/parameters/
 chmod -R g+rw /sys/module/aml_drm/parameters/
 
-while [ ! -S $XDG_RUNTIME_DIR/bus ]; do
-    usleep 1000
-done
-chgrp $GROUP_SESSION $XDG_RUNTIME_DIR
-chmod 770 $XDG_RUNTIME_DIR
-chgrp $GROUP_SYSTEM $XDG_RUNTIME_DIR/bus
-
-chgrp -R $GROUP_SESSION $XDG_RUNTIME_DIR/systemd
-chmod -R g+rw $XDG_RUNTIME_DIR/systemd

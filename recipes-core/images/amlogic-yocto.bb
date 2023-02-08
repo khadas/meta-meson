@@ -85,6 +85,15 @@ remove_test_files() {
     rm -f ${IMAGE_ROOTFS}/usr/bin/amlMpUnitTest
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-getty', 'disable_getty_service; ', '', d)}"
+disable_getty_service() {
+        if [ -d ${IMAGE_ROOTFS}${sysconfdir}/systemd/system/getty.target.wants/ ]; then
+                rm -f ${IMAGE_ROOTFS}${sysconfdir}/systemd/system/getty.target.wants/*;
+
+        fi
+}
+
+
 R = "${IMAGE_ROOTFS}"
 
 PROJECT_BRANCH ?= "default"

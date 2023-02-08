@@ -29,7 +29,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     systemd \
     bash \
     curl \
-    dropbear \
     e2fsprogs \
     e2fsprogs-e2fsck \
     e2fsprogs-mke2fs \
@@ -55,7 +54,6 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     dbus \
     faad2 \
     libopus \
-    android-tools \
     aml-hdcp \
     liblog \
     android-tools-logcat \
@@ -74,6 +72,8 @@ RDEPENDS_packagegroup-amlogic-baserootfs = "\
     aml-utils-simulate-key \
     vulkan-loader \
     aml-hdmicec \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'adb', 'android-tools', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dropbear', 'dropbear', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aamp', 'aamp', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'fota-upgrade', 'aml-utils-fota-upgrade', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware', '', d)} \
