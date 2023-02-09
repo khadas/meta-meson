@@ -1,0 +1,22 @@
+commit 7e6b5f9fbeab913093f2e6e2b8db063dc955a090
+Author: xiaotao.wei <xiaotao.wei@amlogic.com>
+Date:   Tue Mar 15 09:50:51 2022 +0800
+
+    change DRM_FORMAT_MOD_INVALID to DRM_FORMAT_MOD_LINEAR,
+    for gstreamer request dmabuf fail with low version
+    
+    Change-Id: I4a7943ed5bcdf7ee389eb64191c3b56fdd344790
+
+diff --git a/libweston/linux-dmabuf.c b/libweston/linux-dmabuf.c
+index 66702a4..e2f975b 100644
+--- a/libweston/linux-dmabuf.c
++++ b/libweston/linux-dmabuf.c
+@@ -118,7 +118,7 @@ params_add(struct wl_client *client,
+ 	buffer->attributes.stride[plane_idx] = stride;
+ 
+ 	if (wl_resource_get_version(params_resource) < ZWP_LINUX_DMABUF_V1_MODIFIER_SINCE_VERSION)
+-		buffer->attributes.modifier[plane_idx] = DRM_FORMAT_MOD_INVALID;
++		buffer->attributes.modifier[plane_idx] = DRM_FORMAT_MOD_LINEAR;
+ 	else
+ 		buffer->attributes.modifier[plane_idx] = ((uint64_t)modifier_hi << 32) |
+ 							 modifier_lo;

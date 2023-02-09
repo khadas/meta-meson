@@ -1,0 +1,16 @@
+diff --git a/libweston/renderer-gl/egl-glue.c b/libweston/renderer-gl/egl-glue.c
+index 013172a..a15f235 100644
+--- a/libweston/renderer-gl/egl-glue.c
++++ b/libweston/renderer-gl/egl-glue.c
+@@ -39,6 +39,11 @@
+ 
+ #include <assert.h>
+ 
++/* may not define, see https://www.khronos.org/registry/EGL/api/EGL/eglext.h */
++#ifndef EGL_DRM_RENDER_NODE_FILE_EXT
++#define EGL_DRM_RENDER_NODE_FILE_EXT      0x3377
++#endif
++
+ struct egl_config_print_info {
+ 	const EGLint *attrs;
+ 	unsigned attrs_count;

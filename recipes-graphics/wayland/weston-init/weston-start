@@ -79,4 +79,4 @@ if test -z "$XDG_RUNTIME_DIR"; then
 	fi
 fi
 
-exec openvt $openvt_args -- $launcher $weston_args --log=@LOCALSTATEDIR@/log/weston.log --config=/etc/aml-weston.ini
+exec openvt $openvt_args -- $launcher $weston_args --log=@LOCALSTATEDIR@/log/weston.log --config=/etc/aml-weston.ini --socket=wayland-0

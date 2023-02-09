@@ -1,0 +1,92 @@
+From 3de489c0e05015662b543d05700251850903ecd1 Mon Sep 17 00:00:00 2001
+From: "limin.tian" <limin.tian@amlogic.com>
+Date: Wed, 15 Dec 2021 19:33:59 +0800
+Subject: [PATCH] module: display
+---
+ libweston/backend-drm/modes.c | 12 ++++++++++++
+ libweston/compositor.c        | 30 +++++++++++++++++++++++++-----
+ 2 files changed, 37 insertions(+), 5 deletions(-)
+ mode change 100644 => 100755 libweston/backend-drm/modes.c
+ mode change 100644 => 100755 libweston/compositor.c
+diff --git a/libweston/backend-drm/modes.c b/libweston/backend-drm/modes.c
+old mode 100644
+new mode 100755
+index f5f4a43..19c0d97
+--- a/libweston/backend-drm/modes.c
++++ b/libweston/backend-drm/modes.c
+@@ -438,6 +438,18 @@ drm_output_print_modes(struct drm_output *output)
+ 		dm = to_drm_mode(m);
+ 
+ 		aspect_ratio = aspect_ratio_to_string(m->aspect_ratio);
++#ifdef MESON_DRM_FIX_UI_SIZE
++        if(m->flags & WL_OUTPUT_MODE_CURRENT)
++            weston_log_continue(STAMP_SPACE "%dx%d@%.1f%s%s%s, %.1f MHz(MESON_DRM_FIX_UI_SIZE)\n",
++                output->display_size.width, output->display_size.height, m->refresh / 1000.0,
++                aspect_ratio,
++                m->flags & WL_OUTPUT_MODE_PREFERRED ?
++                ", preferred" : "",
++                m->flags & WL_OUTPUT_MODE_CURRENT ?
++                ", current" : "",
++                dm->mode_info.clock / 1000.0);
++        else
++#endif
+ 		weston_log_continue(STAMP_SPACE "%dx%d@%.1f%s%s%s, %.1f MHz\n",
+ 				    m->width, m->height, m->refresh / 1000.0,
+ 				    aspect_ratio,
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+old mode 100644
+new mode 100755
+index 4c7b424..f5dbefa
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -81,6 +81,8 @@
+ #include "libweston-internal.h"
+ 
+ #include "weston-log-internal.h"
++#include <libweston/backend-drm.h>
++#include <libweston/backend-drm/drm-internal.h>
+ 
+ /**
+  * \defgroup head Head
+@@ -7283,7 +7285,9 @@ weston_compositor_print_scene_graph(struct weston_compositor *ec)
+ 	char *ret;
+ 	size_t len;
+ 	int err;
+-
++#ifdef MESON_DRM_FIX_UI_SIZE
++    struct drm_output *drm_output_p = NULL;
++#endif
+ 	fp = open_memstream(&ret, &len);
+ 	assert(fp);
+ 
+@@ -7302,10 +7306,26 @@ weston_compositor_print_scene_graph(struct weston_compositor *ec)
+ 			output->x, output->y,
+ 			output->x + output->width,
+ 			output->y + output->height);
+-		fprintf(fp, "\tmode: %dx%d@%.3fHz\n",
+-			output->current_mode->width,
+-			output->current_mode->height,
+-			output->current_mode->refresh / 1000.0);
++#ifdef MESON_DRM_FIX_UI_SIZE
++        drm_output_p = wl_container_of(output, drm_output_p,base);
++        if(drm_output_p) {
++            fprintf(fp, "\tmode: %dx%d@%.3fHz\n",
++                    drm_output_p->display_size.width,
++                    drm_output_p->display_size.height,
++                    output->current_mode->refresh / 1000.0);
++        }
++        else {
++            fprintf(fp, "\tmode: %dx%d@%.3fHz\n",
++                output->current_mode->width,
++                output->current_mode->height,
++                output->current_mode->refresh / 1000.0);
++        }
++#else
++        fprintf(fp, "\tmode: %dx%d@%.3fHz\n",
++            output->current_mode->width,
++            output->current_mode->height,
++            output->current_mode->refresh / 1000.0);
++#endif
+ 		fprintf(fp, "\tscale: %d\n", output->scale);
+ 
+ 		fprintf(fp, "\trepaint status: %s\n",

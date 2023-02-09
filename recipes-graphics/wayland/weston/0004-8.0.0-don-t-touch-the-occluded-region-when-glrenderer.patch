@@ -1,0 +1,50 @@
+From 41b7c7cb2d72ddc862a936aa7ce72cff87c4e4ee Mon Sep 17 00:00:00 2001
+From: lingjie li <lingjie.li@amlogic.com>
+Date: Mon, 8 Feb 2021 20:04:44 +0800
+Subject: [PATCH] don't touch the occluded region when glrenderer
+---
+ libweston/backend-drm/state-propose.c | 8 ++++++++
+ libweston/compositor.c                | 4 ++++
+ 2 files changed, 12 insertions(+)
+diff --git a/libweston/backend-drm/state-propose.c b/libweston/backend-drm/state-propose.c
+index e271b87..a3bdca6 100644
+--- a/libweston/backend-drm/state-propose.c
++++ b/libweston/backend-drm/state-propose.c
+@@ -858,6 +858,9 @@ drm_output_propose_state(struct weston_output *output_base,
+ 		pixman_region32_t clipped_view;
+ 		bool totally_occluded = false;
+ 
++#if MESON_VIDEO_PLAN_SUPPORT
++		pixman_region32_init(&ev->clip);
++#endif
+ 		drm_debug(b, "\t\t\t[view] evaluating view %p for "
+ 		             "output %s (%lu)\n",
+ 		          ev, output->base.name,
+@@ -885,6 +888,11 @@ drm_output_propose_state(struct weston_output *output_base,
+ 		 * the entire output */
+ 		totally_occluded = !pixman_region32_not_empty(&surface_overlap);
+ 		if (totally_occluded) {
++#if MESON_VIDEO_PLAN_SUPPORT
++			// if occluded , we need set the clip, to make sure it will not draw when glrenderer.
++			// to avoid the video plane coverd by this  view.
++			pixman_region32_union(&ev->clip, &ev->clip, &clipped_view);
++#endif
+ 			drm_debug(b, "\t\t\t\t[view] ignoring view %p "
+ 			             "(occluded on our output)\n", ev);
+ 			pixman_region32_fini(&surface_overlap);
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 3aad0c8..a052791 100644
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -2526,7 +2526,11 @@ view_accumulate_damage(struct weston_view *view,
+ 	pixman_region32_union(&view->plane->damage,
+ 			      &view->plane->damage, &damage);
+ 	pixman_region32_fini(&damage);
++#if MESON_VIDEO_PLAN_SUPPORT
++	pixman_region32_union(&view->clip, &view->clip, opaque);
++#else
+ 	pixman_region32_copy(&view->clip, opaque);
++#endif
+ 	pixman_region32_union(opaque, opaque, &view->transform.opaque);
+ }
+ 

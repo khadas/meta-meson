@@ -1,0 +1,31 @@
+commit ba5081908436d870e1329777459fef3ca993a248
+Author: xiaotao.wei <xiaotao.wei@amlogic.com>
+Date:   Tue Mar 15 09:44:27 2022 +0800
+
+    revert gl-renderer: Don't require buffer age when using partial update
+    related CL:https://cgit.freedesktop.org/wayland/weston/commit/?id=a2a8d382
+    
+    Change-Id: I227525ca42b3d22e5b77e3bd03eef42453884c79
+
+diff --git a/libweston/renderer-gl/gl-renderer.c b/libweston/renderer-gl/gl-renderer.c
+index a5f5eae..7231f73 100644
+--- a/libweston/renderer-gl/gl-renderer.c
++++ b/libweston/renderer-gl/gl-renderer.c
+@@ -1404,7 +1404,7 @@ output_get_damage(struct weston_output *output,
+ 	EGLBoolean ret;
+ 	int i;
+ 
+-	if (gr->has_egl_buffer_age || gr->has_egl_partial_update) {
++	if (gr->has_egl_buffer_age) {
+ 		ret = eglQuerySurface(gr->egl_display, go->egl_surface,
+ 				      EGL_BUFFER_AGE_EXT, &buffer_age);
+ 		if (ret == EGL_FALSE) {
+@@ -1444,7 +1444,7 @@ output_rotate_damage(struct weston_output *output,
+ 	struct gl_output_state *go = get_output_state(output);
+ 	struct gl_renderer *gr = get_renderer(output->compositor);
+ 
+-	if (!gr->has_egl_buffer_age && !gr->has_egl_partial_update)
++	if (!gr->has_egl_buffer_age)
+ 		return;
+ 
+ 	go->buffer_damage_index += BUFFER_DAMAGE_COUNT - 1;

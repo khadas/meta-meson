@@ -1,0 +1,21 @@
+diff --git a/meson.build b/meson.build
+index b988974..9b57bb8 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1,6 +1,6 @@
+ project('wayland-protocols',
+ 	version: '1.24',
+-	meson_version: '>= 0.54.0',
++	meson_version: '< 0.54.0',
+ 	license: 'MIT/Expat',
+ )
+ 
+@@ -111,7 +111,7 @@ wayland_protocols = declare_dependency(
+ 	},
+ )
+ 
+-meson.override_dependency('wayland-protocols', wayland_protocols)
++#meson.override_dependency('wayland-protocols', wayland_protocols)
+ 
+ if get_option('tests')
+ 	subdir('tests')

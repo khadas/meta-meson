@@ -1,0 +1,290 @@
+diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
+index d99dc76..38047e2 100644
+--- a/include/libweston/libweston.h
++++ b/include/libweston/libweston.h
+@@ -43,6 +43,7 @@ extern "C" {
+ 
+ #include <libweston/matrix.h>
+ #include <libweston/zalloc.h>
++#define MESON_VIDEO_PLAN_SUPPORT 1
+ 
+ struct weston_geometry {
+ 	int32_t x, y;
+@@ -1349,6 +1350,9 @@ struct weston_view {
+ 		struct weston_matrix inverse;
+ 
+ 		struct weston_transform position; /* matrix from x, y */
++#ifdef MESON_VIDEO_PLAN_SUPPORT
++		pixman_region32_t transparent;
++#endif
+ 	} transform;
+ 
+ 	/*
+@@ -1549,6 +1553,15 @@ struct weston_surface {
+ 	enum weston_hdcp_protection desired_protection;
+ 	enum weston_hdcp_protection current_protection;
+ 	enum weston_surface_protection_mode protection_mode;
++
++#if MESON_VIDEO_PLAN_SUPPORT
++	/* use this flag to mark video surface of amlogic
++	 * which surface mark as video surface need full fit with:
++	 *  1. is dmabuffer which need dri, for avoid memory/bus bandwidth increase by buffer.
++	 *  2. is YUV format. (for amlogic video plane it below primary plane (zpos can't effect for this situation)
++	 */
++	bool is_video_surface;
++#endif
+ };
+ 
+ struct weston_subsurface {
+diff --git a/libweston/backend-drm/drm-gbm.c b/libweston/backend-drm/drm-gbm.c
+index d0a4c6c..b457ba1 100644
+--- a/libweston/backend-drm/drm-gbm.c
++++ b/libweston/backend-drm/drm-gbm.c
+@@ -294,8 +294,12 @@ drm_output_render_gl(struct drm_output_state *state, pixman_region32_t *damage)
+ 		return NULL;
+ 	}
+ 
++#if MESON_VIDEO_PLAN_SUPPORT
++	ret = drm_fb_get_from_bo(bo, b, false, BUFFER_GBM_SURFACE);
++#else
+ 	/* The renderer always produces an opaque image. */
+ 	ret = drm_fb_get_from_bo(bo, b, true, BUFFER_GBM_SURFACE);
++#endif
+ 	if (!ret) {
+ 		weston_log("failed to get drm_fb for bo\n");
+ 		gbm_surface_release_buffer(output->gbm_surface, bo);
+diff --git a/libweston/backend-drm/state-propose.c b/libweston/backend-drm/state-propose.c
+index 72e4db9..8cdd97f 100644
+--- a/libweston/backend-drm/state-propose.c
++++ b/libweston/backend-drm/state-propose.c
+@@ -734,7 +734,15 @@ drm_output_prepare_plane_view(struct drm_output_state *state,
+ 
+ 		if (mode == DRM_OUTPUT_PROPOSE_STATE_MIXED) {
+ 			assert(scanout_state != NULL);
+-			if (scanout_state->zpos >= plane->zpos_max) {
++#if MESON_VIDEO_PLAN_SUPPORT
++			/* we need transparent the region coverd by video,
++			 * so we can ignore zpos of scanout_state for video surface.
++			 */
++			if (!ev->surface->is_video_surface && scanout_state->zpos >= plane->zpos_max)
++#else
++			if (scanout_state->zpos >= plane->zpos_max)
++#endif
++			{
+ 				drm_debug(b, "\t\t\t\t[plane] not adding plane %d to "
+ 					     "candidate list: primary's zpos "
+ 					     "value (%"PRIu64") higher than "
+@@ -826,7 +834,7 @@ drm_output_propose_state(struct weston_output *output_base,
+ 	struct drm_output_state *state;
+ 	struct drm_plane_state *scanout_state = NULL;
+ 
+-	pixman_region32_t renderer_region;
++	pixman_region32_t renderer_region, video_cover_region;
+ 	pixman_region32_t occluded_region;
+ 
+ 	bool renderer_ok = (mode != DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY);
+@@ -896,6 +904,7 @@ drm_output_propose_state(struct weston_output *output_base,
+ 	 */
+ 	pixman_region32_init(&renderer_region);
+ 	pixman_region32_init(&occluded_region);
++	pixman_region32_init(&video_cover_region);
+ 
+ 	wl_list_for_each(pnode, &output->base.paint_node_z_order_list,
+ 			 z_order_link) {
+@@ -975,10 +984,39 @@ drm_output_propose_state(struct weston_output *output_base,
+ 		pixman_region32_intersect(&surface_overlap, &renderer_region,
+ 					  &clipped_view);
+ 		if (pixman_region32_not_empty(&surface_overlap)) {
++#if MESON_VIDEO_PLAN_SUPPORT
++			/* video overly zpos range on meson is huge (0-255) , but
++			 * big then primary plane zpos(65-128) part is not effect, the video
++			 * overly always below primary plane So if video view (NV21/NV21
++			 * format) occluded by renderer views (put into primary plane),
++			 * no need force to gpu composition.
++			 */
++			if (!ev->surface->is_video_surface) {
++				drm_debug(b, "\t\t\t\t[view]none-video surface not assigning view %p to plane "
++						"(occluded by renderer views)\n", ev);
++				force_renderer = true;
++			}
++#else
+ 			drm_debug(b, "\t\t\t\t[view] not assigning view %p to plane "
+ 			             "(occluded by renderer views)\n", ev);
+ 			force_renderer = true;
++#endif
++		}
++
++#if MESON_VIDEO_PLAN_SUPPORT
++		pixman_region32_intersect(&surface_overlap, &video_cover_region,
++				&clipped_view);
++		if (pixman_region32_not_empty(&surface_overlap)) {
++			if (!ev->surface->is_video_surface) {
++				drm_debug(b, "\t\t\t\t[view] not assigning view %p to plane "
++						"(block the video views)\n", ev);
++				force_renderer = true;
++				pixman_region32_copy(&ev->transform.transparent, &surface_overlap);
++			}
++		} else {
++			pixman_region32_clear(&ev->transform.transparent);
+ 		}
++#endif
+ 		pixman_region32_fini(&surface_overlap);
+ 
+ 		/* In case of enforced mode of content-protection do not
+@@ -1011,6 +1049,13 @@ drm_output_propose_state(struct weston_output *output_base,
+ 				FAILURE_REASONS_FORCE_RENDERER;
+ 		}
+ 
++#if MESON_VIDEO_PLAN_SUPPORT
++		if (ps && ev->surface->is_video_surface) {
++			drm_debug(b, "meson set video cover region");
++			pixman_region32_copy(&video_cover_region, &clipped_view);
++		}
++#endif
++
+ 		if (ps) {
+ 			current_lowest_zpos = ps->zpos;
+ 			drm_debug(b, "\t\t\t[plane] next zpos to use %"PRIu64"\n",
+@@ -1037,7 +1082,12 @@ drm_output_propose_state(struct weston_output *output_base,
+ 		 * entire clipped area if the whole view is known to be
+ 		 * opaque) does not necessarily occlude what's behind it, as
+ 		 * it could be alpha-blended. */
++#if MESON_VIDEO_PLAN_SUPPORT
++		// video layer need force to opaque
++		if (!weston_view_is_opaque(ev, &clipped_view) || ev->surface->is_video_surface)
++#else
+ 		if (!weston_view_is_opaque(ev, &clipped_view))
++#endif
+ 			pixman_region32_intersect(&clipped_view,
+ 						  &clipped_view,
+ 						  &ev->transform.opaque);
+@@ -1050,6 +1100,7 @@ drm_output_propose_state(struct weston_output *output_base,
+ 
+ 	pixman_region32_fini(&renderer_region);
+ 	pixman_region32_fini(&occluded_region);
++	pixman_region32_fini(&video_cover_region);
+ 
+ 	/* In renderer-only mode, we can't test the state as we don't have a
+ 	 * renderer buffer yet. */
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 1670c50..788ee63 100644
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -57,6 +57,11 @@
+ 
+ #include <libweston/libweston.h>
+ #include <libweston/weston-log.h>
++
++#if MESON_VIDEO_PLAN_SUPPORT
++#include <drm_fourcc.h>
++#endif
++
+ #include "linux-dmabuf.h"
+ #include "viewporter-server-protocol.h"
+ #include "presentation-time-server-protocol.h"
+@@ -410,6 +415,9 @@ weston_view_create(struct weston_surface *surface)
+ 	pixman_region32_init(&view->geometry.scissor);
+ 	pixman_region32_init(&view->transform.boundingbox);
+ 	view->transform.dirty = 1;
++#ifdef MESON_VIDEO_PLAN_SUPPORT
++	pixman_region32_init(&view->transform.transparent);
++#endif
+ 
+ 	return view;
+ }
+@@ -626,6 +634,9 @@ weston_surface_create(struct weston_compositor *compositor)
+ 	surface->current_protection = WESTON_HDCP_DISABLE;
+ 	surface->protection_mode = WESTON_SURFACE_PROTECTION_MODE_RELAXED;
+ 
++#if MESON_VIDEO_PLAN_SUPPORT
++	surface->is_video_surface = false;
++#endif
+ 	return surface;
+ }
+ 
+@@ -2289,6 +2300,9 @@ weston_view_destroy(struct weston_view *view)
+ 	pixman_region32_fini(&view->geometry.scissor);
+ 	pixman_region32_fini(&view->transform.boundingbox);
+ 	pixman_region32_fini(&view->transform.opaque);
++#ifdef MESON_VIDEO_PLAN_SUPPORT
++	pixman_region32_fini(&view->transform.transparent);
++#endif
+ 
+ 	weston_view_set_transform_parent(view, NULL);
+ 	weston_view_set_output(view, NULL);
+@@ -2517,6 +2531,34 @@ weston_surface_attach(struct weston_surface *surface,
+ 		if (weston_surface_is_mapped(surface))
+ 			weston_surface_unmap(surface);
+ 	}
++#if MESON_VIDEO_PLAN_SUPPORT
++	struct linux_dmabuf_buffer *dmabuf = NULL;
++	if (buffer) {
++		dmabuf = linux_dmabuf_buffer_get(buffer->resource);
++		if (dmabuf) {
++			switch (dmabuf->attributes.format) {
++				case DRM_FORMAT_NV12:
++				case DRM_FORMAT_NV21:
++				case DRM_FORMAT_YUV420:
++				case DRM_FORMAT_YVU420:
++				case DRM_FORMAT_YUYV:
++				case DRM_FORMAT_YVYU:
++					// add WESTON_FORCE_DRI env for dri yuv dmabuffer, if we not use weston_direct_display protocol
++					if (!dmabuf->direct_display) {
++						if (getenv("WESTON_FORCE_DRI"))
++							dmabuf->direct_display = true;
++					}
++					if (dmabuf->direct_display) {
++						surface->is_video_surface = true;
++					}
++					break;
++				default:
++					weston_log_scope_printf(surface->compositor->debug_scene, "[meson]===>dma buffer import drm format:%#x in [%s]%s:%d\n", dmabuf->attributes.format, __func__ , __FILE__, __LINE__);
++					break;
++			}
++		}
++	}
++#endif
+ 
+ 	surface->compositor->renderer->attach(surface, buffer);
+ 
+@@ -2611,6 +2653,13 @@ output_accumulate_damage(struct weston_output *output)
+ 				 z_order_link) {
+ 			if (pnode->view->plane != plane)
+ 				continue;
++#if MESON_VIDEO_PLAN_SUPPORT
++			// meson platform video plane is below primary plane.(but the zpos may hight then primary plane.
++			// Avoid video plane region make the primary plane be occlude.
++
++			// We assume the overlay plane only have one surface, on weston just primary plane support glrender compositor.
++			if (!pnode->view->surface->is_video_surface)
++#endif
+ 
+ 			view_accumulate_damage(pnode->view, &opaque);
+ 		}
+diff --git a/libweston/renderer-gl/gl-renderer.c b/libweston/renderer-gl/gl-renderer.c
+index a5f5eae..0ba7443 100644
+--- a/libweston/renderer-gl/gl-renderer.c
++++ b/libweston/renderer-gl/gl-renderer.c
+@@ -1126,6 +1126,22 @@ draw_paint_node(struct weston_paint_node *pnode,
+ 		gs->used_in_output_repaint = true;
+ 	}
+ 
++#if MESON_VIDEO_PLAN_SUPPORT
++	if (pixman_region32_not_empty(&pnode->view->transform.transparent)) {
++		glBlendFunc(GL_ONE, GL_ZERO);
++		struct gl_shader_config config = {
++			.req = {
++				.variant = SHADER_VARIANT_SOLID,
++			},
++			.view_alpha = 0.0f,
++		};
++		glEnable(GL_BLEND);
++		repaint_region(gr, pnode->view, pnode->output,
++					&repaint, &pnode->view->transform.transparent, &config);
++		gs->used_in_output_repaint = true;
++	}
++#endif
++
+ 	pixman_region32_fini(&surface_blend);
+ 	pixman_region32_fini(&surface_opaque);
+ 

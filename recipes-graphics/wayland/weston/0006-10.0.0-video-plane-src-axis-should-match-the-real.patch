@@ -1,0 +1,44 @@
+diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
+index 55e9414..10ccb52 100644
+--- a/libweston/backend-drm/drm-internal.h
++++ b/libweston/backend-drm/drm-internal.h
+@@ -478,6 +478,8 @@ struct drm_plane {
+ 
+ 	struct wl_list link;
+ 
++	bool is_video_plane;
++
+ 	struct weston_drm_format_array formats;
+ };
+ 
+diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
+index 780d007..cd1a3e6 100644
+--- a/libweston/backend-drm/kms.c
++++ b/libweston/backend-drm/kms.c
+@@ -484,6 +484,10 @@ drm_plane_populate_formats(struct drm_plane *plane, const drmModePlane *kplane,
+ 
+ 		if (fmt->modifiers.size == 0)
+ 			weston_drm_format_array_remove_latest_format(&plane->formats);
++
++		if (fmt->format == DRM_FORMAT_NV12 ||
++		    fmt->format == DRM_FORMAT_NV21)
++			plane->is_video_plane = true;
+ 	}
+ 
+ out:
+diff --git a/libweston/backend-drm/state-helpers.c b/libweston/backend-drm/state-helpers.c
+index 75a2a18..bc44398 100644
+--- a/libweston/backend-drm/state-helpers.c
++++ b/libweston/backend-drm/state-helpers.c
+@@ -228,7 +228,10 @@ drm_plane_state_coords_for_view(struct drm_plane_state *state,
+ 	/* Now calculate the source rectangle, by finding the extents of the
+ 	 * view, and working backwards to source co-ordinates. */
+ 	pixman_region32_init(&src_rect);
+-	pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
++	if (state->plane->is_video_plane)
++		src_rect = ev->transform.boundingbox;
++	else
++		pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
+ 				  &output->base.region);
+ 	box = pixman_region32_extents(&src_rect);
+ 	weston_view_from_global_float(ev, box->x1, box->y1, &sxf1, &syf1);
