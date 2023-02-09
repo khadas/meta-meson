@@ -35,6 +35,13 @@ echo 1 > /sys/class/graphics/fb1/blank
 
 show_swupdateui()
 {
+    # Clean the default directfbrc file and add new configuration
+    # suitable for the upgrade.
+    if [ -f "/etc/directfbrc" ]; then
+        cat /dev/null > /etc/directfbrc
+        cat /etc/ota_directfbrc > /etc/directfbrc
+    fi
+
     if [ -f "/usr/bin/swupdateui" ]; then
         swupdateui /etc/recovery.bmp &
     fi

@@ -6,7 +6,7 @@ LICENSE = "CLOSED"
 inherit pkgconfig
 
 SRC_URI += "file://recovery.bmp \
-            file://directfbrc \
+            file://ota_directfbrc \
 "
 
 DEPENDS += "directfb swupdate"
@@ -26,7 +26,7 @@ do_install() {
     install -m 0644 ${WORKDIR}/recovery.bmp ${D}/etc
 
     install -d ${D}${sysconfdir}
-    install -m 0644 ${WORKDIR}/directfbrc ${D}/etc
+    install -m 0644 ${WORKDIR}/ota_directfbrc ${D}/etc
 }
 
 FILES_${PN} = " /usr/bin/* /etc/*"
