@@ -43,6 +43,7 @@ EXTERNALSRC_pn-realtek-btusb = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4
 EXTERNALSRC_pn-realtek-btuart = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/realtek/uart_driver' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/realtek/uart_driver')) else ''}"
 EXTERNALSRC_pn-realtek-hciattach = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/realtek/rtk_hciattach' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/bluetooth/realtek/rtk_hciattach')) else ''}"
 EXTERNALSRC_pn-wififw = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/wifi' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/wifi')) else ''}"
+EXTERNALSRC_pn-tuner = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/tuner' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-4.9/tuner')) else ''}"
 EXTERNALSRC_pn-aml-hdcprx = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/hdcp')) else ''}"
 EXTERNALSRC_pn-aml-provision = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/provision' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/provision')) else ''}"
 EXTERNALSRC_pn-aml-efuse = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/efuse' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/efuse')) else ''}"
