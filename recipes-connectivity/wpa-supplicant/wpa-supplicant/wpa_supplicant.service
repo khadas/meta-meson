@@ -2,12 +2,14 @@
 Description=WPA supplicant
 Before=network.target
 Wants=network.target
+After=wifi.service
 
 [Service]
-ExecStartPre=/usr/bin/createDefaultWPASupplicantConfigFile.sh
-ExecStart=/usr/sbin/wpa_supplicant -B -Dnl80211 -c/opt/wifi/wpa_supplicant.conf -iwlan0 -P/var/run/wpa_supplicant/wlan0.pid -d -t -f /opt/logs/wpa_supplicant.log
 Type=oneshot
+ExecStart=/usr/sbin/wpa_supplicant -u -B -Dnl80211 -iwlan0 -c /etc/wpa_supplicant.conf
 RemainAfterExit=yes
+Restart=on-failure
+RestartSec=1
 
 [Install]
 WantedBy=multi-user.target

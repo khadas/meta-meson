@@ -29,20 +29,12 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 PACKAGECONFIG_remove = "gnutls"
 PACKAGECONFIG_append = " openssl"
 
-
 inherit systemd
 
-SRC_URI += " file://createDefaultWPASupplicantConfigFile.sh"
 SRC_URI += " file://wpa_supplicant.service"
 
 CVE_PRODUCT = "wpa_supplicant"
 S = "${WORKDIR}/wpa_supplicant-${PV}"
-
-
-
-
-
-
 
 EXTRA_OEMAKE = "'LIBDIR=${libdir}' 'INCDIR=${includedir}' 'BINDIR=${sbindir}'"
 
@@ -67,20 +59,6 @@ do_configure () {
 
 	# For rebuild
 	rm -f wpa_supplicant/*.d wpa_supplicant/dbus/*.d
-
-    # Add the "-fPIC" option to CFLAGS to allow the Pace WiFi HAL module to link against wpa-supplicant
-    echo "CFLAGS += -fPIC" >> wpa_supplicant/.config
-
-    echo "CONFIG_BUILD_WPA_CLIENT_SO=y" >> wpa_supplicant/.config
-
-    if grep -q '\bCONFIG_DEBUG_FILE\b' wpa_supplicant/.config; then
-       sed -i -e '/\bCONFIG_DEBUG_FILE\b/s/.*/CONFIG_DEBUG_FILE=y/' wpa_supplicant/.config
-    else
-       echo "CONFIG_DEBUG_FILE=y" >> wpa_supplicant/.config
-    fi
-
-    sed -i -- 's/CONFIG_AP=y/\#CONFIG_AP=y/' wpa_supplicant/.config
-    sed -i -- 's/CONFIG_DRIVER_HOSTAP=y/\#CONFIG_DRIVER_HOSTAPAP=y/' wpa_supplicant/.config
 }
 
 do_compile () {
@@ -143,7 +121,7 @@ CONFFILES:${PN} += "${sysconfdir}/wpa_supplicant.conf"
 
 
 SYSTEMD_SERVICE:${PN} = "wpa_supplicant.service"
-SYSTEMD_AUTO_ENABLE = "disable"
+SYSTEMD_AUTO_ENABLE = "enable"
 
 python split_wpa_supplicant_libs () {
     libdir = d.expand('${libdir}/wpa_supplicant')
@@ -156,3 +134,4 @@ python split_wpa_supplicant_libs () {
         pn = d.getVar('PN')
         d.appendVar('RRECOMMENDS:' + pn + '-dbg', ' ' + ' '.join(split_dbg_packages))
 }
+

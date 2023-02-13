@@ -5,7 +5,6 @@ PACKAGECONFIG_append = " openssl"
 inherit systemd
 
 SRC_URI += " file://wpa_supplicant.service "
-SRC_URI += " file://createDefaultWPASupplicantConfigFile.sh "
 
 do_configure_append () {
    # Add the "-fPIC" option to CFLAGS to allow the Pace WiFi HAL module to link against wpa-supplicant
@@ -24,8 +23,6 @@ do_configure_append () {
 }
 
 do_install_append () {
-   install -d ${D}${bindir}
-   install -m 755 ${WORKDIR}/createDefaultWPASupplicantConfigFile.sh ${D}${bindir}
    if ${@bb.utils.contains("DISTRO_FEATURES", "systemd", "true", "false", d)}
    then
        install -d ${D}${systemd_unitdir}/system
@@ -33,6 +30,14 @@ do_install_append () {
    fi
    install -d ${D}${libdir}
    install -m 0644 ${S}/wpa_supplicant/libwpa_client.so ${D}${libdir}
+
+   #when connect wifi AP, wpa-supplicant need rename /etc/wpa_supplicant.conf, can't write /etc partition on read-only rootfs
+   #let wpa-supplicant to find wpa_supplicant under /data instead of /etc
+   if ${@bb.utils.contains("DISTRO_FEATURES", "OverlayFS", "false", "true", d)}; then
+     WPA_PATH="/data/persistent"
+     sed -i "s#/etc/wpa_supplicant.conf#$WPA_PATH/wpa_supplicant.conf#g" ${D}${systemd_unitdir}/system/wpa_supplicant.service
+     sed -i "/^ExecStart=\/usr\/sbin\/wpa_supplicant/i \ExecStart=/bin/sh -c 'if [ ! -e $WPA_PATH/wpa_supplicant.conf ]; then mkdir -p $WPA_PATH;cp --preserve=context /etc/wpa_supplicant.conf $WPA_PATH/; fi'" ${D}${systemd_unitdir}/system/wpa_supplicant.service
+   fi
 }
 
 FILES_SOLIBSDEV = ""

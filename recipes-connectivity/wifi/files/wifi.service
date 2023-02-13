@@ -18,24 +18,22 @@
 ##########################################################################
 [Unit]
 Description=Wifi Dnl802.11 interface
-Before=systemd-networkd.service
+Before=systemd-networkd.service wpa_supplicant.service
 
 
 #PathExists=!/sys/class/net/${WIFI_INTERFACE}
 
 [Service]
 Type=oneshot
-RemainAfterExit=yeS
 #EnvironmentFile=/etc/device.properties
 #because in modules.alias, sdio wifi power depends on wlan, so wifi_power on will
 #load wlan.ko automatically. If delete all the wlan related entries in modules.alias,
 #we need insmod wlan.ko explicitly here
 ExecStart=/bin/sh -c 'if [ ! -e /etc/wifi/rtk_station_mode ]; then /bin/touch /etc/wifi/rtk_station_mode; fi'
 ExecStart=/usr/bin/wifi_power 1
-ExecStart=/bin/sh -c "if [ ! -f /etc/wifi/ap_name ]; then cat /sys/class/net/wlan0/address | sed 's/://g' > /etc/wifi/ap_name; fi"
-ExecStart=/usr/sbin/wpa_supplicant -u -B -Dnl80211 -iwlan0 -c /etc/wpa_supplicant.conf
-#ExecStart=/sbin/udhcpc -T 1 -b -iwlan0 &
 ExecStop=/sbin/ifconfig wlan0 down
+
+RemainAfterExit=yes
 
 [Install]
 WantedBy=multi-user.target
