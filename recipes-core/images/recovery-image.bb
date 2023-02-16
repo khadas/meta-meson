@@ -19,6 +19,7 @@ IMAGE_INSTALL_append = "\
                     systemd \
                     kernel-modules \
                     system-config \
+                    zram \
                     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
                     ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)} \
                    "
@@ -29,6 +30,8 @@ IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
             aml-swupdate-ui \
             swupdate", "", d)}"
 
+IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate-download", \
+            " wpa-supplicant wifi-amlogic ", "", d)}"
 
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 

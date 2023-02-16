@@ -34,6 +34,8 @@ SRC_URI = "git://github.com/sbabic/swupdate.git;protocol=https \
 SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "nand", \
             bb.utils.contains("ROOTFS_TYPE", "ubifs", "file://ubifs.cfg", "file://squashfs.cfg", d), "", d)}"
 
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-download', 'file://download.cfg', '', d)}"
+
 LTOEXTRA += "-flto-partition=none"
 
 SWUPDATE_WITH_WEBUI ?= "n"

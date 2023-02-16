@@ -2,7 +2,7 @@
 
 FRACTION=25
 MEMORY=`free | grep "Mem:" | awk '{print $2}'`
-SIZE=$((MEMORY * 1024 * FRACTION / 100))
+SIZE=$((MEMORY * FRACTION / 100 * 1024))
 
 case "$1" in
     start)

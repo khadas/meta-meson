@@ -31,7 +31,7 @@ DISTRO_FEATURES_remove = " bluetooth bluez5 "
 
 DISTRO_FEATURES_append = " UI_720P WesterOS_lowmem"
 DISTRO_FEATURES_append = " appmanager AsperitasDvb LauncherWebkit aamp"
-DISTRO_FEATURES_append = " fota-upgrade"
+DISTRO_FEATURES_append = " fota-upgrade swupdate-download"
 DISTRO_FEATURES_append = " remove-test-files"
 
 DM_VERITY_IMAGE = "${@bb.utils.contains('MULTTILIBS', 'multilib:lib32', 'lib32-amlogic-zapperplus', 'amlogic-zapperplus', d)}"
