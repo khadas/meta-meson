@@ -35,7 +35,6 @@ IMAGE_INSTALL += " \
     systemd \
     bash \
     curl \
-    dropbear \
     e2fsprogs \
     e2fsprogs-e2fsck \
     e2fsprogs-mke2fs \
@@ -61,7 +60,6 @@ IMAGE_INSTALL += " \
     dbus \
     faad2 \
     libopus \
-    android-tools \
     aml-hdcp \
     liblog \
     android-tools-logcat \
@@ -80,6 +78,8 @@ IMAGE_INSTALL += " \
     aml-utils-simulate-key \
     vulkan-loader \
     aml-hdmicec \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'adb', 'android-tools', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dropbear', 'dropbear', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aamp', 'aamp', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'fota-upgrade', 'aml-utils-fota-upgrade', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware', '', d)} \
@@ -138,7 +138,7 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'auditd', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', bb.utils.contains('DISTRO_FEATURES', 'selinux-debug', \
-    'packagegroup-core-selinux', 'packagegroup-selinux-minimal', d), '', d)} \
+    'packagegroup-core-selinux', 'packagegroup-selinux-minimal selinux-autorelabel', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'test_tools', 'test-tools', '', d)} \
     "
 
@@ -202,6 +202,14 @@ remove_test_files() {
     rm -f ${IMAGE_ROOTFS}/usr/bin/audio_client_test_ac3
     rm -f ${IMAGE_ROOTFS}/usr/bin/widevine_ce_cdm_unittest
     rm -f ${IMAGE_ROOTFS}/usr/bin/amlMpUnitTest
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-getty', 'disable_getty_service; ', '', d)}"
+disable_getty_service() {
+        if [ -d ${IMAGE_ROOTFS}${sysconfdir}/systemd/system/getty.target.wants/ ]; then
+                rm -f ${IMAGE_ROOTFS}${sysconfdir}/systemd/system/getty.target.wants/*;
+
+        fi
 }
 
 R = "${IMAGE_ROOTFS}"
@@ -270,11 +278,14 @@ python do_create_device_properties() {
     with open(os.path.join(d.getVar("R", True), 'etc', 'device.properties'), 'w') as f:
         for key in sorted(property_keys):
             v = d.getVar(prefix + key)
+            if not key.startswith('PERSIST_'):
+                key = 'ro.' + key
+            key = key.lower().replace('_', '.')
             f.write('%s=%s\n' % (key, v))
         sdkver = d.getVar('YOCTO_SDK_VERSION')
         if not sdkver or len(sdkver) == 0:
             sdkver = time.strftime('%Y%m%d%H%M%S',time.localtime())
-        f.write('SDK_VERSION=%s\n' % sdkver)
+        f.write('ro.sdk.version=%s\n' % sdkver)
 }
 
 process_for_read_only_rootfs(){
