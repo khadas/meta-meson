@@ -202,3 +202,8 @@ RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'FBE', 'keyutils fscryptctl', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'FBE', 'trusted-key-tee', '', d)} \
     "
+
+#Add wlcdmi
+RDEPENDS_packagegroup-amlogic-baserootfs += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'wlcdmi', 'wlcdmi-bin gst-plugin-aml-wlcdmi', '', d)} \
+    "
