@@ -1,0 +1,203 @@
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index cb447d8..3608c1d 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -86,6 +86,44 @@
+ #include <libweston/backend-drm.h>
+ #include <libweston/backend-drm/drm-internal.h>
+ 
++
++#include <linux/dma-buf.h>
++#include <linux/types.h>
++#include <poll.h>
++struct dma_buf_export_sync_file {
++	/**
++	 * @flags: Read/write flags
++	 *
++	 * Must be DMA_BUF_SYNC_READ, DMA_BUF_SYNC_WRITE, or both.
++	 *
++	 * If DMA_BUF_SYNC_READ is set and DMA_BUF_SYNC_WRITE is not set,
++	 * the returned sync file waits on any writers of the dma-buf to
++	 * complete.  Waiting on the returned sync file is equivalent to
++	 * poll() with POLLIN.
++	 *
++	 * If DMA_BUF_SYNC_WRITE is set, the returned sync file waits on
++	 * any users of the dma-buf (read or write) to complete.  Waiting
++	 * on the returned sync file is equivalent to poll() with POLLOUT.
++	 * If both DMA_BUF_SYNC_WRITE and DMA_BUF_SYNC_READ are set, this
++	 * is equivalent to just DMA_BUF_SYNC_WRITE.
++	 */
++	__u32 flags;
++	/** @fd: Returned sync file descriptor */
++	__s32 fd;
++};
++#define DMA_BUF_BASE		'b'
++#define DMA_BUF_IOCTL_EXPORT_SYNC_FILE	_IOWR(DMA_BUF_BASE, 2, struct dma_buf_export_sync_file)
++#define FRAMES_RELEASE (3)
++#define FRAME_CURR (0)
++#define FRAME_PREV (1)
++#define FRAME_FREE (2)
++static struct weston_buffer* video_buffer_release[FRAMES_RELEASE];
++static bool release_cur = false;
++static bool release_pre = false;
++static int video_fence( struct weston_buffer *buffer);
++static void buffer_send_release(struct weston_buffer_reference *ref);
++static bool is_video_buffer(struct weston_buffer *buffer);
++
+ /**
+  * \defgroup head Head
+  * \defgroup output Output
+@@ -638,6 +676,10 @@ weston_surface_create(struct weston_compositor *compositor)
+ 
+ #if MESON_VIDEO_PLAN_SUPPORT
+ 	surface->is_video_surface = false;
++	video_buffer_release[FRAME_CURR] = NULL;
++	video_buffer_release[FRAME_PREV] = NULL;
++	video_buffer_release[FRAME_FREE] = NULL;
++	
+ #endif
+ 	return surface;
+ }
+@@ -2363,7 +2405,14 @@ weston_surface_destroy(struct weston_surface *surface)
+ 		weston_pointer_constraint_destroy(constraint);
+ 
+ 	fd_clear(&surface->acquire_fence_fd);
+-
++	if(surface->is_video_surface) {
++		video_buffer_release[FRAME_FREE]=NULL;
++		video_buffer_release[FRAME_PREV]=NULL;
++		video_buffer_release[FRAME_CURR]=NULL;
++		release_cur = false;
++		release_pre = false;
++	}
++	
+ 	free(surface);
+ }
+ 
+@@ -2438,6 +2487,117 @@ weston_buffer_reference_handle_destroy(struct wl_listener *listener,
+ 	ref->buffer = NULL;
+ }
+ 
++
++
++static int video_fence( struct weston_buffer *buffer)
++{
++	struct linux_dmabuf_buffer *dmabuf = NULL;
++	int dmabuffd = -1;
++	int rc = -1;
++
++	if (buffer) {
++		dmabuf = linux_dmabuf_buffer_get(buffer->resource);
++	} else {
++		weston_log("\n buffer is NULL!\n");
++		return rc;
++	}
++	if(dmabuf) {
++		dmabuffd = dmabuf->attributes.fd[0];
++	} else {
++		weston_log("dmabuf is NULL!\n");
++	}
++	struct dma_buf_export_sync_file dma_fence;
++	memset(&dma_fence,0,sizeof(struct dma_buf_export_sync_file));
++	if(dmabuffd <= 0) {
++		weston_log("dmabuffd <= 0 return!\n");
++		return rc;
++	}
++	dma_fence.flags |= DMA_BUF_SYNC_READ;
++	rc = ioctl(dmabuffd, DMA_BUF_IOCTL_EXPORT_SYNC_FILE, &dma_fence);
++	if (!rc && dma_fence.fd >= 0) {
++		struct pollfd pfd;
++		pfd.fd= dma_fence.fd;
++		pfd.events= POLLIN;
++		pfd.revents= 0;
++		rc= poll( &pfd, 1, 0);
++		close( dma_fence.fd );
++		dma_fence.fd= -1;
++	}
++	// rc==1 means buffer can release safe
++	return rc;
++}
++static bool is_video_buffer(struct weston_buffer *buffer)
++{
++	bool  isVideoBuffer = false;
++#if MESON_VIDEO_PLAN_SUPPORT
++	struct linux_dmabuf_buffer *dmabuf = NULL;
++	if (buffer) {
++		dmabuf = linux_dmabuf_buffer_get(buffer->resource);
++		if (dmabuf) {
++			switch (dmabuf->attributes.format) {
++				case DRM_FORMAT_NV12:
++				case DRM_FORMAT_NV21:
++				case DRM_FORMAT_YUV420:
++				case DRM_FORMAT_YVU420:
++				case DRM_FORMAT_YUYV:
++				case DRM_FORMAT_YVYU:
++					// add WESTON_FORCE_DRI env for dri yuv dmabuffer, if we not use weston_direct_display protocol
++					if (!dmabuf->direct_display) {
++						if (getenv("WESTON_FORCE_DRI"))
++							isVideoBuffer = true;
++					}
++					if (dmabuf->direct_display) {
++						isVideoBuffer = true;
++					}
++					break;
++				default:
++					break;
++			}
++		}
++	}
++#endif
++return isVideoBuffer;
++}
++static void buffer_send_release(struct weston_buffer_reference *ref)
++{
++	if (!is_video_buffer(ref->buffer)) {
++		wl_buffer_send_release(ref->buffer->resource);
++	} else {
++		int fence_rc = -1;
++		video_buffer_release[FRAME_FREE] = video_buffer_release[FRAME_PREV];
++		video_buffer_release[FRAME_PREV] = video_buffer_release[FRAME_CURR];
++		video_buffer_release[FRAME_CURR] = ref->buffer;
++		if(video_buffer_release[FRAME_FREE]!=NULL && release_pre == false )
++		{
++			//no matter get fence or not,send release anyway
++			wl_buffer_send_release(video_buffer_release[FRAME_FREE]->resource);
++		}
++		if(video_buffer_release[FRAME_PREV]!=NULL && release_cur == true) {
++			release_pre = true;
++		}
++		if(video_buffer_release[FRAME_PREV]!=NULL && release_cur == false) {
++			fence_rc = video_fence(video_buffer_release[FRAME_PREV]);
++			if(fence_rc ==1) {
++				wl_buffer_send_release(video_buffer_release[FRAME_PREV]->resource);
++				release_pre = true;
++			} else {
++				release_pre = false;
++			}
++		}
++		if(video_buffer_release[FRAME_CURR]!=NULL) {
++			fence_rc = -1;
++			fence_rc = video_fence(video_buffer_release[FRAME_CURR]);
++			if(fence_rc ==1) {
++				wl_buffer_send_release(video_buffer_release[FRAME_CURR]->resource);
++				release_cur = true;
++			} else {
++				release_cur = false;
++			}
++		}
++	}
++}
++
++
+ WL_EXPORT void
+ weston_buffer_reference(struct weston_buffer_reference *ref,
+ 			struct weston_buffer *buffer)
+@@ -2446,7 +2606,7 @@ weston_buffer_reference(struct weston_buffer_reference *ref,
+ 		ref->buffer->busy_count--;
+ 		if (ref->buffer->busy_count == 0) {
+ 			assert(wl_resource_get_client(ref->buffer->resource));
+-			wl_buffer_send_release(ref->buffer->resource);
++			buffer_send_release(ref);
+ 		}
+ 		wl_list_remove(&ref->destroy_listener.link);
+ 	}

@@ -78,5 +78,5 @@ if test -z "$XDG_RUNTIME_DIR"; then
 		chown $WESTON_USER:$WESTON_USER $XDG_RUNTIME_DIR
 	fi
 fi
-
-exec openvt $openvt_args -- $launcher $weston_args --log=@LOCALSTATEDIR@/log/weston.log --config=/etc/aml-weston.ini --socket=wayland-0
+export WESTON_FORCE_DRI=1
+exec openvt $openvt_args -- $launcher $weston_args --log=var/log/weston.log --config=/etc/aml-weston.ini --socket=wayland-0

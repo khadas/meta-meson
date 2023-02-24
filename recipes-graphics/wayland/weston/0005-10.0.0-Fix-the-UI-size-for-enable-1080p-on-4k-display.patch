@@ -1,0 +1,275 @@
+diff --git a/compositor/main.c b/compositor/main.c
+index bfc468d..0ac8713 100644
+--- a/compositor/main.c
++++ b/compositor/main.c
+@@ -2726,6 +2726,17 @@ load_drm_backend(struct weston_compositor *c,
+ 
+ 	parse_options(options, ARRAY_LENGTH(options), argc, argv);
+ 
++#ifdef MESON_DRM_FIX_UI_SIZE
++	char* buffp = NULL;
++	section = weston_config_get_section(wc, "output", NULL, NULL);
++	weston_config_section_get_string(section,
++					 "ui-size", &buffp,
++					 NULL);
++	if (buffp != NULL) {
++		sscanf(buffp, "%dx%d", &config.fixed_ui_size.width, &config.fixed_ui_size.height);
++	}
++#endif
++
+ 	section = weston_config_get_section(wc, "core", NULL, NULL);
+ 	weston_config_section_get_string(section,
+ 					 "gbm-format", &config.gbm_format,
+diff --git a/include/libweston/backend-drm.h b/include/libweston/backend-drm.h
+index af2da4a..98cfb65 100644
+--- a/include/libweston/backend-drm.h
++++ b/include/libweston/backend-drm.h
+@@ -37,6 +37,9 @@ extern "C" {
+ 
+ #define WESTON_DRM_BACKEND_CONFIG_VERSION 4
+ 
++//This patch enable MESON_DRM_FIX_UI_SIZE by default
++#define MESON_DRM_FIX_UI_SIZE 1
++
+ struct libinput_device;
+ 
+ enum weston_drm_backend_output_mode {
+@@ -223,6 +226,14 @@ struct weston_drm_backend_config {
+ 
+ 	/** Use shadow buffer if using Pixman-renderer. */
+ 	bool use_pixman_shadow;
++
++#ifdef MESON_DRM_FIX_UI_SIZE
++	/** Set the logic window size
++	 * the current_mode 's w/h will not equal real display size any more
++	 * after enable fixed ui size.  */
++	struct weston_size  fixed_ui_size;
++#endif
++	
+ };
+ 
+ #ifdef  __cplusplus
+diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
+index 10ccb52..5208078 100644
+--- a/libweston/backend-drm/drm-internal.h
++++ b/libweston/backend-drm/drm-internal.h
+@@ -310,6 +310,14 @@ struct drm_backend {
+ 	bool fb_modifiers;
+ 
+ 	struct weston_log_scope *debug;
++
++#ifdef MESON_DRM_FIX_UI_SIZE
++	/** Set the logic window size
++	 * the current_mode 's w/h will not equal real display mode size any more
++	 * after enable fixed ui size.	*/
++	struct weston_size	fixed_ui_size;
++#endif
++
+ };
+ 
+ struct drm_mode {
+@@ -575,6 +583,14 @@ struct drm_output {
+ 	bool virtual;
+ 
+ 	submit_frame_cb virtual_submit_frame;
++
++#ifdef MESON_DRM_FIX_UI_SIZE
++	bool current_mode_need_restore;
++
++	/* the real display mode size will saved out of the current mode */
++	struct weston_size display_size;
++#endif
++
+ };
+ 
+ static inline struct drm_head *
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 4278770..9e6e491 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -404,6 +404,13 @@ drm_output_render(struct drm_output_state *state, pixman_region32_t *damage)
+ 	scanout_state->dest_w = output->base.current_mode->width;
+ 	scanout_state->dest_h = output->base.current_mode->height;
+ 
++#ifdef MESON_DRM_FIX_UI_SIZE
++	// for scale to full screen
++	//// TODO: Need consider different aspect_ration
++	scanout_state->dest_w = output->display_size.width;
++	scanout_state->dest_h = output->display_size.height;
++#endif
++
+ 	pixman_region32_subtract(&c->primary_plane.damage,
+ 				 &c->primary_plane.damage, damage);
+ 
+@@ -705,6 +712,20 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
+ 
+ 	output->base.current_mode->flags = 0;
+ 
++#ifdef MESON_DRM_FIX_UI_SIZE
++	//restore the orgin size of current_mode
++	if (output->base.current_mode && output->current_mode_need_restore) {
++		output->base.current_mode->width = output->display_size.width;
++		output->base.current_mode->height = output->display_size.height;
++	}
++	//Save the orgin size of next current_mode
++	output->display_size.width = drm_mode->base.width;
++	output->display_size.height = drm_mode->base.height;
++	//Set the fixed ui size to current_mode
++	drm_mode->base.width = b->fixed_ui_size.width;
++	drm_mode->base.height = b->fixed_ui_size.height;
++#endif
++
+ 	output->base.current_mode = &drm_mode->base;
+ 	output->base.current_mode->flags =
+ 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+@@ -716,6 +737,11 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
+ 	 *      content.
+ 	 */
+ 	b->state_invalid = true;
++	
++#ifdef MESON_DRM_FIX_UI_SIZE
++	// fixed ui mode needn't reset egl.
++	return 0;
++#endif
+ 
+ 	if (b->use_pixman) {
+ 		drm_output_fini_pixman(output);
+@@ -1812,6 +1838,14 @@ drm_output_enable(struct weston_output *base)
+ 		goto err_planes;
+ 	}
+ 
++#ifdef MESON_DRM_FIX_UI_SIZE
++	if (output->base.current_mode && output->current_mode_need_restore) {
++		output->base.current_mode->width = output->display_size.width;
++		output->base.current_mode->height = output->display_size.height;
++		output->current_mode_need_restore = false;
++	}
++#endif
++
+ 	drm_output_init_backlight(output);
+ 
+ 	output->base.start_repaint_loop = drm_output_start_repaint_loop;
+@@ -2221,6 +2255,12 @@ drm_output_create(struct weston_compositor *compositor, const char *name)
+ 	output->gbm_bo_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+ #endif
+ 
++#ifdef MESON_DRM_FIX_UI_SIZE
++	output->display_size.width = 0;
++	output->display_size.height = 0;
++	output->current_mode_need_restore = false;
++#endif
++
+ 	weston_output_init(&output->base, compositor, name);
+ 
+ 	output->base.enable = drm_output_enable;
+@@ -3038,6 +3078,17 @@ drm_backend_create(struct weston_compositor *compositor,
+ 	b->session_listener.notify = session_notify;
+ 	wl_signal_add(&compositor->session_signal, &b->session_listener);
+ 
++#ifdef MESON_DRM_FIX_UI_SIZE
++	if (config->fixed_ui_size.width > 0 && config->fixed_ui_size.height > 0) {
++		b->fixed_ui_size.width = config->fixed_ui_size.width;
++		b->fixed_ui_size.height = config->fixed_ui_size.height;
++	} else {
++		b->fixed_ui_size.width = 1920;
++		b->fixed_ui_size.height = 1080;
++	}
++	weston_log("Fix ui-size to : %dx%d\n", b->fixed_ui_size.width, b->fixed_ui_size.height);
++#endif
++
+ 	if (config->specific_device)
+ 		drm_device = open_specific_drm_device(b, config->specific_device);
+ 	else
+diff --git a/libweston/backend-drm/modes.c b/libweston/backend-drm/modes.c
+index 7239066..415e5ac 100755
+--- a/libweston/backend-drm/modes.c
++++ b/libweston/backend-drm/modes.c
+@@ -486,8 +486,15 @@ drm_output_choose_mode(struct drm_output *output,
+ 	b = to_drm_backend(output->base.compositor);
+ 	target_aspect = target_mode->aspect_ratio;
+ 	src_aspect = output->base.current_mode->aspect_ratio;
+-	if (output->base.current_mode->width == target_mode->width &&
++
++	if (
++#ifdef MESON_DRM_FIX_UI_SIZE
++		output->display_size.width == target_mode->width &&
++		output->display_size.height == target_mode->height &&
++#else
++		output->base.current_mode->width == target_mode->width &&
+ 	    output->base.current_mode->height == target_mode->height &&
++#endif
+ 	    (output->base.current_mode->refresh == target_mode->refresh ||
+ 	     target_mode->refresh == 0)) {
+ 		if (!b->aspect_ratio_supported || src_aspect == target_aspect)
+@@ -821,5 +828,17 @@ drm_output_set_mode(struct weston_output *base,
+ 	output->base.native_mode = output->base.current_mode;
+ 	output->base.native_scale = output->base.current_scale;
+ 
++#ifdef MESON_DRM_FIX_UI_SIZE
++	//the first current_mode should have no restoration needed
++	assert(!output->current_mode_need_restore);
++	//Save the orgin size of next current_mode
++	output->display_size.width = output->base.current_mode->width;
++	output->display_size.height = output->base.current_mode->height;
++	//Set the fixed ui size to current_mode
++	output->base.current_mode->width = b->fixed_ui_size.width;
++	output->base.current_mode->height = b->fixed_ui_size.height;
++	output->current_mode_need_restore = true;
++#endif
++
+ 	return 0;
+ }
+diff --git a/libweston/backend-drm/state-helpers.c b/libweston/backend-drm/state-helpers.c
+index bc44398..02fe8d8 100644
+--- a/libweston/backend-drm/state-helpers.c
++++ b/libweston/backend-drm/state-helpers.c
+@@ -223,6 +223,28 @@ drm_plane_state_coords_for_view(struct drm_plane_state *state,
+ 	state->dest_y = tbox.y1;
+ 	state->dest_w = tbox.x2 - tbox.x1;
+ 	state->dest_h = tbox.y2 - tbox.y1;
++
++#ifdef MESON_DRM_FIX_UI_SIZE
++	// For overlayer plane eg: video plane
++	// Move the frame buffer at center of display
++	float scale_w = (float)output->display_size.width / output->base.width;
++	float scale_h = (float)output->display_size.height / output->base.height;
++	float last_scale = scale_w < scale_h ? scale_w : scale_h;
++	if (scale_w < scale_h) {
++		scale_h = (scale_h - scale_w) / 2;
++		state->dest_x = scale_w * state->dest_x;
++		state->dest_y = scale_w * state->dest_y + scale_h * output->base.height;
++		state->dest_w = scale_w * state->dest_w;
++		state->dest_h = scale_w * state->dest_h;
++	} else {
++		scale_w = (scale_w - scale_h) / 2;
++		state->dest_x = scale_h * state->dest_x + scale_w * output->base.width;
++		state->dest_y = scale_h * state->dest_y;
++		state->dest_w = scale_h * state->dest_w;
++		state->dest_h = scale_h * state->dest_h;
++	}
++#endif
++
+ 	pixman_region32_fini(&dest_rect);
+ 
+ 	/* Now calculate the source rectangle, by finding the extents of the
+diff --git a/libweston/backend-drm/state-propose.c b/libweston/backend-drm/state-propose.c
+index 4ac6fdd..f603300 100644
+--- a/libweston/backend-drm/state-propose.c
++++ b/libweston/backend-drm/state-propose.c
+@@ -421,8 +421,15 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
+ 	}
+ 
+ 	if (state->dest_x != 0 || state->dest_y != 0 ||
++#ifdef MESON_DRM_FIX_UI_SIZE
++		state->dest_w != (unsigned) output->display_size.width ||
++		state->dest_h != (unsigned) output->display_size.height
++#else
++
+ 	    state->dest_w != (unsigned) output->base.current_mode->width ||
+-	    state->dest_h != (unsigned) output->base.current_mode->height) {
++	    state->dest_h != (unsigned) output->base.current_mode->height
++#endif
++        ) {
+ 		drm_debug(b, "\t\t\t\t[%s] not placing view %p on %s: "
+ 			     " invalid plane state\n", p_name, ev, p_name);
+ 		goto err;

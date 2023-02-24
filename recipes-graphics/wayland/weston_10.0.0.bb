@@ -16,6 +16,7 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
 		   file://0005-10.0.0-Fix-the-UI-size-for-enable-1080p-on-4k-display.patch \
 		   file://0006-10.0.0-video-plane-src-axis-should-match-the-real.patch \
 		   file://0007-cursor-hide-cursor-be-for-have-point-motion-after-we.patch \
+		   file://0017-10.0.0-add-video-fence-check-dpk.patch \
 		   file://0019-9.0.0-read_display_mode_from_drm_output.patch \
 		   file://0020-10.0.0-define_EGL_DRM_RENDER_NODE_FILE_EXT.patch \
 		   file://0021-10.0.0-MOD_INVALID-to-MOD_LINEAR-for-low-dmabuf-version.patch \
