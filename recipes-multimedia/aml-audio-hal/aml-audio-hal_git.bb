@@ -11,7 +11,7 @@ PV = "${SRCPV}"
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_audio_hal')}"
 
 DEPENDS += "liblog aml-amaudioutils expat aml-avsync aml-dvbaudioutils aml-dvb"
-RDEPENDS_${PN} += "liblog aml-amaudioutils aml-avsync aml-dvbaudioutils aml-dvb"
+RDEPENDS_${PN} += "liblog aml-amaudioutils aml-avsync aml-dvbaudioutils aml-dvb libfaad-aml libmad-aml"
 
 inherit cmake pkgconfig
 
