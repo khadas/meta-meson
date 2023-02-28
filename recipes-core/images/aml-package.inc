@@ -82,6 +82,9 @@ do_aml_pack() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then
         sed -i '/vendor/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
     fi
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', 'true', 'false', d)}; then
+        sed -i '/usb_flow/a\file="gpt.img"           main_type="bin"        sub_type="gpt"        file_type="normal"' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
+    fi
 
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
 
@@ -180,5 +183,6 @@ do_aml_pack[depends] += "core-image-minimal:do_image_complete "
 do_aml_pack[depends] += "vendor-image:do_image_complete "
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.utils.contains('MULTTILIBS', 'multilib:lib32', ' lib32-recovery-image:do_image_complete', ' recovery-image:do_image_complete', d), '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', ' vbmeta-image:do_compile', '', d)}"
+do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', ' aml-gpt-make:do_install', '', d)}"
 addtask aml_pack after do_image_complete before do_build
 do_aml_pack[nostamp] = "1"
