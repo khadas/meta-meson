@@ -66,6 +66,10 @@ IMAGE_INSTALL += " \
     aml-ubootenv \
     aml-utils-simulate-key \
     vulkan-loader \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', '', 'aml-hdmicec', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'aml-tvserver', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', \
+        'bluez-alsa bluez5-obex', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'playready', 'playready', '', d)} \
