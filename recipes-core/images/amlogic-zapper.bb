@@ -56,7 +56,6 @@ IMAGE_INSTALL += " \
     tinyalsa-tools \
     glibc-utils \
     localedef \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'arka', '', d)} \
 "
 
 IMAGE_INSTALL += " \
@@ -66,20 +65,19 @@ IMAGE_INSTALL += " \
     modules-load \
     aml-ubootenv \
     aml-utils-simulate-key \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace tee-supplicant optee-video-firmware aml-provision', '', d)} \
+    aml-hdmicec \
     aml-pqserver \
     aml-audio-service aml-audio-service-testapps \
     aml-audio-hal \
     aml-mp-sdk \
     dtvkit-release-prebuilt \
-"
-
-IMAGE_INSTALL += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace tee-supplicant optee-video-firmware aml-provision', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dfb', 'directfb directfb-examples', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'arka', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk', '', d)} \
 "
-
 #    icu \
 #    aml-libdvr \
 #    aml-subtitleserver \
@@ -87,11 +85,6 @@ IMAGE_INSTALL += " \
 #
 
 PACKAGE_INSTALL += "base-files base-passwd initramfs-meson-boot udev-extraconf e2fsprogs "
-
-#For Nagra CAS
-IMAGE_INSTALL += " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk', '', d)} \
-    "
 
 #Add ubifs tools
 RDEPENDS_packagegroup-amlogic-baserootfs += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)}"
