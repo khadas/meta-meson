@@ -11,7 +11,7 @@ MBRANCH = "amlogic-5.4-dev"
 MDIR = "media_modules"
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-5.4/amlogic/${MDIR}')}"
 SRCREV ?= "${AUTOREV}"
-PV ?= "git${SRCPV}"
+PV ?= "5.4"
 
 #COMPATIBLE_MACHINE="(mesontm2_5.4*|mesonsc2_5.4*|mesont5d_5.4*|mesont7_*|mesons4*)"
 

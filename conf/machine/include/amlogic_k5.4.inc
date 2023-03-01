@@ -1,0 +1,6 @@
+PREFERRED_VERSION_linux-meson = "5.4%"
+PREFERRED_VERSION_media-modules = "5.4%"
+PREFERRED_VERSION_qca6174 = "5.4%"
+LINUXLIBCVERSION = "5.4%"
+OVERRIDES .= ":k5.4"
+

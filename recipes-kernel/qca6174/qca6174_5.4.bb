@@ -13,7 +13,7 @@ SRC_URI += "file://rampatch_tlv_3.2.tlv"
 SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-4.9/wifi/qualcomm/drivers/qca6174')}"
 
 SRCREV ?= "${AUTOREV}"
-PV = "git${SRCPV}"
+PV = "5.4"
 
 do_configure[noexec] = "1"
 
