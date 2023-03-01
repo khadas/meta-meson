@@ -78,6 +78,8 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dfb', 'directfb directfb-examples', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'arka', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-dvb-ota', \
+        bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', 'aml-dvb-ota-dtvkit', 'aml-dvb-ota-dtvkit-prebuilt', d), '', d)} \
 "
 #    icu \
 #    aml-libdvr \
