@@ -41,6 +41,10 @@ PACKAGECONFIG += "debug"
 
 
 do_install:append () {
+    if ${@bb.utils.contains('DISTRO_FEATURES','bluetooth-mgr','false','true',d)}; then
+        sed -i '110 i\default_agent > /dev/null &' ${WORKDIR}/bluez-alsa.sh
+    fi
+
     install -d ${D}${base_libdir}/systemd/system
     install -m 0755 ${WORKDIR}/bluez-alsa.sh ${D}${bindir}
     install -m 0755 ${B}/utils/bt-halplay ${D}${bindir}
