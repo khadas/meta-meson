@@ -10,7 +10,7 @@ SRC_URI +="file://subtitleserver.service"
 #do_configure[noexec] = "1"
 inherit autotools cmake pkgconfig systemd
 DEPENDS = " libbinder liblog aml-zvbi cairo aml-mediahal-sdk"
-DEPENDS += " ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' ', ' virtual/libgles2', d)}"
+DEPENDS += " ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'directfb', ' virtual/libgles2', d)}"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_subtitleserver.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 SRCREV ?= "${AUTOREV}"
@@ -23,7 +23,8 @@ EXTRA_OECMAKE += " \
     -DMEDIASYNC_FOR_SUBTITLE=ON \
 "
 
-TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -DUSE_DFB', ' -DMEDIASYNC_FOR_SUBTITLE -DUSE_WAYLAND', d)}"
+TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -I${STAGING_INCDIR}/directfb', ' ', d)}"
+TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -DMEDIASYNC_FOR_SUBTITLE  -DUSE_DFB', ' -DMEDIASYNC_FOR_SUBTITLE -DUSE_WAYLAND', d)}"
 
 #do_compile() {
 #    cd ${S}
