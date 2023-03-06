@@ -27,6 +27,14 @@ data_fbe_root_dir=""
 keyring_key_id=""
 DATA_FBE_STATUS="disabled"
 
+load_ramdisk_ko() {
+    if [ -f /modules/ramdisk/ramdisk_install.sh ]; then
+        cd /modules/ramdisk
+        /modules/ramdisk/ramdisk_install.sh
+        cd -
+    fi
+}
+
 early_setup() {
     mkdir -p /proc
     mkdir -p /sys
@@ -36,6 +44,53 @@ early_setup() {
 
     mkdir -p /run
     mkdir -p /var/run
+
+    # load ramidsk ko for kernel 5.15
+    #load_ramdisk_ko
+
+    # wait gpt partition ready and map to /dev/name
+    #upstream_emmc_mount
+}
+
+wait_for_emmc_partition () {
+    i=1
+    while [ "$i" -le 30 ]
+    do
+        if [  -d /sys/block/mmcblk0/mmcblk0p1/ ]; then
+            echo "mmcblk0p1 ready"
+            break
+        fi
+
+        echo "mmcblk0p1 is not ready.  Waited for 50ms"
+        sleep 0.05
+        i=$((i+1))
+    done
+}
+
+upstream_emmc_mount() {
+  echo " do upstream emmc mount"
+  if [ ! -f /dev/system ];then
+    echo "/dev/system not exist!"
+    wait_for_emmc_partition
+    if [  -d /sys/block/mmcblk0/mmcblk0p1/ ]; then
+      cd /sys/block/mmcblk0/
+      for part in `ls | grep mmcblk0p`
+      do
+        cd $part
+#        major=`cat uevent | grep MAJOR= | sed 's/.*=//'`
+#        minor=`cat uevent | grep MINOR= | sed 's/.*=//'`
+        partname=`cat uevent | grep PARTNAME= | sed 's/.*=//'`
+#        echo "part: $part, partname $partname, major $major, minor: $minor"
+#        mknod /dev/$partname b $major $minor
+        ln -s /dev/$part  /dev/$partname
+        cd ..
+      done
+    fi
+    cd ~
+
+  else
+    echo "/dev/system exist!"
+  fi
 }
 
 read_args() {

@@ -89,6 +89,16 @@ do_bundle_initramfs_dtb() {
   fi
 }
 
+do_install_kernel_modules() {
+   # only kernel 5.15 need this job
+   if [ -f ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz ]; then
+    tar -zxvf ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz -C ${IMAGE_ROOTFS}/
+    rm -rf ${IMAGE_ROOTFS}/modules/vendor
+   fi
+}
+
+addtask install_kernel_modules before do_image_cpio after do_rootfs
+
 addtask bundle_initramfs_dtb before do_image_complete after do_image_cpio do_unpack
 #always regenerate boot.img
 do_bundle_initramfs_dtb[nostamp] = "1"

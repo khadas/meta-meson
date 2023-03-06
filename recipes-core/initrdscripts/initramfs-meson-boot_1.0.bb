@@ -27,6 +27,14 @@ do_install() {
         sed -i -e 's/root_fstype=\"ext4\"/root_fstype=\"squashfs\"/' ${D}/init
         sed -i '/read_args(/a\\treturn 0' ${D}/init
     fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'true', 'false', d)}; then
+        sed -i "s/#load_ramdisk_ko/load_ramdisk_ko/g" ${D}/init
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', 'true', 'false', d)}; then
+       sed -i "s/#upstream_emmc_mount/upstream_emmc_mount/g" ${D}/init
+    fi
 }
 
 do_install_append_t5w() {
