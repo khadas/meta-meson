@@ -12,14 +12,18 @@ S = "${WORKDIR}/git"
 inherit cmake pkgconfig systemd
 
 SYSTEMD_AUTO_ENABLE_${PN} = "enable"
-DEPENDS = "directfb dtvkit-release-prebuilt jsoncpp libbinder aml-audio-service"
+
+DEPENDS = "directfb dtvkit-release-prebuilt jsoncpp libbinder aml-audio-service libdrm-meson libdrm"
 RDEPENDS_${PN} = "dtvkit-release-prebuilt aml-audio-service"
+
 OECMAKE_GENERATOR = "Unix Makefiles"
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D}  -D_STBLABS_SAT_SCAN_"
 
 INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${includedir}/directfb/ \
     -I${STAGING_DIR_TARGET}${libdir}/include/ \
+    -I${STAGING_DIR_TARGET}${includedir}/libdrm_meson \
+    -I${STAGING_DIR_TARGET}${includedir}/libdrm \
     "
 TARGET_CFLAGS += "-fPIC -D_REENTRANT ${INCLUDE_DIRS}"
 
