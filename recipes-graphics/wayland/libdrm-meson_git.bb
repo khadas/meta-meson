@@ -45,6 +45,7 @@ do_install() {
   install -m 0644 ${S}/libdrm_meson_property.h ${D}${includedir}/libdrm_meson
   install -m 0644 ${S}/meson_drm_display.h ${D}${includedir}/libdrm_meson
   install -m 0644 ${S}/meson_drm_event.h ${D}${includedir}/libdrm_meson
+  install -m 0644 ${S}/meson_drm_settings.h ${D}${includedir}/libdrm_meson
 }
 
 FILES_${PN} = "${libdir}/*  ${bindir}/"

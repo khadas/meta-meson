@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 SRCREV ?= "${AUTOREV}"
 #PV = "${SRCPV}"
 
-DEPENDS += " libdrm json-c systemd"
+DEPENDS += " libdrm libdrm-meson json-c systemd"
 
 #do_configure[noexec] = "1"
 inherit autotools pkgconfig
