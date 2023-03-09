@@ -1,6 +1,7 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files/:"
 SRC_URI_append = " file://70-keyboard.hwdb"
 SRC_URI_append = " file://network/20-ethernet.network file://network/21-wlan.network"
+SRC_URI_append = " file://0027-fix-udisk-can-not-unmount-properly.patch"
 
 do_install_append() {
 sed -i -e 's/ExecStart=/ExecStart=-/' ${D}/lib/systemd/system/systemd-modules-load.service

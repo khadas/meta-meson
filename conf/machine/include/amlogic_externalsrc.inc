@@ -137,6 +137,7 @@ EXTERNALSRC_pn-libion = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogi
 EXTERNALSRC_pn-libvpcodec = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/h264' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/h264')) else ''}"
 EXTERNALSRC_pn-libvphevcodec = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/h265' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/h265')) else ''}"
 EXTERNALSRC_pn-libjpeg = "${@'${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/jpeg' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/hardware/aml-5.4/amlogic/libencoder/jpeg')) else ''}"
+EXTERNALSRC_pn-gst-plugin-venc-multienc = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/multienc-wave521' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-venc/multienc-wave521')) else ''}"
 EXTERNALSRC_pn-aml-platformserver = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_platformserver'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_platformserver')]}"
 EXTERNALSRC_pn-westeros = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/westeros' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/westeros')) else ''}"
 EXTERNALSRC_pn-westeros-sink = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/westeros/v4l2/westeros-sink' if(os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/westeros/v4l2/westeros-sink')) else ''}"

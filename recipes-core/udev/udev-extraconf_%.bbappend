@@ -8,7 +8,7 @@ SRC_URI_append = " \
 
 do_install_append () {
     sed -i 's/vfat|fat/vfat|fat|ntfs|exfat/g' ${D}${sysconfdir}/udev/scripts/mount.sh
-    sed -i 's/$UMOUNT $mnt/$UMOUNT -l $mnt/g' ${D}${sysconfdir}/udev/scripts/mount.sh
+    sed -i 's/$UMOUNT $mnt/$UMOUNT $mnt/g' ${D}${sysconfdir}/udev/scripts/mount.sh
 
     if [ -e "${WORKDIR}/10-video.rules" ]; then
         install -d ${D}${sysconfdir}/udev/rules.d

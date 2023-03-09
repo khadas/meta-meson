@@ -1,0 +1,13 @@
+diff --git a/src/core/mount.c b/src/core/mount.c
+index a0dfa6a1a7..c148acd8d7 100644
+--- a/src/core/mount.c
++++ b/src/core/mount.c
+@@ -941,6 +941,8 @@ static void mount_enter_unmounting(Mount *m) {
+                     MOUNT_UNMOUNTING_SIGKILL))
+                 m->n_retry_umount = 0;
+ 
++        if (strstr(m->where, "/run/media/"))
++                m->lazy_unmount = true;
+         m->control_command_id = MOUNT_EXEC_UNMOUNT;
+         m->control_command = m->exec_command + MOUNT_EXEC_UNMOUNT;
+ 

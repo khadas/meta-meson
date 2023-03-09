@@ -52,6 +52,7 @@ IMAGE_INSTALL += " \
     procrank \
     zram \
     system-config \
+    aml-libdvr \
     playscripts \
     tinyalsa-tools \
     glibc-utils \
@@ -75,6 +76,8 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'playready', 'playready', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace tee-supplicant optee-video-firmware aml-provision', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'widevine', 'aml-mediadrm-widevine', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-libmultienc', 'libmultienc libge2d libion', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-libjpeg', 'libjpeg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gstreamer1', \
         'gstreamer1.0-plugins-good \
         gstreamer1.0-plugins-bad \
@@ -102,6 +105,12 @@ IMAGE_INSTALL += " \
 
 IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dfb', 'directfb directfb-examples', '', d)} \
+"
+
+#VENC related
+IMAGE_INSTALL += " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libjpeg', 'gst-plugin-venc-jpeg', '', d), '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libmultienc', 'gst-plugin-venc-multienc', '', d), '', d)} \
 "
 
 #    icu \
