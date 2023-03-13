@@ -26,6 +26,12 @@ EXTRA_OECMAKE += " \
 TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -I${STAGING_INCDIR}/directfb', ' ', d)}"
 TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -DMEDIASYNC_FOR_SUBTITLE  -DUSE_DFB', ' -DMEDIASYNC_FOR_SUBTITLE -DUSE_WAYLAND', d)}"
 
+RDEPENDS_${PN} = " liblog libbinder aml-zvbi cairo aml-mediahal-sdk"
+
+EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
+              TARGET_DIR=${D} \
+             "
+
 #do_compile() {
 #    cd ${S}
 #    oe_runmake  all
