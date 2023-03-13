@@ -79,6 +79,14 @@ DISABLE_STATIC_pn-libevent = ""
 
 AML_RDK_PREBUILT_SITE ?= "http://10.18.11.6/shanghai/image/linux-distro/Public/YOCTO/prebuilt/"
 AML_TOOLS_SITE ?= "http://10.18.11.120:8000/Tools"
+# define sign tool
+#AML_SCS_SIGN_TOOL = "${COREBASE}/../aml-comp/prebuilt/hosttools/aml-linux-scs/Aml_Linux_SCS_SignTool/amlogic_scs_sign_whole_pkg.bash"
+# define config files device-keys and fw_arb.cfg
+#AML_SCS_SIGN_CONFIG_PATH = "${COREBASE}/../aml-comp/prebuilt/hosttools/aml-linux-scs"
+# define sign v3 tool
+#AML_SB_SIGN_TOOL = "${COREBASE}/../aml-comp/prebuilt/hosttools/aml-linux-sb/Aml_Linux_SecureBootV3_SignTool/amlogic_secureboot_sign_whole_pkg.bash"
+# define config files keys
+#AML_SB_SIGN_CONFIG_PATH = "${COREBASE}/../aml-comp/prebuilt/hosttools/aml-linux-sb"
 
 # For dm-verity
 IMAGE_CLASSES += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'image_types aml-dm-verity-img', '', d)}"

@@ -3,6 +3,7 @@ DEPENDS_append_onepass = " core-image-minimal"
 DEPENDS_append = " vendor-image"
 DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', ' aml-swupdate-native', '', d)}"
 DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', ' aml-linux-scs-native', '', d)}"
+DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', ' aml-linux-sb-native', '', d)}"
 
 SOC_FAMILY = "TBD"
 SOC_FAMILY_gxl = "gxl"
@@ -123,6 +124,21 @@ do_aml_pack() {
             --fw_arb_cfg ${DEPLOY_DIR_IMAGE}/fw_arb.cfg \
             --aml_img ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img \
             --bootloader_zip ${DEPLOY_DIR_IMAGE}/${UBOOT_TYPE%_config}-u-boot.aml.zip \
+            --output ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_enc.img
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', 'true', 'false', d)}; then
+        cp -rf ${STAGING_DIR_NATIVE}${bindir}/aml-linux-sb/keys ${DEPLOY_DIR_IMAGE}/
+
+        if [ "${AML_SB_SIGN_TOOL}" = "" ]; then
+            AML_SB_SIGN=${STAGING_DIR_NATIVE}${bindir}/aml-linux-sb/amlogic_secureboot_sign_whole_pkg.bash
+        else
+            AML_SB_SIGN=${AML_SB_SIGN_TOOL}
+        fi
+
+        ${AML_SB_SIGN} --soc ${SOC_FAMILY} \
+            --aml_key ${DEPLOY_DIR_IMAGE}/keys \
+            --aml_img ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img \
             --output ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_enc.img
     fi
 
