@@ -3,7 +3,7 @@ LICENSE = "CLOSED"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_commonlib;protocol=${AML_GIT_PROTOCOL};branch=master;"
 
-DEPENDS += "zlib"
+RDEPENDS_${PN} += "aml-ubootenv"
 
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
@@ -20,7 +20,7 @@ do_install() {
     install -d ${D}${libdir}
     install -d ${D}${bindir}
     install -m 0644 ${S}/ubootenv.h ${D}${includedir}
-    install -m 0644 ${B}/libubootenv.a ${D}${libdir}
+    install -m 0644 ${B}/libubootenv.so ${D}${libdir}
     install -m 0755 ${B}/uenv ${D}${bindir}
 }
 
