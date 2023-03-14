@@ -35,7 +35,7 @@ do_install() {
     install -D -m 0644 ${S}/config/${CONFIG} ${D}/etc/dvb_ota.conf
 }
 
-FILES_${PN} = "${bindir}/*"
+FILES_${PN} = "${bindir}/* ${sysconfdir}/*"
 FILES_${PN}-dev = "${includedir}/* "
 INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
 INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
