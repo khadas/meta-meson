@@ -56,6 +56,7 @@ IMAGE_INSTALL += " \
     tinyalsa-tools \
     glibc-utils \
     localedef \
+    format-partitions \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware aml-bootloader-message', '', d)} \
 "
 
@@ -79,9 +80,11 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dfb', 'directfb directfb-examples', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'arka', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dolby-ms12', 'dolby-ms12', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-dvb-ota', \
         bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', 'aml-dvb-ota-dtvkit', 'aml-dvb-ota-dtvkit-prebuilt', d), '', d)} \
 "
+
 #    icu \
 #    aml-libdvr \
 #    aml-subtitleserver \
