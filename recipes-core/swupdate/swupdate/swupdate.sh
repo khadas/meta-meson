@@ -235,6 +235,7 @@ elif [ -f "$DVB_OTA_FILE_FLAG" ]; then
     if [ $? != 0 ]; then
         rm $SWUPDATE_FILE_PATH
         rm -rf $SWUPDATE_PATH
+        cp -f /tmp/log.dvb_ota /mnt && sync
         umount /mnt
         urlmisc clean
         reboot -f
