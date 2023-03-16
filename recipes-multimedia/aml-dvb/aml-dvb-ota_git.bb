@@ -14,7 +14,13 @@ do_configure[noexec] = "1"
 inherit autotools pkgconfig
 S="${WORKDIR}/git"
 
-EXTRA_OEMAKE="TARGET_DIR=${S} STAGING_DIR=${STAGING_DIR_TARGET}/usr INSTALL_DIR=${D}${bindir}"
+CONFIG = "ap222.conf"
+CONFIG_aq2432 = "aq2432.conf"
+
+FLAGS = "-DBIG_BUFFER"
+FLAGS_aq2432 = ""
+
+EXTRA_OEMAKE="TARGET_DIR=${S} STAGING_DIR=${STAGING_DIR_TARGET}/usr INSTALL_DIR=${D}${bindir} FLAGS=${FLAGS}"
 
 do_compile() {
     cd ${S}
@@ -24,6 +30,9 @@ do_compile() {
 do_install() {
     cd ${S}
     oe_runmake install
+
+    mkdir -p ${D}/etc
+    install -D -m 0644 ${S}/config/${CONFIG} ${D}/etc/dvb_ota.conf
 }
 
 FILES_${PN} = "${bindir}/*"
