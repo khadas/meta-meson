@@ -21,6 +21,9 @@ do_install() {
         sed -i '/udevadm\ trigger\ \-\-action\=add/a\\techo 80 > /proc/sys/vm/watermark_scale_factor' ${D}/init
         sed -i '/udevadm\ trigger\ \-\-action\=add/a\\n\techo 12288 > \/proc\/sys\/vm\/min_free_kbytes' ${D}/init
     fi
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'true', 'false', d)}; then
+        sed -i "s/#kernel_515_module_install/kernel_515_module_install/g" ${D}/init
+    fi
 }
 
 FILES:${PN} += " /init /dev "

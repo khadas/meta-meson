@@ -19,6 +19,15 @@ udev_daemon() {
 
 _UDEV_DAEMON=`udev_daemon`
 
+## for kernel 5.15 ko install
+kernel_515_module_install() {
+    if [ -f /modules/install.sh ]; then
+       cd /modules
+       /modules/install.sh
+       cd -
+    fi
+}
+
 early_setup() {
     mkdir -p /proc
     mkdir -p /sys
@@ -26,6 +35,9 @@ early_setup() {
     mount -t sysfs sysfs /sys
     mount -t devtmpfs none /dev
     mount -t tmpfs -o size=80% tmpfs /tmp
+
+    # install kernel 5.15 modules.
+    #kernel_515_module_install
 
     mkdir -p /run
     mkdir -p /var/run

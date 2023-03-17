@@ -23,6 +23,11 @@ IMAGE_INSTALL:append = "\
                     ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', 'e2fsprogs',d)} \
                    "
 
+IMAGE_INSTALL:remove:k5.15 = "\
+                    kernel-modules \
+                    "
+
+
 IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
             "aml-bootloader-message \
             libconfig \
@@ -64,6 +69,16 @@ do_rootfs:append () {
     bootdir = "%s/boot" % rootfsdir
     shutil.rmtree(bootdir, True)
 }
+
+do_install_kernel_modules() {
+   if [ -f ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz ]; then
+     tar -zxvf ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz -C ${IMAGE_ROOTFS}/
+     rm -rf ${IMAGE_ROOTFS}/lib/modules/*
+   fi
+}
+
+addtask install_kernel_modules before do_image_cpio after do_rootfs
+
 
 KERNEL_BOOTARGS = ""
 
