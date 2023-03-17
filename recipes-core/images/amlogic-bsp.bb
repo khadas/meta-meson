@@ -57,6 +57,7 @@ IMAGE_INSTALL += " \
     tinyalsa-tools \
     glibc-utils \
     localedef \
+    format-partitions \
 "
 
 IMAGE_INSTALL += " \
