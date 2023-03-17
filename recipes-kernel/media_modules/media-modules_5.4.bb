@@ -109,6 +109,32 @@ KERNEL_MODULE_AUTOLOAD_append_t3 = " encoder jpegenc amvenc_multi"
 KERNEL_MODULE_AUTOLOAD_append_t7 = " encoder jpegenc amvenc_multi"
 KERNEL_MODULE_AUTOLOAD_append_sc2 = " encoder jpegenc vpu"
 
+# For Zapper
+KERNEL_MODULE_AUTOLOAD_REMOVE = "\
+  amvdec_avs2_v4l \
+  amvdec_h265_v4l \
+  amvdec_mh264_v4l \
+  amvdec_mmjpeg_v4l \
+  amvdec_mmpeg12_v4l \
+  amvdec_mmpeg4_v4l \
+  amvdec_vp9_v4l \
+  amvdec_av1_v4l \
+  amvdec_av1 \
+  amvdec_avs \
+  amvdec_h264 \
+  amvdec_h264mvc \
+  amvdec_mjpeg \
+  amvdec_mmjpeg \
+  amvdec_mmpeg4 \
+  amvdec_mpeg12 \
+  amvdec_mpeg4 \
+  amvdec_real \
+  amvdec_vc1 \
+  amvdec_vp9 \
+  amvdec_ports \
+\"
+KERNEL_MODULE_AUTOLOAD_remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${KERNEL_MODULE_AUTOLOAD_REMOVE}', '', d)}"
+
 KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
 module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"
 module_conf_amvdec_mh264 = "options amvdec_mh264 error_proc_policy=4181938"
