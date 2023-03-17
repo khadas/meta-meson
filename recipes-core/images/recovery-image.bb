@@ -12,7 +12,6 @@ DEPENDS_append = " android-tools-native"
 IMAGE_INSTALL = "udev busybox"
 IMAGE_INSTALL_append = "\
                     initramfs-recovery \
-                    e2fsprogs \
                     fuse-exfat \
                     exfat-utils \
                     ntfs-3g \
@@ -21,7 +20,7 @@ IMAGE_INSTALL_append = "\
                     system-config \
                     zram \
                     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
-                    ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)} \
+                    ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', 'e2fsprogs',d)} \
                    "
 
 IMAGE_INSTALL_append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \

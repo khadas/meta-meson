@@ -24,10 +24,6 @@ IMAGE_INSTALL += " \
     alsa-utils \
     bash \
     systemd \
-    e2fsprogs \
-    e2fsprogs-e2fsck \
-    e2fsprogs-mke2fs \
-    e2fsprogs-tune2fs \
     fuse-exfat \
     exfat-utils \
     ntfs-3g \
@@ -57,6 +53,7 @@ IMAGE_INSTALL += " \
     glibc-utils \
     localedef \
     format-partitions \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'nand', '', 'e2fsprogs e2fsprogs-e2fsck e2fsprogs-mke2fs e2fsprogs-tune2fs', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware aml-bootloader-message', '', d)} \
 "
 
@@ -68,7 +65,7 @@ IMAGE_INSTALL += " \
     aml-ubootenv \
     aml-utils-simulate-key \
     aml-hdmicec \
-    aml-audio-service aml-audio-service-testapps \
+    aml-audio-service \
     aml-audio-hal \
     aml-mp-sdk \
     dtvkit-release-prebuilt \
@@ -76,7 +73,7 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace tee-supplicant optee-video-firmware aml-provision', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'dfb', 'directfb directfb-examples', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dfb', 'directfb', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'arka', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dolby-ms12', 'dolby-ms12', '', d)} \
@@ -90,10 +87,7 @@ IMAGE_INSTALL += " \
 #    dolby-ms12 \
 #
 
-PACKAGE_INSTALL += "base-files base-passwd initramfs-meson-boot udev-extraconf e2fsprogs "
-
-#Add ubifs tools
-RDEPENDS_packagegroup-amlogic-baserootfs += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)}"
+PACKAGE_INSTALL += "base-files base-passwd initramfs-meson-boot udev-extraconf "
 
 MACHINE_IMAGE_NAME ?= "${PN}"
 IMAGE_FEATURES_remove = " read-only-rootfs"

@@ -21,6 +21,12 @@ do_install() {
         sed -i '/mkdir -p \/var\/run/a\\techo 80 > /proc/sys/vm/watermark_scale_factor' ${D}/init
         sed -i '/mkdir -p \/var\/run/a\\n\techo 12288 > \/proc\/sys\/vm\/min_free_kbytes' ${D}/init
     fi
+
+    #read_args need about 200ms on nand platform, so disable it on nand
+    if ${@bb.utils.contains("DISTRO_FEATURES", "nand", "true", "false", d)}; then
+        sed -i -e 's/root_fstype=\"ext4\"/root_fstype=\"squashfs\"/' ${D}/init
+        sed -i '/read_args(/a\\treturn 0' ${D}/init
+    fi
 }
 
 do_install_append_t5w() {
