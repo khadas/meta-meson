@@ -22,6 +22,9 @@ sed -i '$a\RateLimitBurst=0' ${D}/etc/systemd/journald.conf
 }
 
 do_install_append_aq2432() {
-  sed -i '$a RuntimeMaxUse=64K' ${D}/etc/systemd/journald.conf
-  sed -i '$a RuntimeMaxFileSize=64K' ${D}/etc/systemd/journald.conf
+  sed -i '$a Storage=none' ${D}/etc/systemd/journald.conf
+  sed -i '$a RuntimeMaxUse=16K' ${D}/etc/systemd/journald.conf
+  sed -i '$a RuntimeMaxFileSize=16K' ${D}/etc/systemd/journald.conf
+  sed -i '$a SystemMaxUse=16K' ${D}/etc/systemd/journald.conf
+  sed -i '$a SystemMaxFileSize=16K' ${D}/etc/systemd/journald.conf
 }
