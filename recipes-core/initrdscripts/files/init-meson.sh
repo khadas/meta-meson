@@ -137,7 +137,6 @@ attach_unifykey() {
 
 boot_root() {
     check_set_machine_id
-    attach_unifykey
     # The rootfs does not yet contain kernel modules.  Copy it!
     if [ ! -d ${ROOT_MOUNT}/lib/modules ]; then
         cp -rf /lib/modules ${ROOT_MOUNT}/lib/

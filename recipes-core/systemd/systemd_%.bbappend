@@ -3,6 +3,8 @@ SRC_URI_append = " file://70-keyboard.hwdb"
 SRC_URI_append = " file://network/20-ethernet.network file://network/21-wlan.network"
 SRC_URI_append = " file://0027-fix-udisk-can-not-unmount-properly.patch"
 
+PACKAGECONFIG_remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'hostnamed networkd nss-resolve resolved randomseed timesyncd', '', d)}"
+
 do_install_append() {
 sed -i -e 's/ExecStart=/ExecStart=-/' ${D}/lib/systemd/system/systemd-modules-load.service
 cat >> ${D}/lib/systemd/system/systemd-modules-load.service <<EOF

@@ -16,14 +16,6 @@ do_install() {
     install -m 0755 ${WORKDIR}/system-config.sh ${D}/${bindir}
 }
 
-do_install_append() {
-    #init the unifykeys
-    case ${MACHINE_ARCH} in
-    mesont5w*)
-        sed -i '$a\\necho 1 > /sys/class/unifykeys/attach' ${D}/${bindir}/system-config.sh
-    ;;
-    esac
-}
 
 FILES_${PN} += "${bindir}/*"
 FILES_${PN} += "${systemd_unitdir}/system/*"

@@ -63,8 +63,13 @@ if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
         vendor_dev="dm-1"
     fi
 
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'false', 'true', d)}; then
     cat >> ${D}${sysconfdir}/fstab <<EOF
  /dev/${vendor_dev}     /vendor                    auto       defaults              0  0
+EOF
+    fi
+
+    cat >> ${D}${sysconfdir}/fstab <<EOF
  /dev/mtdblock5         /factory                   yaffs2     defaults              0  0
  /dev/mtdblock6         /tee                       yaffs2     defaults              0  0
 EOF

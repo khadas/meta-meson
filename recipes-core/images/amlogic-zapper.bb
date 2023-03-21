@@ -68,7 +68,6 @@ IMAGE_INSTALL += " \
     aml-ubootenv \
     aml-utils-simulate-key \
     aml-hdmicec \
-    aml-pqserver \
     aml-audio-service aml-audio-service-testapps \
     aml-audio-hal \
     aml-mp-sdk \
@@ -177,3 +176,23 @@ create_version_file[vardepsexclude] += "DATETIME"
 create_version_file[vardepsexclude] += "BB_TASKDEPDATA"
 
 ROOTFS_POSTPROCESS_COMMAND += "version_hook; "
+ROOTFS_POSTPROCESS_COMMAND += "create_extra_folder; "
+
+create_extra_folder(){
+    if [ ! -d ${IMAGE_ROOTFS}/tee ];then
+        mkdir -p ${IMAGE_ROOTFS}/tee
+    fi
+
+    if [ ! -d ${IMAGE_ROOTFS}/data ];then
+        mkdir -p ${IMAGE_ROOTFS}/data
+    fi
+}
+
+process_for_read_only_rootfs(){
+    if [ ! -f ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22 ];then
+        touch ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22
+        chmod +x ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22
+    fi
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '', 'process_for_read_only_rootfs; ', d)}"

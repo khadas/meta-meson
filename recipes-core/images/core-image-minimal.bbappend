@@ -9,7 +9,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 SRC_URI += " file://boot-template.its"
 
 #IMAGE_INSTALL = "udev busybox ${ROOTFS_PKGMANAGE_BOOTSTRAP}"
-IMAGE_INSTALL = "udev busybox"
+IMAGE_INSTALL = "busybox"
 IMAGE_INSTALL_append = "\
                     initramfs-meson-boot \
                     e2fsprogs \
@@ -34,6 +34,8 @@ IMAGE_INSTALL_append += '${@'python3 avbtool-dm-verity' if AVB_DM_VERITY == 'tru
 IMAGE_INSTALL_append = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' cryptsetup lvm2-udevrules ', '', d)}"
 
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
+
+IMAGE_INSTALL_remove += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'e2fsprogs mtd-utils', '', d)}"
 
 python __anonymous () {
     import re

@@ -1,6 +1,6 @@
 DEPENDS_append = " aml-img-packer-native"
 DEPENDS_append_onepass = " core-image-minimal"
-DEPENDS_append = " vendor-image"
+DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '', ' vendor-image', d)}"
 DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', ' aml-swupdate-native', '', d)}"
 DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', ' aml-linux-scs-native', '', d)}"
 DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', ' aml-linux-sb-native', '', d)}"
@@ -77,6 +77,10 @@ do_aml_pack() {
         if ${@bb.utils.contains('DISTRO_FEATURES', 'absystem', 'true', 'false', d)}; then
             sed -i -e 's/sub_type=\"recovery\"/sub_type=\"recovery_a\"/' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
         fi
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then
+        sed -i '/vendor/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
     fi
 
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
