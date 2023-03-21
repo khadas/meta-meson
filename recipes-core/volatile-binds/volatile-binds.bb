@@ -21,20 +21,20 @@ VOLATILE_BINDS[type] = "list"
 VOLATILE_BINDS[separator] = "\n"
 
 VOLATILE_BINDS = "/data/var/lib /var/lib\n"
-VOLATILE_BINDS_append = "/data/etc/bluetooth /etc/bluetooth\n"
-VOLATILE_BINDS_append = "/data/etc/hosts /etc/hosts\n"
-VOLATILE_BINDS_append = "/data/etc/dropbear /etc/dropbear\n"
-VOLATILE_BINDS_append = "/data/etc/wifi /etc/wifi\n"
-VOLATILE_BINDS_append = "/data/etc/ld.so.cache /etc/ld.so.cache\n"
-VOLATILE_BINDS_append = "/data/etc/systemd/system/sysinit.target.wants /etc/systemd/system/sysinit.target.wants\n"
+VOLATILE_BINDS .= "/data/etc/bluetooth /etc/bluetooth\n"
+VOLATILE_BINDS .= "/data/etc/hosts /etc/hosts\n"
+VOLATILE_BINDS .= "/data/etc/dropbear /etc/dropbear\n"
+VOLATILE_BINDS .= "/data/etc/wifi /etc/wifi\n"
+VOLATILE_BINDS .= "/data/etc/ld.so.cache /etc/ld.so.cache\n"
+VOLATILE_BINDS .= "/data/etc/systemd/system/sysinit.target.wants /etc/systemd/system/sysinit.target.wants\n"
 
 EXTRA_BINDS = "/data/usr/bin/hdcp_tx22 /usr/bin/hdcp_tx22\\n"
-EXTRA_BINDS_append = "/data/lib/firmware/hdcp/firmware.le /lib/firmware/hdcp/firmware.le\\n"
-EXTRA_BINDS_append = "/data/usr/lib/libdolbyms12.so /usr/lib/libdolbyms12.so\\n"
-EXTRA_BINDS_append = "/data/usr/lib/libHwAudio_dtshd.so /usr/lib/libHwAudio_dtshd.so\\n"
-EXTRA_BINDS_append = "/data/usr/lib/libHwAudio_dcvdec.so /usr/lib/libHwAudio_dcvdec.so\\n"
+EXTRA_BINDS .= "/data/lib/firmware/hdcp/firmware.le /lib/firmware/hdcp/firmware.le\\n"
+EXTRA_BINDS .= "/data/usr/lib/libdolbyms12.so /usr/lib/libdolbyms12.so\\n"
+EXTRA_BINDS .= "/data/usr/lib/libHwAudio_dtshd.so /usr/lib/libHwAudio_dtshd.so\\n"
+EXTRA_BINDS .= "/data/usr/lib/libHwAudio_dcvdec.so /usr/lib/libHwAudio_dcvdec.so\\n"
 
-VOLATILE_BINDS_append = "${@bb.utils.contains('RELEASE_MODE', 'PROD', '', '${EXTRA_BINDS}', d)}"
+VOLATILE_BINDS .= "${@bb.utils.contains('RELEASE_MODE', 'PROD', '', '${EXTRA_BINDS}', d)}"
 
 def volatile_systemd_services(d):
     services = []
