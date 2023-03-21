@@ -20,3 +20,6 @@ BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '|meta-meson/rec
 
 BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'qt5', '', '|meta-meson/recipes-graphics/qt5/qtbase_%d.bbappend', d)}"
 BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '', '|meta-meson/recipes-security/refpolicy/refpolicy-%.bbappend', d)}"
+BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', '', '|meta-meson/recipes-core/util-linux/util-linux_%.bbappend', d)}"
+BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', '', '|meta-meson/recipes-kernel/make-mod-scripts/make-mod-scripts_1.0.bbappend', d)}"
+BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', bb.utils.contains('DISTRO_FEATURES', 'selinux', '', '|meta-meson/recipes-security/audit/audit_%.bbappend', d), '|meta-meson/recipes-security/audit/audit_%.bbappend', d)}"
