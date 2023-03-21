@@ -19,6 +19,9 @@ SRC_URI += "file://0001-bluez5-fix-rcu-reconnect-1-1.patch"
 #SRC_URI += "file://bluez_checkhci.sh"
 SRC_URI += "file://0001-BT-fix-pair-inturrpt-error.patch"
 
+TTY = "ttyS1"
+TTY:a213y = "ttyS2"
+
 do_install_append(){
     install -d ${D}${bindir}
     install -d ${D}/${systemd_unitdir}/system
@@ -38,14 +41,7 @@ do_install_append(){
         sed -i '/Debug/a Device=rtk' ${D}${sysconfdir}/bluetooth/main.conf
     fi
 
-    case ${MACHINE_ARCH} in
-    mesona213y*)
-        sed -i '/Debug/a TTY=/dev/ttyS2' ${D}${sysconfdir}/bluetooth/main.conf
-    ;;
-    *)
-        sed -i '/Debug/a TTY=/dev/ttyS1' ${D}${sysconfdir}/bluetooth/main.conf
-    ;;
-    esac
+    sed -i "/Debug/a TTY=/dev/${TTY}" ${D}${sysconfdir}/bluetooth/main.conf
     sed -i '/^ExecStart=.*/d' ${D}/${systemd_unitdir}/system/bluetooth.service
 }
 

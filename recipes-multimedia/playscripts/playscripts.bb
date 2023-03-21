@@ -12,20 +12,15 @@ SRC_URI  = "\
 S = "${WORKDIR}"
 
 ASOUND_CONF = "asound.conf"
-ASOUND_CONF_u212 = "asound.conf"
-ASOUND_CONF_ab311 = "asound.dev0.conf"
+ASOUND_CONF:g12a = "asound.conf"
+ASOUND_CONF:tm2 = "asound.dev0.conf"
 
 do_install() {
     install -d ${D}${sysconfdir}
     install -d ${D}${sysconfdir}/profile.d
     install -d ${D}${sysconfdir}/rc5.d
-    install -m 0755 ${WORKDIR}/alsactl.conf ${D}${sysconfdir}/
-    install -m 0755 ${WORKDIR}/${ASOUND_CONF} ${D}${sysconfdir}/asound.conf
-    case ${MACHINE_ARCH} in
-    "mesontm2*")
-        install -m 0755 ${WORKDIR}/${ASOUND_CONF_ab311} ${D}${sysconfdir}/asound.conf
-    ;;
-    esac
+    install -m 0644 ${WORKDIR}/alsactl.conf ${D}${sysconfdir}/
+    install -m 0644 ${WORKDIR}/${ASOUND_CONF} ${D}${sysconfdir}/asound.conf
     install -m 0755 ${WORKDIR}/property_set.sh ${D}${sysconfdir}/profile.d/
 
     if ${@bb.utils.contains("DISTRO_FEATURES", "irdeto", "true", "false", d)}
@@ -43,3 +38,4 @@ echo codec_mm.scatter.keep_size_PAGE=0 > /sys/class/codec_mm/config
 EOF
     fi
 }
+

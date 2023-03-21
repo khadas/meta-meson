@@ -21,33 +21,13 @@ ARM_TARGET_aarch64 ="aarch64.lp64."
 TA_TARGET="noarch"
 
 do_install() {
-    case ${MACHINE} in
-        mesonsc2-*-ah212*)
-           CHIPFAMILY=S905X4
-        ;;
-        mesonsc2-*ah232*)
-           CHIPFAMILY=S905C2
-        ;;
-        mesonsc2-*ah221*)
-           CHIPFAMILY=S905C2
-        ;;
-        mesons4d-*aq243*)
-          CHIPFAMILY=S805C3
-        ;;
-        mesons4-*)
-          CHIPFAMILY=S905Y4
-        ;;
-        *)
-          CHIPFAMILY=
-        ;;
-    esac
     install -d ${D}${libdir}
     install -m 0755 -d ${D}${includedir}
     install ${S}/${ARM_TARGET}/libdmx_client_linux.so ${D}${libdir}/libdmx_client.so
     install -m 0644 ${S}/include/* ${D}/${includedir}
 
     install -d ${D}/lib/optee_armtz
-    install -m 0644 ${S}/ta/v3.8/dev/${CHIPFAMILY}/b472711b-3ada-4c37-8c2a-7c64d8af0223.ta ${D}/lib/optee_armtz
+    install -m 0644 ${S}/ta/v3.8/dev/${CHIPSET_NAME}/b472711b-3ada-4c37-8c2a-7c64d8af0223.ta ${D}/lib/optee_armtz
 }
 
 INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"

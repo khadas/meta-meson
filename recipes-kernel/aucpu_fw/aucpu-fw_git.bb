@@ -19,33 +19,11 @@ do_install() {
     FIRMWAREDIR=${D}/lib/firmware
     unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
     mkdir -p ${FIRMWAREDIR}
-    case ${MACHINE} in
-        mesonsc2-*ah232*)
-          FWSRCDIR=S905C2
-        ;;
-        mesonsc2-*ah221*)
-          FWSRCDIR=S905C2L
-        ;;
-        mesonsc2-*)
-          FWSRCDIR=S905X4
-        ;;
-        mesons4d-*ap232*)
-          FWSRCDIR=S905C3
-        ;;
-        mesons4d-*aq243*)
-          FWSRCDIR=S805C3
-        ;;
-        mesons4-*ap*)
-          FWSRCDIR=S905Y4
-        ;;
-        mesons4-*aq*)
-          FWSRCDIR=S805X2
-        ;;
-        *)
-          FWSRCDIR=DUMMY
-        ;;
-    esac
-    install -m 0666 ${S}/${FWSRCDIR}/aucpu_fw.bin.signed ${FIRMWAREDIR}/aucpu_fw.bin
+    if [ -n "${CHIPSET_NAME}" ]; then
+        install -m 0666 ${S}/${CHIPSET_NAME}/aucpu_fw.bin.signed ${FIRMWAREDIR}/aucpu_fw.bin
+    else
+        install -m 0666 ${S}/DUMMY/aucpu_fw.bin.signed ${FIRMWAREDIR}/aucpu_fw.bin
+    fi
     install -d ${D}/etc/udev/rules.d
     install -m 0755 ${WORKDIR}/52dvb.rules ${D}/etc/udev/rules.d
 }

@@ -41,7 +41,13 @@ SYSTEMD_SERVICE_${PN} = "adbd.service"
 
 FILES_${PN} += "${systemd_unitdir}/system/adbd.service"
 
-
+ADB_UDC = "ff400000.dwc2_a"
+ADB_UDC:a213y = "c9040000.dwc2_a"
+ADB_UDC:c1 = "ff500000.dwc2_a"
+ADB_UDC:s4 = "fdd00000.dwc2_a"
+ADB_UDC:sc2 = "fdd00000.dwc2_a"
+ADB_UDC:t7 = "fdd00000.crgudc2"
+ADB_UDC:t3 = "fdf00000.dwc2_a"
 
 do_process_patches_in_srccode_tarball() {
     #re-organize the code directory hierarchy, because some pathes can't apply use the default hierarchy after unpack
@@ -71,27 +77,7 @@ do_install(){
     install -m 0755 adbd_prepare.sh ${D}${bindir}
     install -m 0755 adbd_post.sh ${D}${bindir}
     install -m 0644 ${S}/adbd.service ${D}/${systemd_unitdir}/system
-    echo "MACHINE_ARCH is ${MACHINE_ARCH}"
-    case ${MACHINE_ARCH} in
-    mesona213y*)
-        sed 's@ff400000.dwc2_a@c9040000.dwc2_a@' -i ${D}/etc/adb_udc_file
-    ;;
-    mesonc1*)
-        sed 's@ff400000.dwc2_a@ff500000.dwc2_a@' -i ${D}/etc/adb_udc_file
-    ;;
-    mesonsc2* | mesons4*)
-        sed 's@ff400000.dwc2_a@fdd00000.dwc2_a@' -i ${D}/etc/adb_udc_file
-    ;;
-    mesont7*)
-        sed 's@ff400000.dwc2_a@fdd00000.crgudc2@' -i ${D}/etc/adb_udc_file
-    ;;
-    mesont3*)
-        sed 's@ff400000.dwc2_a@fdf00000.dwc2_a@' -i ${D}/etc/adb_udc_file
-    ;;
-    mesont5d* | mesont5w*)
-        echo "Using default"
-    ;;
-    esac
+    sed "s@ff400000.dwc2_a@${ADB_UDC}@" -i ${D}/etc/adb_udc_file
 }
 
 addtask do_process_patches_in_srccode_tarball before do_patch after do_unpack
