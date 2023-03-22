@@ -12,7 +12,6 @@ AP6XXX_KCONFIGS = "KCPPFLAGS='-DCONFIG_BCMDHD_FW_PATH=\"/etc/wifi/fw_bcmdhd.bin\
 #AP6XXX_KCONFIGS = "KCPPFLAGS='-DCONFIG_BCMDHD_FW_PATH=\"/etc/wifi/fw_bcmdhd.bin\" -DCONFIG_BCMDHD_NVRAM_PATH=\"/etc/wifi/nvram.txt\" $(cat{STAGING_KERNEL_DIR}/gki_ext_module_predefine)'"
 
 do_configure[noexec] = "1"
-#COMPATIBLE_MACHINE="(mesontm2_5.4*|mesonsc2_5.4*|mesont7_*)"
 
 do_install() {
     WIFIDIR=${D}/lib/modules/${KERNEL_VERSION}/kernel/drivers/broadcom/wifi

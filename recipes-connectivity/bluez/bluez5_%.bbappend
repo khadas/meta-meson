@@ -20,7 +20,6 @@ SRC_URI += "file://0001-bluez5-fix-rcu-reconnect-1-1.patch"
 SRC_URI += "file://0001-BT-fix-pair-inturrpt-error.patch"
 
 TTY = "ttyS1"
-TTY:a213y = "ttyS2"
 
 do_install_append(){
     install -d ${D}${bindir}

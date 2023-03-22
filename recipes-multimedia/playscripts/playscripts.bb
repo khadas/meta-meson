@@ -12,8 +12,6 @@ SRC_URI  = "\
 S = "${WORKDIR}"
 
 ASOUND_CONF = "asound.conf"
-ASOUND_CONF:g12a = "asound.conf"
-ASOUND_CONF:tm2 = "asound.dev0.conf"
 
 do_install() {
     install -d ${D}${sysconfdir}

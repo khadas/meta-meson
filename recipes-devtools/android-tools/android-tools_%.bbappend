@@ -14,8 +14,6 @@ SYSTEMD_SERVICE_${PN} = "adbd.service"
 
 TOOLS = " adbd"
 ADB_UDC = "ff400000.dwc2_a"
-ADB_UDC:a213y = "c9040000.dwc2_a"
-ADB_UDC:c1 = "ff500000.dwc2_a"
 ADB_UDC:s4 = "fdd00000.dwc2_a"
 ADB_UDC:sc2 = "fdd00000.dwc2_a"
 ADB_UDC:t7 = "fdd00000.crgudc2"

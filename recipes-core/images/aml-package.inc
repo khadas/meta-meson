@@ -6,20 +6,12 @@ DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', ' aml-linux-scs
 DEPENDS_append = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', ' aml-linux-sb-native', '', d)}"
 
 SOC_FAMILY = "TBD"
-SOC_FAMILY_gxl = "gxl"
-SOC_FAMILY_axg = "axg"
-SOC_FAMILY_txlx = "txlx"
-SOC_FAMILY_g12a = "g12a"
-SOC_FAMILY_g12b = "g12b"
-SOC_FAMILY_tm2 = "tm2"
 SOC_FAMILY_sc2= "sc2"
 SOC_FAMILY_t7 = "t7"
-SOC_FAMILY_p1 = "p1"
 SOC_FAMILY_s4 = "s4"
 SOC_FAMILY_t5d = "t5d"
 SOC_FAMILY_t5w = "t5w"
 SOC_FAMILY_t3 = "t3"
-SOC_FAMILY_a213y = "a213y"
 
 PACK_CONF = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'aml_upgrade_package_nand.conf', bb.utils.contains('DISTRO_FEATURES', 'absystem', 'aml_upgrade_package_ab.conf', 'aml_upgrade_package.conf', d), d)}"
 

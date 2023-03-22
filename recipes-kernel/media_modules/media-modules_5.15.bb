@@ -14,8 +14,6 @@ SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-5
 SRCREV ?= "${AUTOREV}"
 PV ?= "git${SRCPV}"
 
-#COMPATIBLE_MACHINE="(mesontm2_5.4*|mesonsc2_5.4*|mesont5d_5.4*|mesont7_*|mesons4*)"
-
 do_configure[noexec] = "1"
 
 MEDIA_MODULES_UCODE_BIN = "${S}/firmware/${CHIPSET_NAME}/video_ucode.bin"
