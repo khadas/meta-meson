@@ -1,0 +1,19 @@
+[Unit]
+Description=dtvkit service
+After=basic.target
+#Before=wpeframework.service
+#Wants=network-online.target local-fs.target
+
+[Service]
+ExecStart=/usr/bin/dtvkitserver
+ExecStop=/bin/kill $MAINPID
+KillMode=mixed
+
+ExecStartPre=/bin/systemctl set-environment CAS_TYPE=nagra
+ExecStartPre=/bin/systemctl set-environment NAGRA_CAS_EMI=0x4020
+#ExecStartPre=/bin/systemctl set-environment TSPLAYER_PIPELINE=0
+ExecStartPre=/bin/systemctl set-environment TSPLAYER_LOW_MEM=1
+ExecStartPre=/bin/systemctl set-environment DTVKIT_EXT=/usr/lib/libdtvkit_ota_monitor.so
+
+[Install]
+WantedBy=multi-user.target

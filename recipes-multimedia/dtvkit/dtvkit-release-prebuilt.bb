@@ -5,6 +5,7 @@ DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', ' android-rpcs
 RDEPENDS_${PN} = "aml-mp-sdk aml-mediahal-sdk  aml-subtitleserver aml-libdvr jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 libcurl freetype openssl "
 
 inherit systemd
+
 SYSTEMD_SERVICE_${PN} = "dtvkit.service"
 FILES_${PN} += "${systemd_unitdir}/system/dtvkit.service"
 
@@ -14,6 +15,8 @@ ARM_TARGET_aarch64 = "lib64"
 #SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/releaseDTVKit;protocol=${AML_GIT_PROTOCOL};branch=linux-rdk"
 #use head version, ?= conditonal operator can be control revision in external rdk-next.conf like configuration file
 SRCREV ?= "${AUTOREV}"
+SRC_URI +="file://dtvkit.service"
+SRC_URI +="file://dtvkit_low_mem.service"
 
 TDK_VERSION_t5w = "v3.8/dev/T962D4"
 
@@ -58,7 +61,12 @@ do_install () {
         install -D -m 0755 ${S}/${ARM_TARGET}/CLIENT ${D}/${bindir}
     fi
     install -d ${D}/${systemd_unitdir}/system
-    install -m 0644 ${S}/dtvkit.service ${D}/${systemd_unitdir}/system
+    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper", "true", "false", d)}; then
+        install -m 0644 ${WORKDIR}/dtvkit_low_mem.service ${D}/${systemd_unitdir}/system/dtvkit.service
+    else
+        install -m 0644 ${WORKDIR}/dtvkit.service ${D}/${systemd_unitdir}/system//dtvkit.service
+    fi
+
     install -D -m 0644 ${S}/config/${CONFIG} ${D}/etc/config.xml
     install -D -m 0644 ${S}/config/*.json  ${D}/etc/
     echo "TDK_VERSION is ${TDK_VERSION}"
