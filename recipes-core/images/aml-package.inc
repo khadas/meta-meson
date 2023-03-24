@@ -1,6 +1,6 @@
 DEPENDS:append = " aml-img-packer-native"
 DEPENDS:append:onepass = " core-image-minimal"
-DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '', ' vendor-image', d)}"
+DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', '', ' vendor-image', d)}"
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', ' aml-swupdate-native', '', d)}"
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', ' aml-linux-scs-native', '', d)}"
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', ' aml-linux-sb-native', '', d)}"
@@ -71,7 +71,7 @@ do_aml_pack() {
         fi
     fi
 
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'true', 'false', d)}; then
         sed -i '/vendor/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
     fi
     if ${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', 'true', 'false', d)}; then

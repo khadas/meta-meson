@@ -26,9 +26,10 @@ do_install() {
         sed -i '$a\export XDG_RUNTIME_DIR=\/run' ${D}${sysconfdir}/profile.d/property_set.sh
     fi
 
-    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper", "true", "false", d)}
+    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper-reference", "true", "false", d)}
     then
         cat << EOF >> ${D}${sysconfdir}/profile.d/property_set.sh
+echo adjust 64 16 > /sys/class/dmx/cache_status
 echo 0 > /sys/module/amvdec_mmpeg12/parameters/dynamic_buf_num_margin
 echo 1 > /sys/module/amvdec_mh264/parameters/reference_buf_margin
 echo 4 > /sys/module/amvdec_mh264/parameters/reorder_dpb_size_margin
