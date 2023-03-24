@@ -4,6 +4,7 @@ After=tee-supplicant.service
 
 [Service]
 User=root
+Type=oneshot
 ExecStart=/usr/bin/tee_key_inject -p /factory
 
 [Install]
