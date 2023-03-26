@@ -114,6 +114,9 @@ do_deploy () {
         install ${S}/fip/u-boot.bin.usb.bl2 ${DEPLOYDIR}/
         install ${S}/fip/u-boot.bin.usb.tpl ${DEPLOYDIR}/
         install ${S}/fip/u-boot.bin.sd.bin ${DEPLOYDIR}/
+		if ${@bb.utils.contains('DISTRO_FEATURES', 'uboot-abmode', 'true', 'false', d)}; then
+            install ${S}/fip/fip-bl33.bin ${DEPLOYDIR}/
+        fi
     ;;
     esac
 }

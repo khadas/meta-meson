@@ -69,6 +69,9 @@ do_aml_pack() {
         if ${@bb.utils.contains('DISTRO_FEATURES', 'absystem', 'true', 'false', d)}; then
             sed -i -e 's/sub_type=\"recovery\"/sub_type=\"recovery_a\"/' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
         fi
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'uboot-abmode', 'true', 'false', d)}; then
+            sed -i -e 's/sub_type=\"fip\"/sub_type=\"fip_a\"/' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
+        fi
     fi
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'false', 'true', d)}; then
