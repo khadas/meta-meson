@@ -13,7 +13,7 @@ inherit cmake pkgconfig systemd
 
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
-DEPENDS = "directfb dtvkit-release-prebuilt jsoncpp libbinder aml-audio-service libdrm-meson libdrm"
+DEPENDS = "directfb dtvkit-release-prebuilt jsoncpp libbinder aml-audio-service libdrm-meson libdrm udev"
 RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service"
 
 OECMAKE_GENERATOR = "Unix Makefiles"
