@@ -58,6 +58,7 @@ IMAGE_INSTALL += " \
     glibc-utils \
     localedef \
     format-partitions \
+    wifi-amlogic \
 "
 
 IMAGE_INSTALL += " \
