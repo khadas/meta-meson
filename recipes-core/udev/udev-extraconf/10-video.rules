@@ -8,6 +8,7 @@ KERNEL=="aml_msync", GROUP="video", MODE="660"
 KERNEL=="avsync_s0", GROUP="video", MODE="660"
 KERNEL=="video_composer.0", GROUP="video", MODE="660"
 KERNEL=="video_composer.1", GROUP="video", MODE="660"
+KERNEL=="vdin0", GROUP="video", MODE="660"
 KERNEL=="videotunnel", GROUP="video", MODE="660"
 KERNEL=="amresource_mgr", GROUP="video", MODE="660"
 
