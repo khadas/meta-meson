@@ -4,7 +4,10 @@ Requires=dtvkit.service
 After=dtvkit.service
 
 [Service]
-
+Environment="iptv_streamtype=0"
+Environment="TSPLAYER_PIPELINE=1"
+Environment="TSPLAYER_LOW_MEM=1"
+Environment="TSPLAYER_SUBTILTEFLAG=2"
 ExecStart=/usr/bin/Arka
 
 [Install]
