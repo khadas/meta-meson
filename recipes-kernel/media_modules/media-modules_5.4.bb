@@ -66,6 +66,9 @@ MEDIA_CONFIGS:append:t7 = "\
 MEDIA_CONFIGS:append:sc2 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  "
+MEDIA_CONFIGS_append_t5d = "\
+                 CONFIG_AMLOGIC_HW_DEMUX=m \
+                 "
 
 S = "${WORKDIR}/git"
 EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M="${S}/drivers" EXTRA_CFLAGS="$(cat ${STAGING_KERNEL_DIR}/gki_ext_module_predefine || true)" ${MEDIA_CONFIGS} modules'
