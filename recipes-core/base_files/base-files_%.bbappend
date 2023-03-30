@@ -1,9 +1,6 @@
 do_install:append () {
   if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
     cat << EOF >> ${D}${sysconfdir}/profile
-# workaround to clear resize output
-read -t 0.1 -n 10000 discard
-echo -e "\033[1K"
 # set pager
 export PAGER=/bin/cat
 export SYSTEMD_PAGER=/bin/cat
