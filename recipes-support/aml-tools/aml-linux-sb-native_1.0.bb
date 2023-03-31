@@ -11,6 +11,7 @@ do_compile[noexec] = "1"
 
 SOC_FAMILY = "TBD"
 SOC_FAMILY:t5d = "t5d"
+SOC_FAMILY:t5w = "t5w"
 
 S = "${WORKDIR}/aml-linux-sb"
 
