@@ -100,10 +100,15 @@ function choose_type()
 
 function lunch()
 {
+  for confile in local.conf bblayers.conf; do
+    if [ -e $BUILD_DIR/conf/${confile} ]; then
+      mv $BUILD_DIR/conf/${confile} $BUILD_DIR/conf/${confile}.old
+    fi
+  done
 	if [ -n "$TARGET_MACHINE" ]; then
 		MACHINE=$TARGET_MACHINE source $MESON_PATH/oe-init-build-env-meson $BUILD_DIR
 	fi
-    if [ "$OPENLINUX_BUILD" = "1" ];then
+    if [ "$OPENLINUX_BUILD" = "1" ]; then
         cat >> conf/local.conf <<EOF
 #Force OpenLinux Access
 AML_GIT_ROOT = "git@openlinux.amlogic.com/yocto"
@@ -115,7 +120,7 @@ AML_GIT_ROOT_PROTOCOL = "ssh"
 EOF
     fi
 
-    if [ "$OPENLINUX_BUILD" = "2" ];then
+    if [ "$OPENLINUX_BUILD" = "2" ]; then
         cat >> conf/local.conf <<EOF
 #Force OpenLinux Access
 AML_GIT_ROOT = "git@openlinux2.amlogic.com/yocto"
@@ -128,59 +133,71 @@ EOF
     fi
 
     # Add meta-aml-netflix only if a machine configuration choosed from different layer
-    if [ -d ${MESON_ROOT_PATH}/meta-aml-netflix ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-aml-netflix[^-]') -eq 0 ]; then
+    if [ -d ${MESON_ROOT_PATH}/meta-aml-netflix ]; then
       cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-netflix"
+EOF
+    else
+      cat >> conf/local.conf <<EOF
+DISTRO_FEATURES:remove = " netflix"
 EOF
     fi
 
     # Add meta-aml-netflix-nrdp6 only if a machine configuration choosed from different layer
-    if [ -d ${MESON_ROOT_PATH}/meta-aml-netflix-nrdp6 ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-aml-netflix-nrdp6[^-]') -eq 0 ]; then
+    if [ -d ${MESON_ROOT_PATH}/meta-aml-netflix-nrdp6 ]; then
       cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-netflix-nrdp6"
 EOF
+    else
+      cat >> conf/local.conf <<EOF
+DISTRO_FEATURES:remove = " netflix6"
+EOF
     fi
 
-    if [ -d ${MESON_ROOT_PATH}/meta-selinux ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-selinux[^-]') -eq 0 ]; then
-            cat >> conf/bblayers.conf <<EOF
+    if [ -d ${MESON_ROOT_PATH}/meta-selinux ]; then
+      cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-selinux"
 EOF
     fi
 
-    if [ -d ${MESON_ROOT_PATH}/meta-thunder ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-thunder[^-]') -eq 0 ]; then
-            cat >> conf/bblayers.conf <<EOF
+    if [ -d ${MESON_ROOT_PATH}/meta-thunder ]; then
+      cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-thunder"
 EOF
     fi
-    if [ -d ${MESON_ROOT_PATH}/meta-qt5 ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-qt5[^-]') -eq 0 ]; then
-            cat >> conf/bblayers.conf <<EOF
+    if [ -d ${MESON_ROOT_PATH}/meta-qt5 ]; then
+      cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-qt5"
 EOF
     fi
 
-    if [ -d ${MESON_ROOT_PATH}/meta-security ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-security[^-]') -eq 0 ]; then
-            cat >> conf/bblayers.conf <<EOF
+    if [ -d ${MESON_ROOT_PATH}/meta-security ]; then
+      cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-security"
 EOF
     fi
 
-    if [ -d ${MESON_ROOT_PATH}/meta-zapperplus ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-zapperplus[^-]') -eq 0 ]; then
-            cat >> conf/bblayers.conf <<EOF
+    if [ -d ${MESON_ROOT_PATH}/meta-zapperplus ]; then
+      cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-zapperplus"
 EOF
     fi
 
 # Add meta-perl only if not already present.
-    if [ -d ${MESON_ROOT_PATH}/meta-openembedded/meta-perl ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-perl[^-]') -eq 0 ]; then
-        cat >> conf/bblayers.conf <<EOF
+    if [ -d ${MESON_ROOT_PATH}/meta-openembedded/meta-perl ]; then
+      cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-openembedded/meta-perl"
 EOF
     fi
 
 # Add meta-aml-apps only if not already present.
-    if [ -d ${MESON_ROOT_PATH}/meta-aml-apps ] && [ $(grep '^BBLAYERS' conf/bblayers.conf | grep -c 'meta-aml-apps[^-]') -eq 0 ]; then
-        cat >> conf/bblayers.conf <<EOF
+    if [ -d ${MESON_ROOT_PATH}/meta-aml-apps ]; then
+      cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-apps"
+EOF
+    else
+      cat >> conf/local.conf <<EOF
+DISTRO_FEATURES:remove = " youtube amazon"
 EOF
     fi
 
@@ -189,7 +206,7 @@ EOF
       NEED_A6432_SUPPORT=y
     fi
 
-    if [ "${NEED_A6432_SUPPORT+set}" = "set" ] && [ $(grep '^MULTTILIBS' conf/local.conf | grep -c 'multilib:lib32[^-]') -eq 0 ]; then
+    if [ "${NEED_A6432_SUPPORT+set}" = "set" ]; then
       cat >> conf/local.conf <<EOF
 #Added for A6432 support
 require conf/multilib.conf
@@ -214,8 +231,8 @@ BB_NO_NETWORK = "1"
 EOF
     fi
 
-    if [ -e ${MESON_ROOT_PATH}/CCACHE_DIR ] && [ $(grep '^CCACHE_TOP_DIR' conf/local.conf | grep -c 'CCACHE_DIR[^-]') -eq 0 ]; then
-        cat >> conf/local.conf << EOF
+    if [ -e ${MESON_ROOT_PATH}/CCACHE_DIR ]; then
+      cat >> conf/local.conf << EOF
 # Enable ccache
 INHERIT += "ccache"
 CCACHE_TOP_DIR = "${MESON_ROOT_PATH}/CCACHE_DIR"
