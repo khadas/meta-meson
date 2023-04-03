@@ -153,6 +153,7 @@ EXTERNALSRC:pn-gst-plugin-venc-h265 = "${@'${MESON_ROOT_PATH}/aml-comp/multimedi
 EXTERNALSRC:pn-aml-launcher = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/yocto-launcher'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/yocto-launcher')]}"
 EXTERNALSRC:pn-youtube-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/thunder-services/Cobalt' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/thunder-services/Cobalt')) else ''}"
 EXTERNALSRC:pn-amazon-prime-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/amazon-plugin' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/amazon-plugin')) else ''}"
+EXTERNALSRC_pn-miraclecast = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/miraclecast' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/miraclecast')) else ''}"
 EXTERNALSRC:pn-arka = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/arka' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/arka')) else ''}"
 EXTERNALSRC:pn-aml-iptv-firmware = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_iptv_firmware' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_iptv_firmware')) else ''}"
 EXTERNALSRC:pn-ffmpeg-ctc = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg_ctc' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg_ctc')) else ''}"
