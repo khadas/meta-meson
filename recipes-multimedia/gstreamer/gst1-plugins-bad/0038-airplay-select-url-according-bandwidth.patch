@@ -1,0 +1,26 @@
+From 13fc44ace7e253f2a7c6cf9fbd410652004bdaa8 Mon Sep 17 00:00:00 2001
+From: liuzhaoxiang <liuzhaoxiang@skyworth.com>
+Date: Mon, 5 Sep 2022 10:09:17 -0400
+Subject: [PATCH 27/30] airplay select url according bandwidth
+
+Change-Id: I051740f8335a41ef8b4fc020a1257c16b05d54f3
+---
+ ext/hls/gsthlsdemux.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
+index a9e593e..b95f74d 100755
+--- a/ext/hls/gsthlsdemux.c
++++ b/ext/hls/gsthlsdemux.c
+@@ -633,6 +633,8 @@ gst_hls_demux_process_manifest (GstAdaptiveDemux * demux, GstBuffer * buf)
+     return FALSE;
+   }
+ 
++  GST_INFO_OBJECT (hlsdemux, "demux->connection_speed= %d", demux->connection_speed);
++
+   /* select the initial variant stream */
+   if (demux->connection_speed == 0) {
+     variant = hlsdemux->master->default_variant;
+-- 
+2.34.1
+

@@ -1,0 +1,68 @@
+From ed641d235e756f9e219fc1015594a32b6ad8f5af Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 19 Dec 2022 18:47:32 +0800
+Subject: [PATCH 24/30] mpeg format start play time error.
+
+Change-Id: I5637d164768408daf7729dc688e8c733e4f4ce9d
+---
+ gst/mpegdemux/gstmpegdemux.c | 23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
+
+diff --git a/gst/mpegdemux/gstmpegdemux.c b/gst/mpegdemux/gstmpegdemux.c
+index 382f6e9..b389714 100644
+--- a/gst/mpegdemux/gstmpegdemux.c
++++ b/gst/mpegdemux/gstmpegdemux.c
+@@ -611,13 +611,15 @@ gst_ps_demux_send_segment (GstPsDemux * demux, GstPsStream * stream,
+     /* we should be in sync with downstream, so start from our segment notion,
+      * which also includes proper base_time etc, tweak it a bit and send */
+     gst_segment_copy_into (&demux->src_segment, &segment);
++
++    /*
+     if (GST_CLOCK_TIME_IS_VALID (demux->base_time)) {
+       if (GST_CLOCK_TIME_IS_VALID (segment.start))
+         segment.start += demux->base_time;
+       if (GST_CLOCK_TIME_IS_VALID (segment.stop))
+         segment.stop += demux->base_time;
+       segment.time = segment.start - demux->base_time;
+-    }
++    }*/
+ 
+     GST_INFO_OBJECT (demux, "sending segment event %" GST_SEGMENT_FORMAT
+         " to pad %" GST_PTR_FORMAT, &segment, stream->pad);
+@@ -648,9 +650,19 @@ gst_ps_demux_send_data (GstPsDemux * demux, GstPsStream * stream,
+ 
+   /* timestamps */
+   if (G_UNLIKELY (demux->next_pts != G_MAXUINT64))
+-    pts = MPEGTIME_TO_GSTTIME (demux->next_pts);
++  {
++    if ( demux->next_pts > 0 && demux->first_scr > 0 && demux->next_pts > demux->first_scr)
++      pts = MPEGTIME_TO_GSTTIME (demux->next_pts - demux->first_scr);
++    else
++      pts = MPEGTIME_TO_GSTTIME (demux->next_pts);
++  }
+   if (G_UNLIKELY (demux->next_dts != G_MAXUINT64))
+-    dts = MPEGTIME_TO_GSTTIME (demux->next_dts);
++  {
++    if ( demux->next_dts > 0 && demux->first_scr > 0 && demux->next_dts > demux->first_scr)
++      dts = MPEGTIME_TO_GSTTIME (demux->next_dts - demux->first_scr);
++    else
++      dts = MPEGTIME_TO_GSTTIME (demux->next_dts);
++  }
+ 
+   gst_ps_demux_send_segment (demux, stream, pts);
+ 
+@@ -662,7 +674,10 @@ gst_ps_demux_send_data (GstPsDemux * demux, GstPsStream * stream,
+   gst_segment_set_position (&demux->src_segment, GST_FORMAT_TIME,
+       MPEGTIME_TO_GSTTIME (demux->current_scr - demux->first_scr));
+ 
+-  GST_LOG_OBJECT (demux, "last stop position is now %" GST_TIME_FORMAT
++  GST_LOG_OBJECT (demux, "xiaobo next_pts=%llx, next_dts=%llx, current_scr=%llx, first_scr=%llx",
++    demux->next_pts, demux->next_dts, demux->current_scr, demux->first_scr);
++
++  GST_LOG_OBJECT (demux, "xiaobo last stop position is now %" GST_TIME_FORMAT
+       " current scr is %" GST_TIME_FORMAT,
+       GST_TIME_ARGS (demux->src_segment.position),
+       GST_TIME_ARGS (MPEGTIME_TO_GSTTIME (demux->current_scr)));
+-- 
+2.34.1
+

@@ -1,0 +1,33 @@
+From 62111d3a292143097b554d71ce69316620e19c98 Mon Sep 17 00:00:00 2001
+From: "xuesong.jiang" <xuesong.jiang@amlogic.com>
+Date: Thu, 15 Jul 2021 23:14:50 -0400
+Subject: [PATCH 05/30] Discard ts pcr check when pcr abnormal
+
+Change-Id: I70a51c4b66ec83b9370692291a6c7d779fb93215
+---
+ gst/mpegtsdemux/mpegtspacketizer.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
+index 124ab5c..c84a86d 100644
+--- a/gst/mpegtsdemux/mpegtspacketizer.c
++++ b/gst/mpegtsdemux/mpegtspacketizer.c
+@@ -2332,9 +2332,12 @@ mpegts_packetizer_pts_to_ts (MpegTSPacketizer2 * packetizer,
+           pts - PCRTIME_TO_GSTTIME (refpcr) + PCRTIME_TO_GSTTIME (refpcroffset);
+     else
+       GST_WARNING ("No groups, can't calculate timestamp");
+-  } else
+-    GST_WARNING ("Not enough information to calculate proper timestamp");
+-
++  } else {
++    //AML MOD FLOW
++    GST_WARNING ("Not enough information to calculate proper timestamp use origin pts %" GST_TIME_FORMAT, GST_TIME_ARGS (pts));
++    res = pts;
++  }
++  
+   PACKETIZER_GROUP_UNLOCK (packetizer);
+ 
+   GST_DEBUG ("Returning timestamp %" GST_TIME_FORMAT " for pts %"
+-- 
+2.34.1
+

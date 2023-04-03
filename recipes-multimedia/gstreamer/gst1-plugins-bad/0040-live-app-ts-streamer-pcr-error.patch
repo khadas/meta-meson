@@ -1,0 +1,57 @@
+From 92a040df1eb3e7f924cbd7544ea973d4e897cb84 Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 19 Dec 2022 18:53:45 +0800
+Subject: [PATCH 29/30] live app ts streamer pcr error.
+
+Change-Id: I3923afad70997f7d1461a5c12a2f7b81572fb1b5
+---
+ ext/hls/gsthlsdemux.c              | 7 +++++++
+ gst/mpegtsdemux/mpegtspacketizer.c | 8 +++++++-
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
+index 59474a2..faf1753 100755
+--- a/ext/hls/gsthlsdemux.c
++++ b/ext/hls/gsthlsdemux.c
+@@ -1116,6 +1116,13 @@ gst_hls_demux_update_fragment_info (GstAdaptiveDemuxStream * stream)
+     stream->fragment.timestamp = GST_CLOCK_TIME_NONE;
+   }
+ 
++  //AML patch: should for live and ts
++  if (gst_hls_variant_stream_is_live (hlsdemux->current_variant))
++  {
++    stream->fragment.timestamp = sequence_pos;
++  }
++  //AML patch end
++
+   g_free (hlsdemux_stream->current_key);
+   hlsdemux_stream->current_key = g_strdup (file->key);
+   g_free (hlsdemux_stream->current_iv);
+diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
+index 7931a72..af68293 100644
+--- a/gst/mpegtsdemux/mpegtspacketizer.c
++++ b/gst/mpegtsdemux/mpegtspacketizer.c
+@@ -2248,13 +2248,19 @@ mpegts_packetizer_pts_to_ts (MpegTSPacketizer2 * packetizer,
+     if (G_UNLIKELY (pcr_pid != 0x1fff &&
+             ABSDIFF (res, pcrtable->last_pcrtime) > 15 * GST_SECOND))
+       res = GST_CLOCK_TIME_NONE;
+-    else {
++    else if GST_CLOCK_TIME_IS_VALID (pcrtable->base_pcrtime){
+       GstClockTime tmp = pcrtable->base_time + pcrtable->skew;
+       if (tmp + res > pcrtable->base_pcrtime)
+         res += tmp - pcrtable->base_pcrtime;
+       else
+         res = GST_CLOCK_TIME_NONE;
+     }
++    else
++    {
++      res = GST_CLOCK_TIME_NONE;
++      GST_DEBUG ("set pts as -1, base_pcrtime:%" GST_TIME_FORMAT, GST_TIME_ARGS (pcrtable->base_pcrtime));
++    }
++
+   } else if (packetizer->calculate_offset && pcrtable->groups) {
+     gint64 refpcr = G_MAXINT64, refpcroffset;
+     PCROffsetGroup *group = pcrtable->current->group;
+-- 
+2.34.1
+

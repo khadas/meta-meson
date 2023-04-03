@@ -1,0 +1,35 @@
+From 28e379d04baffd080283e013620e63d2c2fbe714 Mon Sep 17 00:00:00 2001
+From: liuzhaoxiang <liuzhaoxiang@skyworth.com>
+Date: Fri, 4 Mar 2022 01:14:36 -0500
+Subject: [PATCH 15/30] airplay youtube play slowly for 3-4min
+
+---
+ ext/hls/gsthlsdemux.c | 2 ++
+ 1 file changed, 2 insertions(+)
+ mode change 100644 => 100755 ext/hls/gsthlsdemux.c
+
+diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
+old mode 100644
+new mode 100755
+index 098f6b4..8fc2a8d
+--- a/ext/hls/gsthlsdemux.c
++++ b/ext/hls/gsthlsdemux.c
+@@ -869,6 +869,7 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
+     hls_stream->pending_pcr_buffer = NULL;
+   }
+ 
++#if 0 //delete for airplay youtube play slowly
+   if (!gst_hlsdemux_tsreader_find_pcrs (&hls_stream->tsreader, &buffer,
+           &first_pcr, &last_pcr, &tags)
+       && !at_eos) {
+@@ -876,6 +877,7 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
+     hls_stream->pending_pcr_buffer = buffer;
+     return GST_FLOW_OK;
+   }
++#endif
+ 
+   if (tags) {
+     gst_adaptive_demux_stream_set_tags (stream, tags);
+-- 
+2.34.1
+

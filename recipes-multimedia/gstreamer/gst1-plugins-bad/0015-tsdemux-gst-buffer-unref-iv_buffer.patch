@@ -1,0 +1,24 @@
+From 3d7ff1d56cc5bdb84690884c1f1afced7fe8d6b7 Mon Sep 17 00:00:00 2001
+From: "runfeng.xiao" <runfeng.xiao@amlogic.com>
+Date: Mon, 7 Jun 2021 11:33:58 +0800
+Subject: [PATCH 04/30] tsdemux:gst buffer unref iv_buffer.
+
+---
+ gst/mpegtsdemux/tsdemux.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
+index 69b5e20..da4dd53 100755
+--- a/gst/mpegtsdemux/tsdemux.c
++++ b/gst/mpegtsdemux/tsdemux.c
+@@ -3154,6 +3154,7 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+       /*GST_DEBUG("attaching secure IV to output buffer");*/
+       gst_buffer_add_protection_meta(buffer, drm_info_struct);
+     }
++    gst_buffer_unref(iv_buffer);
+   }
+ 
+   if (buffer) {
+-- 
+2.34.1
+

@@ -1,0 +1,73 @@
+From b3efbb8c840d534c7339d9bd7cb54fd3d4f8037a Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 19 Dec 2022 18:39:34 +0800
+Subject: [PATCH 13/30] got first I frame.
+
+Change-Id: I929310f53eb6563bf2565239d026c1998d30b684
+---
+ gst/videoparsers/gstmpegvideoparse.c | 19 +++++++++++++++++++
+ gst/videoparsers/gstmpegvideoparse.h |  1 +
+ 2 files changed, 20 insertions(+)
+
+diff --git a/gst/videoparsers/gstmpegvideoparse.c b/gst/videoparsers/gstmpegvideoparse.c
+index eef79bc..d78f6e5 100644
+--- a/gst/videoparsers/gstmpegvideoparse.c
++++ b/gst/videoparsers/gstmpegvideoparse.c
+@@ -644,9 +644,16 @@ gst_mpegv_parse_process_sc (GstMpegvParse * mpvparse,
+     header.offset = mpvparse->pic_offset;
+     header.size = info->size - mpvparse->pic_offset;
+     if (gst_mpeg_video_packet_parse_picture_header (&header, &mpvparse->pichdr))
++    {
+       GST_LOG_OBJECT (mpvparse, "picture_coding_type %d (%s), ending"
+           "frame of size %d", mpvparse->pichdr.pic_type,
+           picture_type_name (mpvparse->pichdr.pic_type), off - 4);
++      if (!(mpvparse->got_first_I_frame) && (1 == mpvparse->pichdr.pic_type))
++      {
++        GST_DEBUG_OBJECT (mpvparse, "got the firset I frame, set mpvparse->got_first_I_frame to TRUE");
++        mpvparse->got_first_I_frame = TRUE;
++      }
++    }
+     else
+       GST_LOG_OBJECT (mpvparse, "Couldn't parse picture at offset %d",
+           mpvparse->pic_offset);
+@@ -705,6 +712,12 @@ gst_mpegv_parse_handle_frame (GstBaseParse * parse,
+   gboolean need_more = FALSE;
+   GstMapInfo map;
+ 
++  if (GST_BUFFER_FLAG_IS_SET (buf, GST_BUFFER_FLAG_DISCONT) && mpvparse->got_first_I_frame == TRUE)
++  {
++    GST_DEBUG_OBJECT (mpvparse, "BUFFER_FLAG_DISCONT, set got_first_I_frame to FALSE");
++    mpvparse->got_first_I_frame = FALSE;
++  }
++
+   update_frame_parsing_status (mpvparse, frame);
+ 
+   gst_buffer_map (buf, &map, GST_MAP_READ);
+@@ -1040,6 +1053,12 @@ gst_mpegv_parse_pre_push_frame (GstBaseParse * parse, GstBaseParseFrame * frame)
+   GstMpegVideoPictureExt *pic_ext = NULL;
+   GstMpegVideoQuantMatrixExt *quant_ext = NULL;
+ 
++  if (!(mpvparse->got_first_I_frame))
++  {
++    GST_DEBUG_OBJECT (mpvparse, "Drop non-I frame");
++    return GST_BASE_PARSE_FLOW_DROPPED;
++  }
++
+   /* tag sending done late enough in hook to ensure pending events
+    * have already been sent */
+ 
+diff --git a/gst/videoparsers/gstmpegvideoparse.h b/gst/videoparsers/gstmpegvideoparse.h
+index ed9dcce..54ef48d 100644
+--- a/gst/videoparsers/gstmpegvideoparse.h
++++ b/gst/videoparsers/gstmpegvideoparse.h
+@@ -86,6 +86,7 @@ struct _GstMpegvParse {
+   gboolean seqdispext_updated;
+   gboolean picext_updated;
+   gboolean quantmatrext_updated;
++  gboolean got_first_I_frame;
+ 
+   /* pending closed captions */
+   guint8 closedcaptions[96];
+-- 
+2.34.1
+

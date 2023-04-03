@@ -1,0 +1,77 @@
+From 400d8db7681bfc2e187ab685aa2bf11851996f9c Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 29 Mar 2021 15:47:27 +0800
+Subject: [PATCH 03/30] Add tsdemux no checkpcr prop for wds.
+
+Change-Id: I77c35b5abb1ccc3c6933915d17c12b0394225c3a
+---
+ gst/mpegtsdemux/tsdemux.c | 19 +++++++++++++++++++
+ gst/mpegtsdemux/tsdemux.h |  1 +
+ 2 files changed, 20 insertions(+)
+
+diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
+index eed5939..69b5e20 100755
+--- a/gst/mpegtsdemux/tsdemux.c
++++ b/gst/mpegtsdemux/tsdemux.c
+@@ -294,6 +294,7 @@ enum
+   PROP_0,
+   PROP_PROGRAM_NUMBER,
+   PROP_EMIT_STATS,
++  PROP_CHECK_PCR_ILLEGAL,
+   /* FILL ME */
+ };
+ 
+@@ -386,6 +387,11 @@ gst_ts_demux_class_init (GstTSDemuxClass * klass)
+           "Emit messages for every pcr/opcr/pts/dts", FALSE,
+           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+ 
++  g_object_class_install_property (gobject_class, PROP_CHECK_PCR_ILLEGAL,
++      g_param_spec_boolean ("no-check-pcr-stats", "check pcr statistics",
++          "no check messages pcr", FALSE,
++          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
++
+   element_class = GST_ELEMENT_CLASS (klass);
+   gst_element_class_add_pad_template (element_class,
+       gst_static_pad_template_get (&video_template));
+@@ -480,6 +486,9 @@ gst_ts_demux_set_property (GObject * object, guint prop_id,
+     case PROP_EMIT_STATS:
+       demux->emit_statistics = g_value_get_boolean (value);
+       break;
++    case PROP_CHECK_PCR_ILLEGAL:
++      demux->no_check_pcr_illegal = g_value_get_boolean(value);
++      break;
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+   }
+@@ -3024,6 +3033,16 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+     }
+ 
+     if (G_UNLIKELY (stream->pending_ts && !check_pending_buffers (demux))) {
++      //according to prop process issue ts file, in advance goto error
++      if (!demux->no_check_pcr_illegal) {
++        static int count = 0;
++        if (count++ > 200) {
++          res = GST_FLOW_ERROR;
++          GST_DEBUG("process pcr error, return gst_flow_error");
++          goto beach;
++        }
++      }
++
+       if (buffer) {
+         PendingBuffer *pend;
+         pend = g_slice_new0 (PendingBuffer);
+diff --git a/gst/mpegtsdemux/tsdemux.h b/gst/mpegtsdemux/tsdemux.h
+index 394aefd..833ac4a 100644
+--- a/gst/mpegtsdemux/tsdemux.h
++++ b/gst/mpegtsdemux/tsdemux.h
+@@ -76,6 +76,7 @@ struct _GstTSDemux
+   gint requested_program_number; /* Required program number (ignore:-1) */
+   guint program_number;
+   gboolean emit_statistics;
++  gboolean no_check_pcr_illegal;
+ 
+   /*< private >*/
+   gint program_generation; /* Incremented each time we switch program 0..15 */
+-- 
+2.34.1
+

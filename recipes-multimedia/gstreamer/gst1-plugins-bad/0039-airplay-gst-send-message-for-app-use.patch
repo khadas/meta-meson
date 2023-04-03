@@ -1,0 +1,51 @@
+From 60e9d95b7ef7ef380473faf4c08707a0720241f5 Mon Sep 17 00:00:00 2001
+From: liuzhaoxiang <liuzhaoxiang@skyworth.com>
+Date: Fri, 9 Sep 2022 03:58:30 -0400
+Subject: [PATCH 28/30] airplay gst send message for app use
+
+Change-Id: Ie2a8dca477c74386adee7d2be1b54f37078d03a5
+---
+ ext/hls/gsthlsdemux.c | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
+index b95f74d..59474a2 100755
+--- a/ext/hls/gsthlsdemux.c
++++ b/ext/hls/gsthlsdemux.c
+@@ -633,7 +633,7 @@ gst_hls_demux_process_manifest (GstAdaptiveDemux * demux, GstBuffer * buf)
+     return FALSE;
+   }
+ 
+-  GST_INFO_OBJECT (hlsdemux, "demux->connection_speed= %d", demux->connection_speed);
++  GST_INFO_OBJECT (hlsdemux, "by_david demux->connection_speed= %d", demux->connection_speed);
+ 
+   /* select the initial variant stream */
+   if (demux->connection_speed == 0) {
+@@ -1632,6 +1632,24 @@ gst_hls_demux_change_playlist (GstHLSDemux * demux, guint max_bitrate,
+       gst_hls_master_playlist_get_variant_for_bitrate (demux->master,
+       demux->current_variant, max_bitrate);
+ 
++  GST_INFO_OBJECT (demux, "by_david selected change name=%s\n", new_variant->name);
++  GST_INFO_OBJECT (demux, "by_david selected change bitrate =%d\n", max_bitrate);
++
++  if(previous_variant != new_variant)
++  {
++    GST_INFO_OBJECT (demux, "by_david selected new url\n");
++		gst_element_post_message (GST_ELEMENT_CAST (demux),
++		gst_message_new_application (GST_OBJECT_CAST (demux),
++		gst_structure_new ("GstSwitchResolution",
++				  "type", G_TYPE_STRING, "switch", NULL)));
++
++	GST_INFO_OBJECT (demux, "by_david use fix bitrate\n");
++
++	gst_element_post_message (GST_ELEMENT_CAST (demux),
++		gst_message_new_application (GST_OBJECT_CAST (demux),
++		gst_structure_new ("GstGetMaxBitrate","connection-speed", G_TYPE_INT, max_bitrate, NULL)));
++  }
++
+   GST_M3U8_CLIENT_LOCK (demux->client);
+ 
+ retry_failover_protection:
+-- 
+2.34.1
+

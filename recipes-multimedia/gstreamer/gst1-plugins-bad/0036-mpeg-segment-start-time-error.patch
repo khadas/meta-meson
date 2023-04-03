@@ -1,0 +1,43 @@
+From 9a3d54409c02d391bf7af8d265ed03cb69ba93f7 Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 19 Dec 2022 18:48:36 +0800
+Subject: [PATCH 25/30] mpeg segment start time error.
+
+Change-Id: I7ab2d0784e40f944a97a718d1b1e1b1c24e7fa3c
+---
+ gst/mpegdemux/gstmpegdemux.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/gst/mpegdemux/gstmpegdemux.c b/gst/mpegdemux/gstmpegdemux.c
+index b389714..adb940f 100644
+--- a/gst/mpegdemux/gstmpegdemux.c
++++ b/gst/mpegdemux/gstmpegdemux.c
+@@ -674,10 +674,7 @@ gst_ps_demux_send_data (GstPsDemux * demux, GstPsStream * stream,
+   gst_segment_set_position (&demux->src_segment, GST_FORMAT_TIME,
+       MPEGTIME_TO_GSTTIME (demux->current_scr - demux->first_scr));
+ 
+-  GST_LOG_OBJECT (demux, "xiaobo next_pts=%llx, next_dts=%llx, current_scr=%llx, first_scr=%llx",
+-    demux->next_pts, demux->next_dts, demux->current_scr, demux->first_scr);
+-
+-  GST_LOG_OBJECT (demux, "xiaobo last stop position is now %" GST_TIME_FORMAT
++  GST_LOG_OBJECT (demux, "last stop position is now %" GST_TIME_FORMAT
+       " current scr is %" GST_TIME_FORMAT,
+       GST_TIME_ARGS (demux->src_segment.position),
+       GST_TIME_ARGS (MPEGTIME_TO_GSTTIME (demux->current_scr)));
+@@ -2828,8 +2825,12 @@ gst_ps_sink_get_duration (GstPsDemux * demux)
+           demux->last_pts != G_MAXUINT64)) {
+     /* update the src segment */
+     demux->src_segment.format = GST_FORMAT_TIME;
+-    demux->src_segment.start =
++    if (MPEGTIME_TO_GSTTIME (demux->first_pts) > demux->base_time)
++      demux->src_segment.start =
+         MPEGTIME_TO_GSTTIME (demux->first_pts) - demux->base_time;
++    else
++      demux->src_segment.start = MPEGTIME_TO_GSTTIME (demux->first_pts);
++
+     demux->src_segment.stop = -1;
+     gst_segment_set_duration (&demux->src_segment, GST_FORMAT_TIME,
+         MPEGTIME_TO_GSTTIME (demux->last_pts - demux->first_pts));
+-- 
+2.34.1
+

@@ -1,0 +1,99 @@
+From 66a01bb824eb57b0eda8f7328cb1ab582dca4ca1 Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 26 Jul 2021 22:32:14 +0800
+Subject: [PATCH 10/30] protect_pts for miracast.
+
+Change-Id: Ia280728121d4ce4488887dabfb7d686b2129b4fd
+---
+ gst/mpegtsdemux/mpegtspacketizer.c |  8 ++++++--
+ gst/mpegtsdemux/mpegtspacketizer.h |  3 +++
+ gst/mpegtsdemux/tsdemux.c          | 12 ++++++++++++
+ 3 files changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
+index c84a86d..7931a72 100644
+--- a/gst/mpegtsdemux/mpegtspacketizer.c
++++ b/gst/mpegtsdemux/mpegtspacketizer.c
+@@ -270,6 +270,9 @@ mpegts_packetizer_init (MpegTSPacketizer2 * packetizer)
+   packetizer->refoffset = -1;
+   packetizer->last_in_time = GST_CLOCK_TIME_NONE;
+   packetizer->pcr_discont_threshold = GST_SECOND;
++
++  //aml modify
++  packetizer->protect_pts = TRUE;
+ }
+ 
+ static void
+@@ -2334,8 +2337,9 @@ mpegts_packetizer_pts_to_ts (MpegTSPacketizer2 * packetizer,
+       GST_WARNING ("No groups, can't calculate timestamp");
+   } else {
+     //AML MOD FLOW
+-    GST_WARNING ("Not enough information to calculate proper timestamp use origin pts %" GST_TIME_FORMAT, GST_TIME_ARGS (pts));
+-    res = pts;
++    GST_WARNING ("%d, Not enough information to calculate proper timestamp use origin pts %" GST_TIME_FORMAT, packetizer->protect_pts, GST_TIME_ARGS (pts));
++    if(packetizer->protect_pts)
++        res = pts;
+   }
+   
+   PACKETIZER_GROUP_UNLOCK (packetizer);
+diff --git a/gst/mpegtsdemux/mpegtspacketizer.h b/gst/mpegtsdemux/mpegtspacketizer.h
+index 0cf83a6..6444e81 100644
+--- a/gst/mpegtsdemux/mpegtspacketizer.h
++++ b/gst/mpegtsdemux/mpegtspacketizer.h
+@@ -283,6 +283,9 @@ struct _MpegTSPacketizer2 {
+   MpegTSPCR *observations[MAX_PCR_OBS_CHANNELS];
+   guint8 lastobsid;
+   GstClockTime pcr_discont_threshold;
++
++  //aml modify
++  gboolean protect_pts;
+ };
+ 
+ struct _MpegTSPacketizer2Class {
+diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
+index ac8d34a..e6f4717 100755
+--- a/gst/mpegtsdemux/tsdemux.c
++++ b/gst/mpegtsdemux/tsdemux.c
+@@ -295,6 +295,7 @@ enum
+   PROP_PROGRAM_NUMBER,
+   PROP_EMIT_STATS,
+   PROP_CHECK_PCR_ILLEGAL,
++  PROP_PROTECT_PTS,
+   /* FILL ME */
+ };
+ 
+@@ -392,6 +393,11 @@ gst_ts_demux_class_init (GstTSDemuxClass * klass)
+           "no check messages pcr", FALSE,
+           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+ 
++  g_object_class_install_property (gobject_class, PROP_PROTECT_PTS,
++      g_param_spec_boolean ("protect-pts", "protect pts",
++          "if cal pts error, protect pts", FALSE,
++          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
++
+   element_class = GST_ELEMENT_CLASS (klass);
+   gst_element_class_add_pad_template (element_class,
+       gst_static_pad_template_get (&video_template));
+@@ -490,6 +496,9 @@ gst_ts_demux_set_property (GObject * object, guint prop_id,
+     case PROP_CHECK_PCR_ILLEGAL:
+       demux->no_check_pcr_illegal = g_value_get_boolean(value);
+       break;
++    case PROP_PROTECT_PTS:
++      MPEG_TS_BASE_PACKETIZER (demux)->protect_pts = g_value_get_boolean (value);
++      break;
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+   }
+@@ -508,6 +517,9 @@ gst_ts_demux_get_property (GObject * object, guint prop_id,
+     case PROP_EMIT_STATS:
+       g_value_set_boolean (value, demux->emit_statistics);
+       break;
++    case PROP_PROTECT_PTS:
++      g_value_set_boolean (value, MPEG_TS_BASE_PACKETIZER (demux)->protect_pts);
++      break;
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+   }
+-- 
+2.34.1
+

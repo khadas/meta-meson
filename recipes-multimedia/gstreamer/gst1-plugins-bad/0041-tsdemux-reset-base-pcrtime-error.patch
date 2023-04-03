@@ -1,0 +1,29 @@
+From 35f961e70e33901e4d9daaf3a1cb43b743eb3fcd Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 19 Dec 2022 18:54:31 +0800
+Subject: [PATCH 30/30] tsdemux reset base pcrtime error.
+
+Change-Id: I739a0b90849939dc1265f707bb78d5b5c9227b9b
+---
+ gst/mpegtsdemux/mpegtspacketizer.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
+index af68293..1c1a295 100644
+--- a/gst/mpegtsdemux/mpegtspacketizer.c
++++ b/gst/mpegtsdemux/mpegtspacketizer.c
+@@ -1389,7 +1389,10 @@ calculate_skew (MpegTSPacketizer2 * packetizer,
+          * to be resynched the next time we see a PCR */
+         GST_WARNING
+             ("backward timestamps at server or no buffer timestamps. Resync base PCR");
+-        pcr->base_pcrtime = GST_CLOCK_TIME_NONE;
++        GST_DEBUG ("delta last_pcrtime - gstpcrtime:%" GST_TIME_FORMAT, GST_TIME_ARGS (pcr->last_pcrtime - gstpcrtime));
++        if (pcr->last_pcrtime - gstpcrtime > 2*GST_SECOND) {
++          pcr->base_pcrtime = GST_CLOCK_TIME_NONE;
++        }
+       }
+     }
+   } else
+-- 
+2.34.1
+

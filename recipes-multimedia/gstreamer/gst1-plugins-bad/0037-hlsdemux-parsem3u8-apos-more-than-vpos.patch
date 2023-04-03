@@ -1,0 +1,58 @@
+From 7957b5af5553111d8c884a26c798906fa2f8a090 Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 19 Dec 2022 18:49:33 +0800
+Subject: [PATCH 26/30] hlsdemux parsem3u8 apos more than vpos.
+
+Change-Id: I15bf74c4352ad90acdadfc5714eeadce21627358
+---
+ ext/hls/gsthlsdemux.c | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
+
+diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
+index db1bfe7..a9e593e 100755
+--- a/ext/hls/gsthlsdemux.c
++++ b/ext/hls/gsthlsdemux.c
+@@ -1162,6 +1162,40 @@ gst_hls_demux_select_bitrate (GstAdaptiveDemuxStream * stream, guint64 bitrate)
+     return FALSE;
+   }
+ 
++
++  if (NULL!= hlsdemux->current_variant) {
++    gint64 vSeq, aSe1;
++    GstClockTime vPostion, aPostion;
++    GList *mlist;
++
++    vPostion = hlsdemux->current_variant->m3u8->sequence_position;
++    vSeq = hlsdemux->current_variant->m3u8->sequence;
++
++    GST_DEBUG_OBJECT (hlsdemux,
++        "sequence %" G_GINT64_FORMAT
++        " and sequence_pos %" GST_TIME_FORMAT, vSeq, GST_TIME_ARGS (vPostion));
++
++    mlist = hlsdemux->current_variant->media[GST_HLS_MEDIA_TYPE_AUDIO];
++
++    while (mlist != NULL) {
++      GstHLSMedia *media = mlist->data;
++      GST_DEBUG_OBJECT (hlsdemux,
++          "mtype=%d, sequence %" G_GINT64_FORMAT
++          " and sequence_pos %" GST_TIME_FORMAT, media->mtype, media->playlist->sequence,
++          GST_TIME_ARGS (media->playlist->sequence_position));
++      aPostion = media->playlist->sequence_position;
++      if (GST_CLOCK_TIME_IS_VALID (vPostion) && GST_CLOCK_TIME_IS_VALID (aPostion) && (aPostion > vPostion))
++      {
++          if ((aPostion - vPostion) >  (6 * GST_SECOND))
++          {
++                GST_LOG_OBJECT (hlsdemux, "audio is too fast");
++                return FALSE;
++          }
++      }
++      mlist = mlist->next;
++    }
++  }
++
+   gst_hls_demux_change_playlist (hlsdemux, bitrate / MAX (1.0,
+           ABS (demux->segment.rate)), &changed);
+   if (changed)
+-- 
+2.34.1
+

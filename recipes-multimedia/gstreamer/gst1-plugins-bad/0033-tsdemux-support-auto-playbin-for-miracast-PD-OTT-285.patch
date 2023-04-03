@@ -1,0 +1,203 @@
+From 87926289f96b9b6ac053655426b27b903c196901 Mon Sep 17 00:00:00 2001
+From: "bo.li6" <bo.li6@amlogic.com>
+Date: Mon, 20 Jun 2022 22:19:08 +0800
+Subject: [PATCH 22/30] tsdemux:support auto playbin for miracast PD#OTT-28518
+
+Change-Id: Id52c8cb28d656941902d5b18c063563c44d90e10
+---
+ gst/mpegtsdemux/tsdemux.c | 98 ++++++++++++++++++++++++++-------------
+ 1 file changed, 65 insertions(+), 33 deletions(-)
+
+diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
+index 2b26966..bd1500e 100755
+--- a/gst/mpegtsdemux/tsdemux.c
++++ b/gst/mpegtsdemux/tsdemux.c
+@@ -219,6 +219,7 @@ struct _TSDemuxStream
+   //for hdcp parse
+   gboolean hdcp_content_flag;
+   gboolean hdcp_have_iv;
++  gboolean is_video;
+   guchar hdcp_contents[16];
+ };
+ 
+@@ -294,7 +295,7 @@ enum
+   PROP_0,
+   PROP_PROGRAM_NUMBER,
+   PROP_EMIT_STATS,
+-  PROP_CHECK_PCR_ILLEGAL,
++  PROP_NO_CHECK_PCR_STATS,
+   PROP_PROTECT_PTS,
+   PROP_SWITCH_FILE_SRC,
+   /* FILL ME */
+@@ -389,7 +390,7 @@ gst_ts_demux_class_init (GstTSDemuxClass * klass)
+           "Emit messages for every pcr/opcr/pts/dts", FALSE,
+           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+ 
+-  g_object_class_install_property (gobject_class, PROP_CHECK_PCR_ILLEGAL,
++  g_object_class_install_property (gobject_class, PROP_NO_CHECK_PCR_STATS,
+       g_param_spec_boolean ("no-check-pcr-stats", "check pcr statistics",
+           "no check messages pcr", FALSE,
+           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+@@ -500,7 +501,7 @@ gst_ts_demux_set_property (GObject * object, guint prop_id,
+     case PROP_EMIT_STATS:
+       demux->emit_statistics = g_value_get_boolean (value);
+       break;
+-    case PROP_CHECK_PCR_ILLEGAL:
++    case PROP_NO_CHECK_PCR_STATS:
+       demux->no_check_pcr_illegal = g_value_get_boolean(value);
+       break;
+     case PROP_PROTECT_PTS:
+@@ -531,6 +532,8 @@ gst_ts_demux_get_property (GObject * object, guint prop_id,
+     case PROP_PROTECT_PTS:
+       g_value_set_boolean (value, MPEG_TS_BASE_PACKETIZER (demux)->protect_pts);
+       break;
++    case PROP_NO_CHECK_PCR_STATS:
++      break;
+     default:
+       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+   }
+@@ -1527,15 +1530,33 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+       break;
+     case GST_MPEGTS_STREAM_TYPE_AUDIO_AAC_ADTS:
+       is_audio = TRUE;
+-      caps = gst_caps_new_simple ("audio/mpeg",
++      if (program->registration_id == DRF_ID_HDCP) {
++        stream->hdcp_content_flag = TRUE;
++        stream->is_video = FALSE;
++        caps = gst_caps_new_simple ("application/x-hdcp",
++          "original-media-type", G_TYPE_STRING, "audio/mpeg",
+           "mpegversion", G_TYPE_INT, 2,
+           "stream-format", G_TYPE_STRING, "adts", NULL);
++      } else {
++        caps = gst_caps_new_simple ("audio/mpeg",
++          "mpegversion", G_TYPE_INT, 2,
++          "stream-format", G_TYPE_STRING, "adts", NULL);
++      }
+       break;
+     case GST_MPEGTS_STREAM_TYPE_AUDIO_AAC_LATM:
+       is_audio = TRUE;
+-      caps = gst_caps_new_simple ("audio/mpeg",
++      if (program->registration_id == DRF_ID_HDCP) {
++        stream->hdcp_content_flag = TRUE;
++        stream->is_video = FALSE;
++        caps = gst_caps_new_simple ("application/x-hdcp",
++          "original-media-type", G_TYPE_STRING, "audio/mpeg",
+           "mpegversion", G_TYPE_INT, 4,
+           "stream-format", G_TYPE_STRING, "loas", NULL);
++      } else {
++        caps = gst_caps_new_simple ("audio/mpeg",
++          "mpegversion", G_TYPE_INT, 4,
++          "stream-format", G_TYPE_STRING, "loas", NULL);
++      }
+       break;
+     case GST_MPEGTS_STREAM_TYPE_VIDEO_MPEG4:
+       is_video = TRUE;
+@@ -1547,13 +1568,15 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+       is_video = TRUE;
+       if (program->registration_id == DRF_ID_HDCP) {
+         stream->hdcp_content_flag = TRUE;
+-        caps = gst_caps_new_simple("application/x-hdcp",
+-            "stream-format", G_TYPE_STRING, "byte-stream",
+-            "alignment", G_TYPE_STRING, "nal", NULL);
++        stream->is_video = TRUE;
++        caps = gst_caps_new_simple ("application/x-hdcp",
++          "original-media-type", G_TYPE_STRING, "video/x-h264",
++          "stream-format", G_TYPE_STRING, "byte-stream",
++          "alignment", G_TYPE_STRING, "nal", NULL);
+       } else {
+-         caps = gst_caps_new_simple("video/x-h264",
+-              "stream-format", G_TYPE_STRING, "byte-stream",
+-              "alignment", G_TYPE_STRING, "nal", NULL);
++        caps = gst_caps_new_simple("video/x-h264",
++          "stream-format", G_TYPE_STRING, "byte-stream",
++          "alignment", G_TYPE_STRING, "nal", NULL);
+        }
+       break;
+     case GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC:
+@@ -1725,7 +1748,14 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+       break;
+     case ST_PS_AUDIO_LPCM:
+       is_audio = TRUE;
+-      caps = gst_caps_new_empty_simple ("audio/x-lpcm");
++      if (program->registration_id == DRF_ID_HDCP) {
++        stream->hdcp_content_flag = TRUE;
++        stream->is_video = FALSE;
++        caps = gst_caps_new_simple("application/x-hdcp-audio",
++          "original-media-type", G_TYPE_STRING, "audio/x-lpcm",  NULL);
++      } else {
++        caps = gst_caps_new_empty_simple ("audio/x-lpcm");
++      }
+       break;
+     case ST_PS_DVD_SUBPICTURE:
+       is_subpicture = TRUE;
+@@ -2381,11 +2411,12 @@ gst_ts_demux_parse_pes_header (GstTSDemux * demux, TSDemuxStream * stream,
+   }
+ 
+   if(header.private_data){
+-    /*GST_DEBUG("Header buffer set private: %08x %08x %08x %08x\n",
+-              ((guint32 *)header.private_data)[0],
+-              ((guint32 *)header.private_data)[1],
+-              ((guint32 *)header.private_data)[2],
+-              ((guint32 *)header.private_data)[3]);*/
++    // GST_ERROR("stream stream_type %x", stream->stream.stream_type);
++    // GST_ERROR("Header buffer set private: %08x %08x %08x %08x",
++    //           ((guint32 *)header.private_data)[0],
++    //           ((guint32 *)header.private_data)[1],
++    //           ((guint32 *)header.private_data)[2],
++    //           ((guint32 *)header.private_data)[3]);
+     memcpy(stream->hdcp_contents, header.private_data, 16);
+     stream->hdcp_have_iv = TRUE;
+   }else{
+@@ -3059,10 +3090,26 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+       buffer = gst_buffer_new_wrapped (stream->data, stream->current_size);
+     }
+ 
++    if(TRUE == stream->hdcp_content_flag) {
++      guchar* iv = g_malloc(16);
++      memcpy(iv, stream->hdcp_contents, 16);
++      iv_buffer = gst_buffer_new_wrapped(iv, 16);
++      GstStructure * drm_info_struct = gst_structure_new("drm_info",
++          "secure", G_TYPE_BOOLEAN, stream->hdcp_have_iv,
++          "isvideo", G_TYPE_BOOLEAN, stream->is_video,
++          "iv", GST_TYPE_BUFFER, iv_buffer,
++          NULL);
++      if (drm_info_struct) {
++        GST_DEBUG("attaching secure IV to output buffer");
++        gst_buffer_add_protection_meta(buffer, drm_info_struct);
++      }
++      gst_buffer_unref(iv_buffer);
++    }
++
+     if (G_UNLIKELY (stream->pending_ts && !check_pending_buffers (demux))) {
+       //according to prop process issue ts file, in advance goto error
+       if (!demux->no_check_pcr_illegal) {
+-        if (demux->no_check_pcr_count++ > 200) {  
++        if (demux->no_check_pcr_count++ > 200) {
+           res = GST_FLOW_ERROR;
+           GST_DEBUG("process pcr error, return gst_flow_error");
+           goto beach;
+@@ -3181,21 +3228,6 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+   else if (GST_CLOCK_TIME_IS_VALID (stream->pts))
+     demux->segment.position = stream->pts;
+ 
+-  if(TRUE == stream->hdcp_content_flag) {
+-    guchar* iv = g_malloc(16);
+-    memcpy(iv, stream->hdcp_contents, 16);
+-    iv_buffer = gst_buffer_new_wrapped(iv, 16);
+-    GstStructure * drm_info_struct = gst_structure_new("drm_info",
+-        "secure", G_TYPE_BOOLEAN, stream->hdcp_have_iv,
+-        "iv", GST_TYPE_BUFFER, iv_buffer,
+-        NULL);
+-    if (drm_info_struct) {
+-      /*GST_DEBUG("attaching secure IV to output buffer");*/
+-      gst_buffer_add_protection_meta(buffer, drm_info_struct);
+-    }
+-    gst_buffer_unref(iv_buffer);
+-  }
+-
+   if (buffer) {
+     res = gst_pad_push (stream->pad, buffer);
+     /* Record that a buffer was pushed */
+-- 
+2.34.1
+

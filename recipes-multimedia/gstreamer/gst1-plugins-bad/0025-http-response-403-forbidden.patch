@@ -1,0 +1,26 @@
+From bcdf85dd98f70b08f1399b774bfb452b2a511912 Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 19 Dec 2022 18:40:45 +0800
+Subject: [PATCH 14/30] http response 403 forbidden.
+
+Change-Id: Ied4dae745b4ace8bf932661601d42287443c2788
+---
+ ext/hls/gsthlsdemux.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
+index 9684757..098f6b4 100644
+--- a/ext/hls/gsthlsdemux.c
++++ b/ext/hls/gsthlsdemux.c
+@@ -1392,7 +1392,7 @@ retry:
+   uri = gst_m3u8_get_uri (demux->current_variant->m3u8);
+   main_uri = gst_adaptive_demux_get_manifest_ref_uri (adaptive_demux);
+   download =
+-      gst_uri_downloader_fetch_uri (adaptive_demux->downloader, uri, main_uri,
++      gst_uri_downloader_fetch_uri (adaptive_demux->downloader, uri, NULL,
+       TRUE, TRUE, TRUE, err);
+   if (download == NULL) {
+     gchar *base_uri;
+-- 
+2.34.1
+

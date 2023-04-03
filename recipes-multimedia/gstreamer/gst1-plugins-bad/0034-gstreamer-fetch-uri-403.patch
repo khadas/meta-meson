@@ -1,0 +1,26 @@
+From 0122d6ba4ced64748bf2a0f030aaef93bb5c87bd Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 19 Dec 2022 18:46:47 +0800
+Subject: [PATCH 23/30] gstreamer fetch uri 403.
+
+Change-Id: I96227e45d89e0019e3cf1556dfd6497d2aebfa1b
+---
+ ext/hls/gsthlsdemux.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
+index cee3f76..db1bfe7 100755
+--- a/ext/hls/gsthlsdemux.c
++++ b/ext/hls/gsthlsdemux.c
+@@ -711,7 +711,7 @@ gst_hls_demux_get_key (GstHLSDemux * demux, const gchar * key_url,
+ 
+   key_fragment =
+       gst_uri_downloader_fetch_uri (GST_ADAPTIVE_DEMUX (demux)->downloader,
+-      key_url, referer, FALSE, FALSE, allow_cache, &err);
++      key_url, NULL, FALSE, FALSE, allow_cache, &err);
+ 
+   if (key_fragment == NULL) {
+     GST_WARNING_OBJECT (demux, "Failed to download key to decrypt data: %s",
+-- 
+2.34.1
+

@@ -1,0 +1,29 @@
+From 655b964e9393a5f80ac92a10df5b37347823c593 Mon Sep 17 00:00:00 2001
+From: Runfeng Xiao <runfeng.xiao@amlogic.com>
+Date: Mon, 19 Dec 2022 18:42:52 +0800
+Subject: [PATCH 17/30] startTime player screen struck.
+
+Change-Id: Icc424cc32486b17a5beadc22021cfd43fa4544be
+---
+ gst/videoparsers/gsth265parse.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/gst/videoparsers/gsth265parse.c b/gst/videoparsers/gsth265parse.c
+index 5031ba6..4113710 100644
+--- a/gst/videoparsers/gsth265parse.c
++++ b/gst/videoparsers/gsth265parse.c
+@@ -1063,9 +1063,8 @@ gst_h265_parse_handle_frame (GstBaseParse * parse,
+             ("Error parsing H.265 stream"), ("Invalid H.265 stream"));
+         goto invalid_stream;
+       case GST_H265_PARSER_NO_NAL:
+-        GST_ELEMENT_ERROR (h265parse, STREAM, FORMAT,
+-            ("Error parsing H.265 stream"), ("No H.265 NAL unit found"));
+-        goto invalid_stream;
++        GST_DEBUG_OBJECT (h265parse, "No H.265 NAL unit found");
++        goto skip;
+       case GST_H265_PARSER_BROKEN_DATA:
+         GST_WARNING_OBJECT (h265parse, "input stream is corrupt; "
+             "it contains a NAL unit of length %u", nalu.size);
+-- 
+2.34.1
+

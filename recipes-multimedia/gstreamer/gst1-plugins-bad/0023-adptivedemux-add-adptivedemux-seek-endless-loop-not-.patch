@@ -1,0 +1,38 @@
+From b5fd26e07042574f2339c56516a348b26becef1a Mon Sep 17 00:00:00 2001
+From: "Wayne.zhang" <Wayne.zhang@amlogic.com>
+Date: Tue, 28 Sep 2021 11:14:34 +0800
+Subject: [PATCH 12/30] adptivedemux :add adptivedemux seek endless loop not
+ break
+
+Change-Id: I4ee0c90a1237f6a2600b1b0a711dcccd8457b9c2
+---
+ gst-libs/gst/adaptivedemux/gstadaptivedemux.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/gst-libs/gst/adaptivedemux/gstadaptivedemux.c b/gst-libs/gst/adaptivedemux/gstadaptivedemux.c
+index c79c8fa..543e108 100644
+--- a/gst-libs/gst/adaptivedemux/gstadaptivedemux.c
++++ b/gst-libs/gst/adaptivedemux/gstadaptivedemux.c
+@@ -1875,8 +1875,8 @@ gst_adaptive_demux_src_event (GstPad * pad, GstObject * parent,
+       GST_DEBUG_OBJECT (demux, "unlock  demux lock after set isSeeking to TRUE");
+       g_print ("unlock  demux lock after set isSeeking to TRUE\n");
+       GST_MANIFEST_UNLOCK (demux);
+-      
+-      gint64 end_time;
++
++      gint64 end_time, out_time = 0;
+       while(demux->priv->isSwitching)
+       {
+         g_mutex_lock (&demux->priv->adaptive_switch_lock);
+@@ -1891,6 +1891,8 @@ gst_adaptive_demux_src_event (GstPad * pad, GstObject * parent,
+         }
+         GST_DEBUG_OBJECT (demux, "continue waiting cond : adaptive_switch_cond or isSwitching == FALSE");
+         g_mutex_unlock (&demux->priv->adaptive_switch_lock);
++        if(100 == out_time)  break;
++        out_time++;
+       }
+ 
+       gboolean ret = gst_adaptive_demux_handle_seek_event (demux, pad, event);
+-- 
+2.34.1
+
