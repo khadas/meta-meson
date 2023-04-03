@@ -68,6 +68,7 @@ EXTERNALSRC:pn-aml-mediadrm-cleartvp-bin = "${@'${MESON_ROOT_PATH}/aml-comp/mult
 EXTERNALSRC:pn-gst-plugin-aml-asink = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-asink' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-asink')) else ''}"
 EXTERNALSRC:pn-gst-plugin-video-sink = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-video-sink' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-video-sink')) else ''}"
 EXTERNALSRC:pn-gst-plugin-aml-v4l2dec = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-v4l2dec' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-v4l2dec')) else ''}"
+EXTERNALSRC:pn-gst-agmplayer = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst_agmplayer' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst_agmplayer')) else ''}"
 EXTERNALSRC:pn-gst-plugin-aml-picsink = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-picsink' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-picsink')) else ''}"
 EXTERNALSRC:pn-gst-plugin-aml-subtitlesink = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-subtitlesink' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-plugin-aml-subtitlesink')) else ''}"
 EXTERNALSRC:pn-gst-aml-drm-plugins = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-aml-drm-plugins1/gst-aml-drm-plugins-1.0' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-aml-drm-plugins1/gst-aml-drm-plugins-1.0')) else ''}"
