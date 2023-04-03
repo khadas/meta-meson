@@ -103,6 +103,7 @@ VIRTUAL-RUNTIME_init_manager ?= "systemd"
 VIRTUAL-RUNTIME_initscripts ?= "systemd-compat-units"
 
 KERNEL_MODULE_AUTOLOAD += "gpio_keypad adc_keypad reg_access"
+KERNEL_MODULE_AUTOLOAD += " ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'afd_module', '', d)}"
 
 # set bootup splash
 SPLASH ?= "psplash"

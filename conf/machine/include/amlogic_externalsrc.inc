@@ -86,6 +86,7 @@ EXTERNALSRC:pn-aml-pqserver = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/am
 EXTERNALSRC:pn-aml-subtitleserver = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_subtitleserver' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_subtitleserver')) else ''}"
 EXTERNALSRC:pn-aml-hdmicec= "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdmicec' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdmicec')) else ''}"
 EXTERNALSRC:pn-aml-dvb = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb')) else ''}"
+EXTERNALSRC:pn-aml-afd = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dtvkit/afd' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dtvkit/afd')) else ''}"
 EXTERNALSRC:pn-aml-zvbi = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/zvbi' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/zvbi')) else ''}"
 EXTERNALSRC:pn-aml-libdvr = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libdvr' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libdvr')) else ''}"
 EXTERNALSRC:pn-aml-cas-hal = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/cas-hal' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/cas-hal')) else ''}"
