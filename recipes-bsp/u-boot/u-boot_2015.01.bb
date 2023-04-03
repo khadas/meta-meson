@@ -63,7 +63,7 @@ DEPENDS:append = "gcc-linaro-aarch64-elf-native "
 DEPENDS:append = "optee-scripts-native optee-userspace-securebl32"
 DEPENDS:append = " riscv-none-gcc-native "
 
-DEPENDS:append = " coreutils-native python3-native python3-pycryptodomex-native "
+DEPENDS:append = " coreutils-native python3-native python3-pycryptodomex-native zip-native "
 DEPENDS:t5w:append = " ninja-native cmake-native "
 
 inherit python3native
