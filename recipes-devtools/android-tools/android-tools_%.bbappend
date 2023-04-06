@@ -9,7 +9,7 @@ SRC_URI += "file://adb_udc_file"
 #SRC_URI += "file://0001-adbd-enable-tcpip.patch;patchdir=system/core"
 
 SYSTEMD_AUTO_ENABLE = "enable"
-SYSTEMD_AUTO_ENABLE:aq2432 = "disable"
+SYSTEMD_AUTO_ENABLE:aq2432 = "${@bb.utils.contains('RELEASE_MODE', 'PROD', 'disable', 'enable', d)}"
 SYSTEMD_SERVICE:${PN} = "adbd.service"
 
 TOOLS = " adbd"
