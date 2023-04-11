@@ -60,6 +60,7 @@ DISTRO_FEATURES:append = " dtvkit "
 #DISTRO_FEATURES:append = " AVB "
 DISTRO_FEATURES:append = " recovery "
 DISTRO_FEATURES:append = " swupdate "
+DISTRO_FEATURES:append = " miraclecast "
 
 OVERRIDES .= ":ap222:s4:onepass"
 MACHINEOVERRIDES .= ":client"
