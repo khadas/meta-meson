@@ -21,6 +21,7 @@ MACHINE_EXTRA_RRECOMMENDS += " \
         optee-linux-driver \
         "
 
+CHIPSET_NAME = "T962D4"
 KERNEL_DEVICETREE = "t5w_t962d4_at301_linux.dtb t5w_t962d4_at301_linux_1g.dtb t5w_t962d4_at301_linux_1.5g.dtb"
 UBOOT_MACHINE = "t5w_at301_v1"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-dummy_codec"

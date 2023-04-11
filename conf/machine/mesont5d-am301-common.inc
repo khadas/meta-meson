@@ -22,6 +22,7 @@ MACHINE_EXTRA_RRECOMMENDS += " \
         optee-linux-driver \
         "
 
+CHIPSET_NAME = "T950D4"
 KERNEL_DEVICETREE = "t5d_t950d4_am301_linux_1.5g.dtb t5d_reva_t950d4_am301_linux_1.5g.dtb t5d_t950d4_am301_linux_1g.dtb t5d_reva_t950d4_am301_linux_1g.dtb"
 UBOOT_MACHINE = "t5d_am301_v1"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-dummy_codec"

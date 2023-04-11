@@ -32,6 +32,7 @@ TDK_VERSION:sc2 = "v3.8/dev/S905X4"
 TDK_VERSION:t7 = "v3.8/dev/A311D2"
 TDK_VERSION:s4 = "v3.8/dev/S905Y4"
 TDK_VERSION:t3 = "v3.8/dev/T965D4"
+TDK_VERSION:t5w = "v3.8/dev/T962D4"
 
 #Widevine Version
 WIDEVINE_VERSION = "16"

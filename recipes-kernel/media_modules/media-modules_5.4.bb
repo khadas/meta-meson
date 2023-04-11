@@ -23,7 +23,11 @@ do_install() {
     unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
     mkdir -p ${MEDIADIR} ${FIRMWAREDIR}
     find ${S}/drivers/ -name *.ko | xargs -i install -m 0666 {} ${MEDIADIR}
-    install -m 0666 ${MEDIA_MODULES_UCODE_BIN} ${FIRMWAREDIR}
+    if [ -f ${MEDIA_MODULES_UCODE_BIN} ]; then
+        install -m 0666 ${MEDIA_MODULES_UCODE_BIN} ${FIRMWAREDIR}
+    else
+        install -m 0666 ${S}/firmware/video_ucode.bin ${FIRMWAREDIR}
+    fi
 }
 
 FILES:${PN} = " \

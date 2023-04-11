@@ -19,7 +19,7 @@ do_install() {
     FIRMWAREDIR=${D}/lib/firmware
     unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
     mkdir -p ${FIRMWAREDIR}
-    if [ -n "${CHIPSET_NAME}" ]; then
+    if [ -n "${CHIPSET_NAME}" -a -d ${S}/${CHIPSET_NAME} ]; then
         install -m 0666 ${S}/${CHIPSET_NAME}/aucpu_fw.bin.signed ${FIRMWAREDIR}/aucpu_fw.bin
     else
         install -m 0666 ${S}/DUMMY/aucpu_fw.bin.signed ${FIRMWAREDIR}/aucpu_fw.bin
