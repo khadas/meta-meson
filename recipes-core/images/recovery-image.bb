@@ -85,7 +85,7 @@ IMAGE_ROOTFS_EXTRA_SPACE:append = "${@bb.utils.contains("DISTRO_FEATURES", "syst
 ROOTFS_POSTPROCESS_COMMAND += "delete_unused_items_from_fstab; "
 
 #if dm-verity is enabled, mount /vendor(/dev/dm-1) will be failed, and recovery can not boot up
-delete_unused_items_from_fstab(){
+delete_unused_items_from_fstab() {
     if [ -e ${IMAGE_ROOTFS}/etc/fstab ];then
         sed -i '/\/vendor/ d' ${IMAGE_ROOTFS}/etc/fstab
         sed -i '/\/tee/ d' ${IMAGE_ROOTFS}/etc/fstab
@@ -93,7 +93,7 @@ delete_unused_items_from_fstab(){
     fi
 }
 
-ROOTFS_POSTPROCESS_COMMAND_aq2432 += "${@bb.utils.contains("DISTRO_FEATURES", "zapper", "remove_hwdb_for_zapper;", "", d)}"
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'remove_hwdb_for_zapper; ', '', d)}"
 remove_hwdb_for_zapper() {
     if [ -e ${IMAGE_ROOTFS}/lib/udev/hwdb.bin ];then
         rm -rf ${IMAGE_ROOTFS}/lib/udev/hwdb.bin
