@@ -4,6 +4,7 @@ SRC_URI:append = " file://network/20-ethernet.network file://network/21-wlan.net
 SRC_URI:append = " file://0027-fix-udisk-can-not-unmount-properly.patch"
 
 PACKAGECONFIG:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'hostnamed networkd nss-resolve resolved randomseed timesyncd', '', d)}"
+PACKAGECONFIG:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-bsp', 'rfkill', '', d)}"
 
 do_install:append() {
 sed -i -e 's/ExecStart=/ExecStart=-/' ${D}/lib/systemd/system/systemd-modules-load.service
