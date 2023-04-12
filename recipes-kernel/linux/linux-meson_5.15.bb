@@ -9,6 +9,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/5.15:"
 
 # aq2432 zapper needs its own defconfig
 FILESEXTRAPATHS:prepend:aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.15/aq2432_zapper:', '${THISDIR}/5.15/aq2432:', d)}"
+FILESEXTRAPATHS:prepend:bf201 := "${THISDIR}/5.15/bf201:"
 
 KBRANCH = "bringup/amlogic-5.15/s4da1_2_2_20220407"
 #SRC_URI = "git://${AML_GIT_ROOT}/kernel/common.git;protocol=${AML_GIT_PROTOCOL};branch=${KBRANCH};"
@@ -17,6 +18,7 @@ SRC_URI:append = " file://extra_modules_install.sh"
 SRC_URI:append:sc2 = " file://sc2.cfg"
 SRC_URI:append:s4 = " file://s4.cfg"
 SRC_URI:append:aq2432 = " file://defconfig"
+SRC_URI:append:bf201 = " file://defconfig"
 
 SRC_URI += "file://common.cfg"
 

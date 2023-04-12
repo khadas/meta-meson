@@ -22,6 +22,7 @@ SOC_BOARD:ah221 = "ah221"
 SOC_BOARD:aq222 = "aq222"
 SOC_BOARD:ap232 = "ap232"
 SOC_BOARD:aq2432 = "aq2432"
+SOC_BOARD:bf201 = "bf201"
 
 PR = "r3"
 

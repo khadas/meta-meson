@@ -14,6 +14,7 @@ ARM_TARGET:aarch64 = "64"
 
 PREBUILT_TARGET = ""
 PREBUILT_TARGET:aq2432 = "aq2432"
+PREBUILT_TARGET:bf201 = "aq2432"
 
 S = "${WORKDIR}/git"
 do_install() {

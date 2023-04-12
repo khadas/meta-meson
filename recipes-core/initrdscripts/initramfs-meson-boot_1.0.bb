@@ -11,6 +11,7 @@ S = "${WORKDIR}"
 
 SOC_BOARD = "default"
 SOC_BOARD_aq2432 = "aq2432"
+SOC_BOARD_bf201 = "aq2432"
 
 do_install() {
     install -m 0755 ${WORKDIR}/init-meson.sh ${D}/init

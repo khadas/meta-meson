@@ -7,8 +7,9 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 SRCTREECOVEREDTASKS:remove = "do_patch"
 FILESEXTRAPATHS:prepend := "${THISDIR}/5.4:"
 
-# aq2432 zapper needs its own defconfig
+# aq2432/bf201 zapper needs its own defconfig
 FILESEXTRAPATHS:prepend:aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.4/aq2432_zapper:', '${THISDIR}/5.4/aq2432:', d)}"
+FILESEXTRAPATHS:prepend:bf201 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.4/aq2432_zapper:', '${THISDIR}/5.4/aq2432:', d)}"
 
 KBRANCH = "amlogic-5.4-dev"
 #SRC_URI = "git://${AML_GIT_ROOT}/kernel/common.git;protocol=${AML_GIT_PROTOCOL};branch=${KBRANCH};"
@@ -23,6 +24,7 @@ SRC_URI:append:t3 = " file://t3.cfg"
 SRC_URI:append:sc2 = " file://sc2.cfg"
 
 SRC_URI:append:aq2432 = " file://defconfig"
+SRC_URI:append:bf201 = " file://defconfig"
 
 SRC_URI += "file://common.cfg"
 

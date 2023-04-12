@@ -28,3 +28,10 @@ do_install:append:aq2432() {
   sed -i '$a SystemMaxUse=16K' ${D}/etc/systemd/journald.conf
   sed -i '$a SystemMaxFileSize=16K' ${D}/etc/systemd/journald.conf
 }
+
+do_install:append:bf201() {
+  sed -i '$a RuntimeMaxUse=16K' ${D}/etc/systemd/journald.conf
+  sed -i '$a RuntimeMaxFileSize=16K' ${D}/etc/systemd/journald.conf
+  sed -i '$a SystemMaxUse=16K' ${D}/etc/systemd/journald.conf
+  sed -i '$a SystemMaxFileSize=16K' ${D}/etc/systemd/journald.conf
+}

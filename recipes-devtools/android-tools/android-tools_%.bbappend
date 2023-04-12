@@ -10,6 +10,7 @@ SRC_URI += "file://adb_udc_file"
 
 SYSTEMD_AUTO_ENABLE = "enable"
 SYSTEMD_AUTO_ENABLE:aq2432 = "${@bb.utils.contains('RELEASE_MODE', 'PROD', 'disable', 'enable', d)}"
+SYSTEMD_AUTO_ENABLE:bf201 = "${@bb.utils.contains('RELEASE_MODE', 'PROD', 'disable', 'enable', d)}"
 SYSTEMD_SERVICE:${PN} = "adbd.service"
 
 TOOLS = " adbd"
