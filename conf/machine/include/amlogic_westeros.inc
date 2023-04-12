@@ -10,7 +10,7 @@ DISTRO_FEATURES:append = " amazon"
 DISTRO_FEATURES:append = " mediaplayer"
 DISTRO_FEATURES:append = " netflix"
 
-PREFERRED_VERSION_amazon-prime-video = "4.0"
+PREFERRED_VERSION_amazon-prime-video = "5.0"
 PREFERRED_VERSION_netflix = "dpi7.0"
 PREFERRED_VERSION_wpa-supplicant = "2.10"
 
