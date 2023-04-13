@@ -1,0 +1,13 @@
+Index: git/utils/lib_a2dp_ctl.c
+===================================================================
+--- git.orig/utils/lib_a2dp_ctl.c
++++ git/utils/lib_a2dp_ctl.c
+@@ -127,7 +127,7 @@ int pcm_bluealsa_open(const char *bddr)
+ 	info("%s %s\n", __func__, pcm_device_spk);
+ 	ret = snd_pcm_open(&pcm_handle_playback, pcm_device_spk,
+ 						  SND_PCM_STREAM_PLAYBACK,	/*speaker as output device*/
+-						  0);						/*NOBLOCK MODE*/
++						  SND_PCM_NONBLOCK);						/*NOBLOCK MODE*/
+ 	if (ret < 0) {
+ 		info("speaker open fail:%s\n", strerror(errno));
+ 		return ret;
