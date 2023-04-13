@@ -92,10 +92,12 @@ do_aml_pack() {
         padding_to_multipleOf4K_for_img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4
         ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/rootfs.ext4.img2simg
         ${DEPLOY_DIR_IMAGE}/ext2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 ${DEPLOY_DIR_IMAGE}/system.img
+        gzip -9c ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4 > ${DEPLOY_DIR_IMAGE}/rootfs.ext4.gz
 
         if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ];then
             padding_to_multipleOf4K_for_img2simg ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4
             ${DEPLOY_DIR_IMAGE}/img2simg ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/vendor.ext4.img2simg
+            gzip -9c ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 > ${DEPLOY_DIR_IMAGE}/vendor.ext4.gz
         fi
 
         if [ "${SOC_FAMILY}" = "p1" ];then
