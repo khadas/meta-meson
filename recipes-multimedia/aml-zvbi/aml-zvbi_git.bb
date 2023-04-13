@@ -3,7 +3,7 @@ LICENSE = "LGPL-2.0+"
 LIC_FILES_CHKSUM = "file://README;md5=91789e3b1cce0c7cd3f26db7a9f9bfac"
 
 inherit autotools pkgconfig
-DEPENDS = "libpng"
+DEPENDS = "libpng liblog"
 do_configure[noexec] = "1"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/external/libzvbi.git;protocol=${AML_GIT_PROTOCOL};branch=ics-amlogic;name=libzvbi"

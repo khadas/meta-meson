@@ -9,7 +9,7 @@ inherit autotools cmake pkgconfig systemd update-rc.d
 INITSCRIPT_NAME = "subtitleserver"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
 
-DEPENDS = " libbinder liblog aml-zvbi cairo aml-mediahal-sdk"
+DEPENDS = " libbinder liblog aml-zvbi libtinyxml2 cairo aml-mediahal-sdk"
 DEPENDS += " ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'directfb', ' virtual/libgles2', d)}"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_subtitleserver.git;protocol=${AML_GIT_PROTOCOL};branch=master"
@@ -28,7 +28,7 @@ EXTRA_OECMAKE += " \
 TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -I${STAGING_INCDIR}/directfb', ' ', d)}"
 TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -DMEDIASYNC_FOR_SUBTITLE  -DUSE_DFB', ' -DMEDIASYNC_FOR_SUBTITLE -DUSE_WAYLAND', d)}"
 
-RDEPENDS:${PN} = " liblog libbinder aml-zvbi cairo aml-mediahal-sdk"
+RDEPENDS:${PN} = " liblog libbinder aml-zvbi  libtinyxml2 cairo aml-mediahal-sdk"
 
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
               TARGET_DIR=${D} \
