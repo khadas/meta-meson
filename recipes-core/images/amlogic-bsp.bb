@@ -94,7 +94,6 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'weston', \
         'wayland \
         weston-init \
-        meson-display \
         fbscripts \
         ', '', d)} \
     pulseaudio \
@@ -103,6 +102,7 @@ IMAGE_INSTALL += " \
     aml-audio-hal \
     openssh \
     sshfs-fuse \
+    meson-display \
 "
 
 IMAGE_INSTALL += " \

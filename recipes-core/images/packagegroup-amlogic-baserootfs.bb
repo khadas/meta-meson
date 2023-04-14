@@ -109,7 +109,6 @@ RDEPENDS:packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'weston', \
         'wayland \
         weston-init \
-        meson-display \
         fbscripts \
         ', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'qt5', \
@@ -156,6 +155,7 @@ RDEPENDS:packagegroup-amlogic-baserootfs = "\
     tzdata \
     tzcode \
     format-partitions \
+    meson-display \
     "
 
 RDEPENDS:packagegroup-amlogic-baserootfs += " \
