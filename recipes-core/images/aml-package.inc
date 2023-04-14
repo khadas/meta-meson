@@ -1,6 +1,6 @@
 DEPENDS:append = " aml-img-packer-native"
 DEPENDS:append:onepass = " core-image-minimal"
-DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', '', ' vendor-image', d)}"
+DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', ' vendor-image', '', d)}"
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', ' aml-swupdate-native', '', d)}"
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', ' aml-linux-scs-native', '', d)}"
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', ' aml-linux-sb-native', '', d)}"
@@ -71,7 +71,7 @@ do_aml_pack() {
         fi
     fi
 
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'false', 'true', d)}; then
         sed -i '/vendor/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
     fi
     if ${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', 'true', 'false', d)}; then
@@ -83,10 +83,14 @@ do_aml_pack() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
         if [ "${ROOTFS_TYPE}" = "ubifs" ]; then
             cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ubi ${DEPLOY_DIR_IMAGE}/rootfs.img
-            cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubi ${DEPLOY_DIR_IMAGE}/vendor.img
+            if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubi ];then
+                cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ubi ${DEPLOY_DIR_IMAGE}/vendor.img
+            fi
         else
             cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/rootfs.img
-            cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/vendor.img
+            if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ];then
+                cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/vendor.img
+            fi
         fi
     else
         padding_to_multipleOf4K_for_img2simg ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.ext4
@@ -150,12 +154,18 @@ do_aml_pack() {
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/sw_package_create.sh ${DEPLOY_DIR_IMAGE}/
         if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
             cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/rootfs.${ROOTFS_TYPE}
-            cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/vendor.${ROOTFS_TYPE}
+            if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ];then
+                cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/vendor.${ROOTFS_TYPE}
+            fi
             cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-nand-${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/sw-description
             cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand-${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/sw-package-filelist
             if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'true', 'false', d)}; then
                 cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-nand-${ROOTFS_TYPE}-avb ${DEPLOY_DIR_IMAGE}/sw-description
                 cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand-${ROOTFS_TYPE}-avb ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+            fi
+
+            if ${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'false', 'true', d)}; then
+                sed -i 's/vendor.${ROOTFS_TYPE}//' ${DEPLOY_DIR_IMAGE}/sw-package-filelist
             fi
         else
             cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-emmc ${DEPLOY_DIR_IMAGE}/sw-description
@@ -164,6 +174,16 @@ do_aml_pack() {
                 cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-emmc-avb ${DEPLOY_DIR_IMAGE}/sw-description
                 cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-emmc-avb ${DEPLOY_DIR_IMAGE}/sw-package-filelist
             fi
+
+            if ${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'false', 'true', d)}; then
+                sed -i 's/vendor.ext4.gz//' ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+            fi
+        fi
+
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'false', 'true', d)}; then
+            sed -i -e '/vendor/{n;d}' -e '$!N;/\n.*vendor/!P;D' ${DEPLOY_DIR_IMAGE}/sw-description
+            sed -i -e '/vendor/{n;d}' -e '$!N;/\n.*vendor/!P;D' ${DEPLOY_DIR_IMAGE}/sw-description
+            sed -i '/vendor/d' ${DEPLOY_DIR_IMAGE}/sw-description
         fi
 
         sed 's@boardname@${MACHINE_ARCH}@' -i ${DEPLOY_DIR_IMAGE}/sw-description
@@ -174,7 +194,7 @@ do_aml_pack() {
 }
 
 do_aml_pack[depends] += "core-image-minimal:do_image_complete "
-do_aml_pack[depends] += "vendor-image:do_image_complete "
+do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', ' vendor-image:do_image_complete', '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.utils.contains('MULTTILIBS', 'multilib:lib32', ' lib32-recovery-image:do_image_complete', ' recovery-image:do_image_complete', d), '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', ' vbmeta-image:do_compile', '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', ' aml-gpt-make:do_install', '', d)}"

@@ -107,6 +107,9 @@ KERNEL_MODULE_AUTOLOAD += "gpio_keypad adc_keypad reg_access"
 # set bootup splash
 SPLASH ?= "psplash"
 
+# default has vendor partition
+DISTRO_FEATURES:append = " vendor-partition"
+
 #wpeframework system uer mode
 DISTRO_FEATURES:append = " system-user"
 
