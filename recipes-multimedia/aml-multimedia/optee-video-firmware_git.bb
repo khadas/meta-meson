@@ -1,5 +1,10 @@
 SUMMARY = "amlogic optee video firmware"
 
+inherit systemd update-rc.d
+
+INITSCRIPT_NAME = "videoFirmwarePreload"
+INITSCRIPT_PARAMS = "start 30 2 3 4 5 . stop 80 0 6 1 ."
+
 LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
@@ -8,6 +13,7 @@ RDEPENDS:${PN} = "libbz2 optee-userspace"
 include aml-multimedia.inc
 
 SRC_URI += "file://videoFirmwarePreload.service"
+SRC_URI += "file://videoFirmwarePreload.init"
 #PR = "${INC_PR}.${TDK_VERSION}"
 
 S = "${WORKDIR}/git/secfirmload/secloadbin"
@@ -30,12 +36,14 @@ do_install () {
     # systemd service file
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/videoFirmwarePreload.service ${D}${systemd_unitdir}/system/
+
+    install -d ${D}${sysconfdir}/init.d
+    install -m 0755 ${WORKDIR}/videoFirmwarePreload.init ${D}${sysconfdir}/init.d/videoFirmwarePreload
 }
 
-FILES:${PN} = "/lib/optee_armtz/* ${libdir}/* /usr/bin/*"
+FILES:${PN} = "/lib/optee_armtz/* ${libdir}/* /usr/bin/* ${sysconfdir}"
 FILES:${PN}-dev = ""
 INSANE_SKIP:${PN} = "ldflags dev-elf already-stripped"
 
 FILES:${PN} += "${systemd_unitdir}/system/videoFirmwarePreload.service"
 SYSTEMD_SERVICE:${PN} = "videoFirmwarePreload.service"
-inherit systemd

@@ -1,8 +1,11 @@
+inherit update-rc.d systemd
+
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/android-tools-adbd:"
 
 SRC_URI += "file://cutils.mk;subdir=${BPN}"
 
 SRC_URI += "file://adbd.service"
+SRC_URI += "file://adbd.init"
 SRC_URI += "file://adbd_post.sh"
 SRC_URI += "file://adbd_prepare.sh"
 SRC_URI += "file://adb_udc_file"
@@ -12,6 +15,9 @@ SYSTEMD_AUTO_ENABLE = "enable"
 SYSTEMD_AUTO_ENABLE:aq2432 = "${@bb.utils.contains('RELEASE_MODE', 'PROD', 'disable', 'enable', d)}"
 SYSTEMD_AUTO_ENABLE:bf201 = "${@bb.utils.contains('RELEASE_MODE', 'PROD', 'disable', 'enable', d)}"
 SYSTEMD_SERVICE:${PN} = "adbd.service"
+
+INITSCRIPT_NAME = "adbd"
+INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 
 TOOLS = " adbd"
 ADB_UDC = "ff400000.dwc2_a"
@@ -40,6 +46,9 @@ do_install:append() {
         sed -i '/usb_monitor/s/^/#&/g' ${D}${bindir}/adbd_post.sh
 
         sed "s@ff400000.dwc2_a@${ADB_UDC}@" -i ${D}/etc/adb_udc_file
+
+        install -d ${D}${sysconfdir}/init.d
+        install -m 0755 ${WORKDIR}/adbd.init ${D}${sysconfdir}/init.d/adbd
     fi
 }
 INSANE_SKIP:${PN}-dev += "dev-elf ldflags"

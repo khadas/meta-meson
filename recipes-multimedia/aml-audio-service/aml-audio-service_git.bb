@@ -5,6 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 #SRC_URI = "git://${AML_GIT_ROOT}/linux/multimedia/audio_server;protocol=${AML_GIT_PROTOCOL};branch=master"
 SRC_URI:append = " file://audioserver.service"
+SRC_URI:append = " file://audioserver.init"
 
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/hal_audio_service')}"
@@ -18,7 +19,11 @@ PACKAGES =+ "\
     "
 
 do_configure[noexec] = "1"
-inherit autotools pkgconfig systemd
+inherit autotools pkgconfig systemd update-rc.d
+
+INITSCRIPT_NAME = "audioserver"
+INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
+
 S="${WORKDIR}/git"
 
 ENABLE_APLUGIN = "no"
@@ -77,15 +82,18 @@ do_install() {
 [Manager]
 DefaultEnvironment=AUDIO_SERVER_SOCKET=unix:///run/audio_socket
 EOF
+
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then
+            sed -i '/Environment/a\Environment=\"AUDIO_SERVER_SHMEM_SIZE=4194304\"' ${D}${systemd_unitdir}/system/audioserver.service
+        fi
     fi
 
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then
-        sed -i '/Environment/a\Environment=\"AUDIO_SERVER_SHMEM_SIZE=4194304\"' ${D}${systemd_unitdir}/system/audioserver.service
-    fi
+    install -d ${D}${sysconfdir}/init.d
+    install -m 0755 ${WORKDIR}/audioserver.init ${D}${sysconfdir}/init.d/audioserver
 }
 
 SYSTEMD_SERVICE:${PN} = "audioserver.service "
-FILES:${PN} = "${libdir}/* ${bindir}/audio_server /etc/systemd/system.conf.d/* "
+FILES:${PN} = "${libdir}/* ${bindir}/audio_server /etc/systemd/system.conf.d/* ${sysconfdir} "
 FILES:${PN}-testapps = "\
                         ${bindir}/audio_client_test \
                         ${bindir}/audio_client_test_ac3 \

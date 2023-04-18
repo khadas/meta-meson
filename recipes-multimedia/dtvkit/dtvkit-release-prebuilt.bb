@@ -4,7 +4,10 @@ DEPENDS = "aml-mp-sdk "
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', ' android-rpcservice', '', d)} "
 RDEPENDS:${PN} = "aml-mp-sdk aml-mediahal-sdk  aml-subtitleserver aml-libdvr jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 libcurl freetype openssl "
 
-inherit systemd
+inherit systemd update-rc.d
+
+INITSCRIPT_NAME = "dtvkit"
+INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
 
 SYSTEMD_SERVICE:${PN} = "dtvkit.service"
 FILES:${PN} += "${systemd_unitdir}/system/dtvkit.service"
@@ -17,6 +20,7 @@ ARM_TARGET:aarch64 = "lib64"
 SRCREV ?= "${AUTOREV}"
 SRC_URI +="file://dtvkit.service"
 SRC_URI +="file://dtvkit_low_mem.service"
+SRC_URI +="file://dtvkit.init "
 
 TDK_VERSION_t5w = "v3.8/dev/T962D4"
 
@@ -73,6 +77,9 @@ do_install () {
     if [ -f "${S}/ta/${TDK_VERSION}/*.ta" ];then
        install -D -m 0755 ${S}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
     fi
+
+    install -d ${D}${sysconfdir}/init.d
+    install -m 0755 ${WORKDIR}/dtvkit.init ${D}${sysconfdir}/init.d/dtvkit
 }
 
 FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/* /lib/teetz/* "

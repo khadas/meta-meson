@@ -23,7 +23,8 @@ IMAGE_INSTALL += " \
     tinyalsa \
     alsa-utils \
     bash \
-    systemd \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'sysvinit', '', d)} \
     fuse-exfat \
     exfat-utils \
     ntfs-3g \
@@ -88,6 +89,8 @@ IMAGE_INSTALL += " \
 #
 
 PACKAGE_INSTALL += "base-files base-passwd initramfs-meson-boot udev-extraconf "
+
+PACKAGE_EXCLUDE = " kernel-devicetree"
 
 MACHINE_IMAGE_NAME ?= "${PN}"
 IMAGE_FEATURES:remove = " read-only-rootfs"

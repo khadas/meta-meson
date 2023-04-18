@@ -4,6 +4,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/hdcp;protocol=${AML_GIT_PROTOCOL};branch=projects/buildroot/tdk-v2.4"
 SRC_URI:append = " file://aml_hdcp.service"
+SRC_URI:append = " file://aml_hdcp.init"
 
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/hdcp')}"
@@ -17,8 +18,11 @@ PV = "${SRCPV}"
 S = "${WORKDIR}/git"
 DEPENDS += "optee-userspace"
 
-inherit autotools pkgconfig systemd
+inherit autotools pkgconfig systemd update-rc.d
 ARM_TARGET:aarch64 = "64"
+
+INITSCRIPT_NAME = "aml_hdcp"
+INITSCRIPT_PARAMS = "start 30 2 3 4 5 . stop 80 0 6 1 ."
 
 do_install() {
     # install headers
@@ -35,9 +39,12 @@ do_install() {
             sed -i "/ExecStart=/c\ExecStart=/bin/sh -c '/usr/bin/hdcp_rx22 -f /tmp/firmware.le&'" ${D}${systemd_unitdir}/system/aml_hdcp.service
         fi
     fi
+
+    install -d ${D}${sysconfdir}/init.d
+    install -m 0755 ${WORKDIR}/aml_hdcp.init ${D}${sysconfdir}/init.d/aml_hdcp
 }
 
 SYSTEMD_SERVICE:${PN} = "aml_hdcp.service "
-FILES:${PN} += "/lib/optee_armtz/* /usr/bin/* /lib/firmware/hdcp/*"
+FILES:${PN} += "/lib/optee_armtz/* /usr/bin/* /lib/firmware/hdcp/* ${sysconfdir}"
 INSANE_SKIP:${PN} = "ldflags dev-so dev-elf"
 INSANE_SKIP:${PN}-dev = "ldflags dev-so dev-elf"

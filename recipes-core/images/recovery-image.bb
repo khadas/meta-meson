@@ -15,7 +15,8 @@ IMAGE_INSTALL:append = "\
                     fuse-exfat \
                     exfat-utils \
                     ntfs-3g \
-                    systemd \
+                    ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)} \
+                    ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'base-files sysvinit initscripts modutils-initscripts', '', d)} \
                     kernel-modules \
                     system-config \
                     zram \
