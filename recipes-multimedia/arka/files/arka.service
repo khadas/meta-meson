@@ -1,7 +1,7 @@
 [Unit]
 Description=Arka DVB application
-Requires=dtvkit_low_mem.service
-After=dtvkit_low_mem.service
+Requires=dtvkit.service
+After=dtvkit.service
 
 [Service]
 

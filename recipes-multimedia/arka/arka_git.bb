@@ -13,7 +13,7 @@ inherit cmake pkgconfig systemd
 
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
-DEPENDS = "directfb dtvkit-release-prebuilt jsoncpp libbinder aml-audio-service libdrm-meson libdrm udev aml-hdmicec"
+DEPENDS = "directfb dtvkit-release-prebuilt jsoncpp libbinder aml-audio-service meson-display udev aml-hdmicec"
 RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service"
 
 OECMAKE_GENERATOR = "Unix Makefiles"
@@ -24,6 +24,7 @@ INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${libdir}/include/ \
     -I${STAGING_DIR_TARGET}${includedir}/libdrm_meson \
     -I${STAGING_DIR_TARGET}${includedir}/libdrm \
+    -I${STAGING_DIR_TARGET}${includedir}/display_settings \
     "
 TARGET_CFLAGS += "-fPIC -D_REENTRANT ${INCLUDE_DIRS}"
 
