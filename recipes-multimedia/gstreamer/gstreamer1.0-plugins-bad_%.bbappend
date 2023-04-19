@@ -41,6 +41,7 @@ SRC_URI_append = "file://0038-airplay-select-url-according-bandwidth.patch "
 SRC_URI_append = "file://0039-airplay-gst-send-message-for-app-use.patch "
 SRC_URI_append = "file://0040-live-app-ts-streamer-pcr-error.patch "
 SRC_URI_append = "file://0041-tsdemux-reset-base-pcrtime-error.patch "
+SRC_URI_append = "file://0042-modify-ts-demux-to-parse-dv-parameter.patch "
 
 DEPENDS += "gst-aml-drmbufferpool-plugins"
 

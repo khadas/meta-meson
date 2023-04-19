@@ -1,0 +1,149 @@
+diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
+index bd1500e..80eefde 100755
+--- a/gst/mpegtsdemux/tsdemux.c
++++ b/gst/mpegtsdemux/tsdemux.c
+@@ -1495,6 +1495,55 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+           caps = gst_caps_new_simple ("video/x-h265",
+               "stream-format", G_TYPE_STRING, "byte-stream",
+               "alignment", G_TYPE_STRING, "nal", NULL);
++
++          if (bstream->registration_id == DRF_ID_DolbyVision) {
++            desc = mpegts_get_descriptor_from_stream (bstream, 0xb0);
++            if (desc) {
++              guint8 dv_version_major;
++              guint8 dv_version_minor;
++              guint8 dv_profile;
++              guint8 dv_level;
++              guint8 rpu_present_flag;
++              guint8 el_present_flag;
++              guint8 bl_present_flag;
++              guint8 dv_bl_signal_compatibility_id;
++              guint16 buf;
++              GstByteReader br;
++
++              GST_LOG ("dv");
++
++              /* skip tag, length */
++              gst_byte_reader_init (&br, desc->data + 2, desc->length);
++
++              dv_version_major = gst_byte_reader_get_uint8_unchecked (&br);
++              dv_version_minor = gst_byte_reader_get_uint8_unchecked (&br);
++              buf = gst_byte_reader_get_uint16_be_unchecked (&br);
++              dv_profile        = (buf >> 9) & 0x7f;    // 7 bits
++              dv_level          = (buf >> 3) & 0x3f;    // 6 bits
++              rpu_present_flag  = (buf >> 2) & 0x01;    // 1 bit
++              el_present_flag   = (buf >> 1) & 0x01;    // 1 bit
++              bl_present_flag   =  buf       & 0x01;    // 1 bit
++              GST_LOG("DV, version: %d.%d, profile: %d, level: %d, "
++                     "rpu flag: %d, el flag: %d, bl flag: %d, compatibility id: %d\n",
++                     dv_version_major, dv_version_minor,
++                     dv_profile, dv_level,
++                     rpu_present_flag,
++                     el_present_flag,
++                     bl_present_flag,
++                     dv_bl_signal_compatibility_id);
++
++              if (dv_profile > 9) {
++                GST_ERROR("invalid profile, not create caps");
++                is_video = FALSE;
++                gst_caps_unref(caps);
++                caps = NULL;
++                break;
++              }
++
++              gst_caps_set_simple (caps, "dv_bl_present_flag", G_TYPE_BOOLEAN, el_present_flag, NULL);
++              gst_caps_set_simple (caps, "dv_el_present_flag", G_TYPE_BOOLEAN, bl_present_flag, NULL);
++            }
++          }
+           break;
+         case DRF_ID_KLVA:
+           sparse = TRUE;
+@@ -1565,25 +1614,71 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+           "systemstream", G_TYPE_BOOLEAN, FALSE, NULL);
+       break;
+     case GST_MPEGTS_STREAM_TYPE_VIDEO_H264:
+-      is_video = TRUE;
+-      if (program->registration_id == DRF_ID_HDCP) {
+-        stream->hdcp_content_flag = TRUE;
+-        stream->is_video = TRUE;
+-        caps = gst_caps_new_simple ("application/x-hdcp",
+-          "original-media-type", G_TYPE_STRING, "video/x-h264",
+-          "stream-format", G_TYPE_STRING, "byte-stream",
+-          "alignment", G_TYPE_STRING, "nal", NULL);
+-      } else {
+-        caps = gst_caps_new_simple("video/x-h264",
+-          "stream-format", G_TYPE_STRING, "byte-stream",
+-          "alignment", G_TYPE_STRING, "nal", NULL);
+-       }
+-      break;
+     case GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC:
+       is_video = TRUE;
+-      caps = gst_caps_new_simple ("video/x-h265",
+-          "stream-format", G_TYPE_STRING, "byte-stream",
+-          "alignment", G_TYPE_STRING, "nal", NULL);
++      if(bstream->stream_type == GST_MPEGTS_STREAM_TYPE_VIDEO_H264){
++        if (program->registration_id == DRF_ID_HDCP) {
++          stream->hdcp_content_flag = TRUE;
++          stream->is_video = TRUE;
++          caps = gst_caps_new_simple ("application/x-hdcp",
++            "original-media-type", G_TYPE_STRING, "video/x-h264",
++            "stream-format", G_TYPE_STRING, "byte-stream",
++            "alignment", G_TYPE_STRING, "nal", NULL);
++        } else {
++            caps = gst_caps_new_simple("video/x-h264",
++              "stream-format", G_TYPE_STRING, "byte-stream",
++              "alignment", G_TYPE_STRING, "nal", NULL);
++        }
++      }
++      else {
++        caps = gst_caps_new_simple ("video/x-h265",
++            "stream-format", G_TYPE_STRING, "byte-stream",
++            "alignment", G_TYPE_STRING, "nal", NULL);
++      }
++
++      desc = mpegts_get_descriptor_from_stream (bstream, 0xb0);
++      if (desc) {
++        guint8 dv_version_major;
++        guint8 dv_version_minor;
++        guint8 dv_profile;
++        guint8 dv_level;
++        guint8 rpu_present_flag;
++        guint8 el_present_flag;
++        guint8 bl_present_flag;
++        guint8 dv_bl_signal_compatibility_id;
++        guint16 buf;
++        GstByteReader br;
++
++        GST_LOG ("dv");
++
++        /* skip tag, length */
++        gst_byte_reader_init (&br, desc->data + 2, desc->length);
++
++        dv_version_major = gst_byte_reader_get_uint8_unchecked (&br);
++        dv_version_minor = gst_byte_reader_get_uint8_unchecked (&br);
++        buf = gst_byte_reader_get_uint16_be_unchecked (&br);
++        dv_profile        = (buf >> 9) & 0x7f;    // 7 bits
++        dv_level          = (buf >> 3) & 0x3f;    // 6 bits
++        rpu_present_flag  = (buf >> 2) & 0x01;    // 1 bit
++        el_present_flag   = (buf >> 1) & 0x01;    // 1 bit
++        bl_present_flag   =  buf       & 0x01;    // 1 bit
++        GST_LOG("DV, version: %d.%d, profile: %d, level: %d, "
++               "rpu flag: %d, el flag: %d, bl flag: %d, compatibility id: %d\n",
++               dv_version_major, dv_version_minor,
++               dv_profile, dv_level,
++               rpu_present_flag,
++               el_present_flag,
++               bl_present_flag,
++               dv_bl_signal_compatibility_id);
++        if (dv_profile > 9) {
++          GST_WARNING("invalid profile");
++          el_present_flag = 0;
++          bl_present_flag = 0;
++        }
++
++        gst_caps_set_simple (caps, "dv_bl_present_flag", G_TYPE_BOOLEAN, el_present_flag, NULL);
++        gst_caps_set_simple (caps, "dv_el_present_flag", G_TYPE_BOOLEAN, bl_present_flag, NULL);
++      }
+       break;
+     case GST_MPEGTS_STREAM_TYPE_VIDEO_JP2K:
+       is_video = TRUE;
