@@ -32,8 +32,9 @@ EXTRA_FFCONF = " \
 	--disable-small \
 	--disable-shared \
     --disable-encoder=flac \
-    --disable-decoder='cavs,ac3_fixed,ac3,eac3,mlp,truehd,dca,amrnb,dvvideo,dolby_e' \
-    --disable-encoder='ac3,ac3_fixed,eac3,mlp,dca,truehd,dvvideo' \
+    --disable-encoders \
+    --disable-decoders \
+    --enable-decoder='aac' \
     --disable-muxer='ac3,eac3,dts,dtshd,spdif,dv' \
     --disable-demuxer='dv' \
     --disable-parser='mlp' \
