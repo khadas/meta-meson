@@ -70,16 +70,6 @@ do_rootfs:append () {
     shutil.rmtree(bootdir, True)
 }
 
-do_install_kernel_modules() {
-   if [ -f ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz ]; then
-     tar -zxvf ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz -C ${IMAGE_ROOTFS}/
-     rm -rf ${IMAGE_ROOTFS}/lib/modules/*
-   fi
-}
-
-addtask install_kernel_modules before do_image_cpio after do_rootfs
-
-
 KERNEL_BOOTARGS = ""
 
 do_bundle_initramfs_dtb() {
@@ -117,3 +107,12 @@ remove_hwdb_for_zapper() {
         rm -rf ${IMAGE_ROOTFS}/lib/udev/hwdb.d
     fi
 }
+
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'install_kernel_modules; ', '', d)}"
+install_kernel_modules() {
+   if [ -f ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz ]; then
+     tar -zxvf ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz -C ${IMAGE_ROOTFS}/
+     rm -rf ${IMAGE_ROOTFS}/lib/modules/*
+   fi
+}
+
