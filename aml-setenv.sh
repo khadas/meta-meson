@@ -222,7 +222,7 @@ DISTRO_FEATURES:remove = " netflix"
 EOF
     fi
 
-    if [ ! -d ${MESON_ROOT_PATH}/aml-comp/thirdparty/miraclecast]; then
+    if [ ! -d ${MESON_ROOT_PATH}/aml-comp/thirdparty/miraclecast ]; then
       cat >> conf/local.conf <<EOF
 DISTRO_FEATURES:remove = " miraclecast"
 EOF
