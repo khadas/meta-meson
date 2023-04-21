@@ -18,6 +18,7 @@ EXTERNALSRC:pn-vmx-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmedia
 EXTERNALSRC:pn-libfaad-aml = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libfaad' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libfaad')) else ''}"
 EXTERNALSRC:pn-libmad-aml = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmad' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmad')) else ''}"
 EXTERNALSRC:pn-libflac-aml = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libflac' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libflac')) else ''}"
+EXTERNALSRC:pn-libadpcm-aml = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libadpcm' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libadpcm')) else ''}"
 EXTERNALSRC:pn-aml-audio-hal = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal')) else ''}"
 EXTERNALSRC:pn-aml-dvbaudioutils = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_audio_hal')) else ''}"
 EXTERNALSRC:pn-aml-audio-service = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/hal_audio_service' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/hal_audio_service')) else ''}"
