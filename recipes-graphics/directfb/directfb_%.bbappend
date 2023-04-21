@@ -18,10 +18,6 @@ EXTRA_OECONF:remove ="--with-gfxdrivers=none"
 
 EXTRA_OECONF += "--with-gfxdrivers=amlgfx \
                  --with-inputdrivers=linuxinput,ps2mouse,serialmouse \
-                 --enable-debug-support \
-                 --enable-debug \
-                 --enable-trace \
-                 --with-tests \
                  "
 
 do_install:append() {
