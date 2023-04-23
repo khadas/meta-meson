@@ -1,0 +1,16 @@
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index 54f8e11..85f1ceb 100644
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -11775,9 +11775,9 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+                         (gint) (pres_delay_field & 0x0F) + 1, NULL);
+                   }
+                   if (size > 5) {
+-                    buf = gst_buffer_new_and_alloc (size - 5);
++                    buf = gst_buffer_new_and_alloc (size - 4);
+                     GST_BUFFER_FLAG_SET (buf, GST_BUFFER_FLAG_HEADER);
+-                    gst_buffer_fill (buf, 0, av1_data + 13, size - 5);
++                    gst_buffer_fill (buf, 0, av1_data + 12, size - 4);
+                     gst_caps_set_simple (entry->caps,
+                         "codec_data", GST_TYPE_BUFFER, buf, NULL);
+                     gst_buffer_unref (buf);
