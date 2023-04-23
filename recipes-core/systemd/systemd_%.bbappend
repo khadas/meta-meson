@@ -20,7 +20,9 @@ sed -i '/pam_selinux/s/^/#&/g' ${D}/etc/pam.d/systemd-user
 #below settings to avoid journalctl logs drop
 sed -i '$a\RateLimitInterval=0' ${D}/etc/systemd/journald.conf
 sed -i '$a\RateLimitBurst=0' ${D}/etc/systemd/journald.conf
-sed -i 's/\(ExecStart=.*wait-online\).*/\1 --any --timeout=30/' ${D}/${systemd_unitdir}/system/systemd-networkd-wait-online.service
+if ${@bb.utils.contains('PACKAGECONFIG', 'networkd', 'true', 'false', d)}; then
+    sed -i 's/\(ExecStart=.*wait-online\).*/\1 --any --timeout=30/' ${D}/${systemd_unitdir}/system/systemd-networkd-wait-online.service
+fi
 }
 
 do_install:append:aq2432() {
