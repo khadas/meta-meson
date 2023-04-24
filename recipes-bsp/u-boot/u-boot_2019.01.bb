@@ -61,7 +61,8 @@ export BL30_ARG = ""
 export BL2_ARG = ""
 
 BL32_SOC_FAMILY = "TBD"
-BL32_SOC_FAMILY:s4 = "s4/s905y4"
+BL32_SOC_FAMILY:ap222 = "s4/s905y4"
+BL32_SOC_FAMILY:aq222 = "s4/s805x2"
 BL32_ARG = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '--bl32 bl32/bl32_3.8/bin/${BL32_SOC_FAMILY}/blob-bl32.nand.bin.signed', '', d)}"
 BL32_ARG:aq2432 = ""
 

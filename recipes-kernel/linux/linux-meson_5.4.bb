@@ -10,6 +10,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/5.4:"
 # aq2432/bf201 zapper needs its own defconfig
 FILESEXTRAPATHS:prepend:aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.4/aq2432_zapper:', '${THISDIR}/5.4/aq2432:', d)}"
 FILESEXTRAPATHS:prepend:bf201 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.4/aq2432_zapper:', '${THISDIR}/5.4/aq2432:', d)}"
+FILESEXTRAPATHS:prepend:aq222 := "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', '${THISDIR}/5.4/aq222-lowmem:', '', d)}"
 
 KBRANCH = "amlogic-5.4-dev"
 #SRC_URI = "git://${AML_GIT_ROOT}/kernel/common.git;protocol=${AML_GIT_PROTOCOL};branch=${KBRANCH};"
@@ -25,6 +26,7 @@ SRC_URI:append:sc2 = " file://sc2.cfg"
 
 SRC_URI:append:aq2432 = " file://defconfig"
 SRC_URI:append:bf201 = " file://defconfig"
+SRC_URI:append:aq222 = "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', ' file://defconfig', '', d)}"
 
 SRC_URI += "file://common.cfg"
 
