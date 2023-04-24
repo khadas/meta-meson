@@ -1,0 +1,133 @@
+diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
+index 4ca7897..5ddc9b2 100644
+--- a/desktop-shell/shell.c
++++ b/desktop-shell/shell.c
+@@ -2977,6 +2977,7 @@ desktop_shell_set_background(struct wl_client *client,
+ 	wl_list_for_each_safe(view, next, &surface->views, surface_link)
+ 		weston_view_destroy(view);
+ 	view = weston_view_create(surface);
++	weston_view_opacity(view, 0.0);
+ 
+ 	surface->committed = background_committed;
+ 	surface->committed_private = shell;
+diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
+index 38047e2..4b72f76 100644
+--- a/include/libweston/libweston.h
++++ b/include/libweston/libweston.h
+@@ -1771,6 +1771,9 @@ weston_compositor_set_default_pointer_grab(struct weston_compositor *compositor,
+ struct weston_surface *
+ weston_surface_create(struct weston_compositor *compositor);
+ 
++void
++weston_view_opacity(struct weston_view *view, float opacity);
++
+ struct weston_view *
+ weston_view_create(struct weston_surface *surface);
+ 
+diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
+index cd1a3e6..a74dfa8 100644
+--- a/libweston/backend-drm/kms.c
++++ b/libweston/backend-drm/kms.c
+@@ -1023,13 +1023,16 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
+ 					      WDRM_PLANE_IN_FENCE_FD,
+ 					      plane_state->in_fence_fd);
+ 		}
+-
++#ifdef USE_DEFAULT_Z_ORDER
++		//use drm default palne z-order
++#else
+ 		/* do note, that 'invented' zpos values are set as immutable */
+ 		if (plane_state->zpos != DRM_PLANE_ZPOS_INVALID_PLANE &&
+ 		    plane_state->plane->zpos_min != plane_state->plane->zpos_max)
+ 			ret |= plane_add_prop(req, plane,
+ 					      WDRM_PLANE_ZPOS,
+ 					      plane_state->zpos);
++#endif
+ 
+ 		if (ret != 0) {
+ 			weston_log("couldn't set plane state\n");
+diff --git a/libweston/backend-drm/meson.build b/libweston/backend-drm/meson.build
+index 23db912..9dfaa4b 100644
+--- a/libweston/backend-drm/meson.build
++++ b/libweston/backend-drm/meson.build
+@@ -83,6 +83,8 @@ if get_option('remoting') or get_option('pipewire')
+ 	config_h.set('BUILD_DRM_VIRTUAL', '1')
+ endif
+ 
++config_h.set('USE_DEFAULT_Z_ORDER', get_option('WESTON_USE_DEFAULT_Z_ORDER'))
++
+ plugin_drm = shared_library(
+ 	'drm-backend',
+ 	srcs_drm,
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 3608c1d..260d1f8 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -421,6 +421,20 @@ region_init_infinite(pixman_region32_t *region)
+ 
+ static struct weston_subsurface *
+ weston_surface_to_subsurface(struct weston_surface *surface);
++
++WL_EXPORT void
++weston_view_opacity(struct weston_view *view, float opacity)
++{
++#ifdef FORCE_BACKGROUND_TRANSPARENT
++	if (opacity > 1.0)
++		opacity = 1.0;
++	weston_log("\n %s view :%p surface :%p   opacity:%f\n",
++	__FUNCTION__,view, view->surface, opacity);
++	if (view)
++		view->alpha = opacity;
++#endif
++// do nothing if not set FORCE_BACKGROUND_TRANSPARENT
++}
+ 
+ WL_EXPORT struct weston_view *
+ weston_view_create(struct weston_surface *surface)
+diff --git a/libweston/meson.build b/libweston/meson.build
+index 871d487..56fe2e2 100644
+--- a/libweston/meson.build
++++ b/libweston/meson.build
+@@ -255,6 +255,8 @@ if get_option('deprecated-weston-launch')
+ 	meson.add_install_script('echo', 'REMINDER: You are installing weston-launch, please make it setuid-root.')
+ endif
+ 
++config_h.set('FORCE_BACKGROUND_TRANSPARENT', get_option('WESTON_FORCE_BACKGROUND_TRANSPARENT'))
++
+ subdir('color-lcms')
+ subdir('renderer-gl')
+ subdir('backend-drm')
+diff --git a/meson_options.txt b/meson_options.txt
+index 1702532..99b1ba1 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -256,3 +256,15 @@ option(
+ 	value: false,
+ 	description: 'Generate documentation'
+ )
++option(
++	'WESTON_USE_DEFAULT_Z_ORDER',
++	type: 'boolean',
++	value: false,
++	description: 'weston use default drm z-order'
++)
++option(
++	'WESTON_FORCE_BACKGROUND_TRANSPARENT',
++	type: 'boolean',
++	value: false,
++	description: 'weston force background view transparent'
++)
+\ No newline at end of file
+diff --git a/shared/shell-utils.c b/shared/shell-utils.c
+index a301eef..e8f1e2b 100644
+--- a/shared/shell-utils.c
++++ b/shared/shell-utils.c
+@@ -152,6 +152,8 @@ create_solid_color_surface(struct weston_compositor *compositor,
+ 		return NULL;
+ 	}
+ 	view = weston_view_create(surface);
++	weston_view_opacity(view, 0.0);
++
+ 	if (view == NULL) {
+ 		weston_log("no memory\n");
+ 		weston_surface_destroy(surface);

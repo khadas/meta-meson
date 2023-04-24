@@ -21,6 +21,7 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
 		   file://0020-10.0.0-define_EGL_DRM_RENDER_NODE_FILE_EXT.patch \
 		   file://0021-10.0.0-MOD_INVALID-to-MOD_LINEAR-for-low-dmabuf-version.patch \
 		   file://0022-10.0.0-revert_gl-renderer_Dont_require_buffer_age_when_using_partial_update.patch \
+		   file://0023-10.0.0-add-z-order-force-and-background-transparent-options.patch \
            "
 
 SRC_URI[md5sum] = "bc4abe2ee6904a4890a0c641c6257f91"
@@ -37,7 +38,7 @@ DEPENDS += "wayland wayland-protocols libinput virtual/egl pango wayland-native"
 
 WESTON_MAJOR_VERSION = "${@'.'.join(d.getVar('PV').split('.')[0:1])}"
 
-EXTRA_OEMESON += "-Dbackend-rdp=false -Dpipewire=false -DWESTON_MAX_OUTPUT_PIPLINE=1"
+EXTRA_OEMESON += "-Dbackend-rdp=false -Dpipewire=false -DWESTON_MAX_OUTPUT_PIPLINE=1 -DWESTON_USE_DEFAULT_Z_ORDER=true  -DWESTON_FORCE_BACKGROUND_TRANSPARENT=true"
 
 PACKAGECONFIG ??= "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'kms wayland egl clients', '', d)} \
                    ${@bb.utils.contains('DISTRO_FEATURES', 'x11 wayland', 'xwayland', '', d)} \
