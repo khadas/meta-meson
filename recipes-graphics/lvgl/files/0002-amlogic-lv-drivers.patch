@@ -1,0 +1,44 @@
+diff --git a/display/fbdev.h b/display/fbdev.h
+index fbbfa3f..a077204 100644
+--- a/display/fbdev.h
++++ b/display/fbdev.h
+@@ -17,7 +17,7 @@ extern "C" {
+ #ifdef LV_CONF_INCLUDE_SIMPLE
+ #include "lv_drv_conf.h"
+ #else
+-#include "../../lv_drv_conf.h"
++#include "../lv_drv_conf.h"
+ #endif
+ #endif
+ 
+@@ -26,7 +26,7 @@ extern "C" {
+ #ifdef LV_LVGL_H_INCLUDE_SIMPLE
+ #include "lvgl.h"
+ #else
+-#include "lvgl/lvgl.h"
++#include <lvgl/lvgl.h>
+ #endif
+ 
+ /*********************
+diff --git a/lv_drv_conf_template.h b/lv_drv_conf_template.h
+index 8fd89ac..4f53bfb 100644
+--- a/lv_drv_conf_template.h
++++ b/lv_drv_conf_template.h
+@@ -12,7 +12,7 @@
+ #ifndef LV_DRV_CONF_H
+ #define LV_DRV_CONF_H
+ 
+-#include "lv_conf.h"
++#include <lvgl/lv_conf.h>
+ 
+ /*********************
+  * DELAY INTERFACE
+@@ -306,7 +306,7 @@
+  *  Linux frame buffer device (/dev/fbx)
+  *-----------------------------------------*/
+ #ifndef USE_FBDEV
+-#  define USE_FBDEV           0
++#  define USE_FBDEV           1
+ #endif
+ 
+ #if USE_FBDEV

@@ -1,0 +1,13 @@
+diff --git a/lv_conf_template.h b/lv_conf_template.h
+index 8bdddb497..7c0ac86b7 100644
+--- a/lv_conf_template.h
++++ b/lv_conf_template.h
+@@ -24,7 +24,7 @@
+  *====================*/
+ 
+ /*Color depth: 1 (1 byte per pixel), 8 (RGB332), 16 (RGB565), 32 (ARGB8888)*/
+-#define LV_COLOR_DEPTH 16
++#define LV_COLOR_DEPTH 32
+ 
+ /*Swap the 2 bytes of RGB565 color. Useful if the display has an 8-bit interface (e.g. SPI)*/
+ #define LV_COLOR_16_SWAP 0

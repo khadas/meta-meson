@@ -1,0 +1,84 @@
+diff --git a/lv_conf_template.h b/lv_conf_template.h
+index 8bdddb49..7961ec43 100644
+--- a/lv_conf_template.h
++++ b/lv_conf_template.h
+@@ -46,7 +46,7 @@
+  *=========================*/
+ 
+ /*1: use custom malloc/free, 0: use the built-in `lv_mem_alloc()` and `lv_mem_free()`*/
+-#define LV_MEM_CUSTOM 0
++#define LV_MEM_CUSTOM 1
+ #if LV_MEM_CUSTOM == 0
+ /*Size of the memory available for `lv_mem_alloc()` in bytes (>= 2kB)*/
+ #  define LV_MEM_SIZE (32U * 1024U)          /*[bytes]*/
+@@ -513,7 +513,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
+ #if LV_USE_THEME_DEFAULT
+ 
+ /*0: Light mode; 1: Dark mode*/
+-# define LV_THEME_DEFAULT_DARK 0
++# define LV_THEME_DEFAULT_DARK 1
+ 
+ /*1: Enable grow on press*/
+ # define LV_THEME_DEFAULT_GROW 1
+@@ -563,7 +563,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
+ 
+ /* JPG + split JPG decoder library.
+  * Split JPG is a custom format optimized for embedded systems. */
+-#define LV_USE_SJPG 0
++#define LV_USE_SJPG 1
+ 
+ /*GIF decoder library*/
+ #define LV_USE_GIF 0
+diff --git a/src/extra/libs/bmp/lv_bmp.c b/src/extra/libs/bmp/lv_bmp.c
+index d0533589..1374a13a 100644
+--- a/src/extra/libs/bmp/lv_bmp.c
++++ b/src/extra/libs/bmp/lv_bmp.c
+@@ -180,6 +180,35 @@ static lv_res_t decoder_read_line(lv_img_decoder_t * decoder, lv_img_decoder_dsc
+     lv_fs_seek(&b->f, p, LV_FS_SEEK_SET);
+     lv_fs_read(&b->f, buf, len * (b->bpp / 8), NULL);
+ 
++#if LV_COLOR_DEPTH == 16
++    if((b->bpp >= 16) && (b->bpp == (sizeof(lv_color_t) * 8))) {
++        lv_fs_read(&b->f, buf, len * (b->bpp / 8), NULL);
++    } else {
++        lv_color_t *color_p = (lv_color_t *)buf;
++        uint8_t color_buf[4];
++        switch(b->bpp) {
++            case 16:
++                for(int i = 0; i < len; i++) {
++                    lv_fs_read(&b->f, color_buf, 2, NULL);
++                    uint16_t color16 = *(uint16_t *)color_buf;
++
++                    #define RGB565_R5(rgb565) ((rgb565 >> 11) & 0x1f)
++                    #define RGB565_G6(rgb565)((rgb565 >>5) & 0x3f)
++                    #define RGB565_B5(rgb565) ((rgb565 >> 0) & 0x1f)
++                    #define R5_2_R8(r5) (r5 << 3)
++                    #define G6_2_G8(g6) (g6 << 2)
++                    #define B5_2_B8(b5) (b5<< 3)
++
++                    color_p[i] = lv_color_make(R5_2_R8(RGB565_R5(color16)),\
++                        G6_2_G8(RGB565_G6(color16)), B5_2_B8(RGB565_B5(color16)));
++                }
++                break;
++            default:
++                break;
++        }
++    }
++#endif
++
+ #if LV_COLOR_DEPTH == 32
+     if(b->bpp == 32) {
+         lv_coord_t i;
+diff --git a/src/lv_conf_internal.h b/src/lv_conf_internal.h
+index b3e6748b..cbacf823 100644
+--- a/src/lv_conf_internal.h
++++ b/src/lv_conf_internal.h
+@@ -38,7 +38,7 @@
+ #  elif defined(LV_CONF_INCLUDE_SIMPLE)        /*Or simply include lv_conf.h is enabled*/
+ #    include "lv_conf.h"
+ #  else
+-#    include "../../lv_conf.h"                 /*Else assume lv_conf.h is next to the lvgl folder*/
++#    include "../lv_conf.h"                 /*Else assume lv_conf.h is next to the lvgl folder*/
+ #  endif
+ #endif
+ 

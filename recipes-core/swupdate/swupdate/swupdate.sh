@@ -44,7 +44,11 @@ show_swupdateui()
     fi
 
     if [ -f "/usr/bin/swupdateui" ]; then
-        swupdateui /etc/recovery.bmp &
+        if [ -e "/etc/recovery.bmp" ]; then
+            swupdateui /etc/recovery.bmp &
+        elif [ -e "/etc/recovery.jpg" ]; then
+            swupdateui /etc/recovery.jpg &
+        fi
     fi
 }
 
