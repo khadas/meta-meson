@@ -10,6 +10,7 @@ PV = "${SRCPV}"
 SRC_URI +="file://tvserver.service"
 
 DEPENDS = " libbinder sqlite3 aml-audio-service"
+DEPENDS += "linux-uapi-headers"
 RDEPENDS:${PN} = " liblog libbinder aml-audio-service"
 do_configure[noexec] = "1"
 inherit autotools pkgconfig systemd
