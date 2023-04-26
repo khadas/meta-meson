@@ -11,6 +11,7 @@ SRC_URI +="file://pqserver.service"
 SRC_URI += "file://pqserver.init"
 
 DEPENDS = " libbinder liblog sqlite3 aml-audio-service "
+DEPENDS += "linux-uapi-headers"
 RDEPENDS:${PN} = " liblog libbinder aml-audio-service"
 do_configure[noexec] = "1"
 inherit autotools pkgconfig systemd update-rc.d
