@@ -1,0 +1,26 @@
+Index: wpa_supplicant-2.10/wpa_supplicant/ctrl_iface.c
+===================================================================
+--- wpa_supplicant-2.10.orig/wpa_supplicant/ctrl_iface.c
++++ wpa_supplicant-2.10/wpa_supplicant/ctrl_iface.c
+@@ -11447,7 +11447,7 @@ char * wpa_supplicant_ctrl_iface_process
+ 					 char *buf, size_t *resp_len)
+ {
+ 	char *reply;
+-	const int reply_size = 4096;
++	const int reply_size = 4096 * 2;
+ 	int reply_len;
+ 
+ 	if (os_strncmp(buf, WPA_CTRL_RSP, os_strlen(WPA_CTRL_RSP)) == 0 ||
+Index: wpa_supplicant-2.10/wpa_supplicant/wpa_cli.c
+===================================================================
+--- wpa_supplicant-2.10.orig/wpa_supplicant/wpa_cli.c
++++ wpa_supplicant-2.10/wpa_supplicant/wpa_cli.c
+@@ -227,7 +227,7 @@ static void wpa_cli_msg_cb(char *msg, si
+ 
+ static int _wpa_ctrl_command(struct wpa_ctrl *ctrl, const char *cmd, int print)
+ {
+-	char buf[4096];
++	char buf[4096 * 2];
+ 	size_t len;
+ 	int ret;
+ 
