@@ -21,6 +21,7 @@ IRDETO_PATH = "TBD"
 IRDETO_PATH:sc2 = "v3/dev/S905C2/signed"
 IRDETO_PATH:s4 = "s905c3"
 IRDETO_PATH:aq2432 = "s805c3"
+IRDETO_PATH:bf201 = "s805c1a"
 
 do_install() {
     install -d -m 0755 ${D}/usr/lib
