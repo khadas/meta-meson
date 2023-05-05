@@ -964,9 +964,9 @@ index 5c11ff6..1f42e8b 100644
 +
 +    //get boot_a/b mtdnum
 +    if (slot == 0) {
-+        ret = get_mtd_by_name("boot_b");
++        ret = (strcmp(img->fname, "boot.img")==0)?get_mtd_by_name("boot_b"):get_mtd_by_name("fip_b");
 +    } else {
-+        ret = get_mtd_by_name("boot_a");
++        ret = (strcmp(img->fname, "boot.img")==0)?get_mtd_by_name("boot_a"):get_mtd_by_name("fip_a");
 +    }
 +
 +    if (ret < 0) {
@@ -996,7 +996,7 @@ index 5c11ff6..1f42e8b 100644
  	int mtdnum;
  
 +	//if a/b boot, need to write boot_a or boot_b
-+	if ((strcmp(img->fname, "boot.img")==0) && (get_system_type()==0)) {
++	if (((strcmp(img->fname, "boot.img")==0) || (strcmp(img->fname, "fip-bl33.bin")==0)) && (get_system_type()==0)) {
 +		return flash_write_boot(img);
 +	}
 +
@@ -1074,7 +1074,7 @@ index 619a2f4..c0b61a9 100644
  void raw_copyimage_handler(void);
  
 +
-+static int install_boot_ab(struct img_type *img) {
++static int install_boot_ab(const char *partitionname, struct img_type *img) {
 +  int ret = 0;
 +  int slot = 0;
 +  int fdout = 0;
@@ -1086,14 +1086,14 @@ index 619a2f4..c0b61a9 100644
 +	return -1;
 +  }
 +
-+  ret = get_inactive_devicename("boot", slot, devicename);
++  ret = get_inactive_devicename(partitionname, slot, devicename);
 +  if (ret != 0) {
 +	TRACE("get inactive devicename failed!\n");
 +	return -1;
 +  }
 +
 +  //write boot_a/b
-+  printf("write boot.img to %s.\n", devicename);
++  printf("write %s.img to %s.\n", partitionname, devicename);
 +  fdout = open(devicename, O_RDWR);
 +  if (fdout < 0) {
 +	TRACE("open %s failed!\n", devicename);
@@ -1222,7 +1222,7 @@ index 619a2f4..c0b61a9 100644
  	}
  
 +//try a/b system
-+if (get_active_slot(&slot)==0 && ((strcmp(img->fname, "boot.img")==0) ||
++if (get_active_slot(&slot)==0 && ((strcmp(img->fname, "boot.img")==0) || (strcmp(img->fname, "fip-bl33.bin")==0) ||
 + (strcmp(img->fname, "recovery.img")==0) || (strcmp(img->fname, "vbmeta.img")==0))) {
 +	if (slot == 0) {
 +		sprintf(device_name, "%s%s", img->device, "_b");
@@ -1267,8 +1267,8 @@ index 619a2f4..c0b61a9 100644
 +	}
 +
 +	//if a/b system and write boot partition
-+	if ((strcmp(img->fname, "boot.img")==0) && (get_system_type()==0)) {
-+		return install_boot_ab(img);
++	if (((strcmp(img->fname, "boot.img")==0) || ((img->fname, "fip-bl33.bin")==0)) && (get_system_type()==0)) {
++		char *part=(strcmp(img->fname, "boot.img")==0)?"boot":"fip";return install_boot_ab(part, img);
 +	}
 +
  	fdout = open(img->device, O_RDWR);

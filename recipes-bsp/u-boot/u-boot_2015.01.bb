@@ -63,8 +63,9 @@ DEPENDS:append = "gcc-linaro-aarch64-elf-native "
 DEPENDS:append = "optee-scripts-native optee-userspace-securebl32"
 DEPENDS:append = " riscv-none-gcc-native "
 
-DEPENDS:append = " coreutils-native python3-native python3-pycryptodomex-native zip-native "
+DEPENDS:append = " coreutils-native python3-native python3-pycryptodomex-native zip-native xxd-native zip-native "
 DEPENDS:t5w:append = " ninja-native cmake-native "
+
 
 inherit python3native
 export BL30_ARG = ""
@@ -90,8 +91,17 @@ do_compile () {
                 --rek=${STAGING_DIR_NATIVE}/tdk/keys/root_aes_key.bin \
                 --in=${STAGING_DIR_TARGET}/usr/share/tdk/secureos/${BL32_SOC_FAMILY}/bl32.img \
                 --out=${S}/bl32/bin/${BL32_SOC_FAMILY}/bl32.img
-
-            LDFLAGS= ./mk ${UBOOT_TYPE%_config} --bl32 bl32/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
+            if ${@bb.utils.contains('DISTRO_FEATURES','uboot-abmode','true','false',d)}; then
+                echo "process: mk ${UBOOT_TYPE%_config} --vab --ab-update ${BL30_ARG} ${BL2_ARG}"
+                LDFLAGS= ./mk ${UBOOT_TYPE%_config} --vab --ab-update ${BL30_ARG} ${BL2_ARG}
+                cp -rf build/u-boot.bin.unsigned fip/u-boot.bin
+                cp -rf build/u-boot.bin.usb.bl2.unsigned fip/u-boot.bin.usb.bl2
+                cp -rf build/u-boot.bin.usb.tpl.unsigned fip/u-boot.bin.usb.tpl
+                cp -rf build/u-boot.bin.unsigned.sd.bin fip/u-boot.bin.sd.bin
+            else
+                echo "process: mk ${UBOOT_TYPE%_config} --bl32 bl32/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}"
+                LDFLAGS= ./mk ${UBOOT_TYPE%_config} --bl32 bl32/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
+            fi
         else
             LDFLAGS= ./mk ${UBOOT_TYPE%_config} --bl32 bl32_3.8/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
         fi
