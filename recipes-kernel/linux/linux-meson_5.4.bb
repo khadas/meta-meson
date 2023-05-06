@@ -12,6 +12,9 @@ FILESEXTRAPATHS:prepend:aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapp
 FILESEXTRAPATHS:prepend:bf201 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.4/aq2432_zapper:', '${THISDIR}/5.4/aq2432:', d)}"
 FILESEXTRAPATHS:prepend:aq222 := "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', '${THISDIR}/5.4/aq222-lowmem:', '', d)}"
 
+# t5d lowmem
+FILESEXTRAPATHS:prepend:t5d := "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', '${THISDIR}/5.4/t5d-lowmem:', '', d)}"
+
 KBRANCH = "amlogic-5.4-dev"
 #SRC_URI = "git://${AML_GIT_ROOT}/kernel/common.git;protocol=${AML_GIT_PROTOCOL};branch=${KBRANCH};"
 #SRC_URI:append = " file://defconfig"
@@ -23,6 +26,9 @@ SRC_URI:append:t5d = " file://t5d.cfg"
 SRC_URI:append:t5w = " file://t5w.cfg"
 SRC_URI:append:t3 = " file://t3.cfg"
 SRC_URI:append:sc2 = " file://sc2.cfg"
+
+# t5d lowmem
+SRC_URI:append:t5d = "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', ' file://defconfig', '', d)}"
 
 SRC_URI:append:aq2432 = " file://defconfig"
 SRC_URI:append:bf201 = " file://defconfig"
