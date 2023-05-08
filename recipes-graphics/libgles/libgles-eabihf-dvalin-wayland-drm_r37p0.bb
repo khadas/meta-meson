@@ -61,7 +61,7 @@ do_install() {
     #install -m 0644 ${WORKDIR}/libMali.so ${S}/lib/eabihf/dvalin/${PV}/wayland/drm/libMali.so
 
     # wayland lib
-    if ${@bb.utils.contains("DISTRO_FEATURES", "WesterOS_lowmem", "true", "false", d)}; then
+    if ${@bb.utils.contains("DISTRO_FEATURES", "low-memory", "true", "false", d)}; then
         install -m 0755 ${S}/lib/${MALI_ARCH}/dvalin/${PV}/wayland/drm/libMali_lm.so ${D}${libdir}/libMali.so
     else
         install -m 0755 ${S}/lib/${MALI_ARCH}/dvalin/${PV}/wayland/drm/libMali.so ${D}${libdir}/libMali.so

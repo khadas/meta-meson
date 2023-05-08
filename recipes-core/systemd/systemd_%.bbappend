@@ -23,18 +23,11 @@ sed -i '$a\RateLimitBurst=0' ${D}/etc/systemd/journald.conf
 if ${@bb.utils.contains('PACKAGECONFIG', 'networkd', 'true', 'false', d)}; then
     sed -i 's/\(ExecStart=.*wait-online\).*/\1 --any --timeout=30/' ${D}/${systemd_unitdir}/system/systemd-networkd-wait-online.service
 fi
-}
-
-do_install:append:aq2432() {
+if ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
   sed -i '$a RuntimeMaxUse=16K' ${D}/etc/systemd/journald.conf
   sed -i '$a RuntimeMaxFileSize=16K' ${D}/etc/systemd/journald.conf
   sed -i '$a SystemMaxUse=16K' ${D}/etc/systemd/journald.conf
   sed -i '$a SystemMaxFileSize=16K' ${D}/etc/systemd/journald.conf
+fi
 }
 
-do_install:append:bf201() {
-  sed -i '$a RuntimeMaxUse=16K' ${D}/etc/systemd/journald.conf
-  sed -i '$a RuntimeMaxFileSize=16K' ${D}/etc/systemd/journald.conf
-  sed -i '$a SystemMaxUse=16K' ${D}/etc/systemd/journald.conf
-  sed -i '$a SystemMaxFileSize=16K' ${D}/etc/systemd/journald.conf
-}

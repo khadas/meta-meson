@@ -83,7 +83,7 @@ do_install() {
 DefaultEnvironment=AUDIO_SERVER_SOCKET=unix:///run/audio_socket
 EOF
 
-        if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
             sed -i '/Environment/a\Environment=\"AUDIO_SERVER_SHMEM_SIZE=4194304\"' ${D}${systemd_unitdir}/system/audioserver.service
         fi
     fi
