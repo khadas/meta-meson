@@ -60,7 +60,7 @@ if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
         vendor_dev="dm-1"
     fi
 
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'false', 'true', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'true', 'false', d)}; then
     cat >> ${D}${sysconfdir}/fstab <<EOF
  /dev/${vendor_dev}     /vendor                    auto       defaults              0  0
 EOF
