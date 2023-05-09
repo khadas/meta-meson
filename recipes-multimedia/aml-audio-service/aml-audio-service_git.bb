@@ -19,7 +19,8 @@ PACKAGES =+ "\
     "
 
 do_configure[noexec] = "1"
-inherit autotools pkgconfig systemd update-rc.d
+inherit autotools pkgconfig systemd
+inherit ${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', ' ', 'update-rc.d', d)}
 
 INITSCRIPT_NAME = "audioserver"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
@@ -28,10 +29,13 @@ S="${WORKDIR}/git"
 
 ENABLE_APLUGIN = "no"
 EXTRA_OEMAKE:append = "${@bb.utils.contains('ENABLE_APLUGIN', 'yes', ' aplugin=y', '', d)}"
-DEPENDS += " grpc grpc-native boost aml-amaudioutils protobuf-native liblog dolby-ms12"
+DEPENDS += " aml-amaudioutils liblog"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', '', ' grpc grpc-native boost protobuf-native dolby-ms12', d)}"
 DEPENDS:append = "${@bb.utils.contains('ENABLE_APLUGIN', 'yes', ' alsa-lib', '', d)}"
 RDEPENDS:${PN} += " aml-amaudioutils liblog"
 RDEPENDS:${PN}-testapps += " ${PN} liblog"
+
+EXTRA_OEMAKE:append = "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', ' rm_audioserver=y', '', d)}"
 
 export TARGET_DIR = "${D}"
 export HOST_DIR = "${STAGING_DIR_NATIVE}/usr/"
@@ -48,9 +52,6 @@ do_install() {
         install -d ${D}/usr/include
         install -d ${D}/usr/include/hardware
         install -d ${D}/usr/include/system
-        install -m 755 -D ${S}/audio_server -t ${D}/usr/bin/
-        install -m 755 -D ${S}/audio_client_test -t ${D}/usr/bin/
-        install -m 755 -D ${S}/audio_client_test_ac3 ${D}/usr/bin/
         install -m 755 -D ${S}/halplay ${D}/usr/bin/
         install -m 755 -D ${S}/hal_dump ${D}/usr/bin/
         install -m 755 -D ${S}/hal_capture ${D}/usr/bin/
@@ -62,10 +63,8 @@ do_install() {
         install -m 755 -D ${S}/start_arc ${D}/usr/bin/
         install -m 755 -D ${S}/test_arc ${D}/usr/bin/
         install -m 644 -D ${S}/libaudio_client.so -t ${D}${libdir}
-        install -m 644 -D ${S}/include/audio_if_client.h -t ${D}/usr/include
         install -m 644 -D ${S}/include/audio_if.h -t ${D}/usr/include
-        install -m 644 -D ${S}/include/audio_effect_if.h -t ${D}/usr/include
-        install -m 644 -D ${S}/include/audio_effect_params.h -t ${D}/usr/include
+
         if ${@bb.utils.contains("ENABLE_APLUGIN", "yes", "true", "false", d)}; then
             install -m 644 -D ${S}/libasound_module_pcm_ahal.so -t ${D}${libdir}/alsa-lib/
         fi
@@ -75,25 +74,36 @@ do_install() {
         for f in ${S}/include/system/*.h; do \
             install -m 644 -D ${f} -t ${D}/usr/include/system; \
         done
-    if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
-        install -D -m 0644 ${WORKDIR}/audioserver.service ${D}${systemd_unitdir}/system/audioserver.service
-        install -d ${D}/etc/systemd/system.conf.d
-        cat << EOF > ${D}/etc/systemd/system.conf.d/audioserver.conf
+
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', 'false', 'true', d)}; then
+            install -m 755 -D ${S}/audio_server -t ${D}/usr/bin/
+            install -m 755 -D ${S}/audio_client_test -t ${D}/usr/bin/
+            install -m 755 -D ${S}/audio_client_test_ac3 ${D}/usr/bin/
+            install -m 644 -D ${S}/include/audio_if_client.h -t ${D}/usr/include
+            install -m 644 -D ${S}/include/audio_effect_if.h -t ${D}/usr/include
+            install -m 644 -D ${S}/include/audio_effect_params.h -t ${D}/usr/include
+
+            if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
+                install -D -m 0644 ${WORKDIR}/audioserver.service ${D}${systemd_unitdir}/system/audioserver.service
+                install -d ${D}/etc/systemd/system.conf.d
+                cat << EOF > ${D}/etc/systemd/system.conf.d/audioserver.conf
 [Manager]
 DefaultEnvironment=AUDIO_SERVER_SOCKET=unix:///run/audio_socket
 EOF
+                if ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
+                    sed -i '/Environment/a\Environment=\"AUDIO_SERVER_SHMEM_SIZE=4194304\"' ${D}${systemd_unitdir}/system/audioserver.service
+                fi
+            fi
 
-        if ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
-            sed -i '/Environment/a\Environment=\"AUDIO_SERVER_SHMEM_SIZE=4194304\"' ${D}${systemd_unitdir}/system/audioserver.service
-        fi
-    fi
-
-    install -d ${D}${sysconfdir}/init.d
-    install -m 0755 ${WORKDIR}/audioserver.init ${D}${sysconfdir}/init.d/audioserver
+            install -d ${D}${sysconfdir}/init.d
+            install -m 0755 ${WORKDIR}/audioserver.init ${D}${sysconfdir}/init.d/audioserver
+       fi
 }
 
-SYSTEMD_SERVICE:${PN} = "audioserver.service "
-FILES:${PN} = "${libdir}/* ${bindir}/audio_server /etc/systemd/system.conf.d/* ${sysconfdir} "
+SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', ' ', 'audioserver.service ', d)}"
+FILES:${PN} = "${libdir}/* ${sysconfdir} "
+FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', ' ', '${bindir}/audio_server ', d)}"
+FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '/etc/systemd/system.conf.d/* ', ' ', d)}"
 FILES:${PN}-testapps = "\
                         ${bindir}/audio_client_test \
                         ${bindir}/audio_client_test_ac3 \
