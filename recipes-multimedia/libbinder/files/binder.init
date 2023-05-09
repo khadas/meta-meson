@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Starts binder service.
+start() {
+	printf "Starting binder service: \n"
+
+	/usr/bin/binder.sh
+	/usr/bin/servicemanager &
+}
+
+stop() {
+	printf "Stopping binder service: \n"
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+

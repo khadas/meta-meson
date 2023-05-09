@@ -14,13 +14,17 @@ PV = "${SRCPV}"
 SRC_URI += "file://LICENSE-2.0.txt"
 SRC_URI += "file://binder.service"
 SRC_URI += "file://binder.sh"
+SRC_URI += "file://binder.init"
 
 #For common patches
 #SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
 
 S = "${WORKDIR}/git/libbinder"
 
-inherit systemd
+inherit systemd update-rc.d
+
+INITSCRIPT_NAME = "binder"
+INITSCRIPT_PARAMS = "start 30 2 3 4 5 . stop 80 0 6 1 ."
 
 EXTRA_OEMAKE = "'STAGING_DIR=${STAGING_DIR_TARGET}'"
 
@@ -51,11 +55,14 @@ do_install:append(){
         sed -i '/ln -sf/a\chmod g+rw /dev/binder' ${D}/${bindir}/binder.sh
         sed -i '/ln -sf/a\chgrp system /dev/binder' ${D}/${bindir}/binder.sh
     fi
+
+    install -d ${D}${sysconfdir}/init.d
+    install -m 0755 ${WORKDIR}/binder.init ${D}${sysconfdir}/init.d/binder
 }
 
 SYSTEMD_SERVICE:${PN} = "binder.service"
 
-FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}"
 FILES:${PN}-dev = "${includedir}/* "
 FILES:${PN} += "${systemd_unitdir}/system/binder.service"
 

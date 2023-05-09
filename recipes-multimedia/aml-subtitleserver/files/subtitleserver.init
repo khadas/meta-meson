@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Starts subtitleserver service.
+start() {
+	printf "Starting subtitleserver service: \n"
+
+	/usr/bin/subtitleservice &
+}
+
+stop() {
+	printf "Stopping subtitleserver service: \n"
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+

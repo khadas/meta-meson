@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# Starts Optee Tee-Supplicant service.
+start() {
+	printf "Starting tee-supplicant service: \n"
+
+	/sbin/modprobe -q optee
+	/usr/bin/tee-supplicant &
+}
+
+stop() {
+	printf "Stopping tee-supplicant service: \n"
+
+	#/bin/kill -KILL $MAINPID
+	#/sbin/modprobe -r optee
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+

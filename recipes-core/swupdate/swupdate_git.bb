@@ -17,7 +17,10 @@ LIC_FILES_CHKSUM = "file://LICENSES/GPL-2.0-only.txt;md5=4ee23c52855c222cba72583
 SRCREV ?= "8ca165e135cff8656dc570fd83ab7fd884f9bece"
 PV ?= "2021.04+git${SRCPV}"
 
-inherit cml1 systemd pkgconfig
+inherit cml1 systemd pkgconfig update-rc.d
+
+INITSCRIPT_NAME = "swupdate"
+INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 
 SRC_URI = "git://github.com/sbabic/swupdate.git;protocol=https \
         file://0001-network_initializer-move-cleanup_files-before-going-.patch \
@@ -29,6 +32,7 @@ SRC_URI = "git://github.com/sbabic/swupdate.git;protocol=https \
         file://swupdate-public.pem \
         file://swupdate.sh \
         file://swupdate.service \
+        file://swupdate.init \
 "
 
 SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "nand", \
@@ -241,6 +245,10 @@ do_install () {
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/swupdate.service ${D}/${systemd_unitdir}/system
     sed 's@rootfs_type@${ROOTFS_TYPE}@' -i ${D}/${systemd_unitdir}/system/swupdate.service
+
+    install -d ${D}${sysconfdir}/init.d
+    install -m 0755 ${WORKDIR}/swupdate.init ${D}${sysconfdir}/init.d/swupdate
+    sed 's@rootfs_type@${ROOTFS_TYPE}@' -i ${D}${sysconfdir}/init.d/swupdate
 
     # config boardname
     sed 's@boardname@${MACHINE_ARCH}@' -i ${D}/etc/hwrevision

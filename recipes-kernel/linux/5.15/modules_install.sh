@@ -44,6 +44,7 @@ function regenerate_modules_sequence_list()
 	if ${NAND_FLAG}; then
 		echo "add nand ko to list"
 		sed -i "/mmc/a\\\tamlogic-mtd-common\n\tamlogic_mtd_nfc" ${SEQUENCE_FILE_PATH}
+		sed -i "/aml_drm/a\\\tamlogic-fs-yaffs" ${SEQUENCE_FILE_PATH}
 	fi
 }
 

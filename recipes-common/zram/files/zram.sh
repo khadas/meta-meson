@@ -1,7 +1,7 @@
 #!/bin/sh
 
 FRACTION=25
-MEMORY=`free | grep "Mem:" | awk '{print $2}'`
+MEMORY=`free -k | grep "Mem:" | awk '{print $2}'`
 SIZE=$((MEMORY * FRACTION / 100 * 1024))
 
 case "$1" in

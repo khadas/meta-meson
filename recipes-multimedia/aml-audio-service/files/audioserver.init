@@ -1,0 +1,40 @@
+#!/bin/sh
+
+export AML_AVSYNC_DEBUG_LEVEL=2
+export vendor_media_audiohal_adswitch=1
+
+# Starts audioserver service.
+start() {
+	printf "Starting audioserver service: \n"
+	mkfifo /tmp/paudiofifo
+	chmod 666 /tmp/paudiofifo
+
+	mkdir -p /tmp/ds
+	touch /tmp/dms12.lock
+	/usr/bin/dolby_fw_dms12 /usr/lib/libdolbyms12.so /tmp/ds/0x4d_0x5331_0x32.so
+
+	/usr/bin/audio_server &
+
+	rm /tmp/dms12.lock
+	chmod 0666 /sys/class/amstream/reset_audio_port
+	chmod 0666 /sys/class/tsync/event
+}
+
+stop() {
+	printf "Stopping audioserver service: \n"
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+

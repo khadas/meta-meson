@@ -1,0 +1,31 @@
+#!/bin/sh
+
+export CAS_TYPE=nagra
+export NAGRA_CAS_EMI=0x4020
+export TSPLAYER_LOW_MEM=1
+export DTVKIT_EXT=/usr/lib/libdtvkit_ota_monitor.so
+
+# Starts dtvkit service.
+start() {
+	printf "Starting dtvkit service: \n"
+	/usr/bin/dtvkitserver &
+}
+
+stop() {
+	printf "Stopping dtvkit service: \n"
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Starts zram service.
+start() {
+	printf "Starting zram service: \n"
+	/usr/bin/zram.sh start
+}
+
+stop() {
+	printf "Stopping zram service: \n"
+	/usr/bin/zram.sh stop
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+

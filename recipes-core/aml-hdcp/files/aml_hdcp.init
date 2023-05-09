@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Starts aml_hdcp service.
+start() {
+	printf "Starting aml_hdcp service: \n"
+
+	/usr/bin/tee_hdcp -o /lib/firmware/hdcp/firmware.le &
+	/usr/bin/hdcp_tx22 -f /lib/firmware/hdcp/firmware.le &
+}
+
+stop() {
+	printf "Stopping aml_hdcp service: \n"
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+

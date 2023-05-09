@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Starts adbd service.
+start() {
+	printf "Starting adbd service: \n"
+
+	/usr/bin/adbd_prepare.sh
+	/usr/bin/adbd &
+	/usr/bin/adbd_post.sh
+}
+
+stop() {
+	printf "Stopping adbd service: \n"
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+

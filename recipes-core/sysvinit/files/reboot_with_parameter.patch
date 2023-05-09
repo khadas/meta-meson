@@ -1,0 +1,41 @@
+From d3ef93e9c6ad2fbfc6449b5537cedf5bba212fcb Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Sat, 6 May 2023 10:25:15 +0800
+Subject: [PATCH] [PATCH] sysvinit: reboot_with_parameter
+
+Signed-off-by: Bing Jiang <bing.jiang@amlogic.com>
+---
+ src/halt.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/src/halt.c b/src/halt.c
+index a469147..508f5bd 100644
+--- a/src/halt.c
++++ b/src/halt.c
+@@ -46,6 +46,8 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/param.h>
++#include <sys/syscall.h>
++#include <linux/reboot.h>
+ #include <stdlib.h>
+ #include <utmp.h>
+ #include <fcntl.h>
+@@ -243,7 +245,13 @@ int main(int argc, char **argv)
+ 				usage();
+ 		}
+ 	 }
+-	if (argc != optind) usage();
++	if (argc != optind && argc != optind + 1) usage();
++
++	if (do_reboot) {
++		if (argc == optind + 1) {
++			syscall(SYS_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_RESTART2, argv[optind]);
++		}
++	}
+ 
+ 	if (geteuid() != 0) {
+ 		fprintf(stderr, "%s: must be superuser.\n", progname);
+-- 
+2.29.0
+
