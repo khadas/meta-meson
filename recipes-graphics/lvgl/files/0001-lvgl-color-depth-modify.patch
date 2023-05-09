@@ -1,5 +1,5 @@
 diff --git a/lv_conf_template.h b/lv_conf_template.h
-index 8bdddb497..7c0ac86b7 100644
+index 8bdddb497..f21096c26 100644
 --- a/lv_conf_template.h
 +++ b/lv_conf_template.h
 @@ -24,7 +24,7 @@
@@ -11,3 +11,30 @@ index 8bdddb497..7c0ac86b7 100644
  
  /*Swap the 2 bytes of RGB565 color. Useful if the display has an 8-bit interface (e.g. SPI)*/
  #define LV_COLOR_16_SWAP 0
+@@ -305,7 +305,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
+ #define LV_FONT_MONTSERRAT_8  0
+ #define LV_FONT_MONTSERRAT_10 0
+ #define LV_FONT_MONTSERRAT_12 0
+-#define LV_FONT_MONTSERRAT_14 1
++#define LV_FONT_MONTSERRAT_14 0
+ #define LV_FONT_MONTSERRAT_16 0
+ #define LV_FONT_MONTSERRAT_18 0
+ #define LV_FONT_MONTSERRAT_20 0
+@@ -317,7 +317,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
+ #define LV_FONT_MONTSERRAT_32 0
+ #define LV_FONT_MONTSERRAT_34 0
+ #define LV_FONT_MONTSERRAT_36 0
+-#define LV_FONT_MONTSERRAT_38 0
++#define LV_FONT_MONTSERRAT_38 1
+ #define LV_FONT_MONTSERRAT_40 0
+ #define LV_FONT_MONTSERRAT_42 0
+ #define LV_FONT_MONTSERRAT_44 0
+@@ -340,7 +340,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
+ #define LV_FONT_CUSTOM_DECLARE
+ 
+ /*Always set a default font*/
+-#define LV_FONT_DEFAULT &lv_font_montserrat_14
++#define LV_FONT_DEFAULT &lv_font_montserrat_38
+ 
+ /*Enable handling large font and/or fonts with a lot of characters.
+  *The limit depends on the font size, font face and bpp.

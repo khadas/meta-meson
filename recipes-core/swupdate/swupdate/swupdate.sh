@@ -34,6 +34,10 @@ esac
 echo 0 > /sys/class/graphics/fb0/blank
 echo 1 > /sys/class/graphics/fb1/blank
 
+resolution=$(fbset | grep mode | awk -F '"' '{print $2}' | sed 's/-0//g')
+width=${resolution%x*}
+height=${resolution#*x}
+
 show_swupdateui()
 {
     # Clean the default directfbrc file and add new configuration
@@ -45,9 +49,9 @@ show_swupdateui()
 
     if [ -f "/usr/bin/swupdateui" ]; then
         if [ -e "/etc/recovery.bmp" ]; then
-            swupdateui /etc/recovery.bmp &
+            swupdateui /etc/recovery.bmp ${width} ${height} &
         elif [ -e "/etc/recovery.jpg" ]; then
-            swupdateui /etc/recovery.jpg &
+            swupdateui /etc/recovery.jpg ${width} ${height} &
         fi
     fi
 }
