@@ -17,7 +17,7 @@ SYSTEMD_AUTO_ENABLE:bf201 = "${@bb.utils.contains('RELEASE_MODE', 'PROD', 'disab
 SYSTEMD_SERVICE:${PN} = "adbd.service"
 
 INITSCRIPT_NAME = "adbd"
-INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
+INITSCRIPT_PARAMS = "start 90 2 3 4 5 . stop 80 0 6 1 ."
 
 TOOLS = " adbd"
 ADB_UDC = "ff400000.dwc2_a"

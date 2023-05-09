@@ -6,7 +6,7 @@ start() {
 
 	/usr/bin/adbd_prepare.sh
 	/usr/bin/adbd &
-	/usr/bin/adbd_post.sh
+	/usr/bin/adbd_post.sh &
 }
 
 stop() {
