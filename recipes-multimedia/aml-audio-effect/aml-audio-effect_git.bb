@@ -12,7 +12,7 @@ PV = "${SRCPV}"
 do_configure[noexec] = "1"
 inherit autotools pkgconfig
 S="${WORKDIR}/git"
-DEPENDS += "aml-audio-service liblog aml-audio-hal"
+DEPENDS += "aml-audio-service liblog aml-audio-hal libeigen"
 RDEPENDS:${PN} += "aml-audio-service liblog aml-audio-hal"
 
 export TARGET_DIR = "${D}"
@@ -34,6 +34,7 @@ do_install() {
         install -m 0755 -D ${S}/libavl.so -t ${D}${libdir}/soundfx/
         install -m 0755 -D ${S}/libvirtualsurround.so -t ${D}${libdir}/soundfx/
         install -m 0755 -D ${S}/libvirtualx.so -t ${D}${libdir}/soundfx/
+        install -m 0755 -D ${S}/libdpe.so -t ${D}${libdir}/soundfx/
 }
 
 FILES:${PN} = "${libdir}/*"
