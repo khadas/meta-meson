@@ -136,6 +136,7 @@ DISTRO_FEATURES:append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', '', 'Ove
 DISTRO_FEATURES:append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', 'dm-verity', '', d)}"
 
 DISTRO_FEATURES:append = " adb dropbear"
+DISTRO_FEATURES:append = " cec voiceinput "
 
 # SWUpdate UI config graphic library
 SWUPDATE_UI_LIB = "lvgl"
