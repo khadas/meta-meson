@@ -61,6 +61,9 @@ do_install:append() {
     install -d ${D}/${sysconfdir}/halaudio
     install -m 0755 ${WORKDIR}/${PROPERTY_SET_CONF} ${D}/${sysconfdir}/halaudio/aml_audio_config.json
     install -m 0644 ${WORKDIR}/${PROPERTY_SET_MIXER} ${D}/${sysconfdir}/mixer_paths.xml
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
+        sed -i '/Codec_Support_List/i \\t"Audio_Delay_Max":100,' ${D}/${sysconfdir}/halaudio/aml_audio_config.json
+    fi
 }
 
 FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/*"
