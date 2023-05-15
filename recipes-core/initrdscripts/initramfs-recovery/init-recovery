@@ -28,6 +28,12 @@ kernel_515_module_install() {
     fi
 }
 
+attach_unifykey() {
+    if [ -f /sys/class/unifykeys/attach ]; then
+        echo 1 > /sys/class/unifykeys/attach
+    fi
+}
+
 early_setup() {
     mkdir -p /proc
     mkdir -p /sys
