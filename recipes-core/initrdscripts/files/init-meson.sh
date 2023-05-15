@@ -657,10 +657,15 @@ squashfs_rootfs_mount()
     system_mtd_number=$(cat /proc/mtd | grep  -E "system" | awk -F : '{print $1}' | grep -o '[0-9]\+')
     ROOT_DEVICE=/dev/mtdblock${system_mtd_number}
 
-    ln -sf "${ROOT_DEVICE}" "/dev/system"${ACTIVE_SLOT}
-    dm_verity_setup system ${ROOT_DEVICE} ${ROOT_MOUNT}
-    ln -sf "${VENDOR_DEVICE}" "/dev/vendor"${ACTIVE_SLOT}
-    dm_verity_setup vendor ${VENDOR_DEVICE} none
+    if [ -n "$system_mtd_number" ]; then
+        ln -sf "${ROOT_DEVICE}" "/dev/system"${ACTIVE_SLOT}
+        dm_verity_setup system ${ROOT_DEVICE} ${ROOT_MOUNT}
+    fi
+
+    if [ -n "$vendor_mtd_number" ]; then
+        ln -sf "${VENDOR_DEVICE}" "/dev/vendor"${ACTIVE_SLOT}
+        dm_verity_setup vendor ${VENDOR_DEVICE} none
+    fi
 
     echo "dm-verity is $DM_VERITY_STATUS"
     if [ "$DM_VERITY_STATUS" = "disabled" ]; then
