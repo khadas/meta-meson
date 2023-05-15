@@ -1,0 +1,13 @@
+Index: git/utils/bt-halplay.c
+===================================================================
+--- git.orig/utils/bt-halplay.c
++++ git/utils/bt-halplay.c
+@@ -144,7 +144,7 @@ static void pcm_worker_routine_exit(stru
+ 		worker->ba_fd = -1;
+ 	}
+ 	if (worker->pcm != NULL) {
+-		snd_pcm_close(worker->pcm);
++		//snd_pcm_close(worker->pcm);
+ 		worker->pcm = NULL;
+ 	}
+ 	worker->eviction = true;
