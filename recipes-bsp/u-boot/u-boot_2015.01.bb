@@ -94,10 +94,6 @@ do_compile () {
             if ${@bb.utils.contains('DISTRO_FEATURES','uboot-abmode','true','false',d)}; then
                 echo "process: mk ${UBOOT_TYPE%_config} --vab --ab-update ${BL30_ARG} ${BL2_ARG}"
                 LDFLAGS= ./mk ${UBOOT_TYPE%_config} --vab --ab-update ${BL30_ARG} ${BL2_ARG}
-                cp -rf build/u-boot.bin.unsigned fip/u-boot.bin
-                cp -rf build/u-boot.bin.usb.bl2.unsigned fip/u-boot.bin.usb.bl2
-                cp -rf build/u-boot.bin.usb.tpl.unsigned fip/u-boot.bin.usb.tpl
-                cp -rf build/u-boot.bin.unsigned.sd.bin fip/u-boot.bin.sd.bin
             else
                 echo "process: mk ${UBOOT_TYPE%_config} --bl32 bl32/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}"
                 LDFLAGS= ./mk ${UBOOT_TYPE%_config} --bl32 bl32/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
