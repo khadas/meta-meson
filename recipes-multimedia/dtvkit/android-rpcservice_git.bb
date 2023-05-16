@@ -29,6 +29,7 @@ EXTRA_OEMAKE="_DTVKIT_ROOT=${S}\
         DTVKIT_ADDITIONAL_COMPILER_OPTIONS='-Wall -Wextra -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=hard ${TOOLCHAIN_OPTIONS} ' \
         DTVKIT_OUTPUT_DIR=${B} \
         DTVKIT_INSTALL_DIR=${D}/usr \
+        DTVKIT_RUNENV=linux \
         "
 
 
