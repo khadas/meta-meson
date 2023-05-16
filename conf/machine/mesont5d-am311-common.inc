@@ -19,7 +19,6 @@ MACHINE_EXTRA_RRECOMMENDS += " \
         tuner-prebuilt \
         aucpu-fw \
         gpu \
-        optee-linux-driver \
         "
 
 CHIPSET_NAME = "T950X4"

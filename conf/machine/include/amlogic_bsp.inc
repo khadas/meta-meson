@@ -4,6 +4,5 @@ MACHINE_EXTRA_RRECOMMENDS += " \
         tuner-prebuilt \
         aucpu-fw \
         gpu \
-        optee-linux-driver \
         coreutils \
         "
