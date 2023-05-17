@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #do_configure[noexec] = "1"
 #inherit autotools pkgconfig
 inherit cmake
-DEPENDS += "aml-amaudioutils liblog aml-libdvr aml-mediahal-sdk aml-cas-hal aml-subtitleserver"
+DEPENDS += "aml-amaudioutils liblog aml-libdvr aml-mediahal-sdk aml-cas-hal aml-subtitleserver googletest"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/common/aml_mp_sdk;protocol=${AML_GIT_PROTOCOL};branch=master;"
 #SRC_URI = "file://aml-comp/multimedia/aml_mp_sdk;protocol=file;branch=master;"
