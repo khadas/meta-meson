@@ -19,6 +19,7 @@ SRC_URI += "file://bluez-alsa.sh"
 SRC_URI += "file://0001-BT-provide-A2DP-alsa-fix-48000-1-1.patch"
 SRC_URI += "file://0001-BT-provide-A2DP-alsa-fix-mute-1-1.patch"
 SRC_URI += "file://0001-BT-bt-hal-disconnect-sink-crash-1-1.patch"
+SRC_URI += "file://0001-BT-fix-sink-audio-sound-lag-1-1.patch"
 
 
 S  = "${WORKDIR}/git"
