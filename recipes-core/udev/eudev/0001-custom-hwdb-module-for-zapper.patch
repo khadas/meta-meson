@@ -1,0 +1,38 @@
+From 7d611fab1dd5d47bcc194fce379bf3ddd2ccca3b Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Fri, 19 May 2023 16:30:47 +0800
+Subject: [PATCH] custom hwdb module for zapper
+
+---
+ hwdb/Makefile.am | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/hwdb/Makefile.am b/hwdb/Makefile.am
+index bbd967499..b9fe1a79e 100644
+--- a/hwdb/Makefile.am
++++ b/hwdb/Makefile.am
+@@ -1,20 +1,11 @@
+ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
+ 
+ dist_udevhwdb_DATA = \
+-	20-OUI.hwdb \
+-	20-acpi-vendor.hwdb \
+-	20-bluetooth-vendor-product.hwdb \
+ 	20-net-ifname.hwdb \
+-	20-pci-classes.hwdb \
+-	20-pci-vendor-model.hwdb \
+ 	20-sdio-classes.hwdb \
+ 	20-sdio-vendor-model.hwdb \
+ 	20-usb-classes.hwdb \
+ 	20-usb-vendor-model.hwdb \
+-	20-vmbus-class.hwdb \
+ 	60-evdev.hwdb \
+ 	60-keyboard.hwdb \
+-	60-sensor.hwdb \
+-	70-mouse.hwdb \
+-	70-pointingstick.hwdb \
+-	70-touchpad.hwdb
++	70-mouse.hwdb
+-- 
+2.29.0
+
