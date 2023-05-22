@@ -10,8 +10,11 @@ PV = "${SRCPV}"
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_audio_hal')}"
 
-DEPENDS += "liblog aml-amaudioutils expat aml-avsync aml-dvbaudioutils aml-dvb"
-RDEPENDS:${PN} += "liblog aml-amaudioutils aml-avsync aml-dvbaudioutils aml-dvb libfaad-aml libmad-aml libflac-aml libadpcm-aml"
+DEPENDS += "liblog aml-amaudioutils expat aml-dvbaudioutils aml-dvb"
+RDEPENDS:${PN} += "liblog aml-amaudioutils aml-dvbaudioutils aml-dvb libfaad-aml libmad-aml libflac-aml libadpcm-aml"
+
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-msync', '', 'aml-avsync', d)}"
+RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-msync', '', 'aml-avsync', d)}"
 
 inherit cmake pkgconfig
 
@@ -25,7 +28,7 @@ PACKAGECONFIG:append:t5w += "dtv"
 PACKAGECONFIG:append:t3 += "dtv"
 PACKAGECONFIG[dtv] = "-DUSE_DTV=ON,-DUSE_DTV=OFF,"
 
-PACKAGECONFIG += "msync"
+PACKAGECONFIG += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-msync', '', 'msync', d)}"
 PACKAGECONFIG[msync] = "-DUSE_MSYNC=ON,-DUSE_MSYNC=OFF,"
 
 PACKAGECONFIG:append:sc2 += "sc2"
