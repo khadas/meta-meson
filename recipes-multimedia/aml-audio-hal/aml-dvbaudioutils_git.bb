@@ -11,7 +11,11 @@ PV = "${SRCPV}"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_audio_hal')}"
 EXTRA_OEMAKE = "TARGET_DIR=${D} STAGING_DIR=${D}"
 
-DEPENDS += "liblog aml-amaudioutils alsa-lib"
+DEPENDS += "liblog aml-amaudioutils"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-amadec', '', ' alsa-lib', d)}"
+
+EXTRA_OEMAKE:append = "${@bb.utils.contains('DISTRO_FEATURES', 'disable-amadec', ' rm_amadec=y', ' rm_amadec=n', d)}"
+
 RDEPENDS:${PN} += "liblog"
 do_compile () {
     cd ${S}/dtv_audio_utils
@@ -27,7 +31,9 @@ do_install () {
     install -m 0644 ${S}/dtv_audio_utils/sync/*.h ${D}/usr/include
     install -m 0644 ${S}/dtv_audio_utils/audio_read_api/*.h ${D}/usr/include
     install -m 0644 ${S}/dtv_audio_utils/audio_read_api/audio_es.h ${D}/usr/include
-    install -m 0644 -D ${S}/amadec/libaudamadec.so ${D}${libdir}
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'disable-amadec', 'false', 'true', d)}; then
+        install -m 0644 -D ${S}/amadec/libaudamadec.so ${D}${libdir}
+    fi
 }
 
 S="${WORKDIR}/git"
