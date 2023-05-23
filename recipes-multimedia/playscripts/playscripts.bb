@@ -28,9 +28,13 @@ do_install() {
 echo adjust 64 16 > /sys/class/dmx/cache_status
 #reduce pes buf size for subtitle for low memory requirement
 echo 131072 > /sys/module/amlogic_dvb_demux/parameters/pes_buf_size
+
 echo 0 > /sys/module/amvdec_mmpeg12/parameters/dynamic_buf_num_margin
 echo 1 > /sys/module/amvdec_mh264/parameters/reference_buf_margin
-echo 4 > /sys/module/amvdec_mh264/parameters/reorder_dpb_size_margin
+echo 2 > /sys/module/amvdec_mh264/parameters/reorder_dpb_size_margin
+echo 1 > /sys/module/amvdec_mh264/parameters/save_buffer
+echo 0x1 > /sys/module/amvdec_h265/parameters/dynamic_buf_num_margin
+
 echo codec_mm.scatter.keep_size_PAGE=0 > /sys/class/codec_mm/config
 EOF
     fi
