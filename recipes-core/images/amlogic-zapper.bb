@@ -24,7 +24,7 @@ IMAGE_INSTALL += " \
     alsa-utils \
     bash \
     ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'systemd', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'sysvinit', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'sysvinit util-linux-agetty', '', d)} \
     fuse-exfat \
     exfat-utils \
     ntfs-3g \
