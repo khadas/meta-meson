@@ -165,3 +165,4 @@ EXTERNALSRC:pn-ffmpeg-ctc = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg_c
 EXTERNALSRC:pn-aml-dvb-ota = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb_ota' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb_ota')) else ''}"
 EXTERNALSRC:pn-aml-dvb-ota-dtvkit = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb_ota' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb_ota')) else ''}"
 EXTERNALSRC:pn-aml-dvb-ota-dtvkit-prebuilt = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb_ota' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb_ota')) else ''}"
+EXTERNALSRC:pn-aml-avb-dm-verity = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_avb_dm_verity' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_avb_dm_verity')) else ''}"

@@ -520,10 +520,17 @@ dm_verity_setup() {
 
     if [ -b "${VBMETA_DEVICE_REAL}" ]; then
         mkdir -p /tmp
-        AVB_DM_TOOL=/usr/bin/avbtool-dm-verity.py
-        if [ -x ${AVB_DM_TOOL} ]; then
+        AVB_DM_TOOL_PY=/usr/bin/avbtool-dm-verity.py
+        AVB_DM_TOOL_C=/usr/bin/aml-avb-dm-verity
+        if [ -x "${AVB_DM_TOOL_PY}" ]; then
+            AVB_DM_TOOL=${AVB_DM_TOOL_PY}
+        fi
+        if [ -x "${AVB_DM_TOOL_C}" ]; then
+            AVB_DM_TOOL=${AVB_DM_TOOL_C}
+        fi
+        if [ -x "${AVB_DM_TOOL}" ]; then
             VERITY_ENV=/tmp/${1}-dm-verity.env
-            avbtool-dm-verity.py print_partition_verity --image "${VBMETA_DEVICE_REAL}" --partition_name "${1}" --active_slot "${ACTIVE_SLOT}" --output "$VERITY_ENV"
+            ${AVB_DM_TOOL} print_partition_verity --image "${VBMETA_DEVICE_REAL}" --partition_name "${1}" --active_slot "${ACTIVE_SLOT}" --output "$VERITY_ENV"
             if [ "$?" != "0" ]; then
                 echo "failed to read vbmeta device from ${VBMETA_DEVICE_REAL}"
             fi
