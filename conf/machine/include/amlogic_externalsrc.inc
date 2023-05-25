@@ -90,6 +90,7 @@ EXTERNALSRC:pn-libbinder = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_c
 EXTERNALSRC:pn-aml-tvserver = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_tvserver' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_tvserver')) else ''}"
 EXTERNALSRC:pn-aml-pqserver = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_pqserver' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_pqserver')) else ''}"
 EXTERNALSRC:pn-aml-subtitleserver = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_subtitleserver' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_subtitleserver')) else ''}"
+EXTERNALSRC:pn-aml-hdi = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi')) else ''}"
 EXTERNALSRC:pn-aml-hdmicec= "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdmicec' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdmicec')) else ''}"
 EXTERNALSRC:pn-aml-dvb = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dvb')) else ''}"
 EXTERNALSRC:pn-aml-afd = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dtvkit/afd' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/dtvkit/afd')) else ''}"

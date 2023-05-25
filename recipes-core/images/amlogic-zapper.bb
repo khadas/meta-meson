@@ -58,6 +58,7 @@ IMAGE_INSTALL += " \
 "
 
 IMAGE_INSTALL += " \
+    aml-hdi \
     aml-hdcp \
     liblog \
     android-tools-logcat \
