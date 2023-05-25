@@ -17,8 +17,15 @@ DEVICE_PROPERTY_PLATFORM_NAME ?= "Linux"
 DEVICE_PROPERTY_SYSINTEGRATE_NAME ?= "Amlogic"
 # End For YouTube
 
+DEVICE_PROPERTY_MANUFACTURER ?= "Amlogic"
+
 DEVICE_PROPERTY_WIFI_INTERFACE ?= "wlan0"
 DEVICE_PROPERTY_ETHERNET_INTERFACE ?= "eth0"
-DEVICE_PROPERTY_WIFI_SUPPORT ?= "true"
-DEVICE_PROPERTY_BLUETOOTH_ENABLED ?= "true"
-DEVICE_PROPERTY_MANUFACTURER ?= "Amlogic"
+DEVICE_PROPERTY_VOICEINPUT_SUPPORT ?= "${@bb.utils.contains('DISTRO_FEATURES', 'voiceinput', 'true', 'false', d)}"
+DEVICE_PROPERTY_CEC_SUPPORT ?= "${@bb.utils.contains('DISTRO_FEATURES', 'cec', 'true', 'false', d)}"
+DEVICE_PROPERTY_WIFI_SUPPORT ?= "${@bb.utils.contains('DISTRO_FEATURES', 'wifi', 'true', 'false', d)}"
+DEVICE_PROPERTY_BLUETOOTH_SUPPORT ?= "${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', 'true', 'false', d)}"
+DEVICE_PROPERTY_TTS_SUPPORT ?= "${@bb.utils.contains('DISTRO_FEATURES', 'tts', 'true', 'false', d)}"
+DEVICE_PROPERTY_TV_PLATFORM ?= "${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'true', 'false', d)}"
+DEVICE_PROPERTY_LAUNCHER_APPS ?= "localplayer, youtube, amazon, netflix, youtubetv, youtubekids"
+DEVICE_PROPERTY_STARTUP_APP ?= ""
