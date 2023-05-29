@@ -80,6 +80,9 @@ do_aml_pack() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', 'true', 'false', d)}; then
         sed -i '/usb_flow/a\file="gpt.img"           main_type="bin"        sub_type="gpt"        file_type="normal"' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
     fi
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'dtb-bind-kernel', 'true', 'false', d)}; then
+        sed -i '/_aml_dtb/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
+    fi
 
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
 
