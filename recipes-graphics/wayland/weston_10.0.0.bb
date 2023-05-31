@@ -23,6 +23,7 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
 		   file://0022-10.0.0-revert_gl-renderer_Dont_require_buffer_age_when_using_partial_update.patch \
 		   file://0023-10.0.0-add-z-order-force-and-background-transparent-options.patch \
 		   file://0024-10.0.0-modify-keyboard-focus-change-flow.patch \
+		   file://0025-10.0.0-play-video-in-video-layer.patch \
            "
 
 SRC_URI[md5sum] = "bc4abe2ee6904a4890a0c641c6257f91"

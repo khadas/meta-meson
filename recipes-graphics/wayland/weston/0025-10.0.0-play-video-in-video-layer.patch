@@ -1,0 +1,211 @@
+diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
+index a0972a4..179fd12 100644
+--- a/include/libweston/libweston.h
++++ b/include/libweston/libweston.h
+@@ -1186,6 +1186,7 @@ struct weston_compositor {
+ 
+ 	struct content_protection *content_protection;
+ 	struct weston_surface* last_keyboard_focus;
++	int video_surface_count;
+ };
+ 
+ struct weston_buffer {
+@@ -1562,6 +1563,8 @@ struct weston_surface {
+ 	 *  2. is YUV format. (for amlogic video plane it below primary plane (zpos can't effect for this situation)
+ 	 */
+ 	bool is_video_surface;
++	//  client will assign video path for current video surface 
++	int video_plane;
+ #endif
+ };
+ 
+diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
+index 5208078..a8c6e6d 100644
+--- a/libweston/backend-drm/drm-internal.h
++++ b/libweston/backend-drm/drm-internal.h
+@@ -310,7 +310,8 @@ struct drm_backend {
+ 	bool fb_modifiers;
+ 
+ 	struct weston_log_scope *debug;
+-
++
++	int video_plane_count;
+ #ifdef MESON_DRM_FIX_UI_SIZE
+ 	/** Set the logic window size
+ 	 * the current_mode 's w/h will not equal real display mode size any more
+@@ -487,7 +488,7 @@ struct drm_plane {
+ 	struct wl_list link;
+ 
+ 	bool is_video_plane;
+-
++	int video_plane;
+ 	struct weston_drm_format_array formats;
+ };
+ 
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 9e6e491..86db307 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -954,6 +954,13 @@ create_sprites(struct drm_backend *b)
+ 		if (!drm_plane)
+ 			continue;
+ 
++		if (drm_plane->is_video_plane) {
++			drm_plane->video_plane = b->video_plane_count;
++			b->video_plane_count++;
++		}
++		weston_log("create_sprites plane id:%d is_video_plane:%d video plane:%d \n",
++			drm_plane->plane_id, drm_plane->is_video_plane, drm_plane->video_plane);
++		
+ 		if (drm_plane->type == WDRM_PLANE_TYPE_OVERLAY)
+ 			weston_compositor_stack_plane(b->compositor,
+ 						      &drm_plane->base,
+diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
+index 011d938..6785a7e 100644
+--- a/libweston/backend-drm/kms.c
++++ b/libweston/backend-drm/kms.c
+@@ -987,6 +987,9 @@ drm_output_apply_state_atomic(struct drm_output_state *state,
+ 		struct drm_plane *plane = plane_state->plane;
+ 		const struct pixel_format_info *pinfo = NULL;
+ 
++		if ( !plane_state->fb )
++			continue;
++		
+ 		ret |= plane_add_prop(req, plane, WDRM_PLANE_FB_ID,
+ 				      plane_state->fb ? plane_state->fb->fb_id : 0);
+ 		ret |= plane_add_prop(req, plane, WDRM_PLANE_CRTC_ID,
+diff --git a/libweston/backend-drm/state-propose.c b/libweston/backend-drm/state-propose.c
+index f603300..cc0c243 100644
+--- a/libweston/backend-drm/state-propose.c
++++ b/libweston/backend-drm/state-propose.c
+@@ -491,12 +491,15 @@ drm_output_try_view_on_plane(struct drm_plane *plane,
+ 		scanout_has_view_assigned =
+ 			drm_output_check_plane_has_view_assigned(scanout_plane,
+ 								 state);
+-
++
++#if 0
+ 		if (view_matches_entire_output && !scanout_has_view_assigned) {
+ 			availability = NO_PLANES_ACCEPTED;
+ 			goto out;
+ 		}
+-
++		
++#endif
++		drm_debug(b, "\t\t\t\t[overlay]  view %p WDRM_PLANE_TYPE_OVERLAY\n", ev);
+ 		ps = drm_output_prepare_overlay_view(plane, state, ev, mode,
+ 						     fb, zpos);
+ 		if (ps)
+@@ -811,6 +814,20 @@ drm_output_prepare_plane_view(struct drm_output_state *state,
+ 		drm_debug(b, "\t\t\t\t[plane] plane %d picked "
+ 			     "from candidate list, type: %s\n",
+ 			     plane->plane_id, p_name);
++
++		if (ev && ev->surface && plane) {
++			if (ev->surface->video_plane != 255 && ev->surface->is_video_surface) {
++				if (plane->is_video_plane && ev->surface->video_plane != plane->video_plane) {
++					drm_debug(b, "\t\t\t\t[plane] plane %d is video plane:%d  type: %s, "
++					"surface was assighed to video plane:%d, continue\n",
++				     plane->plane_id, plane->video_plane,p_name,ev->surface->video_plane);
++					drm_output_destroy_zpos_plane(head_p_zpos);
++					continue;
++				}
++			}
++		}
++		drm_debug(b, "\t\t\t\t[plane] try view on plane %d \n",
++			     plane->plane_id );
+ 
+ 		ps = drm_output_try_view_on_plane(plane, state, ev,
+ 						  mode, fb, zpos);
+@@ -959,6 +976,7 @@ drm_output_propose_state(struct weston_output *output_base,
+ 		 * view; includes the case where occluded_region covers
+ 		 * the entire output */
+ 		totally_occluded = !pixman_region32_not_empty(&surface_overlap);
++	if (!ev->surface->is_video_surface) {
+ 		if (totally_occluded) {
+ #if MESON_VIDEO_PLAN_SUPPORT
+ 			// if occluded , we need set the clip, to make sure it will not draw when glrenderer.
+@@ -971,7 +989,7 @@ drm_output_propose_state(struct weston_output *output_base,
+ 			pixman_region32_fini(&clipped_view);
+ 			continue;
+ 		}
+-
++	}
+ 		/* We only assign planes to views which are exclusively present
+ 		 * on our output. */
+ 		if (ev->output_mask != (1u << output->base.id)) {
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index abadfa8..09f2a5a 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -695,6 +695,7 @@ weston_surface_create(struct weston_compositor *compositor)
+ 	video_buffer_release[FRAME_FREE] = NULL;
+ 	
+ #endif
++	surface->video_plane = 255;
+ 	return surface;
+ }
+ 
+@@ -2696,6 +2697,8 @@ weston_buffer_release_move(struct weston_buffer_release_reference *dest,
+ 	weston_buffer_release_reference(dest, src->buffer_release);
+ 	weston_buffer_release_reference(src, NULL);
+ }
++
++#define MAX_VIDEO_SURFACE 2
+ 
+ static void
+ weston_surface_attach(struct weston_surface *surface,
+@@ -2735,6 +2738,12 @@ weston_surface_attach(struct weston_surface *surface,
+ 		}
+ 	}
+ #endif
++	 if (surface->is_video_surface && surface->video_plane == 255) {
++		surface->video_plane = surface->compositor->video_surface_count;
++		surface->compositor->video_surface_count++;
++		if (surface->compositor->video_surface_count >= MAX_VIDEO_SURFACE )
++			surface->compositor->video_surface_count = 0;
++	}
+ 
+ 	surface->compositor->renderer->attach(surface, buffer);
+ 
+@@ -3692,6 +3701,17 @@ surface_damage(struct wl_client *client,
+ 				   &surface->pending.damage_surface,
+ 				   x, y, width, height);
+ }
++
++static void
++surface_set_video_plane(struct wl_client *client,
++	       struct wl_resource *resource,
++	       int32_t video_plane)
++{
++    struct weston_surface *surface = wl_resource_get_user_data(resource);
++	if (video_plane < 0)
++		return;
++	surface->video_plane = video_plane;
++}
+ 
+ static void
+ surface_damage_buffer(struct wl_client *client,
+@@ -4270,7 +4290,8 @@ static const struct wl_surface_interface surface_interface = {
+ 	surface_commit,
+ 	surface_set_buffer_transform,
+ 	surface_set_buffer_scale,
+-	surface_damage_buffer
++	surface_damage_buffer,
++	surface_set_video_plane
+ };
+ 
+ static int
+@@ -7751,10 +7772,9 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
+ 	    view->surface->get_label(view->surface, desc, sizeof(desc)) < 0) {
+ 		strcpy(desc, "[no description available]");
+ 	}
+-	fprintf(fp, "\tView %d (role %s, PID %d, surface ID %u, %s, %p %p):\n",
++	fprintf(fp, "\tView %d (role %s, PID %d, surface ID %u, %s, %p is video surface:%d, video plane:%d):\n",
+ 		view_idx, view->surface->role_name, pid, surface_id,
+-		desc, view, view->surface);
+-
++		desc, view, view->surface->is_video_surface, view->surface->is_video_surface ? view->surface->video_plane : 0);
+ 	box = pixman_region32_extents(&view->transform.boundingbox);
+ 	fprintf(fp, "\t\tposition: (%d, %d) -> (%d, %d)\n",
+ 		box->x1, box->y1, box->x2, box->y2);
