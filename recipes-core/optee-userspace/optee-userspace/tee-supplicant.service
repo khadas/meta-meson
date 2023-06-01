@@ -2,10 +2,8 @@
 Description=Optee Tee-Supplicant
 
 [Service]
-ExecStartPre=/sbin/modprobe -q optee
 ExecStart=/usr/bin/tee-supplicant
 ExecStop=/bin/kill -KILL $MAINPID
-ExecStopPost=/sbin/modprobe -r optee
 
 [Install]
 WantedBy=multi-user.target
