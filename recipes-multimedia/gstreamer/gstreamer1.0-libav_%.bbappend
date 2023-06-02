@@ -18,6 +18,7 @@ SRC_URI:append = "file://0017-fix_SWPL-83356_gstmkv.patch "
 SRC_URI:append = "file://0018-ts-streams-prefer-tsdemux-to-avdemux-mpegts.patch "
 SRC_URI:append = "file://0019-CF1-do-not-use-avdemux-when-container-is-wav.patch "
 SRC_URI_append = "file://0020-use-libav-probe-mpegps-and-mp3.patch "
+SRC_URI:append = "file://0021-calculate-a-suitable-pts-for-avi.patch "
 
 
 
