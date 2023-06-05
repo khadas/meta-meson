@@ -11,7 +11,6 @@ IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', \
 require aml-package.inc
 
 IMAGE_INSTALL += " \
-    toybox \
     sqlite3 \
     libarchive \
     libunwind \
