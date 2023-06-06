@@ -2,7 +2,7 @@
 
 export CAS_TYPE=nagra
 export NAGRA_CAS_EMI=0x4020
-export TSPLAYER_LOW_MEM=1
+export LOW_MEM_PLATFORM=1
 export DTVKIT_EXT=/usr/lib/libdtvkit_ota_monitor.so
 
 # Starts dtvkit service.
