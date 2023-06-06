@@ -1,0 +1,53 @@
+From 7826c8fb03ceced03deebac56988e35f3e2f9e52 Mon Sep 17 00:00:00 2001
+From: "fei.deng" <fei.deng@amlogic.com>
+Date: Tue, 6 Jun 2023 06:26:32 +0000
+Subject: [PATCH] add parse sequence extention
+
+Change-Id: I6e323d4a08e150e5f32546f7165e0d7f415e299a
+---
+ gst/videoparsers/gstmpegvideoparse.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/gst/videoparsers/gstmpegvideoparse.c b/gst/videoparsers/gstmpegvideoparse.c
+index d78f6e5..ad851ca 100644
+--- a/gst/videoparsers/gstmpegvideoparse.c
++++ b/gst/videoparsers/gstmpegvideoparse.c
+@@ -83,6 +83,9 @@ static void gst_mpegv_parse_set_property (GObject * object, guint prop_id,
+     const GValue * value, GParamSpec * pspec);
+ static void gst_mpegv_parse_get_property (GObject * object, guint prop_id,
+     GValue * value, GParamSpec * pspec);
++static gboolean gst_mpegv_parse_process_sc (GstMpegvParse * mpvparse,
++    GstMapInfo * info, gint off, GstMpegVideoPacket * packet,
++    gboolean * need_more);
+ 
+ static void
+ gst_mpegv_parse_set_property (GObject * object, guint property_id,
+@@ -267,6 +270,7 @@ gst_mpegv_parse_process_config (GstMpegvParse * mpvparse, GstMapInfo * info,
+     guint size)
+ {
+   GstMpegVideoPacket packet;
++  GstMpegVideoPacket nextPacket;
+   guint8 *data_with_prefix;
+   gint i;
+ 
+@@ -305,6 +309,17 @@ gst_mpegv_parse_process_config (GstMpegvParse * mpvparse, GstMapInfo * info,
+ 
+   GST_LOG_OBJECT (mpvparse, "accepting parsed config size %d", size);
+ 
++  /*parse sequence extention header if packet included*/
++  if (gst_mpeg_video_parse (&nextPacket, packet.data, packet.size, packet.offset))
++  {
++    gboolean need_more = FALSE;
++    GstMapInfo map;
++    packet.offset = nextPacket.offset;
++    packet.type = nextPacket.type;
++    GST_LOG_OBJECT (mpvparse, "next packet.offset:%d,packet.type:%d", packet.offset,packet.type);
++    gst_mpegv_parse_process_sc(mpvparse, &map, packet.offset, &packet, &need_more);
++  }
++
+   /* Set mpeg version, and parse sequence extension */
+   mpvparse->config_flags = FLAG_NONE;
+   for (i = 0; i < mpvparse->ext_count; ++i) {
+-- 
+2.25.1
+

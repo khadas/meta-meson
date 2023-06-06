@@ -45,6 +45,7 @@ SRC_URI:append = "file://0042-modify-ts-demux-to-parse-dv-parameter.patch "
 SRC_URI_append = "file://0043-SWPL-110753_improve_tsdemux_seek.patch "
 SRC_URI_append = "file://0044-SWPL-101568-support-hls-discontinuity.patch "
 SRC_URI_append = "file://0045-SWPL-124457-set-base_pcr-after-frame-packets.patch "
+SRC_URI_append = "file://0046-SWPL-100464-add-parse-sequence-extention.patch "
 
 DEPENDS += "gst-aml-drmbufferpool-plugins"
 
