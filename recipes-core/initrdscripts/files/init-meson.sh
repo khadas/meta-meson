@@ -290,21 +290,55 @@ format_and_install() {
     fi
 }
 
-fbe_kernel_keyring_setup() {
-    modules="optee.ko optee_armtz.ko trusted.ko"
-    for mod in $modules; do
-        module_path=`find ${ROOT_ROMOUNT}/lib/modules/ -name $mod`
-        if [ "$module_path" != "" ]; then
-            insmod $module_path
-            if [ $? -ne 0 ]; then
-                echo "FBE: Cannot insert $mod. Failed to setup FBE."
-                return 1
-            fi
-        else
-            echo "FBE: Cannot find $mod. Failed to setup FBE."
-            return 1
+# fbe_check_modules
+# Search for necessary external modules for FBE.
+# In case of builtin modules, nothing should be done.
+# Input: N/A
+# Return: N/A
+fbe_check_modules() {
+    modules=""
+    # If /dev/tee0 is up, it seems the optee.ko and optee_armtz.ko
+    # are already builtin.
+    if [[ ! -e /dev/tee0 ]]; then
+        echo "FBE: /dev/tee0 is not up. Trying to insert optee.ko optee_armtz.ko."
+        modules="optee.ko optee_armtz.ko"
+    fi
+    # If there is /proc/config.gz, it might be able to find some clues in it.
+    if [[ -e /proc/config.gz ]]; then
+        cat /proc/config.gz | gunzip | grep CONFIG_TRUSTED_KEYS=y > /dev/null 2>&1
+        is_builtin1=$?
+        cat /proc/config.gz | gunzip | grep CONFIG_TRUSTED_KEYS_TEE=y > /dev/null 2>&1
+        is_builtin2=$?
+        if [[ $is_builtin1 -ne 0 ]] || [[ $is_builtin2 -ne 0 ]]; then
+            modules="$modules trusted.ko"
         fi
-    done
+    else
+        modules="$modules trusted.ko"
+    fi
+    if [[ -n "$modules" ]]; then
+        echo "searching for $modules"
+        for mod in $modules; do
+            module_path=`find ${ROOT_ROMOUNT}/lib/modules/ -name $mod`
+            if [ "$module_path" != "" ]; then
+                insmod $module_path
+                if [ $? -ne 0 ]; then
+                    echo "FBE: Cannot insert $mod."
+                fi
+            else
+                echo "FBE: Cannot find $mod."
+            fi
+        done
+    fi
+}
+
+#fbe_kernel_keyring_setup
+# Input: $1: mount point of /dev/data
+#        $2: newly formatted or not
+# Return: 0: success
+#         1: failed
+#         2: not newly formatted and no sealed key found
+#            (FBE is not enabled for current system)
+fbe_kernel_keyring_setup() {
     if [ $2 -ne 0 ]; then
         echo -n "FBE: Found newly formatted data partition. Creating Data FBE Key ... "
         keyring_key_id=`keyctl add trusted data_fbe_key "new 64" @u`
@@ -312,20 +346,19 @@ fbe_kernel_keyring_setup() {
         if [ -f $1/$data_fbe_keyblob ]; then
             echo -n "FBE: Sealed key found. Trying to add it to kernel keyring ..."
             sealed_key=`cat $1/$data_fbe_keyblob`
-            #echo "keyctl add trusted data_fbe_key \"load $sealed_key\" @u"
             keyring_key_id=`keyctl add trusted data_fbe_key "load $sealed_key" @u`
         else
             echo "FBE: No sealed key found!"
-            return 1
+            return 2
         fi
     fi
     #echo "keyring_key_id = $keyring_key_id"
-    if [ "$keyring_key_id" = "" ]; then
-        echo "[ Failed ]"
-        return 1
-    else
+    if expr "$keyring_key_id" + 0  > /dev/null 2>&1; then
         echo "[ Success ]"
         return 0
+    else
+        echo "[ Failed ]"
+        return 1
     fi
 }
 
@@ -407,11 +440,14 @@ data_fbe_setup() {
 
     fbe_kernel_keyring_setup $1 $2
     ret=$?
-    if [ $ret -ne 0 ]; then
-        #echo "fbe_kernel_key_setup failed"
+    if [ $ret -eq 1 ]; then
+        fbe_check_modules
+        fbe_kernel_keyring_setup $1 $2
+    elif [[ $ret -eq 2 ]]; then
         return $ret
     fi
-    if [ "$keyring_key_id" != "" ]; then
+
+    if expr "$keyring_key_id" + 0  > /dev/null 2>&1; then
         fbe_fscrypt_setup $1
         ret=$?
         if [ $ret != 0 ]; then
@@ -430,6 +466,8 @@ data_fbe_setup() {
             fi
         fi
         DATA_FBE_STATUS="setup"
+    else
+        echo "FBE: Error: Invalid key id($keyring_key_id)"
     fi
 }
 
