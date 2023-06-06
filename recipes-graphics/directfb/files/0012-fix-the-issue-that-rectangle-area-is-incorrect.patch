@@ -1,0 +1,147 @@
+From 9b9c639ad4407cf4d3152fb218467b1bbff6ea13 Mon Sep 17 00:00:00 2001
+From: Jian Cao <jian.cao@amlogic.com>
+Date: Tue, 6 Jun 2023 20:21:36 +0800
+Subject: [PATCH] fix the issue that rectangle area is incorrect
+
+Signed-off-by: Jian Cao <jian.cao@amlogic.com>
+---
+ gfxdrivers/amlgfx/aml_accel.c | 59 ++++++++++++++++++++---------------
+ 1 file changed, 33 insertions(+), 26 deletions(-)
+
+diff --git a/gfxdrivers/amlgfx/aml_accel.c b/gfxdrivers/amlgfx/aml_accel.c
+index 4e071d7..99380ab 100644
+--- a/gfxdrivers/amlgfx/aml_accel.c
++++ b/gfxdrivers/amlgfx/aml_accel.c
+@@ -148,11 +148,7 @@ amlSet_Canvas(DFBDimension size, int *canvas_w, int *canvas_h)
+ 		*canvas_w = size.w;
+ 	}
+ 
+-	if (((size.h)%8) != 0){
+-		*canvas_h = (((size.h)/8)+1)*8;
+-	}else{
+ 		*canvas_h = size.h;
+-	}
+ }
+ 
+ static bool
+@@ -677,29 +673,31 @@ amlBlend_Config_Ex( void *drv, void *dev,
+ 	amldev->ge2d_config_ex.src_para.mem_type = CANVAS_ALLOC;
+ 
+ 	amldev->ge2d_config_ex.src_para.format = src_info->format;
+-	amldev->ge2d_config_ex.src_para.top = 0;
+-	amldev->ge2d_config_ex.src_para.left = 0;
+-	amldev->ge2d_config_ex.src_para.width = amldev->src_size.w;
++	amldev->ge2d_config_ex.src_para.top = src_rect->y;
++	amldev->ge2d_config_ex.src_para.left = src_rect->x;
++	amldev->ge2d_config_ex.src_para.width = src_rect->w;
+ 	amldev->ge2d_config_ex.src_planes[0].w = s_canvas_w;
+-	amldev->ge2d_config_ex.src_para.height = amldev->src_size.h;
++	amldev->ge2d_config_ex.src_para.height = src_rect->h;
+ 	amldev->ge2d_config_ex.src_planes[0].h = s_canvas_h;
+ 
+ 	amldev->ge2d_config_ex.src2_planes[0].addr = src2_info->phys;
+ 	amldev->ge2d_config_ex.src2_para.mem_type = CANVAS_ALLOC;
+ 
+ 	amldev->ge2d_config_ex.src2_para.format = src2_info->format;
+-	amldev->ge2d_config_ex.src2_para.top = 0;
+-	amldev->ge2d_config_ex.src2_para.left = 0;
+ 
+ 	if(src2_info == src_info){
+-		amldev->ge2d_config_ex.src2_para.width = amldev->src_size.w;
++		amldev->ge2d_config_ex.src2_para.top = src_rect->y;
++		amldev->ge2d_config_ex.src2_para.left = src_rect->x;
++		amldev->ge2d_config_ex.src2_para.width = src_rect->w;
+ 		amldev->ge2d_config_ex.src2_planes[0].w = s_canvas_w;
+-		amldev->ge2d_config_ex.src2_para.height = amldev->src_size.h;
++		amldev->ge2d_config_ex.src2_para.height = src_rect->h;
+ 		amldev->ge2d_config_ex.src2_planes[0].h = s_canvas_h;
+ 	}else if (src2_info == dst_info){
+-		amldev->ge2d_config_ex.src2_para.width = amldev->dst_size.w;
++		amldev->ge2d_config_ex.src2_para.top = dst_rect->y;
++		amldev->ge2d_config_ex.src2_para.left = dst_rect->x;
++		amldev->ge2d_config_ex.src2_para.width = dst_rect->w;
+ 		amldev->ge2d_config_ex.src2_planes[0].w = d_canvas_w;
+-		amldev->ge2d_config_ex.src2_para.height = amldev->dst_size.h;
++		amldev->ge2d_config_ex.src2_para.height = dst_rect->h;
+ 		amldev->ge2d_config_ex.src2_planes[0].h = d_canvas_h;
+ 	}
+ 	
+@@ -717,6 +715,10 @@ amlBlend_Config_Ex( void *drv, void *dev,
+ 
+ 	amldev->ge2d_config_ex.src1_gb_alpha = amldev->gl_alpha;
+ 	amldev->ge2d_config_ex.alu_const_color = amldev->color;
++	debug("src_rect x:%d y:%d w:%d h:%d\n", src_rect->x, src_rect->y, src_rect->w, src_rect->h);
++	debug("src2_rect x:%d y:%d w:%d h:%d\n", amldev->ge2d_config_ex.src2_para.left, amldev->ge2d_config_ex.src2_para.top,
++						amldev->ge2d_config_ex.src2_para.width, amldev->ge2d_config_ex.src2_para.height);
++	debug("dst_rect x:%d y:%d w:%d h:%d\n", dst_rect->x, dst_rect->y, dst_rect->w, dst_rect->h);
+ 
+ 	switch (amldev->dst_info.rotation) {
+ 		case GE2D_ROTATION_0:
+@@ -815,7 +817,12 @@ amlBlit( void *drv, void *dev, DFBRectangle *rect, int dx, int dy )
+ {
+ 	AMLGFX_DriverData *amldrv = (AMLGFX_DriverData *) drv;
+ 	AMLGFX_DeviceData *amldev = (AMLGFX_DeviceData *) dev;
++	DFBRectangle dst_rect;
+ 
++	dst_rect.x = dx;
++	dst_rect.y = dy;
++	dst_rect.w = rect->w;
++	dst_rect.h = rect->h;
+ 	//D_DEBUG_AT( BLIT_AML, "blit rect[%d %d %d %d] dxy[%d %d]\n",rect->x,rect->y,rect->w,rect->h,dx,dy);
+ 
+ 	if (amldev->support_flag == false || amldev->blitfunction_type == GE2D_NOT_SUPPORT){
+@@ -840,16 +847,16 @@ amlBlit( void *drv, void *dev, DFBRectangle *rect, int dx, int dy )
+ 	}else{
+ 		switch (amldev->blitfunction_type){
+ 			case GE2D_BLEND_PRE_ALPHACHANNEL:
+-			amlBlend_Config_Ex(drv, dev, rect, rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, rect, rect, dx, dy);
++			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, &dst_rect, dx, dy);
+ 			break;
+ 			case GE2D_BLEND_ALPHACHANNEL:
+-			amlBlend_Config_Ex(drv, dev, rect, rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, rect, rect, dx, dy);
++			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, &dst_rect, dx, dy);
+ 			break;
+ 			case GE2D_BLEND_COLORIZE_ALPHA:
+-			amlBlend_Config_Ex(drv, dev, rect, rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, rect, rect, dx, dy);
++			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, &dst_rect, dx, dy);
+ 			break;
+ 			case GE2D_BLEND_SRC_COLORKEY:
+ 			amlBlit_ConfigEx(drv, dev, rect, amldev->src_info, amldev->dst_info);
+@@ -858,13 +865,13 @@ amlBlit( void *drv, void *dev, DFBRectangle *rect, int dx, int dy )
+ 			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_DISENABLE);
+ 			break;
+ 			case GE2D_BLEND_COLORIZE:
+-			amlBlend_Config_Ex(drv, dev, rect, rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_ColorPremultiply_ConstColor(drv, dev, rect, rect, dx, dy);
++			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_ColorPremultiply_ConstColor(drv, dev, rect, &dst_rect, dx, dy);
+ 			break;
+ 			case GE2D_BLEND_SRC_COLORKEY_COLORIZE:
+-			amlBlend_Config_Ex(drv, dev, rect, rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);			
++			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+ 			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_ENABLE);
+-			amlBlend_ColorPremultiply_ConstColor(drv, dev, rect, rect, dx, dy);
++			amlBlend_ColorPremultiply_ConstColor(drv, dev, rect, &dst_rect, dx, dy);
+ 			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_DISENABLE);
+ 			break;
+ 			case GE2D_ROTATION:
+@@ -876,8 +883,8 @@ amlBlit( void *drv, void *dev, DFBRectangle *rect, int dx, int dy )
+ 			amlBlit_Start(drv, dev, rect, dx, dy, GE2D_BLIT, SRC_TO_DST);
+ 			break;
+ 			case GE2D_BLEND_COLORALPHA:
+-			amlBlend_Config_Ex(drv, dev, rect, rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, rect, rect, dx, dy);
++			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, &dst_rect, dx, dy);
+ 			break;
+ 			default:
+ 			printf("------the blit blitfunction_type is not support\n");
+-- 
+2.25.1
+
