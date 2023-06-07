@@ -59,6 +59,9 @@ MEDIA_CONFIGS = " \
                  CONFIG_AMLOGIC_MEDIA_ENHANCEMENT_DOLBYVISION=y \
                  CONFIG_AMLOGIC_MEDIA_GE2D=y \
                  "
+
+MEDIA_CONFIGS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '', 'CONFIG_AMLOGIC_MEDIA_V4L_DEC=y', d)}"
+
 MEDIA_CONFIGS:append:t3 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_MULTI=m \
