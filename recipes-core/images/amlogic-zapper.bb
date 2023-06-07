@@ -115,7 +115,6 @@ UBI_VOLNAME = "rootfs"
 #UBINIZE_ARGS = "-m 2048 -p 128KiB -s 2048 -O 2048"
 
 IMAGE_ROOTFS_EXTRA_SPACE = "0"
-KERNEL_BOOTARGS = "root=/dev/system rootfstype=ext4"
 
 do_rootfs[depends] += "android-tools-native:do_populate_sysroot"
 

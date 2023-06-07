@@ -54,7 +54,6 @@ MKUBIFS_ARGS = "-F -m 4096 -e 253952 -c 1240"
 UBINIZE_ARGS = "-m 4096 -p 256KiB -s 4096 -O 4096"
 
 IMAGE_ROOTFS_EXTRA_SPACE = "0"
-KERNEL_BOOTARGS = "root=/dev/system rootfstype=ext4"
 
 do_rootfs[depends] += "android-tools-native:do_populate_sysroot"
 #PREFERRED_VERSION_ell = "0.22"
