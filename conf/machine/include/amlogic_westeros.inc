@@ -9,6 +9,7 @@ DISTRO_FEATURES:append = " youtube"
 DISTRO_FEATURES:append = " amazon"
 DISTRO_FEATURES:append = " mediaplayer"
 DISTRO_FEATURES:append = " netflix"
+DISTRO_FEATURES:append = " disney"
 
 PREFERRED_VERSION_amazon-prime-video = "5.0"
 PREFERRED_VERSION_netflix = "dpi7.0"

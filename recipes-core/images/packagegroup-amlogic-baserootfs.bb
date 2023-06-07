@@ -154,6 +154,8 @@ RDEPENDS:packagegroup-amlogic-baserootfs = "\
         'aml-launcher libhtmllocal htmllocal-plugin', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-thunder', \
         'aml-dial', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'disney', \
+        'disney-src disney-plugin', '', d)} \
     tzdata \
     tzcode \
     format-partitions \
