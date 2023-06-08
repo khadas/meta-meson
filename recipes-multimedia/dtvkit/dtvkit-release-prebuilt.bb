@@ -74,6 +74,7 @@ do_install () {
 
     install -D -m 0644 ${S}/config/${CONFIG} ${D}/etc/config.xml
     install -D -m 0644 ${S}/config/*.json  ${D}/etc/
+    install -D -m 0644 ${S}/version.txt  ${D}/etc/dtvkitserver_releaseinfo.txt
     echo "TDK_VERSION is ${TDK_VERSION}"
     if [ -f "${S}/ta/${TDK_VERSION}/*.ta" ];then
        install -D -m 0755 ${S}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
