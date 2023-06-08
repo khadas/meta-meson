@@ -8,7 +8,7 @@ SRCTREECOVEREDTASKS:remove = "do_patch"
 FILESEXTRAPATHS:prepend := "${THISDIR}/5.15:"
 
 # aq2432 zapper needs its own defconfig
-FILESEXTRAPATHS:prepend:aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.15/aq2432_zapper:', '${THISDIR}/5.15/aq2432:', d)}"
+FILESEXTRAPATHS:prepend:aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', '${THISDIR}/5.15/aq2432_zapper:', '${THISDIR}/5.15/aq2432:', d)}"
 FILESEXTRAPATHS:prepend:bf201 := "${THISDIR}/5.15/bf201:"
 
 KBRANCH = "bringup/amlogic-5.15/s4da1_2_2_20220407"

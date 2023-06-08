@@ -148,7 +148,7 @@ MODULE_AUTOLOAD_ZAPPER_SKIP = "\
   amvdec_ports \
 "
 
-KERNEL_MODULE_AUTOLOAD:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${MODULE_AUTOLOAD_ZAPPER_SKIP}', '', d)}"
+KERNEL_MODULE_AUTOLOAD:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', '${MODULE_AUTOLOAD_ZAPPER_SKIP}', '', d)}"
 
 KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
 module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"

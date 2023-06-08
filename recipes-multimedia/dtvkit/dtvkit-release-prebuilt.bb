@@ -66,7 +66,7 @@ do_install () {
         install -D -m 0755 ${S}/${ARM_TARGET}/CLIENT ${D}/${bindir}
     fi
     install -d ${D}/${systemd_unitdir}/system
-    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper", "true", "false", d)}; then
+    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper-reference", "true", "false", d)}; then
         install -m 0644 ${WORKDIR}/dtvkit_low_mem.service ${D}/${systemd_unitdir}/system/dtvkit.service
     else
         install -m 0644 ${WORKDIR}/dtvkit.service ${D}/${systemd_unitdir}/system//dtvkit.service

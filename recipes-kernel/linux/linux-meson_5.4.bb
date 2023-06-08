@@ -8,8 +8,8 @@ SRCTREECOVEREDTASKS:remove = "do_patch"
 FILESEXTRAPATHS:prepend := "${THISDIR}/5.4:"
 
 # aq2432/bf201 zapper needs its own defconfig
-FILESEXTRAPATHS:prepend:aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.4/aq2432_zapper:', '${THISDIR}/5.4/aq2432:', d)}"
-FILESEXTRAPATHS:prepend:bf201 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${THISDIR}/5.4/aq2432_zapper:', '${THISDIR}/5.4/aq2432:', d)}"
+FILESEXTRAPATHS:prepend:aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', '${THISDIR}/5.4/aq2432_zapper:', '${THISDIR}/5.4/aq2432:', d)}"
+FILESEXTRAPATHS:prepend:bf201 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', '${THISDIR}/5.4/aq2432_zapper:', '${THISDIR}/5.4/aq2432:', d)}"
 FILESEXTRAPATHS:prepend:aq222 := "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', '${THISDIR}/5.4/aq222-lowmem:', '', d)}"
 
 # t5d lowmem
