@@ -31,3 +31,4 @@ SRC_URI:append = "file://00031-add-case-18-for-ARIB-STD-B67-to-show-hdr-info.pat
 SRC_URI:append = "file://00032-set-systemstream-to-false-when-mpeg1.patch "
 SRC_URI:append = "file://00033-SWPL-121035_fix_av1_codec_qtdemux.patch "
 SRC_URI:append = "file://00034-SWPL-121124_av1_codecdata_mkvdemux.patch "
+SRC_URI:append = "file://00035-remove-limits-of-souphttpsrc.patch "

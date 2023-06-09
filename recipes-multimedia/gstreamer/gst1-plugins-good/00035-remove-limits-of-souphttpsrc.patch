@@ -1,0 +1,13 @@
+Index: gst-plugins-good-1.16.3/ext/soup/gstsouphttpsrc.c
+===================================================================
+--- gst-plugins-good-1.16.3.orig/ext/soup/gstsouphttpsrc.c
++++ gst-plugins-good-1.16.3/ext/soup/gstsouphttpsrc.c
+@@ -1507,7 +1507,7 @@ gst_soup_http_src_build_message (GstSoup
+   if (!src->compress)
+     soup_message_disable_feature (src->msg, SOUP_TYPE_CONTENT_DECODER);
+ 
+-  soup_message_set_flags (src->msg, SOUP_MESSAGE_OVERWRITE_CHUNKS |
++  soup_message_set_flags (src->msg, SOUP_MESSAGE_OVERWRITE_CHUNKS | SOUP_MESSAGE_IGNORE_CONNECTION_LIMITS |
+       (src->automatic_redirect ? 0 : SOUP_MESSAGE_NO_REDIRECT));
+ 
+   if (src->automatic_redirect) {
