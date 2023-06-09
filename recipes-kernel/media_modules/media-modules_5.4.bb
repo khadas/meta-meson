@@ -70,7 +70,7 @@ MEDIA_CONFIGS:append:t7 = "\
 MEDIA_CONFIGS:append:sc2 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  "
-MEDIA_CONFIGS_append_t5d = "\
+MEDIA_CONFIGS:append:t5d = "\
                  CONFIG_AMLOGIC_HW_DEMUX=m \
                  "
 

@@ -70,7 +70,7 @@ MEDIA_CONFIGS:append:t7 = "\
 MEDIA_CONFIGS:append:sc2 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  "
-MEDIA_CONFIGS_append_t5d = "\
+MEDIA_CONFIGS:append:t5d = "\
                  CONFIG_AMLOGIC_HW_DEMUX=m \
                  "
 
@@ -139,7 +139,7 @@ MODULE_AUTOLOAD_ZAPPER_SKIP = "\
   amvdec_ports \
 "
 
-KERNEL_MODULE_AUTOLOAD_remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${MODULE_AUTOLOAD_ZAPPER_SKIP}', '', d)}"
+KERNEL_MODULE_AUTOLOAD:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${MODULE_AUTOLOAD_ZAPPER_SKIP}', '', d)}"
 
 KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
 module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"

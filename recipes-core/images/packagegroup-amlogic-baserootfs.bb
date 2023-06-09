@@ -193,7 +193,7 @@ RDEPENDS:packagegroup-amlogic-baserootfs += "${@bb.utils.contains('DISTRO_FEATUR
 RDEPENDS:packagegroup-amlogic-baserootfs:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'widevine', '', 'gst-aml-drm-plugins', d)}"
 
 #for miraclecast
-RDEPENDS_packagegroup-amlogic-baserootfs += " \
+RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'miraclecast', 'miraclecast wpa-supplicant wfd-hdcp gst-aml-drm-plugins', '', d)} \
     "
 

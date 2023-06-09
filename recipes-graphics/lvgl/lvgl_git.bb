@@ -28,7 +28,7 @@ do_configure:prepend() {
             < "${S}/lv_conf_template.h" > "${S}/lv_conf.h"
 }
 
-FILES_${PN}-dev += "\
+FILES:${PN}-dev += "\
     ${includedir}/${PN}/ \
     ${includedir}/${PN}/lvgl/ \
     "
