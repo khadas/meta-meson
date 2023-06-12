@@ -1,4 +1,4 @@
-diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
+
 index 4b72f76..4d0a8fa 100644
 --- a/include/libweston/libweston.h
 +++ b/include/libweston/libweston.h

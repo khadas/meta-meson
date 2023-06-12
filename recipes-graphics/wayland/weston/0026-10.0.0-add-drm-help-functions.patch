@@ -1,0 +1,308 @@
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 9e6e491..4374893 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -67,6 +67,16 @@
+ #include "linux-explicit-synchronization.h"
+ 
+ static const char default_seat[] = "seat0";
++#ifdef ENABLE_DRM_HELP
++#include "compositor-drm-help.h"
++static const char *const aspect_ratio_as_string[] = {
++	[WESTON_MODE_PIC_AR_NONE] = "",
++	[WESTON_MODE_PIC_AR_4_3] = " 4:3",
++	[WESTON_MODE_PIC_AR_16_9] = " 16:9",
++	[WESTON_MODE_PIC_AR_64_27] = " 64:27",
++	[WESTON_MODE_PIC_AR_256_135] = " 256:135",
++};
++#endif
+ 
+ static void
+ drm_backend_create_faked_zpos(struct drm_backend *b)
+@@ -403,6 +413,10 @@ drm_output_render(struct drm_output_state *state, pixman_region32_t *damage)
+ 	scanout_state->dest_y = 0;
+ 	scanout_state->dest_w = output->base.current_mode->width;
+ 	scanout_state->dest_h = output->base.current_mode->height;
++
++#ifdef ENABLE_DRM_HELP
++	help_get_scanout_viewport(&scanout_state->dest_x, &scanout_state->dest_y, &scanout_state->dest_w, &scanout_state->dest_h);
++#endif
+ 
+ #ifdef MESON_DRM_FIX_UI_SIZE
+ 	// for scale to full screen
+@@ -668,6 +682,9 @@ drm_repaint_flush(struct weston_compositor *compositor, void *repaint_data)
+ 
+ 	drm_debug(b, "[repaint] flushed pending_state %p\n", pending_state);
+ 	b->repaint_data = NULL;
++#ifdef ENABLE_DRM_HELP
++	help_do_repaint_cycle_completed();
++#endif
+ 
+ 	return (ret == -EACCES) ? -1 : 0;
+ }
+@@ -730,6 +747,20 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
+ 	output->base.current_mode->flags =
+ 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+ 
++#ifdef ENABLE_DRM_HELP
++	struct drm_head *head = to_drm_head(weston_output_get_first_head(output_base));
++	if (head && head->connector.conn)
++	{
++		if (head->connector.conn->connector_type == DRM_MODE_CONNECTOR_HDMIA)
++		{
++			help_update_display_mode_info(&drm_mode->mode_info);
++			help_update_ui_logic_size_info(output->base.current_mode->width, output->base.current_mode->height);
++			weston_log("\n %s %d current connector type is HDMI, current_mode(%d %d)\n",
++				__FUNCTION__,__LINE__,output->base.current_mode->width, output->base.current_mode->height);
++		}
++	}
++#endif
++
+ 	/* XXX: This drops our current buffer too early, before we've started
+ 	 *      displaying it. Ideally this should be much more atomic and
+ 	 *      integrated with a full repaint cycle, rather than doing a
+@@ -1762,6 +1793,32 @@ err:
+ 	free(scanout_formats);
+ 	return NULL;
+ }
++#ifdef ENABLE_DRM_HELP
++static void drm_output_refresh_force(struct weston_compositor *compositor) {
++	weston_compositor_damage_all(compositor);
++}
++static int drm_output_switch_mode_helper(output_ctx ctx, drm_helper_mode* mode) {
++	struct weston_mode m;
++	int ratio = 0;
++	int ret = 0;
++	m.width = mode->width;
++	m.height = mode->height;
++	//mhz:refresh * 1000
++	m.refresh = mode->refresh * 1000;
++	//hack: use weston_mode's flags as drm_mode's flags.
++	m.flags = mode->flags;
++	m.aspect_ratio = 0;
++	for (ratio = 0;  ratio >= ARRAY_LENGTH(aspect_ratio_as_string); ratio++) {
++		if (0 == strcmp(mode->aspect_ratio, aspect_ratio_as_string[ratio])) {
++			m.aspect_ratio = ratio;
++			break;
++		}
++	}
++	ret = weston_output_mode_set_native((struct weston_output *)ctx, &m, ((struct weston_output *)ctx)->current_scale);
++	drm_output_refresh_force(((struct weston_output *)ctx)->compositor);
++	return ret;
++}
++#endif
+ 
+ /** Pick a CRTC and reserve it for the output.
+  *
+@@ -1859,6 +1916,17 @@ drm_output_enable(struct weston_output *base)
+ 		   output->base.name, output->crtc->crtc_id);
+ 	drm_output_print_modes(output);
+ 
++#ifdef ENABLE_DRM_HELP
++	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
++	if (head && head->connector.conn)
++	{
++		if (head->connector.conn->connector_type == DRM_MODE_CONNECTOR_HDMIA)
++		{
++			help_set_switch_mode_function((output_ctx)base, drm_output_switch_mode_helper);
++		}
++	}
++#endif
++
+ 	return 0;
+ 
+ err_planes:
+@@ -1932,6 +2000,17 @@ drm_output_disable(struct weston_output *base)
+ 
+ 	weston_log("Disabling output %s\n", output->base.name);
+ 
++#ifdef ENABLE_DRM_HELP
++	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
++	if (head && head->connector.conn)
++	{
++		if (head->connector.conn->connector_type == DRM_MODE_CONNECTOR_HDMIA)
++		{
++			help_set_switch_mode_function(NULL, NULL);
++		}
++	}
++#endif
++
+ 	if (output->base.enabled)
+ 		drm_output_deinit(&output->base);
+ 
+@@ -2056,6 +2135,16 @@ drm_connector_assign_connector_info(struct drm_connector *connector,
+ 
+ 	if (drm_connector_update_properties(connector) < 0)
+ 		return -1;
++
++#ifdef ENABLE_DRM_HELP
++	if (connector && connector->conn)
++	{
++		if (connector->conn->connector_type == DRM_MODE_CONNECTOR_HDMIA)
++		{
++			help_update_connector(connector->conn, conn);
++		}
++	}
++#endif
+ 
+ 	if (connector->conn)
+ 		drmModeFreeConnector(connector->conn);
+@@ -2201,6 +2290,15 @@ drm_head_create(struct drm_backend *backend, drmModeConnector *conn,
+ 
+ 	weston_compositor_add_head(backend->compositor, &head->base);
+ 	drm_head_log_info(head, "found");
++#ifdef ENABLE_DRM_HELP
++	if (head && head->connector.conn)
++	{
++		if (head->connector.conn->connector_type == DRM_MODE_CONNECTOR_HDMIA)
++		{
++			help_append_connector(head->connector.conn);
++		}
++	}
++#endif
+ 
+ 	return 0;
+ 
+@@ -2215,6 +2313,16 @@ err:
+ static void
+ drm_head_destroy(struct drm_head *head)
+ {
++#ifdef ENABLE_DRM_HELP
++	if (head && head->connector.conn)
++	{
++		if (head->connector.conn->connector_type == DRM_MODE_CONNECTOR_HDMIA)
++		{
++			help_delete_connector(head->connector.conn);
++		}
++	}
++#endif
++
+ 	weston_head_release(&head->base);
+ 
+ 	drm_connector_fini(&head->connector);
+@@ -2597,6 +2705,10 @@ drm_destroy(struct weston_compositor *ec)
+ 	struct drm_crtc *crtc, *crtc_tmp;
+ 	struct drm_writeback *writeback, *writeback_tmp;
+ 
++#ifdef ENABLE_DRM_HELP	
++	stop_help_worker();
++#endif
++
+ 	udev_input_destroy(&b->input);
+ 
+ 	wl_event_source_remove(b->udev_drm_source);
+@@ -3146,6 +3258,11 @@ drm_backend_create(struct weston_compositor *compositor,
+ 		weston_log("failed to create input devices\n");
+ 		goto err_sprite;
+ 	}
++
++#ifdef ENABLE_DRM_HELP
++	weston_log("drm start_help_worker \n");
++	start_help_worker(b->drm.fd, b->atomic_modeset);
++#endif
+ 
+ 	wl_list_init(&b->writeback_connector_list);
+ 	if (drm_backend_discover_connectors(b, drm_device, res) < 0) {
+diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
+index 712f604..04633ce 100644
+--- a/libweston/backend-drm/kms.c
++++ b/libweston/backend-drm/kms.c
+@@ -42,6 +42,10 @@
+ #include "pixel-formats.h"
+ #include "presentation-time-server-protocol.h"
+ 
++#ifdef ENABLE_DRM_HELP
++#include "compositor-drm-help.h"
++#endif
++
+ struct drm_property_enum_info plane_type_enums[] = {
+ 	[WDRM_PLANE_TYPE_PRIMARY] = {
+ 		.name = "Primary",
+@@ -1168,6 +1172,9 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
+ 		weston_log("atomic: couldn't compile atomic state\n");
+ 		goto out;
+ 	}
++#ifdef ENABLE_DRM_HELP
++	ret |= help_atomic_req_add_prop(req);
++#endif
+ 
+ 	ret = drmModeAtomicCommit(b->drm.fd, req, flags, b);
+ 	drm_debug(b, "[atomic] drmModeAtomicCommit\n");
+diff --git a/libweston/backend-drm/meson.build b/libweston/backend-drm/meson.build
+index 39a1656..b36affe 100644
+--- a/libweston/backend-drm/meson.build
++++ b/libweston/backend-drm/meson.build
+@@ -17,6 +17,8 @@ dep_backlight = declare_dependency(
+ 	include_directories: include_directories('.')
+ )
+ 
++dep_meson_display = dependency('libweston-drm-helper')
++config_h.set('ENABLE_DRM_HELP', '1')
+ config_h.set('BUILD_DRM_COMPOSITOR', '1')
+ 
+ srcs_drm = [
+@@ -38,7 +40,8 @@ deps_drm = [
+ 	dep_libdrm,
+ 	dep_libinput_backend,
+ 	dependency('libudev', version: '>= 136'),
+-	dep_backlight
++	dep_backlight,
++	dep_meson_display
+ ]
+ 
+ if get_option('renderer-gl')
+diff --git a/libweston/backend-drm/modes.c b/libweston/backend-drm/modes.c
+index 415e5ac..57ee543 100755
+--- a/libweston/backend-drm/modes.c
++++ b/libweston/backend-drm/modes.c
+@@ -34,7 +34,10 @@
+ 
+ #include "drm-internal.h"
+ #include "shared/weston-drm-fourcc.h"
+-
++#ifdef ENABLE_DRM_HELP
++#include "compositor-drm-help.h"
++#endif
++
+ static const char *const aspect_ratio_as_string[] = {
+ 	[WESTON_MODE_PIC_AR_NONE] = "",
+ 	[WESTON_MODE_PIC_AR_4_3] = " 4:3",
+@@ -495,6 +498,7 @@ drm_output_choose_mode(struct drm_output *output,
+ 		output->base.current_mode->width == target_mode->width &&
+ 	    output->base.current_mode->height == target_mode->height &&
+ #endif
++		output->base.current_mode->flags == target_mode->flags &&
+ 	    (output->base.current_mode->refresh == target_mode->refresh ||
+ 	     target_mode->refresh == 0)) {
+ 		if (!b->aspect_ratio_supported || src_aspect == target_aspect)
+@@ -505,7 +509,9 @@ drm_output_choose_mode(struct drm_output *output,
+ 
+ 		src_aspect = mode->base.aspect_ratio;
+ 		if (mode->mode_info.hdisplay == target_mode->width &&
+-		    mode->mode_info.vdisplay == target_mode->height) {
++		    mode->mode_info.vdisplay == target_mode->height && 
++		    ((mode->mode_info.flags & DRM_MODE_FLAG_INTERLACE) == (target_mode->flags & DRM_MODE_FLAG_INTERLACE))
++		    ) {
+ 			if (mode->base.refresh == target_mode->refresh ||
+ 			    target_mode->refresh == 0) {
+ 				if (!b->aspect_ratio_supported ||
+@@ -828,6 +834,19 @@ drm_output_set_mode(struct weston_output *base,
+ 	output->base.native_mode = output->base.current_mode;
+ 	output->base.native_scale = output->base.current_scale;
+ 
++#ifdef ENABLE_DRM_HELP
++	if (head && head->connector.conn)
++	{
++		if (head->connector.conn->connector_type == DRM_MODE_CONNECTOR_HDMIA)
++		{
++			help_update_display_mode_info(&current->mode_info);
++			help_update_ui_logic_size_info(output->base.current_mode->width, output->base.current_mode->height);
++			weston_log("\n %s %d current connector type is HDMI, current_mode(%d %d)\n",
++				__FUNCTION__,__LINE__,output->base.current_mode->width, output->base.current_mode->height);
++		}
++	}
++#endif
++
+ #ifdef MESON_DRM_FIX_UI_SIZE
+ 	//the first current_mode should have no restoration needed
+ 	assert(!output->current_mode_need_restore);

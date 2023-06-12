@@ -1,0 +1,583 @@
+diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
+index 179fd12..651f8f7 100644
+--- a/include/libweston/libweston.h
++++ b/include/libweston/libweston.h
+@@ -1184,6 +1184,14 @@ struct weston_compositor {
+ 	struct weston_log_scope *debug_scene;
+ 	struct weston_log_scope *timeline;
+ 
++#ifdef ENABLE_DRM_HELP
++	FILE* aml_logfile;
++	bool aml_log_enable;
++	int aml_log_nframes;
++	bool aml_log_start;
++#endif
++	bool use_gbm_modifiers;
++
+ 	struct content_protection *content_protection;
+ 	struct weston_surface* last_keyboard_focus;
+ 	int video_surface_count;
+ struct weston_buffer {
+diff --git a/libweston/backend-drm/drm-gbm.c b/libweston/backend-drm/drm-gbm.c
+index b457ba1..f4156dd 100644
+--- a/libweston/backend-drm/drm-gbm.c
++++ b/libweston/backend-drm/drm-gbm.c
+@@ -196,13 +196,15 @@ create_gbm_surface(struct gbm_device *gbm, struct drm_output *output)
+ 	}
+ 
+ #ifdef HAVE_GBM_MODIFIERS
+-	if (!weston_drm_format_has_modifier(fmt, DRM_FORMAT_MOD_INVALID)) {
+-		modifiers = weston_drm_format_get_modifiers(fmt, &num_modifiers);
+-		output->gbm_surface =
+-			gbm_surface_create_with_modifiers(gbm,
+-							  mode->width, mode->height,
+-							  output->gbm_format,
+-							  modifiers, num_modifiers);
++	if (output->backend && output->backend->compositor->use_gbm_modifiers) {
++		if (!weston_drm_format_has_modifier(fmt, DRM_FORMAT_MOD_INVALID)) {
++			modifiers = weston_drm_format_get_modifiers(fmt, &num_modifiers);
++			output->gbm_surface =
++				gbm_surface_create_with_modifiers(gbm,
++								  mode->width, mode->height,
++								  output->gbm_format,
++								  modifiers, num_modifiers);
++		}
+ 	}
+ #endif
+ 
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 4374893..5820a25 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -65,10 +65,12 @@
+ #include "linux-dmabuf.h"
+ #include "linux-dmabuf-unstable-v1-server-protocol.h"
+ #include "linux-explicit-synchronization.h"
+-
++
+ static const char default_seat[] = "seat0";
+ #ifdef ENABLE_DRM_HELP
+ #include "compositor-drm-help.h"
++#include "shared/file-util.h"
++
+ static const char *const aspect_ratio_as_string[] = {
+ 	[WESTON_MODE_PIC_AR_NONE] = "",
+ 	[WESTON_MODE_PIC_AR_4_3] = " 4:3",
+@@ -798,7 +799,61 @@ init_pixman(struct drm_backend *b)
+ {
+ 	return pixman_renderer_init(b->compositor);
+ }
+-
++#ifdef ENABLE_DRM_HELP
++static void debug_write_fd_to_file(int fd, int buffer_size, int offset, int plane_id, FILE *msg_fp ) {
++	void *mapPtr = NULL;
++	mapPtr = mmap(NULL, buffer_size, PROT_READ, MAP_SHARED, fd, offset);
++	if ( mapPtr == MAP_FAILED || mapPtr == NULL) {
++		fprintf(msg_fp," debug_write_fd_to_file ->failed to map buffer: %s\n", strerror(errno));
++	} else {
++		char plane_id_name[16] = {'\0'};
++		sprintf(plane_id_name, "plane_%d", plane_id );
++		weston_debug_write_buffer_to_file(mapPtr, buffer_size, plane_id_name, msg_fp);
++		munmap(mapPtr, buffer_size);
++	}
++}
++static void drm_print_output_status(struct weston_compositor *compositor,
++			     void *repaint_data, FILE* fp) {
++	struct drm_pending_state* state = (struct drm_pending_state*)repaint_data;
++	fprintf(fp, "\ndrm_print_output_status: \n");
++	struct drm_output_state *output_state;
++	wl_list_for_each(output_state, &state->output_list, link) {
++		struct drm_output *output = output_state->output;
++		struct drm_crtc *crtc = output->crtc;
++		struct drm_plane_state *plane_state;
++		wl_list_for_each(plane_state, &output_state->plane_list, link) {
++			struct drm_plane *plane = plane_state->plane;
++			fprintf(fp, " \t\t[plane id:%d] fb id:%d\n", plane->plane_id, plane_state->fb ? plane_state->fb->fb_id : 0);
++			fprintf(fp, "  \t\t[plane id:%d] crtc id:%d\n", plane->plane_id, plane_state->fb ? crtc->crtc_id : 0);
++			fprintf(fp, "  \t\t[plane id:%d] crtc id:%d\n", plane->plane_id, plane_state->fb ? crtc->crtc_id : 0);
++			fprintf(fp, "  \t\t[plane id:%d] src_x:%d\n", plane->plane_id, plane_state->src_x);
++			fprintf(fp, "  \t\t[plane id:%d] src_y:%d\n", plane->plane_id, plane_state->src_y);
++			fprintf(fp, "  \t\t[plane id:%d] src_w:%d\n", plane->plane_id, plane_state->src_w);
++			fprintf(fp, "  \t\t[plane id:%d] src_h:%d\n", plane->plane_id, plane_state->src_h);
++			fprintf(fp, "  \t\t[plane id:%d] crtc_x:%d\n", plane->plane_id, plane_state->dest_x);
++			fprintf(fp, "  \t\t[plane id:%d] crtc_y:%d\n", plane->plane_id, plane_state->dest_y);
++			fprintf(fp, "  \t\t[plane id:%d] crtc_w:%d\n", plane->plane_id, plane_state->dest_w);
++			fprintf(fp, "  \t\t[plane id:%d] crtc_h:%d\n", plane->plane_id, plane_state->dest_h);
++			fprintf(fp, "  \t\t[plane id:%d] fb format:%s\n", plane->plane_id, plane_state->fb->format->drm_format_name);
++			if (plane_state->fb) {
++				int rc = -255;
++				int dmabuf_fd = -1;
++				int size = plane_state->fb->height * plane_state->fb->width * 4;
++				rc = drmPrimeHandleToFD(plane_state->fb->fd, plane_state->fb->handles[0], 0, &dmabuf_fd);
++				debug_write_fd_to_file(dmabuf_fd, size, plane_state->fb->offsets[0], plane_state->plane->plane_id,fp);
++				fprintf(fp, "\n drm_print_output_status: start to write fb(none afbc)\n");
++				fprintf(fp, "\n drm_print_output_status: fd:%d size:%d (%d * %d * 4), plane id:%d \n\n\n\n\n\n\n", 
++							dmabuf_fd, size, plane_state->fb->height, plane_state->fb->width, plane_state->plane->plane_id);
++
++				close(dmabuf_fd);
++			}
++			else {
++				fprintf(fp," plane_state->fb not exsit\n");
++			}
++		}
++	}
++}
++#endif
+ /**
+  * Create a drm_plane for a hardware plane
+  *
+@@ -2383,7 +2438,12 @@ drm_output_create(struct weston_compositor *compositor, const char *name)
+ 	output->state_cur = drm_output_state_alloc(output, NULL);
+ 
+ 	weston_compositor_add_pending_output(&output->base, b->compositor);
+-
++	char* env  = getenv("WESTON_USE_GBM_MODIFIERS");
++	weston_log("\n WESTON_USE_GBM_MODIFIERS :%s \n", env);
++	if (env && !atoi(env)) {
++		compositor->use_gbm_modifiers= false;
++	    weston_log("\n WESTON_USE_GBM_MODIFIERS false \n");
++	}
+ 	return &output->base;
+ }
+ 
+@@ -3127,6 +3187,13 @@ static const struct weston_drm_output_api api = {
+ 	drm_output_set_gbm_format,
+ 	drm_output_set_seat,
+ };
++#ifdef ENABLE_DRM_HELP
++static void weston_print_info(struct weston_compositor* ec, int count)
++{
++	ec->aml_log_nframes = count;
++	ec->aml_log_enable = true;
++}
++#endif
+ 
+ static struct drm_backend *
+ drm_backend_create(struct weston_compositor *compositor,
+@@ -3234,6 +3301,7 @@ drm_backend_create(struct weston_compositor *compositor,
+ 	b->base.create_output = drm_output_create;
+ 	b->base.device_changed = drm_device_changed;
+ 	b->base.can_scanout_dmabuf = drm_can_scanout_dmabuf;
++	b->base.print_output_status = drm_print_output_status;
+ 
+ 	weston_setup_vt_switch_bindings(compositor);
+ 
+@@ -3364,7 +3432,10 @@ drm_backend_create(struct weston_compositor *compositor,
+ 		weston_log("Failed to register virtual output API.\n");
+ 		goto err_udev_monitor;
+ 	}
+-
++#ifdef ENABLE_DRM_HELP
++	help_set_printinfo_function(compositor, weston_print_info);
++#endif
++
+ 	return b;
+ 
+ err_udev_monitor:
+@@ -3423,3 +3494,4 @@ weston_backend_init(struct weston_compositor *compositor,
+ 
+ 	return 0;
+ }
++
+diff --git a/libweston/backend-drm/fb.c b/libweston/backend-drm/fb.c
+index ffe2cc5..3478d8d 100644
+--- a/libweston/backend-drm/fb.c
++++ b/libweston/backend-drm/fb.c
+@@ -360,12 +360,19 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
+ 	fb->size = 0;
+ 
+ #ifdef HAVE_GBM_MODIFIERS
+-	fb->modifier = gbm_bo_get_modifier(bo);
+-	fb->num_planes = gbm_bo_get_plane_count(bo);
+-	for (i = 0; i < fb->num_planes; i++) {
+-		fb->strides[i] = gbm_bo_get_stride_for_plane(bo, i);
+-		fb->handles[i] = gbm_bo_get_handle_for_plane(bo, i).u32;
+-		fb->offsets[i] = gbm_bo_get_offset(bo, i);
++	if (backend->compositor->use_gbm_modifiers) {
++		fb->modifier = gbm_bo_get_modifier(bo);
++		fb->num_planes = gbm_bo_get_plane_count(bo);
++		for (i = 0; i < fb->num_planes; i++) {
++			fb->strides[i] = gbm_bo_get_stride_for_plane(bo, i);
++			fb->handles[i] = gbm_bo_get_handle_for_plane(bo, i).u32;
++			fb->offsets[i] = gbm_bo_get_offset(bo, i);
++		}
++	} else {
++		fb->num_planes = 1;
++		fb->strides[0] = gbm_bo_get_stride(bo);
++		fb->handles[0] = gbm_bo_get_handle(bo).u32;
++		fb->modifier = DRM_FORMAT_MOD_INVALID;
+ 	}
+ #else
+ 	fb->num_planes = 1;
+diff --git a/libweston/backend.h b/libweston/backend.h
+old mode 100644
+new mode 100755
+index 3ae59a6..19cda4a
+--- a/libweston/backend.h
++++ b/libweston/backend.h
+@@ -68,6 +68,8 @@ struct weston_backend {
+ 	int (*repaint_flush)(struct weston_compositor *compositor,
+ 			     void *repaint_data);
+ 
++	int (*print_output_status)(struct weston_compositor *compositor,
++			     void *repaint_data, FILE* fp);
+ 	/** Allocate a new output
+ 	 *
+ 	 * @param compositor The compositor.
+@@ -253,4 +255,6 @@ notify_touch_calibrator_cancel(struct weston_touch_device *device);
+ void
+ notify_touch_calibrator_frame(struct weston_touch_device *device);
+ 
++void weston_debug_write_buffer_to_file(void* buffer, int buffer_size, char* name_in, FILE *msg_fp ); 
++
+ #endif
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 9078bc7..529e6ae 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -61,6 +61,10 @@
+ #if MESON_VIDEO_PLAN_SUPPORT
+ #include <drm_fourcc.h>
+ #endif
++#ifdef ENABLE_DRM_HELP
++#include "weston-drm-helper/compositor-drm-help.h"
++#include "shared/file-util.h"
++#endif
+ 
+ #include "linux-dmabuf.h"
+ #include "viewporter-server-protocol.h"
+@@ -145,6 +149,12 @@ weston_compositor_build_view_list(struct weston_compositor *compositor,
+ 
+ static char *
+ weston_output_create_heads_string(struct weston_output *output);
++static int weston_compositor_get_sysfs_str(const char *path, char *valstr, int size);
++static void weston_compositor_print_node_info(struct weston_compositor *ec);
++static void weston_compositor_debug_print_scene(struct weston_compositor *ec);
++static void weston_compositor_print_node_info(struct weston_compositor *ec);
++static void weston_print_info(struct weston_compositor* ec, int count);
++static void weston_compositor_print_scene(struct weston_compositor *ec, FILE *fp);
+ 
+ static struct weston_paint_node *
+ weston_paint_node_create(struct weston_surface *surface,
+@@ -3312,11 +3322,32 @@ output_repaint_timer_handler(void *data)
+ 	if (compositor->backend->repaint_begin)
+ 		repaint_data = compositor->backend->repaint_begin(compositor);
+ 
++#ifdef ENABLE_DRM_HELP
++	static int log_frame_count = 0;
++	bool log_client = false;
++	if (compositor->aml_log_enable) {
++		weston_compositor_debug_print_scene(compositor);
++	}
++#endif
+ 	wl_list_for_each(output, &compositor->output_list, link) {
+ 		ret = weston_output_maybe_repaint(output, &now, repaint_data);
+ 		if (ret)
+ 			break;
+ 	}
++#ifdef ENABLE_DRM_HELP
++	if (compositor->aml_log_enable && compositor->aml_log_start) {
++		compositor->backend->print_output_status(compositor, repaint_data, compositor->aml_logfile);
++		log_frame_count++;
++		if (log_frame_count >= compositor->aml_log_nframes) {
++			weston_compositor_print_node_info(compositor);
++			compositor->aml_log_enable = false;
++			compositor->aml_log_start = false;
++			compositor->aml_log_nframes = 0;
++			fclose(compositor->aml_logfile);
++			compositor->aml_logfile = NULL;
++		}
++	}
++#endif
+ 
+ 	if (ret == 0) {
+ 		if (compositor->backend->repaint_flush)
+@@ -7707,7 +7738,105 @@ output_repaint_status_text(struct weston_output *output)
+ 	assert(!"output_repaint_status_text missing enum");
+ 	return NULL;
+ }
+-
++static FILE *file_create(const char *path, const char *prefix, const char *suffix,
++		  char *name_out, size_t name_len, FILE *msg_fp)
++{
++	int ret;
++	int fd;
++	int cnt = 0;
++	int with_path;
++
++	with_path = path && path[0];
++	ret = snprintf(name_out, name_len, "%s%s%s%s",
++		       with_path ? path : "", with_path ? "/" : "",
++		       prefix, suffix);
++	if (ret < 0 || (size_t)ret >= name_len) {
++		errno = ENOBUFS;
++		return NULL;
++	}
++	fd = open(name_out, O_RDWR | O_CLOEXEC | O_CREAT | O_EXCL, 00666);
++	while (fd == -1 && errno == EEXIST) {
++		cnt++;
++		ret = snprintf(name_out, name_len, "%s%s%s_%d%s",
++			       with_path ? path : "", with_path ? "/" : "",
++			       prefix, cnt, suffix);
++		if (ret < 0 || (size_t)ret >= name_len) {
++			errno = ENOBUFS;
++			return NULL;
++		}
++		fd = open(name_out, O_RDWR | O_CLOEXEC | O_CREAT | O_EXCL, 00666);
++	}
++	weston_log("\n file_create fd:%d name:%s line:%d\n", fd, name_out, __LINE__);
++	if (msg_fp)
++		fprintf(msg_fp, "\n \t\t file_create :%s line :%d fd:%d\n", name_out,__LINE__,fd );
++	if (fd == -1)
++		return NULL;
++	return fdopen(fd, "w");
++}
++WL_EXPORT void weston_debug_write_buffer_to_file(void* buffer, int buffer_size, char* name_in, FILE *msg_fp ) {
++	const char *suffix = ".bin";
++	char fname[1024];
++	FILE* fp;
++	const char *path = "/data";
++	fp = file_create(path, name_in, suffix, fname, sizeof(fname), msg_fp);
++	if (!fp) {
++		const char *msg;
++		switch (errno) {
++		case ETIME:
++			msg = "failure in datetime formatting";
++			break;
++		default:
++			msg = strerror(errno);
++		}
++		fprintf(msg_fp, "debug_write_buffer_to_file Cannot open '%s*%s' for writing: %s\n",
++			   name_in, suffix, msg);
++	}
++	fprintf(msg_fp, "\n \t\t line :%d size:%d fp:%p\n", __LINE__,buffer_size, fp);
++	weston_log("\n weston_debug_write_buffer_to_file line :%d size:%d fp:%p\n", __LINE__,buffer_size, fp);
++	if (fp) {
++		if (fwrite(buffer, 1, buffer_size, fp) != buffer_size)
++			fprintf(msg_fp, " fwrite fail!\n");
++		fclose(fp);
++	}
++}
++static void debug_write_shm_buffer_to_file(struct weston_view *view, struct wl_shm_buffer *shm) 
++{
++	if (view->surface->compositor->aml_log_enable && 
++			view->surface->compositor->aml_log_start) {
++		FILE *fp = view->surface->compositor->aml_logfile;
++		fprintf(fp, "\t\t start to write shm buffer to file\n");
++		void* data = wl_shm_buffer_get_data(shm);
++		int size = wl_shm_buffer_get_height(shm) * wl_shm_buffer_get_stride(shm);
++		fprintf(fp, "\t\t width:%d height:%d stride:%d size:%d \n", 
++			wl_shm_buffer_get_width(shm), wl_shm_buffer_get_height(shm), wl_shm_buffer_get_stride(shm),
++			size );
++		if (shm && data) {
++			weston_debug_write_buffer_to_file(data, size, view->surface->role_name, fp);
++		} else {
++			fprintf(fp, "\t\tshm data get fail\n");
++		}
++	}
++}
++static void debug_write_dma_buffer_to_file(struct weston_view *view, struct linux_dmabuf_buffer *dmabuf) 
++{
++	if (view->surface->compositor->aml_log_enable && 
++			view->surface->compositor->aml_log_start) {
++		int size = dmabuf->attributes.height * dmabuf->attributes.width*4;
++		int dmabuffd = dmabuf->attributes.fd[0];
++		int offset = dmabuf->attributes.offset[0];
++		void *mapPtr = NULL;
++		FILE *fp = view->surface->compositor->aml_logfile;
++		mapPtr = mmap(NULL, size, PROT_READ, MAP_SHARED, dmabuffd, offset);
++		if ( mapPtr == MAP_FAILED || mapPtr == NULL) {
++			fprintf(fp," debug_write_dma_buffer_to_file failed to map buffer: %s\n", strerror(errno));
++		} else {
++			fprintf(fp, "\t\t !!!!start to write dma buffer to file view :%d dmabuffd:%d size:%d (%d * %d *4) offset:%d\n", 
++			view,dmabuffd, size, dmabuf->attributes.height, dmabuf->attributes.width, offset);
++			weston_debug_write_buffer_to_file(mapPtr, size, view->surface->role_name, fp);
++			munmap(mapPtr, size);
++		}
++	}
++}
+ static void
+ debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
+ {
+@@ -7729,6 +7858,9 @@ debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
+ 		fprintf(fp, "\t\t\tformat: 0x%lx %s\n",
+ 			(unsigned long) _format,
+ 			pixel_info ? pixel_info->drm_format_name : "UNKNOWN");
++#ifdef ENABLE_DRM_HELP
++	debug_write_shm_buffer_to_file(view, shm);
++#endif
+ 		return;
+ 	}
+ 
+@@ -7745,6 +7877,9 @@ debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
+ 		fprintf(fp, "\t\t\tmodifier: %s\n", modifier_name ? modifier_name :
+ 				"Failed to convert to a modifier name");
+ 		free(modifier_name);
++#ifdef ENABLE_DRM_HELP
++		debug_write_dma_buffer_to_file(view, dmabuf);
++#endif
+ 		return;
+ 	}
+ 
+@@ -7758,6 +7893,7 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
+ 	struct weston_output *output;
+ 	char desc[512];
+ 	pixman_box32_t *box;
++	pixman_box32_t *opaque_surface_box;
+ 	uint32_t surface_id = 0;
+ 	pid_t pid = 0;
+ 
+@@ -7772,9 +7908,9 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
+ 	    view->surface->get_label(view->surface, desc, sizeof(desc)) < 0) {
+ 		strcpy(desc, "[no description available]");
+ 	}
+-	fprintf(fp, "\tView %d (role %s, PID %d, surface ID %u, %s, %p is video surface:%d, video plane:%d):\n",
++	fprintf(fp, "\tView %d (role %s, PID %d, surface ID %u, %s, %p %p video surafce:%d):\n",
+ 		view_idx, view->surface->role_name, pid, surface_id,
+-		desc, view, view->surface->is_video_surface, view->surface->is_video_surface ? view->surface->video_plane : 0);
++		desc, view, view->surface, view->surface->is_video_surface);
+ 	box = pixman_region32_extents(&view->transform.boundingbox);
+ 	fprintf(fp, "\t\tposition: (%d, %d) -> (%d, %d)\n",
+ 		box->x1, box->y1, box->x2, box->y2);
+@@ -7788,6 +7924,9 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
+ 		fprintf(fp, "\t\t[opaque: (%d, %d) -> (%d, %d)]\n",
+ 			box->x1, box->y1, box->x2, box->y2);
+ 	}
++	opaque_surface_box = pixman_region32_extents(&view->surface->opaque);
++	fprintf(fp, "\t\t[surface:%p opaque: (%d, %d) -> (%d, %d)]\n",
++			view->surface, opaque_surface_box->x1, opaque_surface_box->y1, opaque_surface_box->x2, opaque_surface_box->y2);
+ 
+ 	if (view->alpha < 1.0)
+ 		fprintf(fp, "\t\talpha: %f\n", view->alpha);
+@@ -7850,20 +7989,104 @@ debug_scene_view_print_tree(struct weston_view *view,
+  */
+ WL_EXPORT char *
+ weston_compositor_print_scene_graph(struct weston_compositor *ec)
++{
++	FILE *fp;
++	int err;
++	char* ret;
++	size_t len;
++	fp = open_memstream(&ret, &len);
++	assert(fp);
++	weston_compositor_print_scene(ec, fp);
++	err = fclose(fp);
++	assert(err == 0);
++	return ret;
++}
++#ifdef ENABLE_DRM_HELP
++#define OUTPUT_STATE                  "/sys/kernel/debug/dri/0/state"
++#define HDMITX_ATTR_DISPLAY_CAP       "/sys/class/amhdmitx/amhdmitx0/disp_cap"
++#define HDMITX_HDCPMODE               "/sys/class/amhdmitx/amhdmitx0/hdcp_mode"
++#define HDMITX_ATTR                   "/sys/class/amhdmitx/amhdmitx0/attr"
++#define DISPLAY_VINFO                 "/sys/class/display/vinfo"
++#define BUFFER_SIZE_SMALL 1024
++#define BUFFER_SIZE_BIG 10240
++static int weston_compositor_get_sysfs_str(const char *path, char *valstr, int size)
++{
++    int fd;
++    fd = open(path, O_RDONLY);
++    if (fd >= 0) {
++        memset(valstr, 0, size);
++        read(fd, valstr, size - 1);
++        valstr[strlen(valstr)] = '\0';
++        close(fd);
++    } else {
++        printf("unable to open file %s,err: %s\n", path, strerror(errno));
++        sprintf(valstr, "%s", "fail");
++        return -1;
++    }
++    return 0;
++}
++static void weston_compositor_print_node_info(struct weston_compositor *ec)
++{
++	FILE *fp = ec->aml_logfile;
++	if (fp) {
++		fprintf(fp, "node info: \n");
++		fprintf(fp, "node info:/sys/kernel/debug/dri/0/state \n");
++		char str_big_size[BUFFER_SIZE_BIG] = {'\0'};
++		weston_compositor_get_sysfs_str(OUTPUT_STATE, str_big_size, BUFFER_SIZE_BIG);
++		fprintf(fp, "%s", str_big_size);
++		fprintf(fp, "\n");
++		fprintf(fp, "node info:/sys/class/amhdmitx/amhdmitx0/disp_cap \n");
++		char str_small_size[BUFFER_SIZE_SMALL] = {'\0'};
++		weston_compositor_get_sysfs_str(HDMITX_ATTR_DISPLAY_CAP, str_small_size, BUFFER_SIZE_SMALL);
++		fprintf(fp, "%s", str_small_size);
++		fprintf(fp, "\n");
++		fprintf(fp, "node info:/sys/class/amhdmitx/amhdmitx0/hdcp_mode \n");
++		memset(str_small_size, '\0', BUFFER_SIZE_SMALL);
++		weston_compositor_get_sysfs_str(HDMITX_HDCPMODE, str_small_size, BUFFER_SIZE_SMALL);
++		fprintf(fp, "%s", str_small_size);
++		fprintf(fp, "\n");
++		fprintf(fp, "node info:/sys/class/amhdmitx/amhdmitx0/attr \n");
++		memset(str_small_size, '\0', BUFFER_SIZE_SMALL);
++		weston_compositor_get_sysfs_str(HDMITX_ATTR, str_small_size, BUFFER_SIZE_SMALL);
++		fprintf(fp, "%s", str_small_size);
++		fprintf(fp, "\n");
++		fprintf(fp, "node info:/sys/class/display/vinfo \n");
++		memset(str_big_size, '\0', BUFFER_SIZE_BIG);
++		weston_compositor_get_sysfs_str(DISPLAY_VINFO, str_big_size, BUFFER_SIZE_BIG);
++		fprintf(fp, "%s", str_big_size);
++		fprintf(fp, "\n");
++	}
++}
++static void weston_compositor_debug_print_scene(struct weston_compositor *ec)
++{
++	if (ec->aml_log_enable) {
++		const char *suffix = ".log";
++		char fname[1024];
++		const char *path = "/data";
++		const char *prefix = "aml_weston";
++		ec->aml_logfile = file_create(path, prefix, suffix, fname, sizeof(fname), NULL);
++		if (!ec->aml_logfile) {
++			weston_log("\n aml_logfile create fail, return \n");
++			return;
++		}
++		ec->aml_log_start = true;
++		fprintf(ec->aml_logfile, "\n aml_logfile start!\n");
++		weston_compositor_print_scene(ec, ec->aml_logfile);
++	}
++}
++#endif
++static void weston_compositor_print_scene(struct weston_compositor *ec, FILE *fp)
+ {
+ 	struct weston_output *output;
+ 	struct weston_layer *layer;
+ 	struct timespec now;
+ 	int layer_idx = 0;
+-	FILE *fp;
+ 	char *ret;
+ 	size_t len;
+ 	int err;
+ #ifdef MESON_DRM_FIX_UI_SIZE
+     struct drm_output *drm_output_p = NULL;
+ #endif
+-	fp = open_memstream(&ret, &len);
+-	assert(fp);
+ 
+ 	weston_compositor_read_presentation_clock(ec, &now);
+ 	fprintf(fp, "Weston scene graph at %ld.%09ld:\n\n",
+@@ -7942,10 +8165,7 @@ weston_compositor_print_scene_graph(struct weston_compositor *ec)
+ 		fprintf(fp, "\n");
+ 	}
+ 
+-	err = fclose(fp);
+-	assert(err == 0);
+ 
+-	return ret;
+ }
+ 
+ /**
+@@ -8118,6 +8338,12 @@ weston_compositor_create(struct wl_display *display,
+ 						weston_timeline_destroy_subscription,
+ 						ec);
+ 	ec->last_keyboard_focus = NULL;
++#ifdef ENABLE_DRM_HELP
++	ec->aml_logfile = NULL;
++	ec->aml_log_enable = false;
++	ec->aml_log_nframes = 0;
++#endif
++	ec->use_gbm_modifiers = true;
+ 	return ec;
+ 
+ fail:

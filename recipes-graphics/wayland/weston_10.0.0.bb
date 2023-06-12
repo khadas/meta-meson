@@ -24,6 +24,8 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
 		   file://0023-10.0.0-add-z-order-force-and-background-transparent-options.patch \
 		   file://0024-10.0.0-modify-keyboard-focus-change-flow.patch \
 		   file://0025-10.0.0-play-video-in-video-layer.patch \
+		   file://0026-10.0.0-add-drm-help-functions.patch \
+		   file://0027-10.0.0-add-debug-tool.patch \
            "
 
 SRC_URI[md5sum] = "bc4abe2ee6904a4890a0c641c6257f91"
@@ -36,7 +38,7 @@ inherit meson pkgconfig useradd features_check
 REQUIRED_DISTRO_FEATURES = "opengl"
 
 DEPENDS = "libxkbcommon gdk-pixbuf pixman cairo glib-2.0"
-DEPENDS += "wayland wayland-protocols libinput virtual/egl pango wayland-native"
+DEPENDS += "wayland wayland-protocols libinput virtual/egl pango wayland-native meson-display"
 
 WESTON_MAJOR_VERSION = "${@'.'.join(d.getVar('PV').split('.')[0:1])}"
 
