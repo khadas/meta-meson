@@ -137,6 +137,7 @@ DISTRO_FEATURES:append = " ${@bb.utils.contains('RELEASE_MODE', 'PROD', 'dm-veri
 
 DISTRO_FEATURES:append = " adb dropbear"
 DISTRO_FEATURES:append = " cec voiceinput "
+DISTRO_FEATURES:append = " screencapture "
 
 # SWUpdate UI config graphic library
 SWUPDATE_UI_LIB = "lvgl"
