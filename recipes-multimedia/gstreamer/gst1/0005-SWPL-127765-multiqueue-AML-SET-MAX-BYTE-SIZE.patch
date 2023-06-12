@@ -1,0 +1,24 @@
+diff --git a/plugins/elements/gstmultiqueue.c b/plugins/elements/gstmultiqueue.c
+index d4feb89..ff809a0 100644
+--- a/plugins/elements/gstmultiqueue.c
++++ b/plugins/elements/gstmultiqueue.c
+@@ -1672,6 +1672,19 @@ gst_single_queue_push_one (GstMultiQueue * mq, GstSingleQueue * sq,
+         /* Applying the gap may have made the queue non-full again, unblock it if needed */
+         gst_data_queue_limits_changed (sq->queue);
+         break;
++      case GST_EVENT_CUSTOM_DOWNSTREAM_STICKY:
++       if(gst_event_has_name(event, "AML-SET-MAX-BYTE-SIZE")) {
++         GST_DEBUG_OBJECT (mq, "Handle event AML-SET-MAX-BYTE-SIZE");
++         GST_MULTI_QUEUE_MUTEX_LOCK (mq);
++         mq->max_size.bytes = DEFAULT_MAX_SIZE_BYTES;
++         SET_CHILD_PROPERTY (mq, bytes);
++         mq->max_size.time = DEFAULT_MAX_SIZE_TIME * 4;
++         SET_CHILD_PROPERTY (mq, time);
++         GST_MULTI_QUEUE_MUTEX_UNLOCK (mq);
++         gst_multi_queue_post_buffering (mq);
++         result = GST_FLOW_OK;
++       }
++       break;
+       default:
+         break;
+     }
