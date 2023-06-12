@@ -1,0 +1,531 @@
+From 86866b4b51c581d303ceee16c813b8a54f351cb3 Mon Sep 17 00:00:00 2001
+From: "kaiqiang.xiang" <kaiqiang.xiang@amlogic.com>
+Date: Mon, 12 Jun 2023 12:41:24 +0000
+Subject: [PATCH] support hls discontinuity
+
+---
+ ext/hls/gsthlsdemux.c                         | 179 ++++++++++++++++++
+ ext/hls/m3u8.c                                |  13 ++
+ ext/hls/m3u8.h                                |   3 +
+ gst-libs/gst/adaptivedemux/gstadaptivedemux.c | 169 ++++++++++++++++-
+ gst-libs/gst/adaptivedemux/gstadaptivedemux.h |  12 ++
+ 5 files changed, 375 insertions(+), 1 deletion(-)
+
+diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
+index faf1753..7e6be7a 100644
+--- a/ext/hls/gsthlsdemux.c
++++ b/ext/hls/gsthlsdemux.c
+@@ -116,6 +116,8 @@ static gboolean gst_hls_demux_get_live_seek_range (GstAdaptiveDemux * demux,
+ static GstM3U8 *gst_hls_demux_stream_get_m3u8 (GstHLSDemuxStream * hls_stream);
+ static void gst_hls_demux_set_current_variant (GstHLSDemux * hlsdemux,
+     GstHLSVariantStream * variant);
++static GstAdaptiveMediaType gst_hls_demux_stream_get_media_type (GstAdaptiveDemuxStream * stream);
++static gint gst_hls_demux_stream_get_discontinuity_num (GstAdaptiveDemuxStream * stream);
+ 
+ #define gst_hls_demux_parent_class parent_class
+ G_DEFINE_TYPE (GstHLSDemux, gst_hls_demux, GST_TYPE_ADAPTIVE_DEMUX);
+@@ -182,6 +184,9 @@ gst_hls_demux_class_init (GstHLSDemuxClass * klass)
+   adaptivedemux_class->finish_fragment = gst_hls_demux_finish_fragment;
+   adaptivedemux_class->data_received = gst_hls_demux_data_received;
+ 
++  adaptivedemux_class->stream_get_media_type = gst_hls_demux_stream_get_media_type;
++  adaptivedemux_class->stream_get_discontinuity_num = gst_hls_demux_stream_get_discontinuity_num;
++
+   GST_DEBUG_CATEGORY_INIT (gst_hls_demux_debug, "hlsdemux", 0,
+       "hlsdemux element");
+ }
+@@ -1149,6 +1154,174 @@ gst_hls_demux_update_fragment_info (GstAdaptiveDemuxStream * stream)
+   return GST_FLOW_OK;
+ }
+ 
++static gint gst_hls_demux_stream_get_discontinuity_num (GstAdaptiveDemuxStream * stream)
++{
++  GstHLSDemux *hlsdemux = GST_HLS_DEMUX_CAST (stream->demux);
++
++  if(NULL == hlsdemux->current_variant)
++  {
++    GST_WARNING_OBJECT (hlsdemux, "current_variant is null.");
++    return 0;
++  }
++
++  GstM3U8 *m3u8 = hlsdemux->current_variant->m3u8;
++  if(NULL == m3u8)
++  {
++	  GST_WARNING_OBJECT (hlsdemux, "m3u8 is null.");
++    return 0;
++  }
++
++  return m3u8->discont_num;
++}
++
++static GstAdaptiveMediaType gst_hls_demux_stream_get_media_type (GstAdaptiveDemuxStream * stream)
++{
++  GstHLSDemux *hlsdemux = GST_HLS_DEMUX_CAST (stream->demux);
++  GstHLSDemuxStream *hls_stream = GST_HLS_DEMUX_STREAM_CAST (stream);
++
++  GST_WARNING_OBJECT (hlsdemux, "get_fragment_discontinuity");
++  GstM3U8 *m3u8 = hlsdemux->current_variant->m3u8;
++  if(!m3u8 || 0 == m3u8->discont_num)
++  {
++	  GST_WARNING_OBJECT (hlsdemux, "m3u8[%p] is null or discont_num is 0.", m3u8);
++  }
++
++  if (hls_stream->playlist == NULL) {
++    GST_WARNING_OBJECT (hlsdemux, "Can't find hls_stream playlist.");
++    return GST_ADAPTIVE_MEDIA_TYPE_INVALID;
++  }
++
++  GST_DEBUG_OBJECT (hlsdemux, "my uri %s", hls_stream->playlist->uri);
++  GstHLSVariantStream *playlist = hlsdemux->current_variant;
++  if (playlist == NULL) {
++    GST_WARNING_OBJECT (hlsdemux, "Can't find group playlist.");
++    return GST_ADAPTIVE_MEDIA_TYPE_INVALID;
++  }
++  GST_DEBUG_OBJECT (hlsdemux, "group uri %s", playlist->uri);
++
++  GList *alist = playlist->media[GST_HLS_MEDIA_TYPE_AUDIO];
++  while(alist != NULL)
++  {
++	 GstHLSMedia *media = alist->data;
++	  if(g_str_equal(media->playlist->uri , hls_stream->playlist->uri))
++	  {
++		  GST_DEBUG_OBJECT (hlsdemux, "I am audio %s", media->uri);
++		  return GST_ADAPTIVE_MEDIA_TYPE_AUDIO;
++	  }
++	 alist = alist->next;
++  }
++
++  GList *vlist = playlist->media[GST_HLS_MEDIA_TYPE_VIDEO];
++  while(vlist != NULL)
++  {
++	 GST_DEBUG_OBJECT (hlsdemux, "I am video %d", g_slist_length(vlist));
++	 GstHLSMedia *media = vlist->data;
++	  if(g_str_equal(media->playlist->uri, hls_stream->playlist->uri))
++	  {
++		  GST_DEBUG_OBJECT (hlsdemux, "I am video %s", media->uri);
++		  return GST_ADAPTIVE_MEDIA_TYPE_VIDEO;
++	  }
++	 vlist = vlist->next;
++  }
++
++  if (hlsdemux->master) {
++    GList *l = g_list_last (hlsdemux->master->variants);
++    while (l != NULL) {
++      GstHLSVariantStream *variant = l->data;
++      GST_DEBUG_OBJECT (hlsdemux, "g_list_last variant uri %s", variant->uri);
++      GST_DEBUG_OBJECT (hlsdemux, "g_list_last hls_stream uri %s", hls_stream->playlist->uri);
++      if (g_str_equal(variant->uri, hls_stream->playlist->uri))
++      {
++        GST_DEBUG_OBJECT (hlsdemux, "we are the same one, return");
++        return GST_ADAPTIVE_MEDIA_TYPE_VIDEO;
++      }
++      l = l->prev;
++    }
++  }
++
++  GST_DEBUG_OBJECT (hlsdemux, "Got media type GST_ADAPTIVE_MEDIA_TYPE_INVALID");
++
++  return GST_ADAPTIVE_MEDIA_TYPE_INVALID;
++}
++
++static gboolean
++gst_hls_demux_is_discontinuity (GstAdaptiveDemuxStream * stream, GstHLSDemux *hlsdemux)
++{
++  GstHLSDemuxStream *hls_stream = GST_HLS_DEMUX_STREAM_CAST (stream);
++
++  if (NULL == hlsdemux->current_variant->m3u8) {
++    GST_DEBUG_OBJECT (hlsdemux, "m3u8 is null.");
++    return FALSE;
++  }
++
++  gint discont_num = hlsdemux->current_variant->m3u8->discont_num;
++  if (discont_num !=0)
++  {
++    GstM3U8 *m3u8 = hlsdemux->current_variant->m3u8;
++	GST_INFO_OBJECT (stream->pad, "select_bitrate %"GST_TIME_FORMAT " %" GST_TIME_FORMAT, \
++      GST_TIME_ARGS(m3u8->discont_fragment_index[0]), GST_TIME_ARGS(hls_stream->playlist->sequence_position));
++
++    for(gint i=0; i<discont_num; i++)
++    {
++      if(m3u8->discont_fragment_index[i] == hls_stream->playlist->sequence_position
++	  ||(m3u8->discont_fragment_index[i] - hls_stream->playlist->sequence_position < stream->fragment.duration/2))
++	  {
++        return TRUE;
++	  }
++    }
++
++  }
++  return FALSE;
++}
++
++static gboolean
++gst_hls_demux_handle_discontinuity (GstAdaptiveDemuxStream * stream, GstHLSDemux *hlsdemux)
++{
++  gboolean changed = FALSE;
++  if(gst_hls_demux_is_discontinuity(stream, hlsdemux))
++  {
++    //discontinuity
++    GstAdaptiveDemux *adaptive_demux = GST_ADAPTIVE_DEMUX_CAST (hlsdemux);
++    g_return_val_if_fail (adaptive_demux->streams != NULL, FALSE);
++
++    GstHLSVariantStream * new_variant = hlsdemux->current_variant;
++    gst_hls_demux_set_current_variant (hlsdemux, new_variant);
++
++    GST_INFO_OBJECT (stream->pad, "switching discontinuity");
++    if (gst_hls_demux_update_playlist (hlsdemux, TRUE, NULL)) {
++      const gchar *main_uri;
++      gchar *uri;
++
++      uri = gst_m3u8_get_uri (new_variant->m3u8);
++      main_uri = gst_adaptive_demux_get_manifest_ref_uri (adaptive_demux);
++      gst_element_post_message (GST_ELEMENT_CAST (hlsdemux),
++        gst_message_new_element (GST_OBJECT_CAST (hlsdemux),
++            gst_structure_new (GST_ADAPTIVE_DEMUX_STATISTICS_MESSAGE_NAME,
++                "manifest-uri", G_TYPE_STRING,
++                main_uri, "uri", G_TYPE_STRING,
++                uri, "bitrate", G_TYPE_INT, new_variant->bandwidth, NULL)));
++      g_free (uri);
++      changed = TRUE;
++    } else {
++	  GST_INFO_OBJECT (hlsdemux, "discontinuity switch failed");
++    }
++
++    if (changed)
++    {
++      gst_hls_demux_setup_streams (GST_ADAPTIVE_DEMUX_CAST (hlsdemux));
++
++      GstAdaptiveDemux *demux = GST_ADAPTIVE_DEMUX_CAST (stream->demux);
++	  for (GList *iter = demux->next_streams; iter; iter = g_list_next (iter))
++	  {
++        GST_INFO_OBJECT (stream->pad, "set send_discontinuity_pos");
++		GstAdaptiveDemuxStream *s = iter->data;
++		s->send_discontinuity_pos = TRUE;
++	  }
++    }
++  }
++  return changed;
++}
++
+ static gboolean
+ gst_hls_demux_select_bitrate (GstAdaptiveDemuxStream * stream, guint64 bitrate)
+ {
+@@ -1156,6 +1329,12 @@ gst_hls_demux_select_bitrate (GstAdaptiveDemuxStream * stream, guint64 bitrate)
+   GstHLSDemux *hlsdemux = GST_HLS_DEMUX_CAST (stream->demux);
+   GstHLSDemuxStream *hls_stream = GST_HLS_DEMUX_STREAM_CAST (stream);
+ 
++  if(!gst_hls_demux_is_live (demux) && !G_UNLIKELY (demux->next_streams) && gst_hls_demux_handle_discontinuity(stream, hlsdemux))
++  {
++    GST_INFO_OBJECT (stream->pad, "handle discontinuity over.");
++    return TRUE;
++  }
++
+   gboolean changed = FALSE;
+ 
+   GST_M3U8_CLIENT_LOCK (hlsdemux->client);
+diff --git a/ext/hls/m3u8.c b/ext/hls/m3u8.c
+index 679e288..0ab163c 100644
+--- a/ext/hls/m3u8.c
++++ b/ext/hls/m3u8.c
+@@ -50,6 +50,9 @@ gst_m3u8_new (void)
+   m3u8->highest_sequence_number = -1;
+   m3u8->duration = GST_CLOCK_TIME_NONE;
+ 
++  m3u8->discont_num = 0;
++  for(gint i=0; i<5; i++)
++    m3u8->discont_fragment_index[i] = 0;
+   g_mutex_init (&m3u8->lock);
+   m3u8->ref_count = 1;
+ 
+@@ -535,6 +538,8 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+   /* By default, allow caching */
+   self->allowcache = TRUE;
+ 
++  self->discont_num=0;
++
+   duration = 0;
+   title = NULL;
+   data += 7;
+@@ -646,6 +651,14 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+       } else if (g_str_has_prefix (data_ext_x, "DISCONTINUITY")) {
+         self->discont_sequence++;
+         discontinuity = TRUE;
++        GstClockTime dur=0;
++        for (GSList* iterator = self->files; iterator; iterator = iterator->next)
++        {
++          GstM3U8MediaFile *file = iterator->data;
++          dur += file->duration;
++        }
++        self->discont_fragment_index[self->discont_num++]=dur;
++        GST_WARNING ("Got DISCONTINUITY, fragment dur is %" GST_TIME_FORMAT ", self->discont_num:%d", dur, self->discont_num);
+       } else if (g_str_has_prefix (data_ext_x, "PROGRAM-DATE-TIME:")) {
+         /* <YYYY-MM-DDThh:mm:ssZ> */
+         GST_DEBUG ("FIXME parse date");
+diff --git a/ext/hls/m3u8.h b/ext/hls/m3u8.h
+index a7af61f..6fd2d84 100644
+--- a/ext/hls/m3u8.h
++++ b/ext/hls/m3u8.h
+@@ -77,6 +77,9 @@ struct _GstM3U8
+   GstClockTime duration;              /* cached total duration */
+   gint discont_sequence;              /* currently expected EXT-X-DISCONTINUITY-SEQUENCE */
+ 
++  /* EXT-X-DISCONTINUITY */
++  gint discont_num;
++  GstClockTime discont_fragment_index[5];
+   /*< private > */
+   gchar *last_data;
+   GMutex lock;
+diff --git a/gst-libs/gst/adaptivedemux/gstadaptivedemux.c b/gst-libs/gst/adaptivedemux/gstadaptivedemux.c
+index 11d996a..e71bd75 100644
+--- a/gst-libs/gst/adaptivedemux/gstadaptivedemux.c
++++ b/gst-libs/gst/adaptivedemux/gstadaptivedemux.c
+@@ -2520,6 +2520,16 @@ gst_adaptive_demux_stream_push_buffer (GstAdaptiveDemuxStream * stream,
+ 
+   GST_MANIFEST_UNLOCK (demux);
+ 
++  if (!gst_adaptive_demux_is_live (demux) && discont && stream->send_discontinuity_pos)
++  {
++	  stream->send_discontinuity_pos = FALSE;
++      GstStructure *s = gst_structure_new_empty ("AML-DISCONTINUITY-BASE-POS");
++      GstEvent *event = gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM_STICKY, s);
++      GST_DEBUG_OBJECT(stream->pad, "Send AML-DISCONTINUITY-BASE-POS Event");
++      gst_pad_push_event (stream->pad, event);
++  }
++
++
+   /* Do not push events or buffers holding the manifest lock */
+   if (G_UNLIKELY (pending_caps)) {
+     GST_DEBUG_OBJECT (stream->pad, "Setting pending caps: %" GST_PTR_FORMAT,
+@@ -3637,6 +3647,149 @@ no_url_error:
+   }
+ }
+ 
++
++static gboolean
++gst_adaptive_demux_stream_compare_segment_pos (GstAdaptiveDemuxStream *s1, GstAdaptiveDemuxStream *s2)
++{
++  GST_LOG_OBJECT (s1->pad, "audio stream->segment.position:%" GST_TIME_FORMAT " s2->segment.position:%" GST_TIME_FORMAT " duration:%" GST_TIME_FORMAT, \
++    GST_TIME_ARGS(s1->segment.position), GST_TIME_ARGS(s2->segment.position), GST_TIME_ARGS(s1->fragment.duration/2));
++
++  if(s1->segment.position == -1 || s2->segment.position == -1 || s1->fragment.duration == -1 || s2->fragment.duration == -1 )
++  {
++    return TRUE;
++  }
++
++  return  ((s1->segment.position > s2->segment.position) ? \
++               (s1->segment.position - s2->segment.position < s1->fragment.duration/2) : \
++               (s2->segment.position - s1->segment.position < s1->fragment.duration/2));
++}
++
++static gboolean
++gst_adaptive_demux_stream_is_download_avsync (GstAdaptiveDemux * demux,
++    GstAdaptiveDemuxStream * stream)
++{
++  if(gst_adaptive_demux_is_live (demux))
++  {
++    return TRUE;
++  }
++  
++  if(-1 == stream->segment.position)
++  {
++    return TRUE;
++  }
++
++  GstAdaptiveDemuxClass *klass = GST_ADAPTIVE_DEMUX_GET_CLASS (demux);
++  if(!klass->stream_get_media_type)
++  {
++    return TRUE;
++  }
++
++  //just one stream, no need to check sync
++  if(1 == g_slist_length(demux->streams))
++  {
++    return TRUE;
++  }
++  
++  GstAdaptiveMediaType media_type = klass->stream_get_media_type(stream);
++  if(GST_ADAPTIVE_MEDIA_TYPE_VIDEO == media_type || GST_ADAPTIVE_MEDIA_TYPE_AUDIO == media_type){
++	gboolean ret = TRUE;
++    for (GList *iter = demux->streams; g_list_next (iter); iter = g_list_next (iter))
++    {
++	  GstAdaptiveDemuxStream *s1 = iter->data;
++	  GstAdaptiveDemuxStream *s2 = g_list_next(iter)->data;
++	  if ((GST_ADAPTIVE_MEDIA_TYPE_VIDEO == klass->stream_get_media_type(s1) && GST_ADAPTIVE_MEDIA_TYPE_AUDIO == klass->stream_get_media_type(s2))
++		      || (GST_ADAPTIVE_MEDIA_TYPE_AUDIO == klass->stream_get_media_type(s1) && GST_ADAPTIVE_MEDIA_TYPE_VIDEO == klass->stream_get_media_type(s2)))
++	  {
++	    ret &= gst_adaptive_demux_stream_compare_segment_pos(s1, s2);
++	  }
++	  
++    }
++	return ret;
++  }
++
++  return TRUE;
++}
++
++static gboolean
++gst_adaptive_demux_stream_download_sync (GstAdaptiveDemuxStream * stream)
++{
++  GstAdaptiveDemux *demux = stream->demux;
++  GST_LOG_OBJECT (stream->pad, "check AV stream sync begin.");
++  
++  if(-1 == stream->segment.position)
++  {
++	  GST_LOG_OBJECT (stream->pad, "position is invalid, return.");
++	  return TRUE;
++  }
++  
++  GstAdaptiveDemuxClass *klass = GST_ADAPTIVE_DEMUX_GET_CLASS (demux);
++  if(klass->stream_get_media_type && !gst_adaptive_demux_is_live (demux))
++  {
++    GstAdaptiveMediaType media_type = klass->stream_get_media_type(stream);
++    if(GST_ADAPTIVE_MEDIA_TYPE_AUDIO == media_type)
++    {
++      GList *iter;
++      for (iter = demux->streams; iter; iter = g_list_next (iter))
++      {
++        GstAdaptiveDemuxStream *other = iter->data;
++        if (other != stream && GST_ADAPTIVE_MEDIA_TYPE_VIDEO == klass->stream_get_media_type(other))
++        {
++          GST_LOG_OBJECT (stream->pad, "waitting video stream, audio position:%" GST_TIME_FORMAT " video position:%" GST_TIME_FORMAT " video duration:%" GST_TIME_FORMAT, \
++              GST_TIME_ARGS(stream->segment.position), GST_TIME_ARGS(other->segment.position), GST_TIME_ARGS(stream->fragment.duration/2));
++
++          if (stream->segment.position > other->segment.position && \
++              stream->segment.position - other->segment.position > other->fragment.duration/2)
++          {
++            return FALSE;
++          }
++
++        }
++      }
++    }
++    else if(GST_ADAPTIVE_MEDIA_TYPE_VIDEO == media_type)
++    {
++	  GST_LOG_OBJECT (stream->pad, "video stream->segment.position:%" GST_TIME_FORMAT " duration:%" GST_TIME_FORMAT, \
++		  GST_TIME_ARGS(stream->segment.position), GST_TIME_ARGS(stream->fragment.duration/2));
++      /*GList *iter;
++      for (iter = demux->streams; iter; iter = g_list_next (iter))
++	  {
++        GstAdaptiveDemuxStream *other = iter->data;
++        if (other != stream && GST_ADAPTIVE_MEDIA_TYPE_AUDIO == klass->stream_get_media_type(other))
++        {
++          GST_LOG_OBJECT (stream->pad, "loopwaitttt video stream->segment.position:%" GST_TIME_FORMAT " other->segment.position:%" GST_TIME_FORMAT " duration:%" GST_TIME_FORMAT, \
++              GST_TIME_ARGS(stream->segment.position), GST_TIME_ARGS(other->segment.position), GST_TIME_ARGS(stream->fragment.duration/2));
++        }
++      }*/
++    }
++    GST_LOG_OBJECT (stream->pad, "check AV stream sync end");
++
++  }
++  return TRUE;
++}
++
++static gboolean
++gst_adaptive_demux_stream_is_discontinuity (GstAdaptiveDemuxStream * stream)
++{
++  if(NULL == stream)
++  {
++    return FALSE;
++  }
++
++  GstAdaptiveDemux *demux = stream->demux;
++  if(NULL == demux)
++  {
++    return FALSE;
++  }
++
++  gint num = 0;
++  GstAdaptiveDemuxClass *klass = GST_ADAPTIVE_DEMUX_GET_CLASS (demux);
++  if(klass->stream_get_discontinuity_num && !gst_adaptive_demux_is_live (demux))
++  {
++    num = klass->stream_get_discontinuity_num(stream);
++  }
++  return num;
++}
++
+ /* this function will take the manifest_lock and will keep it until the end.
+  * It will release it temporarily only when going to sleep.
+  * Every time it takes the manifest_lock, it will check for cancelled condition
+@@ -3682,6 +3835,15 @@ gst_adaptive_demux_stream_download_loop (GstAdaptiveDemuxStream * stream)
+   }
+   GST_ADAPTIVE_DEMUX_SEGMENT_UNLOCK (demux);
+ 
++  //check download sync
++  if(!gst_adaptive_demux_is_live (demux) &&
++     gst_adaptive_demux_stream_is_discontinuity(stream) &&
++     !gst_adaptive_demux_stream_download_sync(stream))
++  {
++    //GST_LOG_OBJECT (stream->pad, "av are not sync, go to loop end");
++    goto end;
++  }
++
+   /* Cleanup old streams if any */
+   if (G_UNLIKELY (demux->priv->old_streams != NULL)) {
+     GList *old_streams = demux->priv->old_streams;
+@@ -4308,6 +4470,8 @@ gst_adaptive_demux_stream_advance_fragment_unlocked (GstAdaptiveDemux * demux,
+             ret = (GstFlowReturn) GST_ADAPTIVE_DEMUX_FLOW_SWITCH;
+         }
+         demux->priv->isSeeking = FALSE;
++        //check download avsync
++        gboolean change_sync=gst_adaptive_demux_stream_is_download_avsync(demux, stream);
+ 
+         /* the subclass might want to switch pads */
+         if (G_UNLIKELY (demux->next_streams)) {
+@@ -4322,6 +4486,7 @@ gst_adaptive_demux_stream_advance_fragment_unlocked (GstAdaptiveDemux * demux,
+                 /* Only expose if all streams are now cancelled or finished downloading */
+                 GstAdaptiveDemuxStream *other = iter->data;
+                 if (other != stream) {
++			GST_LOG_OBJECT (stream->pad, "other->cancelled:%d, other->download_finished:%d", other->cancelled, other->download_finished);
+                 g_mutex_lock (&other->fragment_download_lock);
+                 can_expose &= (other->cancelled == TRUE
+                     || other->download_finished == TRUE);
+@@ -4329,7 +4494,9 @@ gst_adaptive_demux_stream_advance_fragment_unlocked (GstAdaptiveDemux * demux,
+                 }
+             }
+ 
+-            if (can_expose) {
++      GST_LOG_OBJECT (stream->pad, "can_expose:%d, change_sync:%d", can_expose, change_sync);
++
++      if (can_expose && change_sync) {
+                 GST_DEBUG_OBJECT (demux, "Subclass wants new pads "
+                     "to do bitrate switching");
+                 gst_adaptive_demux_prepare_streams (demux, FALSE);
+diff --git a/gst-libs/gst/adaptivedemux/gstadaptivedemux.h b/gst-libs/gst/adaptivedemux/gstadaptivedemux.h
+index 9de70da..233b7c9 100644
+--- a/gst-libs/gst/adaptivedemux/gstadaptivedemux.h
++++ b/gst-libs/gst/adaptivedemux/gstadaptivedemux.h
+@@ -87,6 +87,15 @@ G_BEGIN_DECLS
+ /* DEPRECATED */
+ #define GST_ADAPTIVE_DEMUX_FLOW_END_OF_FRAGMENT GST_FLOW_CUSTOM_SUCCESS_1
+ 
++typedef enum
++{
++  GST_ADAPTIVE_MEDIA_TYPE_INVALID = -1,
++  GST_ADAPTIVE_MEDIA_TYPE_AUDIO,
++  GST_ADAPTIVE_MEDIA_TYPE_VIDEO,
++  GST_ADAPTIVE_N_MEDIA_TYPES
++} GstAdaptiveMediaType;
++
++
+ typedef struct _GstAdaptiveDemuxStreamFragment GstAdaptiveDemuxStreamFragment;
+ typedef struct _GstAdaptiveDemuxStream GstAdaptiveDemuxStream;
+ typedef struct _GstAdaptiveDemux GstAdaptiveDemux;
+@@ -145,6 +154,7 @@ struct _GstAdaptiveDemuxStream
+ 
+   gboolean restart_download;
+   gboolean discont;
++  gboolean send_discontinuity_pos;
+ 
+   gboolean downloading_first_buffer;
+   gboolean downloading_header;
+@@ -397,6 +407,8 @@ struct _GstAdaptiveDemuxClass
+    */
+   gint64        (*stream_get_fragment_waiting_time) (GstAdaptiveDemuxStream * stream);
+ 
++  GstAdaptiveMediaType        (*stream_get_media_type) (GstAdaptiveDemuxStream * stream);
++  gint        (*stream_get_discontinuity_num) (GstAdaptiveDemuxStream * stream);
+   /**
+    * start_fragment:
+    * @demux: #GstAdaptiveDemux
+-- 
+2.25.1
+

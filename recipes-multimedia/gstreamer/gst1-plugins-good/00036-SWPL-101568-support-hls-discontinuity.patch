@@ -1,0 +1,93 @@
+From 018231a53a8827ee8084aefb0154323e71dcb8b1 Mon Sep 17 00:00:00 2001
+From: "kaiqiang.xiang" <kaiqiang.xiang@amlogic.com>
+Date: Mon, 12 Jun 2023 13:32:57 +0000
+Subject: [PATCH] support hls discontinuity
+
+---
+ gst/isomp4/qtdemux.c | 30 ++++++++++++++++++++++++++++--
+ gst/isomp4/qtdemux.h |  3 +++
+ 2 files changed, 31 insertions(+), 2 deletions(-)
+
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index 85f1ceb..0d3de8a 100644
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -681,6 +681,8 @@ gst_qtdemux_init (GstQTDemux * qtdemux)
+   GST_OBJECT_FLAG_SET (qtdemux, GST_ELEMENT_FLAG_INDEXABLE);
+ 
+   gst_qtdemux_reset (qtdemux, TRUE);
++  qtdemux->cal_discontinuity_pos = FALSE;
++  qtdemux->discontinuity_base_pos = 0;
+ }
+ 
+ static void
+@@ -2516,6 +2518,19 @@ gst_qtdemux_handle_sink_event (GstPad * sinkpad, GstObject * parent,
+ 
+       goto drop;
+     }
++    case GST_EVENT_CUSTOM_DOWNSTREAM_STICKY:
++    {
++      if(gst_event_has_name(event, "AML-DISCONTINUITY-BASE-POS"))
++      {
++        GST_DEBUG_OBJECT (demux, "Handle event AML-DISCONTINUITY-BASE-POS");
++        demux->cal_discontinuity_pos = TRUE;
++
++        res = TRUE;
++        gst_event_unref(event);
++        goto drop;
++      }
++      break;
++    }
+     default:
+       break;
+   }
+@@ -5846,12 +5861,18 @@ gst_qtdemux_push_buffer (GstQTDemux * qtdemux, QtDemuxStream * stream,
+     GST_BUFFER_FLAG_UNSET (buf, GST_BUFFER_FLAG_DISCONT);
+   }
+ 
++  if(qtdemux->discontinuity_base_pos != 0 && GST_BUFFER_PTS (buf) < qtdemux->discontinuity_base_pos)
++  {
++    GST_BUFFER_PTS (buf) = GST_BUFFER_PTS (buf) + qtdemux->discontinuity_base_pos;
++    GST_BUFFER_DTS (buf) = GST_BUFFER_DTS (buf) + qtdemux->discontinuity_base_pos;
++  }
++
+   GST_LOG_OBJECT (qtdemux,
+       "Pushing buffer with dts %" GST_TIME_FORMAT ", pts %" GST_TIME_FORMAT
+-      ", duration %" GST_TIME_FORMAT " on pad %s",
++      ", duration %" GST_TIME_FORMAT " on pad %s" ", discontinuity_base_pos %" GST_TIME_FORMAT,
+       GST_TIME_ARGS (GST_BUFFER_DTS (buf)),
+       GST_TIME_ARGS (GST_BUFFER_PTS (buf)),
+-      GST_TIME_ARGS (GST_BUFFER_DURATION (buf)), GST_PAD_NAME (stream->pad));
++      GST_TIME_ARGS (GST_BUFFER_DURATION (buf)), GST_PAD_NAME (stream->pad), GST_TIME_ARGS (qtdemux->discontinuity_base_pos));
+ 
+   if (stream->protected && stream->protection_scheme_type == FOURCC_cenc) {
+     GstStructure *crypto_info;
+@@ -7188,6 +7209,11 @@ gst_qtdemux_process_adapter (GstQTDemux * demux, gboolean force)
+                 || prev_offset > demux->fragment_start_offset) {
+               demux->fragment_start_offset = prev_offset;
+               demux->fragment_start = prev_pts;
++              if(demux->cal_discontinuity_pos)
++              {
++                demux->discontinuity_base_pos = demux->fragment_start;
++              }
++
+               GST_DEBUG_OBJECT (demux,
+                   "New fragment start found at: %" G_GUINT64_FORMAT " : %"
+                   GST_TIME_FORMAT, demux->fragment_start_offset,
+diff --git a/gst/isomp4/qtdemux.h b/gst/isomp4/qtdemux.h
+index 05ea7c7..0d9d477 100644
+--- a/gst/isomp4/qtdemux.h
++++ b/gst/isomp4/qtdemux.h
+@@ -118,6 +118,9 @@ struct _GstQTDemux {
+   /* configured playback region */
+   GstSegment segment;
+ 
++  gboolean cal_discontinuity_pos;
++  GstClockTime discontinuity_base_pos;
++
+   /* PUSH-BASED only: If the initial segment event, or a segment consequence of
+    * a seek or incoming TIME segment from upstream needs to be pushed. This
+    * variable is used instead of pushing the event directly because at that
+-- 
+2.25.1
+

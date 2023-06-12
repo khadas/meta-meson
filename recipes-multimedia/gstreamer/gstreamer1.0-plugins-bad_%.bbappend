@@ -43,6 +43,7 @@ SRC_URI:append = "file://0040-live-app-ts-streamer-pcr-error.patch "
 SRC_URI:append = "file://0041-tsdemux-reset-base-pcrtime-error.patch "
 SRC_URI:append = "file://0042-modify-ts-demux-to-parse-dv-parameter.patch "
 SRC_URI_append = "file://0043-SWPL-110753_improve_tsdemux_seek.patch "
+SRC_URI_append = "file://0044-SWPL-101568-support-hls-discontinuity.patch "
 
 DEPENDS += "gst-aml-drmbufferpool-plugins"
 
