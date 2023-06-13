@@ -1,0 +1,30 @@
+From f9b00904ca19f5e4ac680b8b37d18ab690e3266a Mon Sep 17 00:00:00 2001
+From: "kaiqiang.xiang" <kaiqiang.xiang@amlogic.com>
+Date: Tue, 13 Jun 2023 05:55:49 +0000
+Subject: [PATCH] set base_pcr when valid pcr after frame packets
+
+---
+ gst/mpegtsdemux/mpegtspacketizer.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
+index 1c1a295..151717d 100644
+--- a/gst/mpegtsdemux/mpegtspacketizer.c
++++ b/gst/mpegtsdemux/mpegtspacketizer.c
+@@ -2345,6 +2345,13 @@ mpegts_packetizer_pts_to_ts (MpegTSPacketizer2 * packetizer,
+     else
+       GST_WARNING ("No groups, can't calculate timestamp");
+   } else {
++    //case: valid pcr after frame
++    if (!GST_CLOCK_TIME_IS_VALID (pcrtable->base_pcrtime) && GST_CLOCK_TIME_IS_VALID (pts) && pcr_pid != 0x1fff && \
++        !GST_CLOCK_TIME_IS_VALID (pcrtable->base_time) && GST_CLOCK_TIME_IS_VALID (packetizer->last_in_time)) {
++      GST_WARNING ("set pcr base time %" GST_TIME_FORMAT " base time %" GST_TIME_FORMAT, GST_TIME_ARGS (pts), GST_TIME_ARGS (packetizer->last_in_time));
++      pcrtable->base_time = packetizer->last_in_time;
++      pcrtable->base_pcrtime = pts;
++    }
+     //AML MOD FLOW
+     GST_WARNING ("%d, Not enough information to calculate proper timestamp use origin pts %" GST_TIME_FORMAT, packetizer->protect_pts, GST_TIME_ARGS (pts));
+     if(packetizer->protect_pts)
+-- 
+2.25.1
+
