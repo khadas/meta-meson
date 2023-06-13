@@ -10,7 +10,6 @@ INITSCRIPT_NAME = "subtitleserver"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
 
 DEPENDS = " libbinder liblog aml-zvbi libtinyxml2 cairo aml-mediahal-sdk"
-DEPENDS += " ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'directfb', ' virtual/libgles2', d)}"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_subtitleserver.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 SRCREV ?= "${AUTOREV}"
@@ -20,19 +19,27 @@ SRC_URI +="file://subtitleserver.init"
 
 S="${WORKDIR}/git"
 
-EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -DUSE_DFB=ON', ' -DUSE_WAYLAND=ON', d)}"
 EXTRA_OECMAKE += " \
     -DMEDIASYNC_FOR_SUBTITLE=ON \
 "
-
-TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -I${STAGING_INCDIR}/directfb', ' ', d)}"
-TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' -DMEDIASYNC_FOR_SUBTITLE  -DUSE_DFB', ' -DMEDIASYNC_FOR_SUBTITLE -DUSE_WAYLAND', d)}"
 
 RDEPENDS:${PN} = " liblog libbinder aml-zvbi  libtinyxml2 cairo aml-mediahal-sdk"
 
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
               TARGET_DIR=${D} \
              "
+
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'aml-SUB-FB', '', \
+               bb.utils.contains('DISTRO_FEATURES', 'aml-SUB-DFB', 'directfb', 'virtual/libgles2', d), d)}"
+
+
+EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'aml-SUB-FB', '-DUSE_FB=ON', \
+               bb.utils.contains('DISTRO_FEATURES', 'aml-SUB-DFB', '-DUSE_DFB=ON', '-DUSE_WAYLAND=ON', d), d)}"
+
+
+TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'aml-SUB-FB', '-DMEDIASYNC_FOR_SUBTITLE -DUSE_FB', \
+               bb.utils.contains('DISTRO_FEATURES', 'aml-SUB-DFB', '-DMEDIASYNC_FOR_SUBTITLE -DUSE_DFB', '-DMEDIASYNC_FOR_SUBTITLE -DUSE_WAYLAND', d), d)}"
+
 
 #do_compile() {
 #    cd ${S}
