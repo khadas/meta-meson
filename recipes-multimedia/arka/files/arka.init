@@ -1,4 +1,8 @@
 #!/bin/sh
+export iptv_streamtype=0
+export TSPLAYER_PIPELINE=1
+export TSPLAYER_LOW_MEM=1
+export TSPLAYER_SUBTILTEFLAG=2
 
 # Starts arka service.
 start() {
