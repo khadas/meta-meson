@@ -37,6 +37,7 @@ ADD_VENDOR_AVB_DM_VERITY = " --include_descriptors_from_image ${DEPLOY_DIR_IMAGE
 CHAIN_SYSTEM_AVB_DM_VERITY = " --chain_partition ${AVB_DM_VERITY_SYSTEM_PARTITION_NAME}:${DEVICE_PROPERTY_SYSTEM_ROLLBACK_LOCATION}:${STAGING_DIR_NATIVE}/${sysconfdir_native}/${AVB_DM_VERITY_SYSTEM_PARTITION_PUBKEY} "
 CHAIN_VENDOR_AVB_DM_VERITY = " --chain_partition ${AVB_DM_VERITY_VENDOR_PARTITION_NAME}:${DEVICE_PROPERTY_VENDOR_ROLLBACK_LOCATION}:${STAGING_DIR_NATIVE}/${sysconfdir_native}/${AVB_DM_VERITY_VENDOR_PARTITION_PUBKEY} "
 
+INCLUDE_VENDOR = "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'true', 'false', d)}"
 CHAIN_RECOVERY = "${@bb.utils.contains('DISTRO_FEATURES', 'AVB_recovery_partition', 'true', 'false', d)}"
 
 CHAIN_RECOVERY_CMD = " --chain_partition recovery:${DEVICE_PROPERTY_RECOVERY_ROLLBACK_LOCATION}:${STAGING_DIR_NATIVE}/${sysconfdir_native}/${AVB_RECOVERY_PARTITION_PUBKEY}"
@@ -66,9 +67,17 @@ do_compile() {
 
     if [ "${DM_VERITY_SUPPORT}" = "true" ]; then
         if [ "${CHAINED_PARTITION_SUPPORT}" = "true" ]; then
-            avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${CHAIN_SYSTEM_AVB_DM_VERITY} ${CHAIN_VENDOR_AVB_DM_VERITY} ${VBMETA_ROLLBACK_INDEX}
+            if [ "${INCLUDE_VENDOR}" = "true" ]; then
+                avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${CHAIN_SYSTEM_AVB_DM_VERITY} ${CHAIN_VENDOR_AVB_DM_VERITY} ${VBMETA_ROLLBACK_INDEX}
+            else
+                avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${CHAIN_SYSTEM_AVB_DM_VERITY} ${VBMETA_ROLLBACK_INDEX}
+            fi
         else
-            avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${ADD_SYSTEM_AVB_DM_VERITY} ${ADD_VENDOR_AVB_DM_VERITY} ${VBMETA_ROLLBACK_INDEX}
+            if [ "${INCLUDE_VENDOR}" = "true" ]; then
+                avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${ADD_SYSTEM_AVB_DM_VERITY} ${ADD_VENDOR_AVB_DM_VERITY} ${VBMETA_ROLLBACK_INDEX}
+            else
+                avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${ADD_SYSTEM_AVB_DM_VERITY} ${VBMETA_ROLLBACK_INDEX}
+            fi
         fi
     else
             avbtool.py make_vbmeta_image --output ${DEPLOY_DIR_IMAGE}/vbmeta.img ${SIGN_VBMETA} ${DOLBY_PROP} ${ADD_KERNEL_AVB} ${RECOVERY_CMD} ${VBMETA_ROLLBACK_INDEX}

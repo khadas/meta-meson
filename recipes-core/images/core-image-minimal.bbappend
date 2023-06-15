@@ -123,7 +123,7 @@ deploy_verity_hash() {
     fi
 
     if [ -f ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env ]; then
-        if [ "${AVB_DM_VERITY}" != "true" ]; then
+        if [ "${AVB_DM_VERITY}" != "true" && "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'true', 'false', d)}" == "true" ]; then
             bbnote " install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
                 ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env"
             install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \

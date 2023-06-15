@@ -12,7 +12,8 @@ MOUNT="/bin/mount"
 UMOUNT="/bin/umount"
 FIRMWARE=""
 VENDOR_DEVICE="/dev/vendor"
-DM_VERITY_STATUS="disabled"
+DM_VERITY_STATUS_SYSTEM="disabled"
+DM_VERITY_STATUS_VENDOR="disabled"
 DM_DEV_COUNT=0
 ACTIVE_SLOT=""
 root_fstype="ext4"
@@ -205,7 +206,7 @@ boot_root() {
     mount -n --move /sys ${ROOT_MOUNT}/sys
     mount -n --move /dev ${ROOT_MOUNT}/dev
 
-    if [ "$DM_VERITY_STATUS" = "disabled" ] && [ "${ACTIVE_SLOT}" != "" ]; then
+    if [ "$DM_VERITY_STATUS_VENDOR" = "disabled" ] && [ "${ACTIVE_SLOT}" != "" ]; then
         slot=$(cat ${ROOT_MOUNT}/etc/fstab | grep -E "/dev/vendor" | awk '{print $1}' | cut -c 12-)
         if [ "${ACTIVE_SLOT}" != "${slot}" ]; then
             echo "switch vendor${slot} to vendor${ACTIVE_SLOT}"
@@ -550,15 +551,27 @@ dm_verity_setup() {
             else
                 echo "skip mounting ${2}"
             fi
-            DM_VERITY_STATUS="enabled"
+            if [ "$1" = "system" ]; then
+                DM_VERITY_STATUS_SYSTEM="enabled"
+            elif [ "$1" = "vendor" ]; then
+                DM_VERITY_STATUS_VENDOR="enabled"
+            fi
             DM_DEV_COUNT=$((DM_DEV_COUNT+1))
         else
             echo "dm-verity fails with return code $?"
-            DM_VERITY_STATUS="disabled"
+            if [ "$1" = "system" ]; then
+                DM_VERITY_STATUS_SYSTEM="disabled"
+            elif [ "$1" = "vendor" ]; then
+                DM_VERITY_STATUS_VENDOR="disabled"
+            fi
         fi
     else
         echo "Cannot find root hash in initramfs"
-        DM_VERITY_STATUS="disabled"
+        if [ "$1" = "system" ]; then
+            DM_VERITY_STATUS_SYSTEM="disabled"
+        elif [ "$1" = "vendor" ]; then
+            DM_VERITY_STATUS_VENDOR="disabled"
+        fi
     fi
 }
 
@@ -585,8 +598,8 @@ mount_and_boot() {
         if [ "$ROOT_DEVICE" != "" ]; then
             dm_verity_setup system ${ROOT_DEVICE} ${ROOT_MOUNT}
             dm_verity_setup vendor ${VENDOR_DEVICE}${ACTIVE_SLOT} none
-            echo "dm-verity is $DM_VERITY_STATUS"
-            if [ "$DM_VERITY_STATUS" = "disabled" ]; then
+            echo "dm-verity for system is $DM_VERITY_STATUS_SYSTEM"
+            if [ "$DM_VERITY_STATUS_SYSTEM" = "disabled" ]; then
                 if ! mount -o ro,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
                     fatal "Could not mount rootfs device"
                 fi
@@ -712,8 +725,8 @@ squashfs_rootfs_mount()
         dm_verity_setup vendor ${VENDOR_DEVICE} none
     fi
 
-    echo "dm-verity is $DM_VERITY_STATUS"
-    if [ "$DM_VERITY_STATUS" = "disabled" ]; then
+    echo "dm-verity for system is $DM_VERITY_STATUS_SYSTEM"
+    if [ "$DM_VERITY_STATUS_SYSTEM" = "disabled" ]; then
         if ! mount -o ro,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
             fatal "Could not mount $ROOT_DEVICE"
         fi

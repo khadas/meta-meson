@@ -193,3 +193,11 @@ process_for_read_only_rootfs(){
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '', 'process_for_read_only_rootfs; ', d)}"
+
+inherit avb-dm-verity
+# The following is needed only if chained
+AVB_DMVERITY_SIGNINING_KEY = "system_rsa2048.pem"
+AVB_DMVERITY_SIGNINING_ALGORITHM = "SHA256_RSA2048"
+AVB_DMVERITY_PARTITION_SIZE = "${DEVICE_PROPERTY_SYSTEM_PARTITION_SIZE}"
+AVB_DMVERITY_ROLLBACK_INDEX = "${DEVICE_PROPERTY_SYSTEM_ROLLBACK_INDEX}"
+AVB_DM_VERITY_PARTITION_NAME = "system"
