@@ -58,9 +58,8 @@ MEDIA_CONFIGS = " \
                  CONFIG_AMLOGIC_MEDIA_VDEC_AV1=m \
                  CONFIG_AMLOGIC_MEDIA_ENHANCEMENT_DOLBYVISION=y \
                  CONFIG_AMLOGIC_MEDIA_GE2D=y \
+                 CONFIG_AMLOGIC_MEDIA_V4L_DEC=y \
                  "
-
-MEDIA_CONFIGS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '', 'CONFIG_AMLOGIC_MEDIA_V4L_DEC=y', d)}"
 
 MEDIA_CONFIGS:append:t3 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
@@ -75,6 +74,13 @@ MEDIA_CONFIGS:append:sc2 = "\
                  "
 MEDIA_CONFIGS:append:t5d = "\
                  CONFIG_AMLOGIC_HW_DEMUX=m \
+                 "
+
+MEDIA_CONFIGS:bf201 = " \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_MPEG2_MULTI=m \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_H264_MULTI=m \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_H265=m \
+                 CONFIG_AMLOGIC_MEDIA_GE2D=y \
                  "
 
 S = "${WORKDIR}/git"
