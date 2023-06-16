@@ -8,7 +8,6 @@ SRCREV ?= "${AUTOREV}"
 DEPENDS += "libdrm udev"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/libdrm_amlogic;protocol=${AML_GIT_PROTOCOL};branch=master;"
-
 #For common patches
 #SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/libdrm_amlogic')}"
 
@@ -46,6 +45,7 @@ do_install() {
   install -m 0644 ${S}/meson_drm_display.h ${D}${includedir}/libdrm_meson
   install -m 0644 ${S}/meson_drm_event.h ${D}${includedir}/libdrm_meson
   install -m 0644 ${S}/meson_drm_settings.h ${D}${includedir}/libdrm_meson
+  install -m 0644 ${S}/meson_drm_log.h ${D}${includedir}/libdrm_meson
 }
 
 FILES:${PN} = "${libdir}/*  ${bindir}/"
