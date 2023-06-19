@@ -4,6 +4,7 @@ After=binder.service
 
 [Service]
 User=root
+Environment="WAYLAND_DISPLAY=subtitle-overlay"
 ExecStart=/usr/bin/subtitleservice
 
 [Install]
