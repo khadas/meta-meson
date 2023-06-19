@@ -47,7 +47,9 @@ KBUILD_DEFCONFIG = "final_defconfig"
 DEPENDS += "elfutils-native"
 
 GKI_DEFCONFIG = "gki_defconfig"
-GKI_AMLGOIC_DEFCONFIG = "amlogic_gki.fragment"
+GKI_DEFCONFIG_kernel32 = "a32_base_defconfig"
+GKI_AMLOGIC_DEFCONFIG = "amlogic_gki.fragment"
+GKI_AMLOGIC_DEFCONFIG_kernel32 = "amlogic_a32.fragment"
 GKI10_DEFCONFIG = "amlogic_gki.10"
 GKIDEBUG_DEFCONFIG = "amlogic_gki.debug"
 GCC_DEFCONFIG = "amlogic_gcc64_deconfig"
@@ -93,8 +95,12 @@ do_kernel_metadata:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
 
     install -m 755 ${WORKDIR}/extra_modules_install.sh ${STAGING_KERNEL_DIR}/
-    rm -f ${GKI_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}
-    KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLGOIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI10_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKIDEBUG_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
+    rm -f ${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}
+    if [ "${ARCH}" = "arm" ]; then
+        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
+    else
+        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI10_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKIDEBUG_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
+    fi
 }
 
 do_compile_kernelmodules:prepend () {
