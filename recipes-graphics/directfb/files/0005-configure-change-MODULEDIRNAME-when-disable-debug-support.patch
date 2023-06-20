@@ -1,0 +1,26 @@
+From 4c984a643b0578775c34a881db04c5730a8da93b Mon Sep 17 00:00:00 2001
+From: HenryLee <henry_1_lee@163.com>
+Date: Tue, 20 Jun 2023 20:48:40 +0800
+Subject: [PATCH] change MODULE_NAME_DIR value
+
+Signed-off-by: HenryLee <henry_1_lee@163.com>
+---
+ configure.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.in b/configure.in
+index 5dcdfb9..09580a6 100644
+--- a/configure.in
++++ b/configure.in
+@@ -2734,7 +2734,7 @@ AM_CONDITIONAL(BUILD_STATIC, test "$enable_static" = "yes")
+ 
+ # Change the module directory only for builds that don't *support* debug
+ if test "$enable_debug_support" = "no"; then
+-  MODULEDIRNAME=directfb-$BINARY_VERSION-pure
++  MODULEDIRNAME=directfb-$BINARY_VERSION
+ else
+   MODULEDIRNAME=directfb-$BINARY_VERSION
+ fi
+-- 
+2.25.1
+

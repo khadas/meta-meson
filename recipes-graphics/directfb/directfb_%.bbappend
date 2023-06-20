@@ -13,13 +13,29 @@ SRC_URI += "\
             file://directfbrc \
             "
 
-PACKAGECONFIG += "drmkms"
+# If disable-debug-support, MODULEDIRNAME will be set to directfb-$BINARY_VERSION-pure in
+# directfb configure which will not be installed to the final package, add a patch to sovle this problem
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', ' file://0005-configure-change-MODULEDIRNAME-when-disable-debug-support.patch', '', d)}"
+
+PACKAGECONFIG:remove = "linuxinput"
 
 EXTRA_OECONF:remove ="--with-gfxdrivers=none"
 
+# Disable these configuration for zapper 2k optimization
+DISABLED_CONFIG = "--disable-network \
+                   --disable-multicore \
+                   --disable-multi-kernel \
+                   --disable-video4linux \
+                   --disable-gif \
+                   --disable-debug-support \
+                   --without-tests \
+                   --without-tools \
+                  "
+
 EXTRA_OECONF += "--with-gfxdrivers=amlgfx \
                  --with-inputdrivers=linuxinput,ps2mouse,serialmouse \
-                 "
+                 ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '${DISABLED_CONFIG}', '', d)} \
+                "
 
 do_install:append() {
     install -d ${D}/etc/
