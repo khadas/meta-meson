@@ -31,4 +31,4 @@ DEVICE_PROPERTY_TV_PLATFORM ?= "${@bb.utils.contains('DISTRO_FEATURES', 'amlogic
 DEVICE_PROPERTY_USE_APPMANAGER ?= "${@bb.utils.contains('DISTRO_FEATURES', 'appmanager', 'true', 'false', d)}"
 DEVICE_PROPERTY_LAUNCHER_APPS ?= "localplayer, youtube, amazon, netflix, youtubetv, youtubekids"
 DEVICE_PROPERTY_STARTUP_APP ?= ""
-DEVICE_PROPERTY_LAUNCH_IN_BACKGROUND ?= "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', '', 'amazon', d)}"
+DEVICE_PROPERTY_LAUNCH_IN_BACKGROUND ?= "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', '', 'amazon, netflix', d)}"
