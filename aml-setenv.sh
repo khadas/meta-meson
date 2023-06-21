@@ -201,6 +201,13 @@ DISTRO_FEATURES:remove = " youtube amazon"
 EOF
     fi
 
+# In case project use arka prebuilt, not source code
+    if [ ! -d ${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/arka ]; then
+      cat >> conf/local.conf <<EOF
+DISTRO_FEATURES:remove = " arka"
+EOF
+    fi
+
     unset NEED_A6432_SUPPORT
     if [ -n "$(echo $TARGET_MACHINE | grep -- lib32)" ]; then
       NEED_A6432_SUPPORT=y
