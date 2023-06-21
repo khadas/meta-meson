@@ -113,7 +113,6 @@ ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'kernel_5
 install_kernel_modules() {
    if [ -f ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz ]; then
      tar -zxvf ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz -C ${IMAGE_ROOTFS}/
-     rm -rf ${IMAGE_ROOTFS}/lib/modules/*
    fi
 }
 
