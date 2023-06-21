@@ -170,6 +170,12 @@ do_aml_pack() {
                 cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand-${ROOTFS_TYPE}-avb ${DEPLOY_DIR_IMAGE}/sw-package-filelist
             fi
 
+            # For Zapper 2K
+            if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}; then
+                cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-nand-${ROOTFS_TYPE}-zapper-2k ${DEPLOY_DIR_IMAGE}/sw-description
+                cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand-${ROOTFS_TYPE}-zapper-2k ${DEPLOY_DIR_IMAGE}/sw-package-filelist
+            fi
+
             if ${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'false', 'true', d)}; then
                 sed -i 's/vendor.${ROOTFS_TYPE}//' ${DEPLOY_DIR_IMAGE}/sw-package-filelist
             fi

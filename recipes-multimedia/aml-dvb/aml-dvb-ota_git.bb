@@ -16,6 +16,7 @@ S="${WORKDIR}/git"
 
 CONFIG = "ap222.conf"
 CONFIG_aq2432 = "aq2432.conf"
+CONFIG_bf201 = "bf201.conf"
 
 FLAGS = "-DBIG_BUFFER"
 FLAGS_aq2432 = ""

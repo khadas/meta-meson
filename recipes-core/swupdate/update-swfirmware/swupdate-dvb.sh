@@ -9,6 +9,7 @@ mkdir -p $SWUPDATE_PATH
 OTA_URI=$1
 
 echo "$OTA_URI" > $SWUPDATE_PATH/enable-dvb-ota
+sync
 
 #urlmisc write "$OTA_URI"
 reboot recovery
