@@ -204,6 +204,24 @@ DISTRO_FEATURES:remove = " arka"
 EOF
     fi
 
+    if [ ! -d ${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus ]; then
+      cat >> conf/local.conf <<EOF
+DISTRO_FEATURES:remove = " disney"
+EOF
+    fi
+
+     if [ ! -d ${MESON_ROOT_PATH}/aml-comp/thirdparty/amazon-avpk ]; then
+      cat >> conf/local.conf <<EOF
+DISTRO_FEATURES:remove = " amazon"
+EOF
+    fi
+
+    if [ ! -d ${MESON_ROOT_PATH}/aml-comp/thirdparty/nf-sdk ]; then
+      cat >> conf/local.conf <<EOF
+DISTRO_FEATURES:remove = " netflix"
+EOF
+    fi
+
     unset NEED_A6432_SUPPORT
     if [ -n "$(echo $TARGET_MACHINE | grep -- lib32)" ]; then
       NEED_A6432_SUPPORT=y
