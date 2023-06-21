@@ -1,0 +1,27 @@
+From ebb4aec450d425d7064dfef5e6a3e19141771dac Mon Sep 17 00:00:00 2001
+From: "kaiqiang.xiang" <kaiqiang.xiang@amlogic.com>
+Date: Wed, 21 Jun 2023 07:28:03 +0000
+Subject: [PATCH] set inactive audio pad return ok
+
+---
+ gst/playback/gstplaybin2.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/gst/playback/gstplaybin2.c b/gst/playback/gstplaybin2.c
+index cec4b36..b293175 100644
+--- a/gst/playback/gstplaybin2.c
++++ b/gst/playback/gstplaybin2.c
+@@ -3584,6 +3584,10 @@ pad_added_cb (GstElement * decodebin, GstPad * pad, GstSourceGroup * group)
+        * it will most likely stop. */
+       if (combine->has_always_ok) {
+         gboolean always_ok = (decodebin == group->suburidecodebin);
++        /*fix change multi audio track freeze for a few seconds*/
++        if (combine->type == GST_PLAY_SINK_TYPE_AUDIO && decodebin == group->uridecodebin) {
++          always_ok = TRUE;
++        }
+         g_object_set (sinkpad, "always-ok", always_ok, NULL);
+       }
+       g_signal_emit (G_OBJECT (playbin), gst_play_bin_signals[signal], 0, NULL);
+-- 
+2.25.1
+

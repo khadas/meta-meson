@@ -9,6 +9,7 @@ SRC_URI:append = "file://0007-add-buf-clip-control-and-add-dump-es.patch "
 SRC_URI:append = "file://0008-support-check-buffers-count-and-time-queued-in-appsr.patch "
 SRC_URI:append = "file://0009-remove-gst-mp3-typefind-feature.patch "
 SRC_URI:append = "file://0010-SWPL-124738-support-amlsubtsink.patch "
+SRC_URI:append = "file://0011-SWPL-101600-set-inactive-audio-pad-return-ok.patch "
 
 DEPENDS += " libopus"
 RDEPENDS:${PN} += " libopus"
