@@ -14,7 +14,10 @@ do_install() {
     install -d ${D}/dev
     mknod -m 622 ${D}/dev/console c 5 1
 
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'true', 'false', d)}; then
+        sed -i '/mkdir -p \/var\/run/a\\techo 100 > /proc/sys/vm/watermark_scale_factor' ${D}/init
+        sed -i '/mkdir -p \/var\/run/a\\n\techo 3072 > \/proc\/sys\/vm\/min_free_kbytes' ${D}/init
+    elif ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
         sed -i '/mkdir -p \/var\/run/a\\techo 80 > /proc/sys/vm/watermark_scale_factor' ${D}/init
         sed -i '/mkdir -p \/var\/run/a\\n\techo 12288 > \/proc\/sys\/vm\/min_free_kbytes' ${D}/init
     fi
