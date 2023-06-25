@@ -38,7 +38,7 @@ EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'aml-SUB-FB', '-DUSE_F
 
 
 TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'aml-SUB-FB', '-DMEDIASYNC_FOR_SUBTITLE -DUSE_FB', \
-               bb.utils.contains('DISTRO_FEATURES', 'aml-SUB-DFB', '-DMEDIASYNC_FOR_SUBTITLE -DUSE_DFB', '-DMEDIASYNC_FOR_SUBTITLE -DUSE_WAYLAND', d), d)}"
+               bb.utils.contains('DISTRO_FEATURES', 'aml-SUB-DFB', '-DMEDIASYNC_FOR_SUBTITLE -DUSE_DFB -I${STAGING_INCDIR}/directfb', '-DMEDIASYNC_FOR_SUBTITLE -DUSE_WAYLAND', d), d)}"
 
 
 #do_compile() {
