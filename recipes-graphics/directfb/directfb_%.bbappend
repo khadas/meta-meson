@@ -3,6 +3,7 @@ SUMMARY = "Graphics abstraction library for the Linux Framebuffer Device"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += "\
+            file://0002-Extend-Customized-Key.patch \
             file://0006-add-amlgfx-for-directfb.patch \
             file://0007-fix-amlgfx-blend-op-error-issue.patch \
             file://0008-fix-osd-pan-display-wait-vsync-too-long-issue.patch \

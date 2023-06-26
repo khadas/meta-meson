@@ -1,0 +1,27 @@
+From 2fb11b3ed7f5bd59d7962e055f784a1c81e33dc9 Mon Sep 17 00:00:00 2001
+From: HenryLee <henry_1_lee@163.com>
+Date: Mon, 26 Jun 2023 16:02:02 +0800
+Subject: [PATCH] Add Customized Key
+
+Signed-off-by: HenryLee <henry_1_lee@163.com>
+---
+ inputdrivers/linux_input/linux_input.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/inputdrivers/linux_input/linux_input.c b/inputdrivers/linux_input/linux_input.c
+index 03deebc..0dc6cdb 100644
+--- a/inputdrivers/linux_input/linux_input.c
++++ b/inputdrivers/linux_input/linux_input.c
+@@ -1085,7 +1085,8 @@ get_device_info( int              fd,
+              on front panels - handle as remote control and make sure not to
+              treat normal (full key) keyboards likewise */
+           if (!num_keys)
+-               for (i=KEY_HOME; i<=KEY_PAGEDOWN; i++)
++               //for (i=KEY_HOME; i<=KEY_PAGEDOWN; i++)
++               for (i=KEY_HOME; i<=KEY_POWER; i++)
+                     if (test_bit( i, keybit ))
+                          num_ext_keys++;
+ 
+-- 
+2.25.1
+
