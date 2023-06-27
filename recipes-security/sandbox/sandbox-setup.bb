@@ -48,6 +48,14 @@ EOF
     fi
 }
 
+do_install:append:t5w() {
+    cat >> ${D}/${bindir}/sandbox-setup-before.wpeframework.sh <<EOF
+echo codec_mm.default_tvp_pool_size_0=130023424 > /sys/class/codec_mm/config
+echo codec_mm.default_tvp_pool_size_1=75497472 > /sys/class/codec_mm/config
+echo codec_mm.default_tvp_pool_size_2=50331648 > /sys/class/codec_mm/config
+EOF
+}
+
 FILES:${PN} += "${bindir}/*"
 FILES:${PN} += "${systemd_unitdir}/system/*"
 
