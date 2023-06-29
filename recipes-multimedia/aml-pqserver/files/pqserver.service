@@ -1,10 +1,10 @@
 [Unit]
 Description=PQ Server Startup
 After=binder.service
+RequiresMountsFor=/vendor/etc/tvconfig/pq
 
 [Service]
 User=root
-ExecStartPre=/usr/bin/pqserver_precheck.sh
 ExecStart=/usr/bin/pqservice
 
 [Install]

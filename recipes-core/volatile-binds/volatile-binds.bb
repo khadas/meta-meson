@@ -27,6 +27,7 @@ VOLATILE_BINDS .= "/data/etc/dropbear /etc/dropbear\n"
 VOLATILE_BINDS .= "/data/etc/wifi /etc/wifi\n"
 VOLATILE_BINDS .= "/data/etc/ld.so.cache /etc/ld.so.cache\n"
 VOLATILE_BINDS .= "/data/etc/systemd/system/sysinit.target.wants /etc/systemd/system/sysinit.target.wants\n"
+VOLATILE_BINDS .= "/data/vendor/etc/tvconfig/pq /vendor/etc/tvconfig/pq\n"
 
 EXTRA_BINDS = "/data/usr/bin/hdcp_tx22 /usr/bin/hdcp_tx22\\n"
 EXTRA_BINDS .= "/data/lib/firmware/hdcp/firmware.le /lib/firmware/hdcp/firmware.le\\n"
@@ -94,6 +95,11 @@ do_install:append() {
         sed -i '/Before=/ s/$/ systemd-rfkill\.service/g' ${D}${systemd_unitdir}/system/data-var-lib.service
     fi
     rm -f ${D}${systemd_unitdir}/system/var-lib.mount
+
+    if [ -f ${D}${systemd_unitdir}/system/data-vendor-etc-tvconfig-pq.service ]; then
+        # We want this mount to exist even if /vendor is mounted in read-write mode.
+        sed -i -e '/^ConditionPathIsReadWrite=!/d' ${D}${systemd_unitdir}/system/data-vendor-etc-tvconfig-pq.service
+    fi
 }
 
 do_install[dirs] = "${WORKDIR}"

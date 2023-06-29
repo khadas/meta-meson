@@ -8,7 +8,6 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 SRC_URI +="file://pqserver.service"
-SRC_URI +="file://pqserver_precheck.sh"
 
 DEPENDS = " libbinder liblog sqlite3 aml-audio-service "
 RDEPENDS:${PN} = " liblog libbinder aml-audio-service"
@@ -41,7 +40,6 @@ do_install() {
     install -m 0644 ${S}/client/include/*.h ${D}${includedir}
     if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
         install -D -m 0644 ${WORKDIR}/pqserver.service ${D}${systemd_unitdir}/system/pqserver.service
-        install -m 755 ${WORKDIR}/pqserver_precheck.sh ${D}/usr/bin/
     fi
 }
 SYSTEMD_SERVICE:${PN} = "pqserver.service "

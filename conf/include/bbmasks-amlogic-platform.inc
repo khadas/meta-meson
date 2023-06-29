@@ -16,7 +16,7 @@ BBMASK += "meta-aml-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbapp
 BBMASK += "meta-aml-netflix-nrdp6/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
 BBMASK += "meta-aml-netflix-nrdp6/recipes-netflix/recipes-graphics/rdkresidentapp/rdkresidentapp.bbappend"
 
-BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '|meta-meson/recipes-core/volatile-binds/volatile-binds.bb', '', d)}"
+#BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '|meta-meson/recipes-core/volatile-binds/volatile-binds.bb', '', d)}"
 
 BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'qt5', '', '|meta-meson/recipes-graphics/qt5/qtbase_%d.bbappend', d)}"
 BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '', '|meta-meson/recipes-security/refpolicy/refpolicy-%.bbappend', d)}"
