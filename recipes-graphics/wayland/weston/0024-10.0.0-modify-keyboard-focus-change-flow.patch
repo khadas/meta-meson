@@ -35,7 +35,7 @@ index 260d1f8..5292921 100755
  
  fail:
 diff --git a/libweston/input.c b/libweston/input.c
-index 6fb4bed..061eb13 100644
+index 6fb4bed..bc702e8 100644
 --- a/libweston/input.c
 +++ b/libweston/input.c
 @@ -1525,6 +1525,18 @@ send_enter_to_resource_list(struct wl_list *list,
@@ -46,18 +46,18 @@ index 6fb4bed..061eb13 100644
 +                        struct weston_surface *surface)
 +{
 +	bool enter = false;
-+	if (find_resource_for_surface(&keyboard->resource_list, surface) &&
++	if ( (find_resource_for_surface(&keyboard->resource_list, surface) 
++		|| find_resource_for_surface(&keyboard->focus_resource_list, surface)) &&
 +			keyboard->focus != surface ) {
 +		enter = true;
 +	}
-+	weston_log("\n %s %d, enter surface:%p, enter:%d\n", __FUNCTION__,__LINE__, surface, enter);
++	weston_log("\n %s %d, enter surface:%p, enter:%d222\n", __FUNCTION__,__LINE__, surface, enter);
 +	return enter;
 +}
-+
  WL_EXPORT void
  weston_keyboard_set_focus(struct weston_keyboard *keyboard,
  			  struct weston_surface *surface)
-@@ -1545,48 +1557,57 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
+@@ -1545,48 +1557,58 @@ weston_keyboard_set_focus(struct weston_keyboard *keyboard,
  
  	focus_resource_list = &keyboard->focus_resource_list;
  
@@ -66,21 +66,22 @@ index 6fb4bed..061eb13 100644
 -		wl_resource_for_each(resource, focus_resource_list) {
 -			wl_keyboard_send_leave(resource, serial,
 -					keyboard->focus->resource);
-+	if (weston_keyboard_need_enter_surface( keyboard, surface ) || surface == NULL) {
++	if (weston_keyboard_need_enter_surface( keyboard, surface ) || surface == NULL) 
++	{
 +		if (!wl_list_empty(focus_resource_list) && keyboard->focus != surface) {
 +			serial = wl_display_next_serial(display);
-+				wl_resource_for_each(resource, focus_resource_list) {
-+					if (surface && keyboard && keyboard->focus)
-+					    surface->compositor->last_keyboard_focus = keyboard->focus;
-+				    weston_log("\n %s %d, leave surface:%p\n", __FUNCTION__,__LINE__, keyboard->focus);
-+					wl_keyboard_send_leave(resource, serial,
-+							keyboard->focus->resource);
-+				}
++			wl_resource_for_each(resource, focus_resource_list) {
++				if (surface && keyboard && keyboard->focus)
++					surface->compositor->last_keyboard_focus = keyboard->focus;
++				weston_log("\n %s %d, leave surface:%p\n", __FUNCTION__,__LINE__, keyboard->focus);
++				wl_keyboard_send_leave(resource, serial,
++						keyboard->focus->resource);
++			}
 +			move_resources(&keyboard->resource_list, focus_resource_list);
-+		}
-+		if ( surface == NULL ) {
-+			surface = keyboard->focus->compositor->last_keyboard_focus;
-+			weston_log("\n %s %d, need	back to  surface:%p\n", __FUNCTION__,__LINE__, surface);
++			}
++			if ( surface == NULL ) {
++				surface = keyboard->focus->compositor->last_keyboard_focus;
++				weston_log("\n %s %d, need	back to  surface:%p\n", __FUNCTION__,__LINE__, surface);
  		}
 -		move_resources(&keyboard->resource_list, focus_resource_list);
 -	}

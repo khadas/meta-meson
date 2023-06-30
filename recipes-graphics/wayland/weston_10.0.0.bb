@@ -26,6 +26,7 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
 		   file://0025-10.0.0-play-video-in-video-layer.patch \
 		   file://0026-10.0.0-add-drm-help-functions.patch \
 		   file://0027-10.0.0-add-debug-tool.patch \
+		   file://0028-10.0.0-add-pts-check-flow.patch \
            "
 
 SRC_URI[md5sum] = "bc4abe2ee6904a4890a0c641c6257f91"

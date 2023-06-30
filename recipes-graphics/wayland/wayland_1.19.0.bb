@@ -16,6 +16,7 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
 	    file://fixpathinpcfiles.patch \
         file://0001-configure-add-option-to-disable-tests.patch \
 		file://0003-10.0-add-video-plane-id-request.patch \
+		file://0004-10.0-add-pts-setting-request.patch \
         "
 
 SRC_URI[sha256sum] = "baccd902300d354581cd5ad3cc49daa4921d55fb416a5883e218750fef166d15"
