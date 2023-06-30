@@ -277,10 +277,11 @@ EOF
 
 	# Copy <manifest>.conf file to auto.conf for revision lock
 	if [ -L ./../.repo/manifest.xml ] ; then
-	  MANIFEST="$(basename `readlink -f ./../.repo/manifest.xml ` | cut -d '.' -f 1)"
+	  MANIFEST="$(basename `readlink -f ./../.repo/manifest.xml `)"
 	else
-	  MANIFEST=$(grep include ./../.repo/manifest.xml | cut -d '"' -f 2 | cut -d '.' -f 1)
+	  MANIFEST=$(grep include ./../.repo/manifest.xml | cut -d '"' -f 2)
 	fi
+	MANIFEST=${MANIFEST%.*}
 	echo " Manifest Name = ${MANIFEST}"
 	if [ -f "./../.repo/manifests/${MANIFEST}.conf" ]; then
 	  cp ./../.repo/manifests/${MANIFEST}.conf ./conf/auto.conf
