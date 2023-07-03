@@ -7,8 +7,6 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 SRCTREECOVEREDTASKS:remove = "do_patch"
 FILESEXTRAPATHS:prepend := "${THISDIR}/5.15:"
 
-# aq2432 zapper needs its own defconfig
-FILESEXTRAPATHS:prepend:aq2432 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', '${THISDIR}/5.15/aq2432_zapper:', '${THISDIR}/5.15/aq2432:', d)}"
 FILESEXTRAPATHS:prepend:bf201 := "${THISDIR}/5.15/bf201:"
 
 KBRANCH = "bringup/amlogic-5.15/s4da1_2_2_20220407"
@@ -118,12 +116,12 @@ do_install:prepend () {
 }
 
 do_deploy:append() {
-        if [ ${MODULE_TARBALL_DEPLOY} = "1" ] && (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
-            mkdir -p ${D}${root_prefix}/modules
-            tar -cvzf $deployDir/kernel-modules-${MODULE_TARBALL_NAME}.tgz -C ${D}${root_prefix} modules
-            ln -sf kernel-modules-${MODULE_TARBALL_NAME}.tgz $deployDir/modules-${MODULE_TARBALL_LINK_NAME}.tgz
-            ln -sf kernel-modules-${MODULE_TARBALL_NAME}.tgz $deployDir/kernel-modules.tgz
-        fi
+    if [ ${MODULE_TARBALL_DEPLOY} = "1" ] && (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
+        mkdir -p ${D}${root_prefix}/modules
+        tar -cvzf $deployDir/kernel-modules-${MODULE_TARBALL_NAME}.tgz -C ${D}${root_prefix} modules
+        ln -sf kernel-modules-${MODULE_TARBALL_NAME}.tgz $deployDir/modules-${MODULE_TARBALL_LINK_NAME}.tgz
+        ln -sf kernel-modules-${MODULE_TARBALL_NAME}.tgz $deployDir/kernel-modules.tgz
+    fi
 }
 
 KERNEL_MODULE_AUTOLOAD += "amlogic-crypto-dma"

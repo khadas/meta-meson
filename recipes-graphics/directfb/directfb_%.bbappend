@@ -24,7 +24,7 @@ EXTRA_OECONF += "--with-gfxdrivers=amlgfx \
 do_install:append() {
     install -d ${D}/etc/
     install -D -m 0644 ${WORKDIR}/directfbrc ${D}/etc/directfbrc
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'true', 'false', d)}
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}
     then
         sed -i "s/1920x1080/1280x720/g" ${D}/etc/directfbrc
         sed -i "s/#no-cursor/no-cursor/g" ${D}/etc/directfbrc

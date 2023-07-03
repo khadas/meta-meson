@@ -4,7 +4,7 @@ SRC_URI:append = " file://network/20-ethernet.network file://network/21-wlan.net
 SRC_URI:append = " file://0027-fix-udisk-can-not-unmount-properly.patch"
 SRC_URI:append = " file://0028-custom-hwdb-module.patch"
 
-PACKAGECONFIG:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'hostnamed networkd nss-resolve resolved randomseed timesyncd', '', d)}"
+PACKAGECONFIG:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'hostnamed networkd nss-resolve resolved randomseed timesyncd', '', d)}"
 PACKAGECONFIG:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-bsp', 'rfkill', '', d)}"
 
 do_install:append() {

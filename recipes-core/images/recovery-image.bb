@@ -99,7 +99,7 @@ delete_unused_items_from_fstab() {
     fi
 }
 
-ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-reference', 'remove_hwdb_for_zapper; ', '', d)}"
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'remove_hwdb_for_zapper; ', '', d)}"
 remove_hwdb_for_zapper() {
     if [ -e ${IMAGE_ROOTFS}/lib/udev/hwdb.bin ];then
         rm -rf ${IMAGE_ROOTFS}/lib/udev/hwdb.bin
