@@ -26,7 +26,7 @@ MACHINE_EXTRA_RRECOMMENDS:append = " aml-wifi-w1"
 
 DISTRO_FEATURES:remove = " bt-qca "
 DISTRO_FEATURES:append = " aml-w1 "
-DISTRO_FEATURES:remove = " netflix netflix6 amazon tts mediaplayer playready "
+DISTRO_FEATURES:remove = " netflix amazon tts mediaplayer playready "
 DISTRO_FEATURES:remove = " bluetooth bluez5 "
 
 DISTRO_FEATURES:append = " UI_720P low-memory"

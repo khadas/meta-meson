@@ -140,10 +140,10 @@ RDEPENDS:packagegroup-amlogic-baserootfs = "\
     aml-efuse \
     tinyalsa-tools \
     aml-audio-service aml-audio-service-testapps \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'netflix', \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'netflix64b', \
         'wpeframework-plugin-netflix netflix-aml aml-netflix-esn', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'netflix6', \
-        'wpeframework-plugin-netflix-nrdp6 netflix-nrdp6-aml aml-netflix-esn', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'netflix', \
+        'netflix netflix-plugin aml-netflix-esn', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', \
         'bluetooth-mgr bluetooth-core bluez-alsa bluez5-obex', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amazon', \

@@ -139,7 +139,7 @@ BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-netflix"
 EOF
     else
       cat >> conf/local.conf <<EOF
-DISTRO_FEATURES:remove = " netflix"
+DISTRO_FEATURES:remove = " netflix64b"
 EOF
     fi
 
@@ -147,10 +147,6 @@ EOF
     if [ -d ${MESON_ROOT_PATH}/meta-aml-netflix-nrdp6 ]; then
       cat >> conf/bblayers.conf <<EOF
 BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-netflix-nrdp6"
-EOF
-    else
-      cat >> conf/local.conf <<EOF
-DISTRO_FEATURES:remove = " netflix6"
 EOF
     fi
 
@@ -197,7 +193,7 @@ BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-apps"
 EOF
     else
       cat >> conf/local.conf <<EOF
-DISTRO_FEATURES:remove = " youtube amazon"
+DISTRO_FEATURES:remove = " youtube amazon netflix"
 EOF
     fi
 
