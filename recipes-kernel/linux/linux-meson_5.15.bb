@@ -78,13 +78,14 @@ do_compile:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
     echo "arch: ${ARCH}"
     if [ "${ARCH}" = "arm" ]; then
-	echo "export LOADERADDR"
-    	export LOADADDR=0x208000
+        echo "export LOADERADDR"
+        export LOADADDR=0x208000
     fi
 }
 
 do_configure:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
+    install -m 755 ${WORKDIR}/extra_modules_install.sh ${STAGING_KERNEL_DIR}/
 }
 
 do_kernel_configme:prepend () {
@@ -94,7 +95,6 @@ do_kernel_configme:prepend () {
 do_kernel_metadata:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
 
-    install -m 755 ${WORKDIR}/extra_modules_install.sh ${STAGING_KERNEL_DIR}/
     rm -f ${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}
     if [ "${ARCH}" = "arm" ]; then
         KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
@@ -118,12 +118,12 @@ do_install:prepend () {
 }
 
 do_deploy:append() {
-         if [ ${MODULE_TARBALL_DEPLOY} = "1" ] && (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
-                 mkdir -p ${D}${root_prefix}/modules
-                 tar -cvzf $deployDir/kernel-modules-${MODULE_TARBALL_NAME}.tgz -C ${D}${root_prefix} modules
-                 ln -sf kernel-modules-${MODULE_TARBALL_NAME}.tgz $deployDir/modules-${MODULE_TARBALL_LINK_NAME}.tgz
-                 ln -sf kernel-modules-${MODULE_TARBALL_NAME}.tgz $deployDir/kernel-modules.tgz
-         fi
+        if [ ${MODULE_TARBALL_DEPLOY} = "1" ] && (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
+            mkdir -p ${D}${root_prefix}/modules
+            tar -cvzf $deployDir/kernel-modules-${MODULE_TARBALL_NAME}.tgz -C ${D}${root_prefix} modules
+            ln -sf kernel-modules-${MODULE_TARBALL_NAME}.tgz $deployDir/modules-${MODULE_TARBALL_LINK_NAME}.tgz
+            ln -sf kernel-modules-${MODULE_TARBALL_NAME}.tgz $deployDir/kernel-modules.tgz
+        fi
 }
 
 KERNEL_MODULE_AUTOLOAD += "amlogic-crypto-dma"
