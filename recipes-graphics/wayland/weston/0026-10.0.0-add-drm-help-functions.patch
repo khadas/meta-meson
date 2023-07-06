@@ -1,5 +1,5 @@
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 9e6e491..4374893 100644
+index bcc9d2b..a81ba4e 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -67,6 +67,16 @@
@@ -19,17 +19,17 @@ index 9e6e491..4374893 100644
  
  static void
  drm_backend_create_faked_zpos(struct drm_backend *b)
-@@ -403,6 +413,10 @@ drm_output_render(struct drm_output_state *state, pixman_region32_t *damage)
- 	scanout_state->dest_y = 0;
+@@ -404,6 +414,10 @@ drm_output_render(struct drm_output_state *state, pixman_region32_t *damage)
  	scanout_state->dest_w = output->base.current_mode->width;
  	scanout_state->dest_h = output->base.current_mode->height;
-+
+ 
 +#ifdef ENABLE_DRM_HELP
 +	help_get_scanout_viewport(&scanout_state->dest_x, &scanout_state->dest_y, &scanout_state->dest_w, &scanout_state->dest_h);
 +#endif
- 
++
  #ifdef MESON_DRM_FIX_UI_SIZE
  	// for scale to full screen
+ 	//// TODO: Need consider different aspect_ration
 @@ -668,6 +682,9 @@ drm_repaint_flush(struct weston_compositor *compositor, void *repaint_data)
  
  	drm_debug(b, "[repaint] flushed pending_state %p\n", pending_state);
@@ -94,10 +94,27 @@ index 9e6e491..4374893 100644
  
  /** Pick a CRTC and reserve it for the output.
   *
-@@ -1859,6 +1916,17 @@ drm_output_enable(struct weston_output *base)
+@@ -1782,7 +1839,6 @@ drm_output_attach_crtc(struct drm_output *output)
+ 
+ 	/* Reserve the CRTC for the output */
+ 	output->crtc->output = output;
+-
+ 	return 0;
+ }
+ 
+@@ -1854,7 +1910,6 @@ drm_output_enable(struct weston_output *base)
+ 	output->base.set_dpms = drm_set_dpms;
+ 	output->base.switch_mode = drm_output_switch_mode;
+ 	output->base.set_gamma = drm_output_set_gamma;
+-
+ 	weston_log("Output %s (crtc %d) video modes:\n",
  		   output->base.name, output->crtc->crtc_id);
  	drm_output_print_modes(output);
- 
+@@ -1868,6 +1923,17 @@ drm_output_enable(struct weston_output *base)
+ 	}
+ 	weston_log("create_sprites plane id:%d is_video_plane:%d video plane:%d \n",
+ 	plane->plane_id, plane->is_video_plane, plane->video_plane);
++
 +#ifdef ENABLE_DRM_HELP
 +	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
 +	if (head && head->connector.conn)
@@ -108,11 +125,10 @@ index 9e6e491..4374893 100644
 +		}
 +	}
 +#endif
-+
  	return 0;
  
  err_planes:
-@@ -1932,6 +2000,17 @@ drm_output_disable(struct weston_output *base)
+@@ -1941,6 +2007,17 @@ drm_output_disable(struct weston_output *base)
  
  	weston_log("Disabling output %s\n", output->base.name);
  
@@ -130,11 +146,10 @@ index 9e6e491..4374893 100644
  	if (output->base.enabled)
  		drm_output_deinit(&output->base);
  
-@@ -2056,6 +2135,16 @@ drm_connector_assign_connector_info(struct drm_connector *connector,
- 
+@@ -2066,6 +2143,16 @@ drm_connector_assign_connector_info(struct drm_connector *connector,
  	if (drm_connector_update_properties(connector) < 0)
  		return -1;
-+
+ 
 +#ifdef ENABLE_DRM_HELP
 +	if (connector && connector->conn)
 +	{
@@ -144,10 +159,11 @@ index 9e6e491..4374893 100644
 +		}
 +	}
 +#endif
- 
++
  	if (connector->conn)
  		drmModeFreeConnector(connector->conn);
-@@ -2201,6 +2290,15 @@ drm_head_create(struct drm_backend *backend, drmModeConnector *conn,
+ 	connector->conn = conn;
+@@ -2210,6 +2297,15 @@ drm_head_create(struct drm_backend *backend, drmModeConnector *conn,
  
  	weston_compositor_add_head(backend->compositor, &head->base);
  	drm_head_log_info(head, "found");
@@ -163,7 +179,7 @@ index 9e6e491..4374893 100644
  
  	return 0;
  
-@@ -2215,6 +2313,16 @@ err:
+@@ -2224,6 +2320,16 @@ err:
  static void
  drm_head_destroy(struct drm_head *head)
  {
@@ -180,31 +196,31 @@ index 9e6e491..4374893 100644
  	weston_head_release(&head->base);
  
  	drm_connector_fini(&head->connector);
-@@ -2597,6 +2705,10 @@ drm_destroy(struct weston_compositor *ec)
+@@ -2607,6 +2713,10 @@ drm_destroy(struct weston_compositor *ec)
  	struct drm_crtc *crtc, *crtc_tmp;
  	struct drm_writeback *writeback, *writeback_tmp;
  
-+#ifdef ENABLE_DRM_HELP	
++#ifdef ENABLE_DRM_HELP
 +	stop_help_worker();
 +#endif
 +
  	udev_input_destroy(&b->input);
  
  	wl_event_source_remove(b->udev_drm_source);
-@@ -3146,6 +3258,11 @@ drm_backend_create(struct weston_compositor *compositor,
- 		weston_log("failed to create input devices\n");
+@@ -3157,6 +3267,11 @@ drm_backend_create(struct weston_compositor *compositor,
  		goto err_sprite;
  	}
-+
+ 
 +#ifdef ENABLE_DRM_HELP
 +	weston_log("drm start_help_worker \n");
 +	start_help_worker(b->drm.fd, b->atomic_modeset);
 +#endif
- 
++
  	wl_list_init(&b->writeback_connector_list);
  	if (drm_backend_discover_connectors(b, drm_device, res) < 0) {
+ 		weston_log("Failed to create heads for %s\n", b->drm.filename);
 diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
-index 712f604..04633ce 100644
+index 9e7520d..6d19e4d 100644
 --- a/libweston/backend-drm/kms.c
 +++ b/libweston/backend-drm/kms.c
 @@ -42,6 +42,10 @@
@@ -218,7 +234,7 @@ index 712f604..04633ce 100644
  struct drm_property_enum_info plane_type_enums[] = {
  	[WDRM_PLANE_TYPE_PRIMARY] = {
  		.name = "Primary",
-@@ -1168,6 +1172,9 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
+@@ -1170,6 +1174,9 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
  		weston_log("atomic: couldn't compile atomic state\n");
  		goto out;
  	}
@@ -229,7 +245,7 @@ index 712f604..04633ce 100644
  	ret = drmModeAtomicCommit(b->drm.fd, req, flags, b);
  	drm_debug(b, "[atomic] drmModeAtomicCommit\n");
 diff --git a/libweston/backend-drm/meson.build b/libweston/backend-drm/meson.build
-index 39a1656..b36affe 100644
+index 39a1656..2043005 100644
 --- a/libweston/backend-drm/meson.build
 +++ b/libweston/backend-drm/meson.build
 @@ -17,6 +17,8 @@ dep_backlight = declare_dependency(
@@ -252,21 +268,19 @@ index 39a1656..b36affe 100644
  
  if get_option('renderer-gl')
 diff --git a/libweston/backend-drm/modes.c b/libweston/backend-drm/modes.c
-index 415e5ac..57ee543 100755
+index c741878..224cb7c 100755
 --- a/libweston/backend-drm/modes.c
 +++ b/libweston/backend-drm/modes.c
-@@ -34,7 +34,10 @@
- 
+@@ -34,6 +34,9 @@
+
  #include "drm-internal.h"
  #include "shared/weston-drm-fourcc.h"
--
 +#ifdef ENABLE_DRM_HELP
 +#include "compositor-drm-help.h"
 +#endif
-+
+
  static const char *const aspect_ratio_as_string[] = {
  	[WESTON_MODE_PIC_AR_NONE] = "",
- 	[WESTON_MODE_PIC_AR_4_3] = " 4:3",
 @@ -495,6 +498,7 @@ drm_output_choose_mode(struct drm_output *output,
  		output->base.current_mode->width == target_mode->width &&
  	    output->base.current_mode->height == target_mode->height &&
@@ -276,7 +290,7 @@ index 415e5ac..57ee543 100755
  	     target_mode->refresh == 0)) {
  		if (!b->aspect_ratio_supported || src_aspect == target_aspect)
 @@ -505,7 +509,9 @@ drm_output_choose_mode(struct drm_output *output,
- 
+
  		src_aspect = mode->base.aspect_ratio;
  		if (mode->mode_info.hdisplay == target_mode->width &&
 -		    mode->mode_info.vdisplay == target_mode->height) {
@@ -289,7 +303,7 @@ index 415e5ac..57ee543 100755
 @@ -828,6 +834,19 @@ drm_output_set_mode(struct weston_output *base,
  	output->base.native_mode = output->base.current_mode;
  	output->base.native_scale = output->base.current_scale;
- 
+
 +#ifdef ENABLE_DRM_HELP
 +	if (head && head->connector.conn)
 +	{

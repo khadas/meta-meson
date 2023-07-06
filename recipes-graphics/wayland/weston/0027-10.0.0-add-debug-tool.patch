@@ -1,5 +1,5 @@
 diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
-index 179fd12..651f8f7 100644
+index 98f1b8e..b596c66 100644
 --- a/include/libweston/libweston.h
 +++ b/include/libweston/libweston.h
 @@ -1184,6 +1184,14 @@ struct weston_compositor {
@@ -17,7 +17,6 @@ index 179fd12..651f8f7 100644
  	struct content_protection *content_protection;
  	struct weston_surface* last_keyboard_focus;
  	int video_surface_count;
- struct weston_buffer {
 diff --git a/libweston/backend-drm/drm-gbm.c b/libweston/backend-drm/drm-gbm.c
 index b457ba1..f4156dd 100644
 --- a/libweston/backend-drm/drm-gbm.c
@@ -46,15 +45,10 @@ index b457ba1..f4156dd 100644
  #endif
  
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 4374893..5820a25 100644
+index 5b4d910..f3e6d2a 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
-@@ -65,10 +65,12 @@
- #include "linux-dmabuf.h"
- #include "linux-dmabuf-unstable-v1-server-protocol.h"
- #include "linux-explicit-synchronization.h"
--
-+
+@@ -69,6 +69,8 @@
  static const char default_seat[] = "seat0";
  #ifdef ENABLE_DRM_HELP
  #include "compositor-drm-help.h"
@@ -63,7 +57,7 @@ index 4374893..5820a25 100644
  static const char *const aspect_ratio_as_string[] = {
  	[WESTON_MODE_PIC_AR_NONE] = "",
  	[WESTON_MODE_PIC_AR_4_3] = " 4:3",
-@@ -798,7 +799,61 @@ init_pixman(struct drm_backend *b)
+@@ -798,7 +800,61 @@ init_pixman(struct drm_backend *b)
  {
  	return pixman_renderer_init(b->compositor);
  }
@@ -126,7 +120,7 @@ index 4374893..5820a25 100644
  /**
   * Create a drm_plane for a hardware plane
   *
-@@ -2383,7 +2438,12 @@ drm_output_create(struct weston_compositor *compositor, const char *name)
+@@ -2390,7 +2446,12 @@ drm_output_create(struct weston_compositor *compositor, const char *name)
  	output->state_cur = drm_output_state_alloc(output, NULL);
  
  	weston_compositor_add_pending_output(&output->base, b->compositor);
@@ -140,7 +134,7 @@ index 4374893..5820a25 100644
  	return &output->base;
  }
  
-@@ -3127,6 +3187,13 @@ static const struct weston_drm_output_api api = {
+@@ -3134,6 +3195,13 @@ static const struct weston_drm_output_api api = {
  	drm_output_set_gbm_format,
  	drm_output_set_seat,
  };
@@ -154,7 +148,7 @@ index 4374893..5820a25 100644
  
  static struct drm_backend *
  drm_backend_create(struct weston_compositor *compositor,
-@@ -3234,6 +3301,7 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -3241,6 +3309,7 @@ drm_backend_create(struct weston_compositor *compositor,
  	b->base.create_output = drm_output_create;
  	b->base.device_changed = drm_device_changed;
  	b->base.can_scanout_dmabuf = drm_can_scanout_dmabuf;
@@ -162,19 +156,17 @@ index 4374893..5820a25 100644
  
  	weston_setup_vt_switch_bindings(compositor);
  
-@@ -3364,7 +3432,10 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -3371,6 +3440,9 @@ drm_backend_create(struct weston_compositor *compositor,
  		weston_log("Failed to register virtual output API.\n");
  		goto err_udev_monitor;
  	}
--
 +#ifdef ENABLE_DRM_HELP
 +	help_set_printinfo_function(compositor, weston_print_info);
 +#endif
-+
+ 
  	return b;
  
- err_udev_monitor:
-@@ -3423,3 +3494,4 @@ weston_backend_init(struct weston_compositor *compositor,
+@@ -3430,3 +3502,4 @@ weston_backend_init(struct weston_compositor *compositor,
  
  	return 0;
  }
@@ -212,7 +204,7 @@ index ffe2cc5..3478d8d 100644
 diff --git a/libweston/backend.h b/libweston/backend.h
 old mode 100644
 new mode 100755
-index 3ae59a6..19cda4a
+index 3ae59a6..a8e88d4
 --- a/libweston/backend.h
 +++ b/libweston/backend.h
 @@ -68,6 +68,8 @@ struct weston_backend {
@@ -232,7 +224,7 @@ index 3ae59a6..19cda4a
 +
  #endif
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index 9078bc7..529e6ae 100755
+index af83208..735a62c 100755
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
 @@ -61,6 +61,10 @@
@@ -259,7 +251,7 @@ index 9078bc7..529e6ae 100755
  
  static struct weston_paint_node *
  weston_paint_node_create(struct weston_surface *surface,
-@@ -3312,11 +3322,32 @@ output_repaint_timer_handler(void *data)
+@@ -3307,11 +3317,32 @@ output_repaint_timer_handler(void *data)
  	if (compositor->backend->repaint_begin)
  		repaint_data = compositor->backend->repaint_begin(compositor);
  
@@ -292,7 +284,7 @@ index 9078bc7..529e6ae 100755
  
  	if (ret == 0) {
  		if (compositor->backend->repaint_flush)
-@@ -7707,7 +7738,105 @@ output_repaint_status_text(struct weston_output *output)
+@@ -7702,7 +7733,105 @@ output_repaint_status_text(struct weston_output *output)
  	assert(!"output_repaint_status_text missing enum");
  	return NULL;
  }
@@ -399,7 +391,7 @@ index 9078bc7..529e6ae 100755
  static void
  debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
  {
-@@ -7729,6 +7858,9 @@ debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
+@@ -7724,6 +7853,9 @@ debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
  		fprintf(fp, "\t\t\tformat: 0x%lx %s\n",
  			(unsigned long) _format,
  			pixel_info ? pixel_info->drm_format_name : "UNKNOWN");
@@ -409,7 +401,7 @@ index 9078bc7..529e6ae 100755
  		return;
  	}
  
-@@ -7745,6 +7877,9 @@ debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
+@@ -7740,6 +7872,9 @@ debug_scene_view_print_buffer(FILE *fp, struct weston_view *view)
  		fprintf(fp, "\t\t\tmodifier: %s\n", modifier_name ? modifier_name :
  				"Failed to convert to a modifier name");
  		free(modifier_name);
@@ -419,7 +411,7 @@ index 9078bc7..529e6ae 100755
  		return;
  	}
  
-@@ -7758,6 +7893,7 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
+@@ -7753,6 +7888,7 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
  	struct weston_output *output;
  	char desc[512];
  	pixman_box32_t *box;
@@ -427,7 +419,7 @@ index 9078bc7..529e6ae 100755
  	uint32_t surface_id = 0;
  	pid_t pid = 0;
  
-@@ -7772,9 +7908,9 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
+@@ -7767,9 +7903,9 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
  	    view->surface->get_label(view->surface, desc, sizeof(desc)) < 0) {
  		strcpy(desc, "[no description available]");
  	}
@@ -436,10 +428,10 @@ index 9078bc7..529e6ae 100755
  		view_idx, view->surface->role_name, pid, surface_id,
 -		desc, view, view->surface->is_video_surface, view->surface->is_video_surface ? view->surface->video_plane : 0);
 +		desc, view, view->surface, view->surface->is_video_surface);
+ 
  	box = pixman_region32_extents(&view->transform.boundingbox);
  	fprintf(fp, "\t\tposition: (%d, %d) -> (%d, %d)\n",
- 		box->x1, box->y1, box->x2, box->y2);
-@@ -7788,6 +7924,9 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
+@@ -7784,6 +7920,9 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
  		fprintf(fp, "\t\t[opaque: (%d, %d) -> (%d, %d)]\n",
  			box->x1, box->y1, box->x2, box->y2);
  	}
@@ -449,7 +441,7 @@ index 9078bc7..529e6ae 100755
  
  	if (view->alpha < 1.0)
  		fprintf(fp, "\t\talpha: %f\n", view->alpha);
-@@ -7850,20 +7989,104 @@ debug_scene_view_print_tree(struct weston_view *view,
+@@ -7846,20 +7985,104 @@ debug_scene_view_print_tree(struct weston_view *view,
   */
  WL_EXPORT char *
  weston_compositor_print_scene_graph(struct weston_compositor *ec)
@@ -557,7 +549,7 @@ index 9078bc7..529e6ae 100755
  
  	weston_compositor_read_presentation_clock(ec, &now);
  	fprintf(fp, "Weston scene graph at %ld.%09ld:\n\n",
-@@ -7942,10 +8165,7 @@ weston_compositor_print_scene_graph(struct weston_compositor *ec)
+@@ -7938,10 +8161,7 @@ weston_compositor_print_scene_graph(struct weston_compositor *ec)
  		fprintf(fp, "\n");
  	}
  
@@ -568,7 +560,7 @@ index 9078bc7..529e6ae 100755
  }
  
  /**
-@@ -8118,6 +8338,12 @@ weston_compositor_create(struct wl_display *display,
+@@ -8114,6 +8334,12 @@ weston_compositor_create(struct wl_display *display,
  						weston_timeline_destroy_subscription,
  						ec);
  	ec->last_keyboard_focus = NULL;
