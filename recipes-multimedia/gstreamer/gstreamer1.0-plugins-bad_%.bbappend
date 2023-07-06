@@ -47,6 +47,7 @@ SRC_URI_append = "file://0044-SWPL-101568-support-hls-discontinuity.patch "
 SRC_URI_append = "file://0045-SWPL-124457-set-base_pcr-after-frame-packets.patch "
 SRC_URI_append = "file://0046-SWPL-100464-add-parse-sequence-extention.patch "
 SRC_URI_append = "file://0047-SWPL-85490-recalculate-frame-rate.patch "
+SRC_URI_append = "file://0048-modify-hls-ts-demux-videoparser-to-parse-sampleAES.patch "
 
 DEPENDS += "gst-aml-drmbufferpool-plugins"
 

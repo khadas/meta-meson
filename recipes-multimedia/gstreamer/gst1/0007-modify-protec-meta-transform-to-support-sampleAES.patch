@@ -1,0 +1,25 @@
+From c0ec65f8d86d837d665a73ebef37110a5cd29a52 Mon Sep 17 00:00:00 2001
+From: "gaojie.song" <gaojie.song@amlogic.com>
+Date: Fri, 7 Jul 2023 22:00:32 +0800
+Subject: [PATCH] modify protec meta transform to support sampleAES
+
+---
+ gst/gstprotection.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gst/gstprotection.c b/gst/gstprotection.c
+index af0434a..8e7ca88 100644
+--- a/gst/gstprotection.c
++++ b/gst/gstprotection.c
+@@ -93,7 +93,7 @@ gst_protection_meta_transform (GstBuffer * transbuf, GstMeta * meta,
+ 
+   if (GST_META_TRANSFORM_IS_COPY (type)) {
+     GstMetaTransformCopy *copy = data;
+-    if (!copy->region) {
++    if (!copy->region || !gst_structure_has_name(protection_meta->info, "subsamples")) {
+       /* only copy if the complete data is copied as well */
+       gst_buffer_add_protection_meta (transbuf,
+           gst_structure_copy (protection_meta->info));
+-- 
+2.33.0
+
