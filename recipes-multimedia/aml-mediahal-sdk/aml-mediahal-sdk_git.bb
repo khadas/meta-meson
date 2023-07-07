@@ -8,8 +8,11 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/mediahal-sdk')}"
 
-DEPENDS += "aml-audio-service libdrm-meson wayland"
+DEPENDS += "aml-audio-service libdrm-meson"
 RDEPENDS:${PN} += "aml-audio-service libdrm-meson"
+
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'wayland', '' ,d)}"
+RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'wayland', '' ,d)}"
 
 #do_compile[noexec] = "1"
 
@@ -46,11 +49,13 @@ do_install() {
     install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_tsplayer.so ${D}${libdir}
     install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_videodec.so ${D}${libdir}
     install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_mediasync.so ${D}${libdir}
-    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_videorender.so ${D}${libdir}
     install -d -m 0755 ${D}/usr/bin
     install -D -m 0755 ${S}/example/AmTsPlayerExample/AmTsPlayerExample ${D}/usr/bin
-    install -D -m 0755 ${S}/example/AmTsPlayerMultiExample/AmTsPlayerMultiExample ${D}/usr/bin
     install -D -m 0755 ${S}/example/EsVideoDecPlayer/EsVideoDecPlayer ${D}/usr/bin
+if ${@bb.utils.contains('DISTRO_FEATURES','zapper-2k','false','true', d)}; then
+    install -D -m 0644 ${S}/prebuilt/${ARM_TARGET}/libmediahal_videorender.so ${D}${libdir}
+    install -D -m 0755 ${S}/example/AmTsPlayerMultiExample/AmTsPlayerMultiExample ${D}/usr/bin
+fi
 }
 
 
