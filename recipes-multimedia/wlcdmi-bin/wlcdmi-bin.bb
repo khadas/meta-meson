@@ -43,5 +43,6 @@ INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
 SYSTEMD_SERVICE_${PN} = "wlcdmi.service"
 
 FILES_${PN} += "${bindir}/* ${libdir}/*.so"
+FILES_${PN} += "${libdir}/wlcdmidrm {libdir}/wlcdmidrm/*"
 FILES_${PN} += "${systemd_unitdir}/system/*"
 FILES_${PN}-dev = "${includedir}/*"
