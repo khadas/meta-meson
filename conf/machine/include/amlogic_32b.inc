@@ -24,4 +24,4 @@ DISTROOVERRIDES .= ":dunfell"
 
 include conf/include/bbmasks-amlogic-platform.inc
 PREFERRED_VERSION_cmake-native= "3.16.5"
-PREFERRED_VERSION_youtube= "23%"
+PREFERRED_VERSION_youtube= "24%"
