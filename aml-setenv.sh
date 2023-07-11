@@ -222,6 +222,12 @@ DISTRO_FEATURES:remove = " netflix"
 EOF
     fi
 
+    if [ ! -d ${MESON_ROOT_PATH}/aml-comp/thirdparty/miraclecast]; then
+      cat >> conf/local.conf <<EOF
+DISTRO_FEATURES:remove = " miraclecast"
+EOF
+    fi
+
     unset NEED_A6432_SUPPORT
     if [ -n "$(echo $TARGET_MACHINE | grep -- lib32)" ]; then
       NEED_A6432_SUPPORT=y
