@@ -97,7 +97,10 @@ EOF
 
             install -d ${D}${sysconfdir}/init.d
             install -m 0755 ${WORKDIR}/audioserver.init ${D}${sysconfdir}/init.d/audioserver
-       fi
+        else
+            install -m 644 -D ${S}/libamlaudiosetting.so -t ${D}${libdir}
+            install -m 644 -D ${S}/include/AML_Audio_Setting.h -t ${D}/usr/include
+        fi
 }
 
 SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', ' ', 'audioserver.service ', d)}"
