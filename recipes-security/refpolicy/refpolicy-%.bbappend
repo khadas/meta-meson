@@ -1,4 +1,4 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/refpolicy_aml:"
 
 SRC_URI += " \
         file://0001-access_vectors-Permission-nlmsg_readpriv-in-class-ne.patch \
