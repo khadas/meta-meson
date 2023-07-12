@@ -47,6 +47,12 @@ SRC_URI  += "\
   file://mixer_paths.xml \
   file://mixer_paths.at301.xml \
   file://mixer_paths.t5d.xml \
+  file://audio_hal_delay_base.json \
+  file://audio_hal_delay_base.at301.json \
+  file://audio_hal_delay_base.am301.json \
+  file://audio_hal_delay_base.ap222.json \
+  file://audio_hal_delay_base.ah212.json \
+  file://audio_hal_delay_base.ap232.json \
 "
 
 PROPERTY_SET_CONF = "aml_audio_config.json"
@@ -58,10 +64,17 @@ PROPERTY_SET_CONF:ap222 = "aml_audio_config.ap222.json"
 PROPERTY_SET_MIXER = "mixer_paths.xml"
 PROPERTY_SET_MIXER:at301 = "mixer_paths.at301.xml"
 PROPERTY_SET_MIXER:t5d = "mixer_paths.t5d.xml"
+PROPERTY_SET_AVSYNC = "audio_hal_delay_base.json"
+PROPERTY_SET_AVSYNC:at301 = "audio_hal_delay_base.at301.json"
+PROPERTY_SET_AVSYNC:am301 = "audio_hal_delay_base.am301.json"
+PROPERTY_SET_AVSYNC:ah212 = "audio_hal_delay_base.ah212.json"
+PROPERTY_SET_AVSYNC:ap222 = "audio_hal_delay_base.ap222.json"
+PROPERTY_SET_AVSYNC:ap232 = "audio_hal_delay_base.ap232.json"
 
 do_install:append() {
     install -d ${D}/${sysconfdir}/halaudio
     install -m 0755 ${WORKDIR}/${PROPERTY_SET_CONF} ${D}/${sysconfdir}/halaudio/aml_audio_config.json
+    install -m 0755 ${WORKDIR}/${PROPERTY_SET_AVSYNC} ${D}/${sysconfdir}/halaudio/audio_hal_delay_base.json
     install -m 0644 ${WORKDIR}/${PROPERTY_SET_MIXER} ${D}/${sysconfdir}/mixer_paths.xml
     if ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
         sed -i '/Codec_Support_List/i \\t"Audio_Delay_Max":100,' ${D}/${sysconfdir}/halaudio/aml_audio_config.json

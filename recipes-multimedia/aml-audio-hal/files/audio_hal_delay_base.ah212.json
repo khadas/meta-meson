@@ -1,0 +1,55 @@
+{
+  "__comment":"/* NAME:audio_hal_delay_base.ah212.json*/",
+
+
+  "__comment":"/*msync ms12 tuning part */",
+  "__comment":"//input format",
+  "vendor.media.audio.hal.ms12.netflix.tunnel.pcm" : 20,
+  "vendor.media.audio.hal.ms12.netflix.tunnel.ddp" : 40,
+  "vendor.media.audio.hal.ms12.tunnel.pcm" : 0,
+  "vendor.media.audio.hal.ms12.tunnel.ddp" : 40,
+  "vendor.media.audio.hal.ms12.tunnel.ac4" : 50,
+
+
+  "__comment":"//output format",
+  "vendor.media.audio.hal.ms12.netflix.pcmout" : 20,
+  "vendor.media.audio.hal.ms12.netflix.ddout" : 50,
+  "vendor.media.audio.hal.ms12.netflix.ddpout" : 40,
+  "vendor.media.audio.hal.ms12.netflix.matout" : 20,
+  "vendor.media.audio.hal.ms12.pcmout" : 70,
+  "vendor.media.audio.hal.ms12.ddout" : 50,
+  "vendor.media.audio.hal.ms12.ddpout" : 110,
+  "vendor.media.audio.hal.ms12.matout" : 100,
+
+
+  "__comment":"//ms12 passsthrough",
+  "vendor.media.audio.hal.ms12.tunnel.bypass" : -130,
+  "vendor.media.audio.hal.ms12.nontunnel.bypass" : -130,
+
+
+  "__comment":"//port latency",
+  "vendor.media.audio.hal.ms12.arc.dd" : 0,
+  "vendor.media.audio.hal.ms12.arc.ddp" : 50,
+  "vendor.media.audio.hal.ms12.arc.pcm" : 0,
+  "vendor.media.audio.hal.ms12.hdmi.dd" : 0,
+  "vendor.media.audio.hal.ms12.hdmi.ddp" : 0,
+  "vendor.media.audio.hal.ms12.hdmi.mat" : -45,
+  "vendor.media.audio.hal.ms12.hdmi.pcm" : -35,
+  "vendor.media.audio.hal.ms12.speaker" : -40,
+
+
+  "__comment":"//atmos format",
+  "vendor.media.audio.hal.ms12.netflix.tunnel.atmos" : 20,
+  "vendor.media.audio.hal.ms12.netflix.nontunnel.atmos" : 15,
+  "vendor.media.audio.hal.ms12.tunnel.atmos" : 0,
+  "vendor.media.audio.hal.ms12.nontunnel.atmos" : 15,
+
+
+  "__comment":"//tv platform has video_delay",
+  "vendor.media.audio.hal.ms12.tunnel.video.delay" : -40,
+  "__comment":"/*end of msync ms12 tuning part */",
+
+
+  "__comment":"/*msync nonms12 tuning part(dcv lib) */",
+  "vendor.media.audio.hal.nonms12.tunnel.bypass" : -20
+}
