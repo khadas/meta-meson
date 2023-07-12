@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 #We still need patch even in external src mode
 SRCTREECOVEREDTASKS:remove = "do_patch"
 FILESEXTRAPATHS:prepend := "${THISDIR}/5.4:"
+FILESEXTRAPATHS:prepend:aq2432 := "${THISDIR}/5.4/aq2432:"
 
 # t5d lowmem
 FILESEXTRAPATHS:prepend:t5d := "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', '${THISDIR}/5.4/t5d-lowmem:', '', d)}"
@@ -22,6 +23,7 @@ SRC_URI:append:t5d = " file://t5d.cfg"
 SRC_URI:append:t5w = " file://t5w.cfg"
 SRC_URI:append:t3 = " file://t3.cfg"
 SRC_URI:append:sc2 = " file://sc2.cfg"
+SRC_URI:append:aq2432 = " file://defconfig"
 
 # t5d lowmem
 SRC_URI:append:t5d = "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', ' file://defconfig', '', d)}"
