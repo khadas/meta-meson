@@ -18,6 +18,7 @@ SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "aml-w1", "file://0001-BT-ad
 SRC_URI += "file://0001-bluez5-fix-rcu-reconnect-1-1.patch"
 #SRC_URI += "file://bluez_checkhci.sh"
 SRC_URI += "file://0001-BT-fix-pair-inturrpt-error.patch"
+SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "aml-w1", "file://0002-BT-W1-fw-use-bin-format.patch", "", d)}"
 
 TTY = "ttyS1"
 
