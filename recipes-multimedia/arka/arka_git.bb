@@ -31,6 +31,7 @@ INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${includedir}/display_settings \
     "
 TARGET_CFLAGS += "-fPIC -D_REENTRANT ${INCLUDE_DIRS}"
+TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', '-DDISABLE_AUDIO_SERVER', '', d)}"
 
 do_install:append() {
 	install -D -m 0644 ${WORKDIR}/arka.service ${D}${systemd_unitdir}/system/arka.service
