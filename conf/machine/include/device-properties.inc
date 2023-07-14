@@ -17,6 +17,10 @@ DEVICE_PROPERTY_PLATFORM_NAME ?= "Linux"
 DEVICE_PROPERTY_SYSINTEGRATE_NAME ?= "Amlogic"
 # End For YouTube
 
+# For Amazon
+DEVICE_PROPERTY_AMAZON_DTID ?= "${@bb.utils.contains('DISTRO_FEATURES', 'amazon', bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'AEKBK0TQX6QYF', 'A3SJQCMWSDF1EG', d), '', d)}"
+# End For Amazon
+
 DEVICE_PROPERTY_MANUFACTURER ?= "Amlogic"
 
 DEVICE_PROPERTY_WIFI_INTERFACE ?= "wlan0"
