@@ -1,0 +1,53 @@
+From 7dd5ad9a473577c861815a6e5088db7a48cd6ecc Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Thu, 13 Jul 2023 14:30:39 +0800
+Subject: [PATCH] policy/modules: for network
+
+Change-Id: I7ab6dc4b03dac752d79d45dd38cf498e58214771
+---
+ policy/modules/system/sysnetwork.te | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/policy/modules/system/sysnetwork.te b/policy/modules/system/sysnetwork.te
+index a77738924..a1d79af7f 100644
+--- a/policy/modules/system/sysnetwork.te
++++ b/policy/modules/system/sysnetwork.te
+@@ -304,6 +304,8 @@ allow ifconfig_t self:netlink_generic_socket create_socket_perms;
+ allow ifconfig_t self:netlink_route_socket create_netlink_socket_perms;
+ allow ifconfig_t self:netlink_xfrm_socket create_netlink_socket_perms;
+ allow ifconfig_t self:tcp_socket { create ioctl };
++allow ifconfig_t bin_t:file { map read execute };
++allow ifconfig_t initrc_t:udp_socket { read write };
+ 
+ # Allow "ip netns" to remount /var/run/netns and to mount network namespace files on /var/run/netns/$NSNAME
+ allow ifconfig_t ifconfig_runtime_t:dir mounton;
+@@ -326,11 +328,14 @@ corenet_rw_tun_tap_dev(ifconfig_t)
+ dev_read_sysfs(ifconfig_t)
+ # for IPSEC setup:
+ dev_read_urand(ifconfig_t)
++dev_rw_generic_chr_files(ifconfig_t)
+ 
+ domain_use_interactive_fds(ifconfig_t)
+ 
+ files_read_etc_files(ifconfig_t)
+ files_read_etc_runtime_files(ifconfig_t)
++files_search_data(ifconfig_t)
++files_manage_data_files(ifconfig_t)
+ 
+ fs_getattr_xattr_fs(ifconfig_t)
+ fs_read_nsfs_files(ifconfig_t)
+@@ -349,6 +354,11 @@ files_dontaudit_read_root_files(ifconfig_t)
+ 
+ init_use_fds(ifconfig_t)
+ init_use_script_ptys(ifconfig_t)
++init_rw_kobject_uevent_sockets(ifconfig_t)
++init_rw_routing_sockets(ifconfig_t)
++init_rw_dgram_sockets(ifconfig_t)
++init_rw_script_stream_sockets(ifconfig_t)
++init_rw_script_tmp_files(ifconfig_t)
+ 
+ logging_send_syslog_msg(ifconfig_t)
+ 
+-- 
+2.29.0
+
