@@ -10,7 +10,7 @@ SRC_URI = "\
     file://var-lib.mount \
 "
 
-inherit allarch systemd distro_features_check
+inherit allarch systemd features_check
 
 REQUIRED_DISTRO_FEATURES = "systemd"
 
