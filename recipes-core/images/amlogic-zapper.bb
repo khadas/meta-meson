@@ -71,7 +71,7 @@ IMAGE_INSTALL += " \
     dtvkit-release-prebuilt \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-iptv', 'aml-iptv-firmware ffmpeg-ctc', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod aml-afd', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '', 'aml-dtvdemod aml-afd', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace tee-supplicant aml-provision', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', bb.utils.contains('DISTRO_FEATURES', 'tee-no-videofirmware', '', 'optee-video-firmware', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dfb', 'directfb', '', d)} \
@@ -90,6 +90,9 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'aml-hdi', '', d)} \
 "
 
+IMAGE_INSTALL:remove = "\
+    ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'system-config libarchive gnutls libnl neon tinyalsa tinyalsa-tools alsa-utils jansson libfastjson faad2 libopus yajl popt libgcrypt libgpg-error ', '', d)} \
+"
 
 PACKAGE_INSTALL += "base-files base-passwd initramfs-meson-boot udev-extraconf "
 
@@ -194,7 +197,15 @@ process_for_read_only_rootfs(){
     fi
 }
 
+process_for_zapper2k_rootfs(){
+    if [ -d ${IMAGE_ROOTFS}/usr/include ];then
+        rm -rf ${IMAGE_ROOTFS}/usr/include
+    fi
+}
+
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '', 'process_for_read_only_rootfs; ', d)}"
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'process_for_zapper2k_rootfs; ', '', d)}"
+
 
 inherit avb-dm-verity
 # The following is needed only if chained
