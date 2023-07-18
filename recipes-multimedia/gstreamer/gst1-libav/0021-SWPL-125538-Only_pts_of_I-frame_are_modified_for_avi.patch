@@ -1,0 +1,40 @@
+diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
+index 023e796..7bed04e 100755
+--- a/ext/libav/gstavdemux.c
++++ b/ext/libav/gstavdemux.c
+@@ -460,6 +460,8 @@ gst_ffmpegdemux_do_seek (GstFFMpegDemux * demux, GstSegment * segment)
+ 
+   /* get the stream for seeking */
+   stream = demux->context->streams[index];
++  /*set last ts to time none,if seeking*/
++  demux->streams[stream->index]->last_ts = GST_CLOCK_TIME_NONE;
+   /* initial seek position */
+   target = segment->position + demux->start_time;
+   /* convert target to ffmpeg time */
+@@ -1540,6 +1542,15 @@ gst_ffmpegdemux_loop (GstFFMpegDemux * demux)
+     duration = GST_CLOCK_TIME_NONE;
+   }
+ 
++  //only dts of I-frame is assigned to pts for avi
++  if ((!strcmp(demux->context->iformat->name, "avi")) && timestamp == GST_CLOCK_TIME_NONE) {
++    GstClockTime dts = gst_ffmpeg_time_ff_to_gst (pkt.dts, avstream->time_base);
++    //Set dts as pts
++    if (GST_CLOCK_TIME_IS_VALID (dts) && (pkt.flags & AV_PKT_FLAG_KEY) && (avstream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)) {
++      timestamp = dts;
++      GST_WARNING_OBJECT (demux,"set dts as pts:%" GST_TIME_FORMAT,GST_TIME_ARGS (timestamp));
++    }
++  }
+ 
+   GST_DEBUG_OBJECT (demux,
+       "pkt pts:%" GST_TIME_FORMAT
+@@ -1701,8 +1712,9 @@ read_failed:
+     if (demux->flushing)
+       ret = GST_FLOW_FLUSHING;
+     else if (gst_ffmpegdemux_has_outputted (demux)
+-        || gst_ffmpegdemux_is_eos (demux)) {
++        || gst_ffmpegdemux_is_eos (demux) || res == AVERROR_EOF) {
+       GST_DEBUG_OBJECT (demux, "We are EOS");
++      res = 0;
+       ret = GST_FLOW_EOS;
+     } else
+       ret = GST_FLOW_ERROR;

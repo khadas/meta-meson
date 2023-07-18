@@ -13,12 +13,11 @@ SRC_URI:append = "file://0011-libav-remove-support-dolby-vision-unknown-Compatib
 SRC_URI:append = "file://0012-fix-SWPL-78539-support-opus-vorbis.patch "
 SRC_URI:append = "file://0013-modify-avdemux-priority.patch "
 SRC_URI:append = "file://0014-support-DTS-parse.patch "
-SRC_URI:append = "file://0016-calculate-a-appropriate-pts-when-no-timestamp.patch "
 SRC_URI:append = "file://0017-fix_SWPL-83356_gstmkv.patch "
 SRC_URI:append = "file://0018-ts-streams-prefer-tsdemux-to-avdemux-mpegts.patch "
 SRC_URI:append = "file://0019-CF1-do-not-use-avdemux-when-container-is-wav.patch "
 SRC_URI:append = "file://0020-use-libav-probe-mpegps-and-mp3.patch "
-SRC_URI:append = "file://0021-calculate-a-suitable-pts-for-avi.patch "
+SRC_URI:append = "file://0021-SWPL-125538-Only_pts_of_I-frame_are_modified_for_avi.patch "
 
 
 
