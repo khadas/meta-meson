@@ -22,6 +22,7 @@ RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service"
 
 OECMAKE_GENERATOR = "Unix Makefiles"
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D}  -D_STBLABS_SAT_SCAN_"
+EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', '-DDISABLE_AUDIO_SERVER=1', '', d)}"
 
 INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${includedir}/directfb/ \
@@ -31,7 +32,6 @@ INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${includedir}/display_settings \
     "
 TARGET_CFLAGS += "-fPIC -D_REENTRANT ${INCLUDE_DIRS}"
-TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', '-DDISABLE_AUDIO_SERVER', '', d)}"
 
 do_install:append() {
 	install -D -m 0644 ${WORKDIR}/arka.service ${D}${systemd_unitdir}/system/arka.service
