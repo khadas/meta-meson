@@ -25,7 +25,8 @@ DISTRO_FEATURES:remove = " netflix amazon tts mediaplayer playready "
 DISTRO_FEATURES:remove = " bluetooth bluez5 "
 
 DISTRO_FEATURES:append = " UI_720P low-memory"
-DISTRO_FEATURES:append = " appmanager AsperitasDvb aamp"
+DISTRO_FEATURES:append = " appmanager aamp"
+DISTRO_FEATURES:append = " ArkaDvb use-egl"
 DISTRO_FEATURES:append = " webkitbrowser"
 DISTRO_FEATURES:append = " fota-upgrade swupdate-download"
 DISTRO_FEATURES:append = " remove-test-files"
@@ -74,5 +75,5 @@ DEVICE_PROPERTY_PERSIST_YOUTUBE_VIDEO_BUFFERING_LOW_LEVEL = "150000000"
 DEVICE_PROPERTY_PERSIST_YOUTUBE_VIDEO_BUFFERING_HIGH_LEVEL = "350000000"
 # End For YouTube
 
-DEVICE_PROPERTY_LAUNCHER_APPS = "asperitasdvb, youtube, youtubetv, youtubekids"
-DEVICE_PROPERTY_STARTUP_APP = "asperitasdvb"
+DEVICE_PROPERTY_LAUNCHER_APPS = "arka, youtube, youtubetv, youtubekids"
+DEVICE_PROPERTY_STARTUP_APP = "arka"

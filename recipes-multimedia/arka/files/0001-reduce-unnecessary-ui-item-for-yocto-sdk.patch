@@ -1,0 +1,477 @@
+From 7a3f6def3a553ce585f5271b16247a9832b77e38 Mon Sep 17 00:00:00 2001
+From: "hengrui.li" <hengrui.li@amlogic.com>
+Date: Thu, 7 Sep 2023 14:25:56 +0800
+Subject: [PATCH] arka: reduce unnecessary ui item for yocto sdk [1/1]
+
+PD#SWPL-129797
+
+Problem:
+- reduce unnecessary ui item for yocto sdk
+
+Solution:
+- reduce unnecessary ui item for yocto sdk
+
+Verify:
+local
+
+Signed-off-by: hengrui.li <hengrui.li@amlogic.com>
+Change-Id: Ic08799bfc9f53c84790a772879fd7b0cce47be7d
+---
+ pil/src/pil_device.c                       |  4 ++
+ sunepg/controller/src/epginstall.c         | 23 ++++++----
+ sunepg/controller/src/epgnetworksettings.c |  6 ++-
+ sunepg/controller/src/epgsm.c              | 53 +++++++++++++++++-----
+ sunepg/controller/src/epgtelevision.c      | 22 ++++-----
+ sunepg/pref/atharv_pref.c                  |  2 +
+ sunepg/rsrc/MMrsrc.rc                      | 16 +++----
+ sunepg/ui/src/Osd.c                        | 11 ++++-
+ 8 files changed, 94 insertions(+), 43 deletions(-)
+
+diff --git a/pil/src/pil_device.c b/pil/src/pil_device.c
+index 8dc6b7c..74351ed 100644
+--- a/pil/src/pil_device.c
++++ b/pil/src/pil_device.c
+@@ -95,6 +95,7 @@ static BOOL __device_tuner_status_get_signal_strength_quality(int TunerID, BOOL
+ 
+ static void __device_volume_set_level(CDEVVolume	*pVolumeInfo)
+ {
++#if 0
+ 	bool isCurrentlyMuted = VolumeDevice.bMute;
+ 	bool isMuteRequested = pVolumeInfo->bMute;
+ 
+@@ -115,15 +116,18 @@ static void __device_volume_set_level(CDEVVolume	*pVolumeInfo)
+ 
+ 	P_DEVICE_AML_SET_VOLUME(pVolumeInfo->CurrentVolume);
+ 	VolumeDevice.CurrentVolume = pVolumeInfo->CurrentVolume;
++#endif
+ }
+ 
+ void P_DEVICE_Init(eCOMMON_DEVICE_TYPE Type)
+ {
++#if 0
+ 	if(Type != eCOMMON_DEVICE_VOLUME_TYPE)
+ 		return;
+ 
+ 	__device_volume_get_from_device_on_init();
+ 	P_DEVICE_AML_HDMI_HOTPLUG_EVENT_HANDLER();
++#endif
+ }
+ 
+ static void __device_go_to_standby(uint32_t mode)
+diff --git a/sunepg/controller/src/epginstall.c b/sunepg/controller/src/epginstall.c
+index 07d4351..0d718c6 100644
+--- a/sunepg/controller/src/epginstall.c
++++ b/sunepg/controller/src/epginstall.c
+@@ -62,7 +62,7 @@ QState EPG_SM_MENU_INSTALL_Root(CEPGsm *me, QEvent const *e)
+ 		return Q_TRAN(&EPG_SM_SET_ScanningMenuFocused);
+ 	case Q_ENTRY_SIG:
+ 		INSTALL_DEBUG("ENTRY EPG_SM_MENU_INSTALL_Root\n");
+-		MENU_SetMenuImage(5,0,MM_1_F_ID);
++		MENU_SetMenuImage(0,0,MM_1_F_ID);
+ 		return Q_HANDLED();
+ 	case SM_EXIT_SIG:
+ 	case SM_TV_SIG:
+@@ -71,10 +71,12 @@ QState EPG_SM_MENU_INSTALL_Root(CEPGsm *me, QEvent const *e)
+ 		return Q_TRAN(&EPG_SM_TV_Root);
+ 	case SM_LEFT_SIG:
+ 		nSetScanningFocusedItem = 0;
+-		return Q_TRAN(&EPG_SM_CHANNEL_MENU_Root);
++		//return Q_TRAN(&EPG_SM_CHANNEL_MENU_Root);
++		return Q_HANDLED();
+ 	case SM_RIGHT_SIG:
+ 		nSetScanningFocusedItem = 0;
+-		return Q_TRAN(&EPG_SM_SET_Root);
++		//return Q_TRAN(&EPG_SM_SET_Root);
++		return Q_HANDLED();
+ 	case Q_EXIT_SIG:
+ 		return Q_HANDLED();
+ 	default:
+@@ -189,7 +191,8 @@ QState EPG_SM_SET_NetworkScanListingsFocused(CEPGsm *me, QEvent const *e)
+ 	case SM_RED_SIG:
+ 		return Q_TRAN(&EPG_SM_SET_ScanWait);
+ 	case SM_SHOW_SYMBOL_RATE_SCREEN_SIG:
+-		return Q_TRAN(&EPG_SM_SET_SymbolrateScreen);
++		//return Q_TRAN(&EPG_SM_SET_SymbolrateScreen);
++		return Q_HANDLED();
+ 	case SM_UP_SIG:
+ 	case SM_DOWN_SIG:
+ 	case SM_LEFT_SIG:
+@@ -215,7 +218,8 @@ QState EPG_SM_SET_NetworkScanListingsFocused(CEPGsm *me, QEvent const *e)
+ 	default:
+ 		break;
+ 	}
+-	return Q_SUPER(&EPG_SM_SET_Root);
++	//return Q_SUPER(&EPG_SM_SET_Root);
++	return Q_SUPER(&EPG_SM_MENU_INSTALL_Root);
+ }
+ 
+ 
+@@ -229,9 +233,11 @@ QState EPG_SM_SET_ScanWait(CEPGsm *me, QEvent const *e)
+ 		OSD_LoadScan(A_QHSM_ID_1, QHSM_LAYER_EPG_FIRST_INST, OSD_BuildingSVL_ID, CLOCK_OSD_ID, TXT_TV_INFO_ID, TXT_SVL_NOT_READY_ID, TXT_PLEASE_WAIT_OSD_ID, NULL_ID);
+ 		return Q_HANDLED();
+ 	case SM_SVL_READY_WITH_NO_CHANNELS_SIG:
+-		return Q_TRAN(&EPG_SM_SET_ScanNoChannels);
++		//return Q_TRAN(&EPG_SM_SET_ScanNoChannels);
++		return Q_HANDLED();
+ 	case SM_SVL_NOT_READY_SIG:
+-		return Q_TRAN(&EPG_SM_SET_ScanWaitFault);
++		//return Q_TRAN(&EPG_SM_SET_ScanWaitFault);
++		return Q_HANDLED();
+ 	case SM_SVL_READY_SIG:
+ 		return Q_TRAN(&EPG_SM_TV_Root);
+ 	case SM_BACK_SIG:
+@@ -255,5 +261,6 @@ QState EPG_SM_SET_ScanWait(CEPGsm *me, QEvent const *e)
+ 	default:
+ 		break;
+ 	}
+-	return Q_SUPER(&EPG_SM_SET_Root);
++	//return Q_SUPER(&EPG_SM_SET_Root);
++	return Q_SUPER(&EPG_SM_MENU_INSTALL_Root);
+ }
+diff --git a/sunepg/controller/src/epgnetworksettings.c b/sunepg/controller/src/epgnetworksettings.c
+index 10fc00b..675dea2 100644
+--- a/sunepg/controller/src/epgnetworksettings.c
++++ b/sunepg/controller/src/epgnetworksettings.c
+@@ -145,7 +145,8 @@ QState EPG_SM_SET_NetworkSettingsRoot(CEPGsm *me, QEvent const *e)
+ 		return Q_TRAN(&EPG_SM_SET_NetworkSettingsCardError);
+ 	case SM_PIN_CORRECT_ENTRY:
+ 	EPG_NTWRK_SET_DEBUG("\n EPG_SM_SET_NetworkSettingsRoot@@@@@@@@@@ SM_PIN_CORRECT_ENTRY \n");
+-		return Q_TRAN(&EPG_SM_SET_NetworkID);
++		//return Q_TRAN(&EPG_SM_SET_NetworkID);
++		return Q_HANDLED();
+ 	case SM_CA_CARD_OK:
+ 		return Q_TRAN(&EPG_SM_SET_NetworkSettingsFaultOn);
+ 		/*
+@@ -160,5 +161,6 @@ QState EPG_SM_SET_NetworkSettingsRoot(CEPGsm *me, QEvent const *e)
+ 		break;
+ 	}
+ 	//EPG_NTWRK_SET_DEBUG("\n root super\n");
+-	return Q_SUPER(&EPG_SM_SET_Root);
++	//return Q_SUPER(&EPG_SM_SET_Root);
++	return Q_SUPER(&EPG_SM_MENU_INSTALL_Root);
+ }
+diff --git a/sunepg/controller/src/epgsm.c b/sunepg/controller/src/epgsm.c
+index 07dcc00..800d131 100644
+--- a/sunepg/controller/src/epgsm.c
++++ b/sunepg/controller/src/epgsm.c
+@@ -168,23 +168,33 @@ QState EPG_SM_APPLI_Root(CEPGsm *me, QEvent const *e) {
+ 			return Q_TRAN(&EPG_SM_SET_ScanWait);
+ 		}
+ 	case SM_CA_UPGRADE_FORCED:
++#if 0
+ 		A_OTA_DOWNLOAD_Init();
+ 		A_OTA_DOWNLOAD_SetOTAScanData(e->PayLoad1);
+ 		OTAStartSig.sig = SM_CA_CAROUSEL_DOWNLOAD_START;
+ 		A_UI_SM_DispatchSignalAsync(&OTAStartSig);
+ 		return Q_TRAN(&EPG_SM_SWOTAUPGR_Acquiring);
++#endif
++		return Q_HANDLED();
+ 	case SM_CA_UPGRADE_NOW:
++#if 0
+ 		A_OTA_DOWNLOAD_Init();
+ 		A_OTA_DOWNLOAD_SetOTAScanData(e->PayLoad1);
+ 		OTAStartSig.sig = SM_CA_CAROUSEL_DOWNLOAD_START;
+ 		A_UI_SM_DispatchSignalAsync(&OTAStartSig);
+ 		return Q_TRAN(&EPG_SM_SWOTAUPGR_Acquiring);
++#endif
++		return Q_HANDLED();
+ 	case SM_CA_UPGRADE_NOW_AFTER_USER_CONFIRMATION:
++#if 0
+ 		A_OTA_DOWNLOAD_Init();
+ 		A_OTA_DOWNLOAD_SetOTAScanData(e->PayLoad1);
+ 		return Q_TRAN(&EPG_SM_SWOTAUPGR_FlashConfirm);
++#endif
++		return Q_HANDLED();
+ 	case SM_CA_PIN_RESET:
+-		return Q_TRAN(&EPG_SM_SET_TrigPinReset);
++		//return Q_TRAN(&EPG_SM_SET_TrigPinReset);
++		return Q_HANDLED();
+ 	case Q_EXIT_SIG:
+ 		SM_EXIT_DEBUG
+ 		return Q_HANDLED();
+@@ -211,13 +221,15 @@ QState EPG_SM_BOOTLOGO_Root(CEPGsm *me, QEvent const *e)
+ 			bFirstInstallation = A_PREF_GetCurrentVal(PREF_ID_FIRSTTIMEINSTALLATION);
+ 			if (bFirstInstallation == TRUE)
+ 			{
+-				return Q_TRAN(&EPG_SM_FI_Root);
++				//return Q_TRAN(&EPG_SM_FI_Root);
++				return Q_HANDLED();
+ 			}
+ 
+ 			Version = A_PREF_GetCurrentVal(PREF_ID_VERSIONUPDATE);
+ 			if (VERSION_UPDATE > Version)
+ 			{
+-				return Q_TRAN(&EPG_SM_WELCOMESCRN_Root);
++				//return Q_TRAN(&EPG_SM_WELCOMESCRN_Root);
++				return Q_HANDLED();
+ 			}
+ 		}
+ 		return Q_TRAN(&EPG_SM_TV_Root);
+@@ -304,21 +316,30 @@ QState EPG_SM_STANDBY_Root(CEPGsm *me, QEvent const *e)
+ 			return Q_HANDLED();
+ 		}
+ 	case SM_CA_UPGRADE_NOW:
++#if 0
+ 		A_OTA_DOWNLOAD_Init();
+ 		A_OTA_DOWNLOAD_SetOTAScanData(e->PayLoad1);
+ 		OTAStartSig.sig = SM_CA_CAROUSEL_DOWNLOAD_START;
+ 		A_UI_SM_DispatchSignalAsync(&OTAStartSig);
+ 		return Q_TRAN(&EPG_SM_SWOTAUPGR_Acquiring_Standby);
++#endif
++		return Q_HANDLED();
+ 	case SM_CA_UPGRADE_NOW_AFTER_USER_CONFIRMATION:
++#if 0
+ 		A_OTA_DOWNLOAD_Init();
+ 		A_OTA_DOWNLOAD_SetOTAScanData(e->PayLoad1);
+ 		return Q_TRAN(&EPG_SM_SWOTAUPGR_FlashConfirm_Standby);
++#endif
++		return Q_HANDLED();
+ 	case SM_CA_UPGRADE_FORCED:
++#if 0
+ 		A_OTA_DOWNLOAD_Init();
+ 		A_OTA_DOWNLOAD_SetOTAScanData(e->PayLoad1);
+ 		OTAStartSig.sig = SM_CA_CAROUSEL_DOWNLOAD_START;
+ 		A_UI_SM_DispatchSignalAsync(&OTAStartSig);
+ 		return Q_TRAN(&EPG_SM_SWOTAUPGR_Acquiring_Standby);
++#endif
++		return Q_HANDLED();
+ 	case SM_CA_PIN_RESET:
+ 		return Q_HANDLED();
+ 	case SM_TV_SIG:
+@@ -451,7 +472,8 @@ QState EPG_SM_MENU_Root(CEPGsm *me, QEvent const *e) {
+ 	switch (e->sig)
+ 	{
+ 	case Q_INIT_SIG:
+-		return Q_TRAN(&EPG_SM_SET_Root);
++		return Q_TRAN(&EPG_SM_MENU_INSTALL_Root);
++		//return Q_TRAN(&EPG_SM_SET_Root);
+ 	case Q_ENTRY_SIG:
+ 		{
+ 		if (nPVRFocusedItem == TRUE)
+@@ -591,7 +613,8 @@ QState EPG_SM_EPG_Root(CEPGsm *me, QEvent const *e)
+ 	switch (e->sig)
+ 	{
+ 	case Q_INIT_SIG:
+-		return Q_TRAN(&EPG_SM_GRID_Root);
++		return Q_HANDLED();
++		//return Q_TRAN(&EPG_SM_GRID_Root);
+ 	case SM_BACK_SIG:
+ 		return Q_TRAN(&EPG_SM_TV_Root);
+ 	case Q_EXIT_SIG:
+@@ -614,13 +637,16 @@ QState EPG_SM_MENU_HelpScreen(CEPGsm *me, QEvent const *e)
+ 	case SM_BACK_SIG:
+ 		return Q_TRAN(&EPG_SM_TV_Root);
+ 	case SM_LEFT_SIG:
+-		return Q_TRAN(&EPG_SM_MENU_BMAIL_Root);
++		return Q_HANDLED();
++		//return Q_TRAN(&EPG_SM_MENU_BMAIL_Root);
+ 	/*case SM_UP_SIG:
+ 		return Q_TRAN(&EPG_SM_MENU_USBPLANNER_Root);*/
+ 	case SM_DOWN_SIG:
+-		return Q_TRAN(&EPG_SM_PARENTAL_RATING_Root);
++		return Q_HANDLED();
++		//return Q_TRAN(&EPG_SM_PARENTAL_RATING_Root);
+ 	case SM_RIGHT_SIG:
+-		return Q_TRAN(&EPG_SM_FAVOURITE_Root);
++		return Q_HANDLED();
++		//return Q_TRAN(&EPG_SM_FAVOURITE_Root);
+ 	case Q_EXIT_SIG:
+ 		A_UI_SM_SetLayer(A_QHSM_ID_1,QHSM_LAYER_TV_HELP_SCREEN,NULL,FALSE,FALSE,-1);
+ 		return Q_HANDLED();
+@@ -657,7 +683,8 @@ QState EPG_SM_SWOTAUPGR_BurnFlash_Standby(CEPGsm *me, QEvent const *e)
+ 		case SM_EPG_SIG:
+ 			return Q_HANDLED();
+ 		case SM_STANDBY_SIG:
+-			return Q_TRAN(&EPG_SM_SWOTAUPGR_BurnFlash);
++			return Q_HANDLED();
++			//return Q_TRAN(&EPG_SM_SWOTAUPGR_BurnFlash);
+ 		case SM_USB_UNMOUNTED:
+ 			return Q_HANDLED();
+ 		case SM_BACK_SIG:
+@@ -686,7 +713,8 @@ QState EPG_SM_SWOTAUPGR_FlashConfirm_Standby(CEPGsm *me, QEvent const *e)
+ 		case SM_SEL_SIG:
+ 			return Q_TRAN(&EPG_SM_SWOTAUPGR_Acquiring_Standby);
+ 		case SM_STANDBY_SIG:
+-			return Q_TRAN(&EPG_SM_SWOTAUPGR_FlashConfirm);
++			return Q_HANDLED();
++			//return Q_TRAN(&EPG_SM_SWOTAUPGR_FlashConfirm);
+ 		case Q_EXIT_SIG:
+ 		//	A_UI_SM_SetLayer(A_QHSM_ID_1,QHSM_LAYER_EPG_FIRST_LIST,NULL,TRUE,FALSE,0);
+ 			return Q_HANDLED();
+@@ -775,7 +803,8 @@ QState EPG_SM_SWOTAUPGR_Acquiring_Standby(CEPGsm *me, QEvent const *e)
+ 		case SM_CA_CAROUSEL_NOT_FOUND:
+ 			return Q_TRAN(&EPG_SM_SWOTAUPGR_AcquiringNoCarousel_Standby);
+ 		case SM_STANDBY_SIG:
+-			return Q_TRAN(&EPG_SM_SWOTAUPGR_Acquiring);
++			return Q_HANDLED();
++			//return Q_TRAN(&EPG_SM_SWOTAUPGR_Acquiring);
+ 		case SM_EPG_SIG:
+ 			return Q_HANDLED();
+ 		case Q_EXIT_SIG:
+@@ -786,4 +815,4 @@ QState EPG_SM_SWOTAUPGR_Acquiring_Standby(CEPGsm *me, QEvent const *e)
+ 	}
+     return Q_SUPER(&EPG_SM_STANDBY_Root);
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/sunepg/controller/src/epgtelevision.c b/sunepg/controller/src/epgtelevision.c
+index 2c7442b..6721692 100644
+--- a/sunepg/controller/src/epgtelevision.c
++++ b/sunepg/controller/src/epgtelevision.c
+@@ -430,11 +430,14 @@ QState EPG_SM_TV_SVLReady(CEPGsm *me, QEvent const *e)
+ 	case SM_SVL_NOT_READY_SIG:
+ 		return Q_TRAN(&EPG_SM_TV_SVLNotReady);
+ 	case SM_SEL_SIG:
+-		return Q_TRAN(&EPG_SM_TV_ChnlListSoftkey);
++		//return Q_TRAN(&EPG_SM_TV_ChnlListSoftkey);
++    return Q_HANDLED();
+ 	case SM_YELLOW_SIG:
+-		return Q_TRAN(EPG_SM_FAV_ListRoot);
++		//return Q_TRAN(EPG_SM_FAV_ListRoot);
++    return Q_HANDLED();
+ 	case SM_EPG_GOTO:
+-		return Q_TRAN(&EPG_SM_MENU_BMAIL_Root);
++		//return Q_TRAN(&EPG_SM_MENU_BMAIL_Root);
++    return Q_HANDLED();
+ 	case SM_FAVOURITE_SIG:
+ 	//case SM_FAV_MINUS_SIG:
+ 		{
+@@ -1577,24 +1580,19 @@ QState EPG_SM_TV_BannerOff(CEPGsm *me, QEvent const *e)
+ 	case Q_ENTRY_SIG:
+ 		SM_ENTRY_DEBUG
+ #ifdef _STBLABS_DVB_SUBTITLE_ENABLE_
+-		if (A_SUBT_GET_STATUS_OnOff())
+-		{
+-			A_SUBT_Show();
+-		}
++		A_SUBT_Show();
+ #endif
+ 		return Q_HANDLED();
+ 	case SM_SEL_SIG:
+-		return Q_TRAN(&EPG_SM_TV_ChnlListSoftkey);
++		//return Q_TRAN(&EPG_SM_TV_ChnlListSoftkey);
++		return Q_HANDLED();
+ 	case SM_LEFT_SIG:
+ 	case SM_RIGHT_SIG:
+ 	case SM_INFO_SIG:
+ 		return Q_TRAN(&EPG_SM_TV_BannerOn);
+ 	case Q_EXIT_SIG:
+ #ifdef _STBLABS_DVB_SUBTITLE_ENABLE_
+-		if (A_SUBT_GET_STATUS_OnOff())
+-		{
+-			A_SUBT_Hide();
+-		}
++		A_SUBT_Hide();
+ #endif
+ 		return Q_HANDLED();
+ 	default:
+diff --git a/sunepg/pref/atharv_pref.c b/sunepg/pref/atharv_pref.c
+index c1b4c9f..123e7dc 100644
+--- a/sunepg/pref/atharv_pref.c
++++ b/sunepg/pref/atharv_pref.c
+@@ -476,8 +476,10 @@ public BOOL A_PREF_Commit()
+ 	I_PREF_Set(PREF_ID_VERSIONUPDATE,A_PREF_GetTempVal(PREF_ID_VERSIONUPDATE));
+ 	I_PREF_Set(PREF_ID_STB_PIN,A_PREF_GetTempVal(PREF_ID_STB_PIN));
+ 
++#if 0
+ 	ASL_MEMCPY(DBPref,TempPref, sizeof(CPreferenceEntry)*MAX_PREF_DB_SIZE);
+ 	I_PREF_Commit();
++#endif
+ 
+ 	return TRUE;
+ }
+diff --git a/sunepg/rsrc/MMrsrc.rc b/sunepg/rsrc/MMrsrc.rc
+index 0089b5d..05d1dc6 100644
+--- a/sunepg/rsrc/MMrsrc.rc
++++ b/sunepg/rsrc/MMrsrc.rc
+@@ -1196,13 +1196,13 @@ CIconId	MM_List_Control0_Control1=
+ {
+ 	MM_1_I_ID,
+ 	MM_1_F_ID,
+-	{998,500},
++	{606,500},
+ };
+ 
+ CTextId	MM_List_Control0_Control17=
+ {
+ 	TXT_INSTALLATION_ID,
+-	{1040,580},
++	{636,585},
+ 	31,
+ 	31,
+ 	Font_large_ID,
+@@ -1225,18 +1225,18 @@ RES(CBrioData,MM_List_Template_Control0) =
+ 
+ CControl	MM_All_kinds_of_CommonCrls1[]=
+ {
+-	{CUSTOM_CTRL,&MM_List_ID_Control6},
+-	{CUSTOM_CTRL,&MM_List_ID_Control9},
+-	{CUSTOM_CTRL,&MM_List_ID_Control12},
+-	{CUSTOM_CTRL,&MM_List_ID_Control3},
+-	{CUSTOM_CTRL,&MM_List_ID_Control8},
++//	{CUSTOM_CTRL,&MM_List_ID_Control6},
++//	{CUSTOM_CTRL,&MM_List_ID_Control9},
++//	{CUSTOM_CTRL,&MM_List_ID_Control12},
++//	{CUSTOM_CTRL,&MM_List_ID_Control3},
++//	{CUSTOM_CTRL,&MM_List_ID_Control8},
+ 	{CUSTOM_CTRL,&MM_List_ID_Control0},
+ };
+ 
+ RES(CStrataData,MM_List) =
+ {
+ 	-1,
+-	6,
++	1,
+ 	MM_All_kinds_of_CommonCrls1,
+ 	NULL,
+ };
+diff --git a/sunepg/ui/src/Osd.c b/sunepg/ui/src/Osd.c
+index e4c8482..0ef564e 100644
+--- a/sunepg/ui/src/Osd.c
++++ b/sunepg/ui/src/Osd.c
+@@ -131,6 +131,7 @@ private void OSD_OTADownloadProgressListener(CStrata *pOsdStrata, CEvent *pEvent
+ }
+ 
+ 
++static int DiscoverySaved = 0;
+ private void OSD_DiscoveryProgressListener(CStrata *pOsdStrata, CEvent *pEvent)
+ {
+ 	int DiscoveryProgress=0;
+@@ -147,6 +148,7 @@ private void OSD_DiscoveryProgressListener(CStrata *pOsdStrata, CEvent *pEvent)
+ 	{
+ 		case A_EVENT_DISCOVERY_SCAN_SUCCESS:
+ 			DiscoveryProgress=100;
++			DiscoverySaved = 0;
+ 			pResStr = A_UI_RESOURCE_GetItem(NULL,CString_ID,TXT_PERCENT_COMPLETE_PROCESS_SVL_ID);
+ 			if (pResStr != NULL)
+ 				sprintf_s(progressString,60, pResStr,DiscoveryProgress);
+@@ -155,10 +157,16 @@ private void OSD_DiscoveryProgressListener(CStrata *pOsdStrata, CEvent *pEvent)
+ 			break;
+ 		case A_EVENT_DISCOVERY_SCAN_FAILURE:
+ 			DiscoveryProgress=0;
++			DiscoverySaved = 0;
+ 			break;
+ 		case A_EVENT_DISCOVERY_SCAN_IN_PROGRESS:
+-
+ 			DiscoveryProgress=pEvent->PayLoad1;
++			printf("In %s() <--> DiscoverySaved: %d, DiscoveryProgress: %d\n", __func__, DiscoverySaved, DiscoveryProgress);
++			if (DiscoverySaved != DiscoveryProgress / 20) {
++				DiscoverySaved = DiscoveryProgress / 20;
++			} else {
++				return;
++			}
+ 			if (DiscoveryProgress > 1 && DiscoveryProgress < 99)
+ 			{
+ 				pResStr = A_UI_RESOURCE_GetItem(NULL,CString_ID,TXT_BUILDING_SVL_PERCENT_COMPLETE_SO_FAR_ID);
+@@ -175,6 +183,7 @@ private void OSD_DiscoveryProgressListener(CStrata *pOsdStrata, CEvent *pEvent)
+ 			}
+ 			if (DiscoveryProgress == 100 )
+ 			{
++				DiscoverySaved = 0;
+ 				pResStr = A_UI_RESOURCE_GetItem(NULL,CString_ID,TXT_PERCENT_COMPLETE_PROCESS_SVL_ID);
+ 				if (pResStr != NULL)
+ 					sprintf_s(progressString,60, pResStr,DiscoveryProgress);
+-- 
+2.25.1
+
