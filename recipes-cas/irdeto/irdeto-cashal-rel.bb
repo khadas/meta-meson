@@ -38,10 +38,10 @@ do_install() {
         install -D -m 0644 ${S}/libird_dvb.so ${D}/${libdir}
     fi
 
-    for file in `ls -a ${S}/data/`
+    for file in `ls -a ${S}/cca/data/`
     do
         if [ "${file##*.}" = "dat" ]; then
-            install -D -m 0644 ${S}/data/${file} ${D}/etc/cas/irdeto/cadata
+            install -D -m 0644 ${S}/cca/data/${file} ${D}/etc/cas/irdeto/cadata
         fi
     done
 
