@@ -83,6 +83,13 @@ MEDIA_CONFIGS:bf201 = " \
                  CONFIG_AMLOGIC_MEDIA_GE2D=y \
                  "
 
+MEDIA_CONFIGS:bg201 = " \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_MPEG2_MULTI=m \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_H264_MULTI=m \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_H265=m \
+                 CONFIG_AMLOGIC_MEDIA_GE2D=y \
+                 "
+
 S = "${WORKDIR}/git"
 EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M="${S}/drivers" EXTRA_CFLAGS=${MEDIA_CONFIGS} modules'
 

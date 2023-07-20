@@ -15,6 +15,7 @@ SOC_FAMILY:s4 = "s4"
 SOC_FAMILY:t5d = "t5d"
 SOC_FAMILY:t5w = "t5w"
 SOC_FAMILY:t3 = "t3"
+SOC_FAMILY:s1a = "s1a"
 
 SOC_BOARD = "default"
 SOC_BOARD:ah232 = "ah232"
@@ -23,6 +24,7 @@ SOC_BOARD:aq222 = "aq222"
 SOC_BOARD:ap232 = "ap232"
 SOC_BOARD:aq2432 = "aq2432"
 SOC_BOARD:bf201 = "bf201"
+SOC_BOARD:bg201 = "bg201"
 
 PR = "r3"
 

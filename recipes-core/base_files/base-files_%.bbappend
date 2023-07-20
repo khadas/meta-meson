@@ -104,6 +104,27 @@ fi
 FILES:${PN}:append:s4 = " /vendor/* /factory/* "
 dirs755:append:s4 = " /vendor /factory "
 
+#/*-----------------------S1A STB--------------------------------------*/
+do_install:append:s1a () {
+    mkdir -p ${D}/factory
+
+if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/mtdblock5         /factory                   yaffs2     defaults              0  0
+ /dev/mtdblock6         /tee                       yaffs2     defaults              0  0
+EOF
+fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', 'false', 'true', d)}; then
+        cat >> ${D}${sysconfdir}/fstab <<EOF
+            tmpfs                /var/cache        tmpfs      defaults,nosuid,nodev,noexec              0  0
+EOF
+        sed -i '/^ *\/dev\/root/ d' ${D}${sysconfdir}/fstab
+    fi
+}
+FILES:${PN}:append:s1a = " /factory/* "
+dirs755:append:s1a = " /factory "
+
 #/*-----------------------T5D TV----------------------------------*/
 do_install:append:t5d () {
     mkdir -p ${D}/vendor

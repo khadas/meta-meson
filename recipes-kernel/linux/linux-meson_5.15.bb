@@ -8,15 +8,18 @@ SRCTREECOVEREDTASKS:remove = "do_patch"
 FILESEXTRAPATHS:prepend := "${THISDIR}/5.15:"
 
 FILESEXTRAPATHS:prepend:bf201 := "${THISDIR}/5.15/bf201:"
+FILESEXTRAPATHS:prepend:bg201 := "${THISDIR}/5.15/bg201:"
 
-KBRANCH = "bringup/amlogic-5.15/s4da1_2_2_20220407"
+KBRANCH = "amlogic-5.15-dev"
 #SRC_URI = "git://${AML_GIT_ROOT}/kernel/common.git;protocol=${AML_GIT_PROTOCOL};branch=${KBRANCH};"
 SRC_URI:append = " file://modules_install.sh"
 SRC_URI:append = " file://extra_modules_install.sh"
 SRC_URI:append:sc2 = " file://sc2.cfg"
 SRC_URI:append:s4 = " file://s4.cfg"
+SRC_URI:append:s1a = " file://s1a.cfg"
 SRC_URI:append:aq2432 = " file://defconfig"
 SRC_URI:append:bf201 = " file://defconfig"
+SRC_URI:append:bg201 = " file://defconfig"
 
 SRC_URI += "file://common.cfg"
 
@@ -63,6 +66,7 @@ SOC:sc2 = "sc2"
 SOC:s4 = "s4"
 SOC:t3 = "t3"
 SOC:t7 = "t7"
+SOC:s1a = "s1a"
 
 
 do_install:append () {

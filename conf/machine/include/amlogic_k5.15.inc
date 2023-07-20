@@ -3,4 +3,4 @@ PREFERRED_VERSION_media-modules = "5.15%"
 PREFERRED_VERSION_qca6174 = "5.15%"
 LINUXLIBCVERSION = "5.15%"
 OVERRIDES .= ":k5.15"
-
+DISTRO_FEATURES:append = " kernel_515"

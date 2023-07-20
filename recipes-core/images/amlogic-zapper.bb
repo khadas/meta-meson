@@ -72,7 +72,8 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-iptv', 'aml-iptv-firmware ffmpeg-ctc', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod aml-afd', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace tee-supplicant optee-video-firmware aml-provision', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace tee-supplicant aml-provision', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'optee', bb.utils.contains('DISTRO_FEATURES', 'tee-no-videofirmware', '', 'optee-video-firmware', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dfb', 'directfb', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'irdeto-sdk irdeto-cashal-rel', '', d)} \
