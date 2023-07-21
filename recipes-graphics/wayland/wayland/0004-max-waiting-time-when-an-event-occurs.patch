@@ -1,0 +1,13 @@
+diff --git a/wayland-1.19.0/src/wayland-server.c b/wayland-1.19.0/src/wayland-server.c
+index d83bdec..84246ba 100644
+--- a/wayland-1.19.0/src/wayland-server.c
++++ b/wayland-1.19.0/src/wayland-server.c
+@@ -1348,7 +1348,7 @@ wl_display_run(struct wl_display *display)
+ 
+ 	while (display->run) {
+ 		wl_display_flush_clients(display);
+-		wl_event_loop_dispatch(display->loop, -1);
++		wl_event_loop_dispatch(display->loop, 500);
+ 	}
+ }
+ 
