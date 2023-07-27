@@ -20,6 +20,7 @@ FILES_${PN}-dbg += "${libdir}/gstreamer-*/.debug/*"
 FILES_${PN}-staticdev += "${libdir}/gstreamer-*/*.a "
 
 DEPENDS = "${@bb.utils.contains('DISTRO_FEATURES', 'gstreamer1', 'gstreamer1.0 gstreamer1.0-plugins-base', 'gstreamer gst-plugins-base', d)}"
+DEPENDS += "gst-aml-drm-plugins"
 ENABLE_GST1 = "--enable-gstreamer1=${@bb.utils.contains('DISTRO_FEATURES', 'gstreamer1', 'yes', 'no', d)}"
 EXTRA_OECONF = " ${ENABLE_GST1}"
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
