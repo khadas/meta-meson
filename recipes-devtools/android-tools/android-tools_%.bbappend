@@ -25,6 +25,7 @@ ADB_UDC:s4 = "fdd00000.dwc2_a"
 ADB_UDC:sc2 = "fdd00000.dwc2_a"
 ADB_UDC:t7 = "fdd00000.crgudc2"
 ADB_UDC:t3 = "fdf00000.dwc2_a"
+ADB_UDC:s1a = "fe310000.crgudc2"
 
 do_install:append() {
 
