@@ -12,7 +12,7 @@ SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 PR = "r0"
 
-DEPENDS = "aml-mediahal-sdk directfb libgpiod"
+DEPENDS = "aml-mediahal-sdk directfb libgpiod aml-libdvr aml-subtitleserver"
 
 SRC_URI = "file://${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi"
 
