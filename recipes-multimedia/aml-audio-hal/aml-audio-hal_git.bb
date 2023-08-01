@@ -21,11 +21,7 @@ inherit cmake pkgconfig
 S="${WORKDIR}/git"
 TARGET_CFLAGS += "-fPIC"
 
-PACKAGECONFIG:append:sc2 += "dtv"
-PACKAGECONFIG:append:s4 += "dtv"
-PACKAGECONFIG:append:t5d += "dtv"
-PACKAGECONFIG:append:t5w += "dtv"
-PACKAGECONFIG:append:t3 += "dtv"
+PACKAGECONFIG:append += "${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'dtv', '', d)}"
 PACKAGECONFIG[dtv] = "-DUSE_DTV=ON,-DUSE_DTV=OFF,"
 
 PACKAGECONFIG += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-msync', '', 'msync', d)}"
