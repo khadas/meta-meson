@@ -22,7 +22,7 @@ inherit autotools pkgconfig systemd update-rc.d
 ARM_TARGET:aarch64 = "64"
 
 INITSCRIPT_NAME = "aml_hdcp"
-INITSCRIPT_PARAMS = "start 30 2 3 4 5 . stop 80 0 6 1 ."
+INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
 
 do_install() {
     # install headers

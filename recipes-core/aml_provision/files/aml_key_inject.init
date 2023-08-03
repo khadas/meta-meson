@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Starts aml_key_inject service.
+start() {
+	printf "Starting aml_key_inject service: \n"
+
+	/usr/bin/tee_key_inject -p /factory
+}
+
+stop() {
+	printf "Stopping aml_key_inject service: \n"
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+
