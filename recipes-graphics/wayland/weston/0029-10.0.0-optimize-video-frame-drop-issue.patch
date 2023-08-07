@@ -1,0 +1,423 @@
+diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
+old mode 100644
+new mode 100755
+index 6d19e4d..c0a447c
+--- a/libweston/backend-drm/kms.c
++++ b/libweston/backend-drm/kms.c
+@@ -46,6 +46,7 @@
+ #include "compositor-drm-help.h"
+ #endif
+ 
++static uint64_t getCuerrntTimeMillis();
+ struct drm_property_enum_info plane_type_enums[] = {
+ 	[WDRM_PLANE_TYPE_PRIMARY] = {
+ 		.name = "Primary",
+@@ -1390,6 +1391,14 @@ page_flip_handler(int fd, unsigned int frame,
+ 	drm_output_update_complete(output, flags, sec, usec);
+ }
+ 
++static uint64_t getCuerrntTimeMillis()
++{
++	struct timespec t;
++	t.tv_sec = t.tv_nsec = 0;
++	clock_gettime(CLOCK_MONOTONIC,&t);
++	uint64_t mono_ns = ((uint64_t)(t.tv_sec))*1000000000LL + (uint64_t)t.tv_nsec;
++	return mono_ns/1000LL;
++}
+ static void
+ atomic_flip_handler(int fd, unsigned int frame, unsigned int sec,
+ 		    unsigned int usec, unsigned int crtc_id, void *data)
+@@ -1421,6 +1430,12 @@ atomic_flip_handler(int fd, unsigned int frame, unsigned int sec,
+ 
+ 	drm_output_update_complete(output, flags, sec, usec);
+ 	drm_debug(b, "[atomic][CRTC:%u] flip processing completed\n", crtc_id);
++	struct timespec repaint_start = b->compositor->last_repaint_start;
++	uint64_t repaint_start_us = ((uint64_t)(repaint_start.tv_sec))*1000000LL + ((uint64_t)repaint_start.tv_nsec)/1000; 
++	uint64_t diff = getCuerrntTimeMillis() - repaint_start_us;
++	if (diff > 16000)
++		weston_log("\n %s %d now:%lld,(%d.%d) begin((%ld.%09ld)),from timer begin:%lld(us)\n",
++		__FUNCTION__,__LINE__,getCuerrntTimeMillis(),sec, usec, repaint_start.tv_sec, repaint_start.tv_nsec, diff);
+ }
+ 
+ int
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 2e48c57..1d96ac9 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -159,7 +159,7 @@ static void weston_surface_commit(struct weston_surface *surface);
+ static uint64_t getCuerrntTimeMillis();
+ static void weston_subsurface_commit(struct weston_subsurface *sub);
+ static void push_sub_surface_to_queue( struct weston_subsurface* sub);
+-static struct weston_surface_state* pop_surface_state_from_queue(struct weston_surface *cur_surface);
++static struct weston_surface_state* pop_surface_state_from_queue(struct weston_surface *cur_surface, struct timespec now);
+ 
+ static struct weston_paint_node *
+ weston_paint_node_create(struct weston_surface *surface,
+@@ -3260,19 +3260,24 @@ weston_output_maybe_repaint(struct weston_output *output, struct timespec *now,
+ 		return ret;
+ 
+ 	msec_to_repaint = timespec_sub_to_msec(&output->next_repaint, now);
+-	if (msec_to_repaint > 1)
++	if (msec_to_repaint > 1) {
++		weston_log("\n %s %d return ret:%d\n", __FUNCTION__,__LINE__,ret);
+ 		return ret;
++	}
+ 
+ 	/* If we're sleeping, drop the repaint machinery entirely; we will
+ 	 * explicitly repaint all outputs when we come back. */
+ 	if (compositor->state == WESTON_COMPOSITOR_SLEEPING ||
+-	    compositor->state == WESTON_COMPOSITOR_OFFSCREEN)
++		compositor->state == WESTON_COMPOSITOR_OFFSCREEN) {
++		weston_log("\n %s %d return ret:%d\n", __FUNCTION__,__LINE__,ret);
+ 		goto err;
+-
++		}
+ 	/* We don't actually need to repaint this output; drop it from
+ 	 * repaint until something causes damage. */
+-	if (!output->repaint_needed)
++	if (!output->repaint_needed) {
++		weston_log("\n %s %d return ret:%d\n", __FUNCTION__,__LINE__,ret);
+ 		goto err;
++	}
+ 
+ 	/* If repaint fails, we aren't going to get weston_output_finish_frame
+ 	 * to trigger a new repaint, so drop it from repaint and hope
+@@ -3281,9 +3286,10 @@ weston_output_maybe_repaint(struct weston_output *output, struct timespec *now,
+ 	 * output. */
+ 	ret = weston_output_repaint(output, repaint_data);
+ 	weston_compositor_read_presentation_clock(compositor, now);
+-	if (ret != 0)
++	if (ret != 0) {
++		weston_log("\n %s %d return ret:%d\n", __FUNCTION__,__LINE__,ret);
+ 		goto err;
+-
++	}
+ 	output->repainted = true;
+ 	return ret;
+ 
+@@ -3370,14 +3376,14 @@ static void push_sub_surface_to_queue( struct weston_subsurface* sub)
+ 		weston_log("\n push_sub_surface_to_queue %p queue_size:%d pts:%lld current:%lld buffer:%p\n", sub->surface, sub->surface->queue_size, pts, getCuerrntTimeMillis(), sub->surface->pending.buffer);
+ 	}
+ }
+-static struct weston_surface_state* pop_surface_state_from_queue(struct weston_surface *cur_surface)
++static struct weston_surface_state* pop_surface_state_from_queue(struct weston_surface *cur_surface, struct timespec now)
+ {
+ 	struct weston_surface_state* surface_state_queue = cur_surface->commit_queue;
+ 	uint64_t frame_time = 0;
+ 	uint64_t real_repaint_time = 0;
+ 	uint64_t refresh_interval = 0;
+ 	uint64_t pts = 0;
+-	struct timespec now;
++	uint64_t now_us = 0;
+ 	int expired_count = 0;
+ 	struct weston_output *output = NULL;
+ 	struct weston_buffer *buffer_drop = NULL;
+@@ -3388,11 +3394,15 @@ static struct weston_surface_state* pop_surface_state_from_queue(struct weston_s
+ 	wl_list_for_each(output, &cur_surface->compositor->output_list, link) {
+ 		if (output) {
+ 			cur_surface->compositor->backend->get_frame_time(output, &frame_time, &refresh_interval);
++			real_repaint_time = frame_time;
+ 			break;
+ 		}
+ 	}
+-	weston_compositor_read_presentation_clock(cur_surface->compositor, &now);
+-	real_repaint_time = now.tv_sec * 1000000 + now.tv_nsec / 1000;
++	now_us = ((uint64_t)(now.tv_sec)) * 1000000 + ((uint64_t)(now.tv_nsec)) / 1000;
++
++	if ((now_us - real_repaint_time) >= 16000)
++		real_repaint_time = real_repaint_time + refresh_interval;
++	//real_repaint_time = ((uint64_t)(now.tv_sec)) * 1000000 + ((uint64_t)(now.tv_nsec)) / 1000;
+ 	if (real_repaint_time <= 0) {
+ 		weston_log("\n invalid next_repaint_time, commit now!!!\n");
+ 		goto out;
+@@ -3403,7 +3413,7 @@ static struct weston_surface_state* pop_surface_state_from_queue(struct weston_s
+ 			weston_log("\n pts == 0 commit now\n");
+ 			goto out;
+ 		}
+-		if (pts < real_repaint_time)
++		if (pts < real_repaint_time -2000)
+ 			expired_count++;
+ 		else
+ 			break;
+@@ -3415,7 +3425,7 @@ static struct weston_surface_state* pop_surface_state_from_queue(struct weston_s
+ 			buffer_drop = surface_state_queue[k].buffer;
+ 			pts_drop = buffer_drop->pts;
+ 			if (buffer_drop->resource) {
+-				weston_log("\n  send buffer release and drop:%lld, now:%lld !buffer_drop:%p, resource :%p, \n",
++				weston_log("\n send buffer release and drop:%lld, real_repaint_time:%lld !buffer_drop:%p, resource :%p, \n",
+ 					pts_drop, real_repaint_time, buffer_drop, buffer_drop->resource);
+ 				wl_buffer_send_drop(buffer_drop->resource);
+ 			}
+@@ -3431,7 +3441,8 @@ static struct weston_surface_state* pop_surface_state_from_queue(struct weston_s
+ 	}
+ 	pts =surface_state_queue[0].buffer->pts;
+ 	if (pts >= (real_repaint_time + refresh_interval)) {
+-		weston_log("\n pop_surface_state_from_queue time is not up !!!\n");
++		weston_log("\n pop_surface_state_from_queue time is not up real_repaint_time:%lld refresh_interval:%lld!!!\n",
++			real_repaint_time, refresh_interval);
+ 		return NULL;
+ 	}
+ out:
+@@ -3442,25 +3453,30 @@ out:
+ 		}
+ 	}
+ 	--cur_surface->queue_size;
+-	weston_log("\n pop_surface_state_from_queue pop success:%lld buffer:%p!!!\n", cur_surface->pending.buffer->pts, cur_surface->pending.buffer);
++	weston_log("\n pop_surface_state_from_queue pop success:%lld buffer:%p, real_repaint_time:%lld refresh_interval:%lld!!!\n", 
++		cur_surface->pending.buffer->pts, cur_surface->pending.buffer, real_repaint_time, refresh_interval);
+ 	return &cur_surface->pending;
+ }
+-static void check_commit_video_surface(struct weston_compositor *compositor)
++static bool check_commit_video_surface(struct weston_compositor *compositor, struct timespec now)
+ {
++	bool pts_exsit = false;
+ 	struct weston_surface *surface_tmp = NULL;
+ 	struct weston_surface *surface_pos = NULL;
+ 	wl_list_for_each_safe(surface_pos, surface_tmp, &compositor->video_surface_list, link) {
+ 		struct weston_subsurface *sub = NULL;
+-		struct weston_surface_state* *pending = NULL;
++		struct weston_surface_state *pending = NULL;
+ 		if ( surface_pos ) {
++			pts_exsit = true;
+ 			sub = weston_surface_to_subsurface(surface_pos);
+-			if (sub)
+-				pending = pop_surface_state_from_queue(surface_pos);
++			if (sub) {
++				pending = pop_surface_state_from_queue(surface_pos, now);
++			}
+ 			if (pending) {
+ 				weston_subsurface_commit(sub);
+ 			}
+ 		}
+ 	}
++	return pts_exsit;
+ }
+ static void update_next_repaint_time(struct weston_compositor *compositor)
+ {
+@@ -3527,6 +3543,27 @@ surface_set_pts(struct wl_client *client,
+ 		weston_log("\n surface_set_pts invalid input\n");
+ 	}
+ }
++static bool need_schedule_repaint(void* repaint_data, bool pts_exist)
++{
++	bool need_repaint = false;
++	struct drm_output_state *output_state;
++	struct drm_output_state *tmp;
++	struct drm_pending_state *pending_state = repaint_data;
++	bool pending_state_empty = true;
++	wl_list_for_each_safe(output_state, tmp, &pending_state->output_list,
++					  link) {
++		struct drm_plane_state *plane_state;
++		wl_list_for_each(plane_state, &output_state->plane_list, link) {
++			if (plane_state) {
++				pending_state_empty = false;
++				break;
++			}
++		}
++	}
++	if (pending_state_empty && pts_exist)
++		need_repaint = true;
++	return need_repaint;
++}
+ static int
+ output_repaint_timer_handler(void *data)
+ {
+@@ -3536,10 +3573,18 @@ output_repaint_timer_handler(void *data)
+ 	void *repaint_data = NULL;
+ 	int ret = 0;
+ 	bool dirty = false;
++	bool pts_exsit = false;
++	bool need_repaint = false;
+ 
++	struct timespec t1;
+ 	weston_compositor_read_presentation_clock(compositor, &now);
++	int64_t mdiff;
++	mdiff = timespec_sub_to_msec(&now, &compositor->last_repaint_start);
++	if (mdiff > 17)
++		weston_log("\n output_repaint_timer_handler %d now (%ld.%09ld) last (%ld.%09ld) diff:%lld\n", __LINE__,
++			now.tv_sec, now.tv_nsec, compositor->last_repaint_start.tv_sec, compositor->last_repaint_start.tv_nsec, mdiff);
+ 	compositor->last_repaint_start = now;
+-	check_commit_video_surface(compositor);
++	pts_exsit = check_commit_video_surface(compositor, now);
+ 
+ 	if (compositor->backend->repaint_begin)
+ 		repaint_data = compositor->backend->repaint_begin(compositor);
+@@ -3553,15 +3598,10 @@ output_repaint_timer_handler(void *data)
+ #endif
+ 	wl_list_for_each(output, &compositor->output_list, link) {
+ 		ret = weston_output_maybe_repaint(output, &now, repaint_data);
+-		if (output->repaint_status == REPAINT_AWAITING_COMPLETION)
+-			dirty = true;
+ 		if (ret)
+ 			break;
+ 	}
+-	if (!dirty) {
+-		update_next_repaint_time(compositor);
+-		return 0;
+-	}
++
+ #ifdef ENABLE_DRM_HELP
+ 	if (compositor->aml_log_enable && compositor->aml_log_start) {
+ 		compositor->backend->print_output_status(compositor, repaint_data, compositor->aml_logfile);
+@@ -3576,6 +3616,7 @@ output_repaint_timer_handler(void *data)
+ 		}
+ 	}
+ #endif
++	need_repaint = need_schedule_repaint(repaint_data, pts_exsit);
+ 
+ 	if (ret == 0) {
+ 		if (compositor->backend->repaint_flush)
+@@ -3597,8 +3638,21 @@ output_repaint_timer_handler(void *data)
+ 	wl_list_for_each(output, &compositor->output_list, link)
+ 		output->repainted = false;
+ 
+-	update_next_repaint_time(compositor);
+-
++	int64_t take;
++	weston_compositor_read_presentation_clock(compositor, &t1);
++	take =  timespec_sub_to_msec(&t1, &now);
++	if (take >= 10)
++		weston_log("\n timer_handler %d start (%ld.%09ld) end (%ld.%09ld) take:%lld\n", __LINE__,
++			now.tv_sec, now.tv_nsec, t1.tv_sec, t1.tv_nsec, take);
++	if ( need_repaint ) {
++		wl_list_for_each(output, &compositor->output_list, link) {
++				weston_log("\n %s %d ret:%d  need_repaint:%d\n", __FUNCTION__,__LINE__,ret, need_repaint);
++				weston_output_schedule_repaint_reset(output);
++				weston_output_schedule_repaint(output);
++				return 0;
++			}
++	}
++	output_repaint_timer_arm(compositor);
+ 	return 0;
+ }
+ 
+@@ -3655,7 +3709,7 @@ weston_output_finish_frame(struct weston_output *output,
+ 	 * If timestamp of latest vblank is given, it must always go forwards.
+ 	 * If not given, INVALID flag must be set.
+ 	 */
+-	/*if (stamp)
++	if (stamp)
+ 		assert(timespec_sub_to_nsec(stamp, &output->frame_time) >= 0);
+ 	else
+ 		assert(presented_flags & WP_PRESENTATION_FEEDBACK_INVALID);
+@@ -3666,7 +3720,7 @@ weston_output_finish_frame(struct weston_output *output,
+ 	 * timebase to work against, so any delay just wastes time. Push a
+ 	 * repaint as soon as possible so we can get on with it. */
+ 	if (!stamp) {
+-		//output->next_repaint = now;
++		output->next_repaint = now;
+ 		goto out;
+ 	}
+ 
+@@ -3682,7 +3736,7 @@ weston_output_finish_frame(struct weston_output *output,
+ 						  output->msc,
+ 						  presented_flags);
+ 
+-	/*output->frame_time = *stamp;
++	output->frame_time = *stamp;
+ 
+ 	timespec_add_nsec(&output->next_repaint, stamp, refresh_nsec);
+ 	timespec_add_msec(&output->next_repaint, &output->next_repaint,
+@@ -3704,18 +3758,18 @@ weston_output_finish_frame(struct weston_output *output,
+ 	 * the deadline given by repaint_msec? In that case we delay until
+ 	 * the deadline of the next frame, to give clients a more predictable
+ 	 * timing of the repaint cycle to lock on. */
+-	/*if (presented_flags == WP_PRESENTATION_FEEDBACK_INVALID &&
++	if (presented_flags == WP_PRESENTATION_FEEDBACK_INVALID &&
+ 	    msec_rel < 0) {
+ 		while (timespec_sub_to_nsec(&output->next_repaint, &now) < 0) {
+ 			timespec_add_nsec(&output->next_repaint,
+ 					  &output->next_repaint,
+ 					  refresh_nsec);
+ 		}
+-	}*/
++	}
+ 
+ out:
+ 	output->repaint_status = REPAINT_SCHEDULED;
+-	//output_repaint_timer_arm(compositor);
++	output_repaint_timer_arm(compositor);
+ }
+ 
+ 
+@@ -4507,6 +4561,7 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
+ 						continue;
+ 					weston_log("\n surface insert video surface\n", sub->surface);
+ 					wl_list_insert(&surface->compositor->video_surface_list, &sub->surface->link);
++					break;
+ 				}
+ 			}
+ 			push_sub_surface_to_queue(sub);
+diff --git a/libweston/renderer-gl/gl-renderer.c b/libweston/renderer-gl/gl-renderer.c
+old mode 100644
+new mode 100755
+index 98e59b6..5a3eda5
+--- a/libweston/renderer-gl/gl-renderer.c
++++ b/libweston/renderer-gl/gl-renderer.c
+@@ -1126,7 +1126,7 @@ draw_paint_node(struct weston_paint_node *pnode,
+ 		gs->used_in_output_repaint = true;
+ 	}
+ 
+-#if MESON_VIDEO_PLAN_SUPPORT
++/*#if MESON_VIDEO_PLAN_SUPPORT
+ 	if (pixman_region32_not_empty(&pnode->view->transform.transparent)) {
+ 		glBlendFunc(GL_ONE, GL_ZERO);
+ 		struct gl_shader_config config = {
+@@ -1140,7 +1140,7 @@ draw_paint_node(struct weston_paint_node *pnode,
+ 					&repaint, &pnode->view->transform.transparent, &config);
+ 		gs->used_in_output_repaint = true;
+ 	}
+-#endif
++#endif*/
+ 
+ 	pixman_region32_fini(&surface_blend);
+ 	pixman_region32_fini(&surface_opaque);
+@@ -1157,8 +1157,12 @@ repaint_views(struct weston_output *output, pixman_region32_t *damage)
+ 
+ 	wl_list_for_each_reverse(pnode, &output->paint_node_z_order_list,
+ 				 z_order_link) {
+-		if (pnode->view->plane == &compositor->primary_plane)
++		if (pnode->view->plane == &compositor->primary_plane) {
++			if (pnode->view->alpha != 0.0) 
++			{
+ 			draw_paint_node(pnode, damage);
++			}
++		}
+ 	}
+ }
+ 
+@@ -1623,6 +1627,14 @@ blit_shadow_to_output(struct weston_output *output,
+  * Depending on the underlying hardware, violating that assumption could
+  * result in seeing through to another display plane.
+  */
++static uint64_t getCuerrntTimeMillis()
++{
++	struct timespec t;
++	t.tv_sec = t.tv_nsec = 0;
++	clock_gettime(CLOCK_MONOTONIC,&t);
++	uint64_t mono_ns = ((uint64_t)(t.tv_sec))*1000000000LL + t.tv_nsec;
++	return mono_ns/1000LL;
++}
+ static void
+ gl_renderer_repaint_output(struct weston_output *output,
+ 			   pixman_region32_t *output_damage)
+@@ -1639,6 +1651,8 @@ gl_renderer_repaint_output(struct weston_output *output,
+ 	enum gl_border_status border_status = BORDER_STATUS_CLEAN;
+ 	struct weston_paint_node *pnode;
+ 
++	uint64_t start,end, diff;
++	start = getCuerrntTimeMillis();
+ 	assert(output->from_blend_to_output_by_backend ||
+ 	       output->from_blend_to_output == NULL || shadow_exists(go));
+ 
+@@ -1795,6 +1809,10 @@ gl_renderer_repaint_output(struct weston_output *output,
+ 	update_buffer_release_fences(compositor, output);
+ 
+ 	gl_renderer_garbage_collect_programs(gr);
++	end = getCuerrntTimeMillis();
++	diff = end-start;
++	if (diff > 8000)
++	weston_log("\n %s %d take:%lld(us)\n", __FUNCTION__,__LINE__,diff);
+ }
+ 
+ static int
