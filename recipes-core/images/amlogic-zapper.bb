@@ -26,7 +26,7 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'sysvinit util-linux-agetty', '', d)} \
     fuse-exfat \
     exfat-utils \
-    ntfs-3g \
+    ntfs-3g ntfsprogs\
     glib-2.0 \
     gnutls \
     jansson \
