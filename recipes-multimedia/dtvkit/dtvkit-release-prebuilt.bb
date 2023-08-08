@@ -34,6 +34,7 @@ CONFIG:ah212-pip = "config_ah212_pip.xml"
 CONFIG:t5d = "config_t5d.xml"
 CONFIG:t5w = "config_t5w.xml"
 CONFIG:bf201 = "config_bf201.xml"
+CONFIG:bg201 = "config_bg201.xml"
 
 S = "${WORKDIR}/git"
 
