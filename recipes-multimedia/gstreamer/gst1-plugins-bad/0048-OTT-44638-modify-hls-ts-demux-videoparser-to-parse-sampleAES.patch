@@ -1,30 +1,5 @@
-From 53fecbb5ef5d02d7e97c98818c847bb9eb72c81c Mon Sep 17 00:00:00 2001
-From: "gaojie.song" <gaojie.song@amlogic.com>
-Date: Tue, 25 Jul 2023 10:42:47 +0800
-Subject: [PATCH] modify hls ts demux videoparser to parse sampleAES
-
----
- ext/hls/gsthlsdemux.c                     | 114 ++++-
- ext/hls/gsthlsdemux.h                     |   7 +
- ext/hls/m3u8.c                            |  69 ++-
- ext/hls/m3u8.h                            |  12 +
- gst-libs/gst/mpegts/gstmpegtsdescriptor.c |   4 +-
- gst-libs/gst/mpegts/gstmpegtsdescriptor.h |   1 +
- gst-libs/gst/mpegts/gstmpegtssection.c    |  13 +
- gst-libs/gst/mpegts/gstmpegtssection.h    |   7 +-
- gst/mpegtsdemux/mpegtsbase.c              |   2 +-
- gst/mpegtsdemux/mpegtspacketizer.c        |  18 +-
- gst/mpegtsdemux/mpegtspacketizer.h        |   1 +
- gst/mpegtsdemux/tsdemux.c                 | 508 +++++++++++++++++++++-
- gst/mpegtsdemux/tsdemux.h                 |   2 +
- gst/videoparsers/gsth264parse.c           |  86 +++-
- gst/videoparsers/gsth264parse.h           |   5 +
- gst/videoparsers/gsth265parse.c           | 135 +++++-
- gst/videoparsers/gsth265parse.h           |   5 +
- 17 files changed, 963 insertions(+), 26 deletions(-)
-
 diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
-index 7e6be7a..049b21a 100644
+index 7e6be7a..049b21a 100755
 --- a/ext/hls/gsthlsdemux.c
 +++ b/ext/hls/gsthlsdemux.c
 @@ -61,9 +61,13 @@ GST_DEBUG_CATEGORY (gst_hls_demux_debug);
@@ -512,7 +487,7 @@ index ad75110..107cb92 100644
  
    base = GST_MPEGTS_BASE (parent);
 diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
-index 151717d..fd9d987 100644
+index 151717d..d47ae6c 100644
 --- a/gst/mpegtsdemux/mpegtspacketizer.c
 +++ b/gst/mpegtsdemux/mpegtspacketizer.c
 @@ -828,6 +828,10 @@ mpegts_packetizer_next_packet (MpegTSPacketizer2 * packetizer,
@@ -543,7 +518,16 @@ index 151717d..fd9d987 100644
        return mpegts_packetizer_parse_packet (packetizer, packet);
      }
    }
-@@ -896,6 +908,10 @@ mpegts_packetizer_clear_packet (MpegTSPacketizer2 * packetizer,
+@@ -878,6 +890,8 @@ mpegts_packetizer_process_next_packet (MpegTSPacketizer2 * packetizer)
+   MpegTSPacketizerPacket packet;
+   MpegTSPacketizerPacketReturn ret;
+ 
++  memset(&packet, 0, sizeof(MpegTSPacketizerPacket));
++
+   ret = mpegts_packetizer_next_packet (packetizer, &packet);
+   if (ret != PACKET_NEED_MORE)
+     mpegts_packetizer_clear_packet (packetizer, &packet);
+@@ -896,6 +910,10 @@ mpegts_packetizer_clear_packet (MpegTSPacketizer2 * packetizer,
      if (packetizer->map_size - packetizer->map_offset < packet_size)
        mpegts_packetizer_flush_bytes (packetizer, packetizer->map_offset);
    }
@@ -567,7 +551,7 @@ index 6444e81..0f7d4a7 100644
  
  typedef struct
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index 53e94ac..9408c5d 100644
+index 53e94ac..9408c5d 100755
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
 @@ -51,6 +51,7 @@
@@ -1671,6 +1655,3 @@ index f523649..c529c81 100644
  };
  
  struct _GstH265ParseClass
--- 
-2.33.0
-
