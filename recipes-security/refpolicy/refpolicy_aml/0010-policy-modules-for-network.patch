@@ -1,0 +1,126 @@
+From cefb46749649bcc8ccf748053efeb256e8acd264 Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Thu, 13 Jul 2023 14:30:39 +0800
+Subject: [PATCH] policy/modules: for network
+
+Change-Id: I7ab6dc4b03dac752d79d45dd38cf498e58214771
+---
+ policy/modules/roles/sysadm.te      |  1 +
+ policy/modules/services/ntp.te      |  2 ++
+ policy/modules/system/sysnetwork.te | 10 ++++++++++
+ policy/modules/system/systemd.if    | 21 +++++++++++++++++++++
+ policy/modules/system/systemd.te    |  1 +
+ 5 files changed, 35 insertions(+)
+
+diff --git a/policy/modules/roles/sysadm.te b/policy/modules/roles/sysadm.te
+index 2243f6c3b..2621356ab 100644
+--- a/policy/modules/roles/sysadm.te
++++ b/policy/modules/roles/sysadm.te
+@@ -68,6 +68,7 @@ init_pgm_entrypoint(sysadm_t)
+ init_rw_inherited_stream_socket(sysadm_t)
+ kernel_use_fds(sysadm_t)
+ systemd_watch_journal_files(sysadm_t)
++systemd_dbus_chat_networkd(sysadm_t)
+ 
+ fs_search_tracefs(sysadm_t)
+ fs_manage_configfs_dirs(sysadm_t)
+diff --git a/policy/modules/services/ntp.te b/policy/modules/services/ntp.te
+index 2707801a2..c22e56cb0 100644
+--- a/policy/modules/services/ntp.te
++++ b/policy/modules/services/ntp.te
+@@ -136,6 +136,8 @@ term_use_ptmx(ntpd_t)
+ auth_use_nsswitch(ntpd_t)
+ 
+ init_exec_script_files(ntpd_t)
++init_dbus_send_script(ntpd_t)
++init_get_generic_units_status(ntpd_t)
+ 
+ logging_send_syslog_msg(ntpd_t)
+ 
+diff --git a/policy/modules/system/sysnetwork.te b/policy/modules/system/sysnetwork.te
+index a77738924..a1d79af7f 100644
+--- a/policy/modules/system/sysnetwork.te
++++ b/policy/modules/system/sysnetwork.te
+@@ -304,6 +304,8 @@ allow ifconfig_t self:netlink_generic_socket create_socket_perms;
+ allow ifconfig_t self:netlink_route_socket create_netlink_socket_perms;
+ allow ifconfig_t self:netlink_xfrm_socket create_netlink_socket_perms;
+ allow ifconfig_t self:tcp_socket { create ioctl };
++allow ifconfig_t bin_t:file { map read execute };
++allow ifconfig_t initrc_t:udp_socket { read write };
+ 
+ # Allow "ip netns" to remount /var/run/netns and to mount network namespace files on /var/run/netns/$NSNAME
+ allow ifconfig_t ifconfig_runtime_t:dir mounton;
+@@ -326,11 +328,14 @@ corenet_rw_tun_tap_dev(ifconfig_t)
+ dev_read_sysfs(ifconfig_t)
+ # for IPSEC setup:
+ dev_read_urand(ifconfig_t)
++dev_rw_generic_chr_files(ifconfig_t)
+ 
+ domain_use_interactive_fds(ifconfig_t)
+ 
+ files_read_etc_files(ifconfig_t)
+ files_read_etc_runtime_files(ifconfig_t)
++files_search_data(ifconfig_t)
++files_manage_data_files(ifconfig_t)
+ 
+ fs_getattr_xattr_fs(ifconfig_t)
+ fs_read_nsfs_files(ifconfig_t)
+@@ -349,6 +354,11 @@ files_dontaudit_read_root_files(ifconfig_t)
+ 
+ init_use_fds(ifconfig_t)
+ init_use_script_ptys(ifconfig_t)
++init_rw_kobject_uevent_sockets(ifconfig_t)
++init_rw_routing_sockets(ifconfig_t)
++init_rw_dgram_sockets(ifconfig_t)
++init_rw_script_stream_sockets(ifconfig_t)
++init_rw_script_tmp_files(ifconfig_t)
+ 
+ logging_send_syslog_msg(ifconfig_t)
+ 
+diff --git a/policy/modules/system/systemd.if b/policy/modules/system/systemd.if
+index 5dbd5999f..8decef8a3 100644
+--- a/policy/modules/system/systemd.if
++++ b/policy/modules/system/systemd.if
+@@ -790,6 +790,27 @@ interface(`systemd_rw_networkd_netlink_route_sockets',`
+ 	allow $1 systemd_networkd_t:netlink_route_socket client_stream_socket_perms;
+ ')
+ 
++########################################
++## <summary>
++##   Send and receive messages from
++##   systemd networkd over dbus.
++## </summary>
++## <param name="domain">
++##   <summary>
++##     Domain allowed access.
++##   </summary>
++## </param>
++#
++interface(`systemd_dbus_chat_networkd',`
++	gen_require(`
++		type systemd_networkd_t;
++		class dbus send_msg;
++	')
++
++	allow $1 systemd_networkd_t:dbus send_msg;
++	allow systemd_networkd_t $1:dbus send_msg;
++')
++
+ #######################################
+ ## <summary>
+ ##  Allow domain to list dirs under /run/systemd/netif
+diff --git a/policy/modules/system/systemd.te b/policy/modules/system/systemd.te
+index 4395be09b..c605f2e9b 100644
+--- a/policy/modules/system/systemd.te
++++ b/policy/modules/system/systemd.te
+@@ -828,6 +828,7 @@ auth_use_nsswitch(systemd_networkd_t)
+ 
+ init_dgram_send(systemd_networkd_t)
+ init_read_state(systemd_networkd_t)
++init_dbus_send_script(systemd_networkd_t)
+ 
+ logging_send_syslog_msg(systemd_networkd_t)
+ 
+-- 
+2.29.0
+
