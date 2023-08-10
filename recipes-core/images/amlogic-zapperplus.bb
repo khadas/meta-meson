@@ -107,6 +107,7 @@ IMAGE_INSTALL += " \
         ', '', d)} \
     pulseaudio \
     ffmpeg \
+    gst-agmplayer \
     libopus \
     playscripts \
     ${@bb.utils.contains('DISTRO_FEATURES', 'westeros', \
