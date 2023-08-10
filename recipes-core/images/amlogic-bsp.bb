@@ -90,6 +90,7 @@ IMAGE_INSTALL += " \
         gst-plugin-aml-demux \
         gst-aml-drm-plugins \
         gstreamer1.0-libav \
+        gst-agmplayer \
         gst-player \
         ', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'weston', \
