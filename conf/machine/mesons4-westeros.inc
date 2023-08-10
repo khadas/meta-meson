@@ -18,11 +18,8 @@ MACHINE_EXTRA_RRECOMMENDS += " \
         gpu \
         "
 
-CHIPSET_NAME = "S805X2"
-KERNEL_DEVICETREE = "s4_s805x2_aq222_linux_1g.dtb"
-UBOOT_MACHINE = "s4_aq222_config"
-KERNEL_MODULE_AUTOLOAD += " cxd2856_fe_64 r836_fe_64 av2018_fe_64 "
-KERNEL_MODULE_AUTOLOAD += " hdr10_tmo_alg_64"
+KERNEL_MODULE_AUTOLOAD += " cxd2856_fe_32 r836_fe_32 av2018_fe_32 "
+KERNEL_MODULE_AUTOLOAD += " hdr10_tmo_alg_32"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-dummy_codec"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-aml_t9015"
 KERNEL_MODULE_AUTOLOAD += " snd_soc"
@@ -59,15 +56,13 @@ DISTRO_FEATURES:append = " aml-dtv "
 DISTRO_FEATURES:append = " recovery "
 DISTRO_FEATURES:append = " swupdate "
 
-OVERRIDES .= ":aq222:s4:onepass"
+OVERRIDES .= ":s4:onepass"
 MACHINEOVERRIDES .= ":client"
 
 DISTRO_FEATURES:append = " bt-qca "
 DISTRO_FEATURES:append = " bluetooth bluez5 "
 EXTRA_BLUETOOTH_STUFF := "${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', bb.utils.contains('DISTRO_FEATURES', 'bluez5', ' bluez5', ' bluez4', d), '', d)}"
 DISTRO_FEATURES:append = "${EXTRA_BLUETOOTH_STUFF}"
-
-TDK_VERSION:s4 = "v3.8/dev/S805X2"
 
 # For YouTube Cert. Now it's for 2023
 DEVICE_PROPERTY_FIRMWARE_VERSION = "1.0.0"
