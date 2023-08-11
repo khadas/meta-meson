@@ -32,3 +32,8 @@ fi
 if [ -e $PATH/drivers/amlogic/ca_cert/aml-ca-cert.ko ];then
     /sbin/insmod $PATH/drivers/amlogic/ca_cert/aml-ca-cert.ko
 fi
+
+if [ -e $PATH/media/ci.ko ]; then
+    /sbin/insmod $PATH/media/ci.ko
+fi
+
