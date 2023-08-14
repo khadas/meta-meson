@@ -143,21 +143,15 @@ selinux_relabel() {
             echo "selinux relabel"
             touch $ROOT_MOUNT/data/.autorelabel
             chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data
-            #chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/
-            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data/etc/machine-id
-            #chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /lost+found
-            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data/.autorelabel
         fi
     else
         if [ -f ${ROOT_MOUNT}/.autorelabel ]; then
             echo "selinux relabel"
-            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /data
-            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/
-            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /etc/machine-id
+            relabel_list="/data /etc"
             if [ -d /$ROOT_MOUNT/lost+found ]; then
-                chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts /lost+found
+                relabel_list="${relabel_list} /lost+found"
             fi
-
+            chroot ${ROOT_MOUNT} /sbin/setfiles -F /etc/selinux/standard/contexts/files/file_contexts ${relabel_list}
             rm ${ROOT_MOUNT}/.autorelabel
         fi
     fi
