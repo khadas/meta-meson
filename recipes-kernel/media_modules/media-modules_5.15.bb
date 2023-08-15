@@ -17,6 +17,7 @@ PV ?= "git${SRCPV}"
 do_configure[noexec] = "1"
 
 MEDIA_MODULES_UCODE_BIN = "${S}/firmware/${CHIPSET_NAME}/video_ucode.bin"
+MEDIA_MODULES_UCODE_BIN:t5d = "${S}/firmware/video_ucode.bin"
 
 do_install() {
     MEDIADIR=${D}/lib/modules/${KERNEL_VERSION}/kernel/media

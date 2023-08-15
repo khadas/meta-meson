@@ -3,7 +3,6 @@
 
 #@DESCRIPTION: Machine configuration for meson systems
 
-include conf/machine/include/mesonsc2_k5.4_64b.inc
 include conf/machine/include/amlogic_westeros.inc
 
 PREFERRED_PROVIDER_virtual/mesa = "libgles-eabihf-dvalin-wayland-drm"

@@ -6,7 +6,7 @@ SRC_URI:append = " \
     'file://10-video.rules', '', d)} \
 "
 SRC_URI:append = " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', \
     'file://block.rules', '', d)} \
 "
 

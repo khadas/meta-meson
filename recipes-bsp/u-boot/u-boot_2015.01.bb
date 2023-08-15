@@ -73,6 +73,8 @@ export BL2_ARG = ""
 
 CFLAGS +=" -DCONFIG_YOCTO "
 KCFLAGS +=" -DCONFIG_YOCTO "
+BUILD_GPT_FLAG=""
+BUILD_GPT_FLAG:k5.15="--gpt"
 do_compile () {
     cd ${S}
     cp -f fip/mk .
@@ -93,16 +95,16 @@ do_compile () {
                 --out=${S}/bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img
             if ${@bb.utils.contains('DISTRO_FEATURES','uboot-abmode','true','false',d)}; then
                 echo "process: mk ${UBOOT_TYPE%_config} --vab --ab-update ${BL30_ARG} ${BL2_ARG}"
-                LDFLAGS= ./mk ${UBOOT_TYPE%_config} --vab --ab-update ${BL30_ARG} ${BL2_ARG}
+                LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --vab --ab-update ${BL30_ARG} ${BL2_ARG}
             else
                 echo "process: mk ${UBOOT_TYPE%_config} --bl32 bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}"
-                LDFLAGS= ./mk ${UBOOT_TYPE%_config} --bl32 bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
+                LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --bl32 bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
             fi
         else
-            LDFLAGS= ./mk ${UBOOT_TYPE%_config} --bl32 bl32/bl32_3.8/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
+            LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --bl32 bl32/bl32_3.8/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
         fi
     else
-        LDFLAGS= ./mk ${UBOOT_TYPE%_config}
+        LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG}
     fi
     cp -rf build/* fip/
 }

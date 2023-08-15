@@ -32,12 +32,16 @@ do_install() {
         sed -i "s/#load_ramdisk_ko/load_ramdisk_ko/g" ${D}/init
     fi
 
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'true', 'false', d)}; then
        sed -i "s/#upstream_emmc_mount/upstream_emmc_mount/g" ${D}/init
     fi
 }
 
 do_install:append:t5w() {
+    sed -i '/boot_root(/a\\tattach_unifykey' ${D}/init
+}
+
+do_install:append:t5d() {
     sed -i '/boot_root(/a\\tattach_unifykey' ${D}/init
 }
 
