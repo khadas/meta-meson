@@ -1,5 +1,5 @@
 diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
-index 7e6be7a..049b21a 100755
+index 7e6be7a..049b21a 100644
 --- a/ext/hls/gsthlsdemux.c
 +++ b/ext/hls/gsthlsdemux.c
 @@ -61,9 +61,13 @@ GST_DEBUG_CATEGORY (gst_hls_demux_debug);
@@ -487,7 +487,7 @@ index ad75110..107cb92 100644
  
    base = GST_MPEGTS_BASE (parent);
 diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
-index 151717d..d47ae6c 100644
+index 151717d..41297a9 100644
 --- a/gst/mpegtsdemux/mpegtspacketizer.c
 +++ b/gst/mpegtsdemux/mpegtspacketizer.c
 @@ -828,6 +828,10 @@ mpegts_packetizer_next_packet (MpegTSPacketizer2 * packetizer,
@@ -551,7 +551,7 @@ index 6444e81..0f7d4a7 100644
  
  typedef struct
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index 53e94ac..9408c5d 100755
+index 53e94ac..9408c5d 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
 @@ -51,6 +51,7 @@
@@ -1196,7 +1196,7 @@ index 2316518..122eb18 100644
  
  struct _GstTSDemuxClass
 diff --git a/gst/videoparsers/gsth264parse.c b/gst/videoparsers/gsth264parse.c
-index aac388b..0d8d7ae 100644
+index aac388b..4017753 100644
 --- a/gst/videoparsers/gsth264parse.c
 +++ b/gst/videoparsers/gsth264parse.c
 @@ -72,20 +72,33 @@ enum
@@ -1254,7 +1254,62 @@ index aac388b..0d8d7ae 100644
  }
  
  static void
-@@ -1002,6 +1020,30 @@ gst_h264_parse_process_nal (GstH264Parse * h264parse, GstH264NalUnit * nalu)
+@@ -811,6 +829,54 @@ gst_h264_parse_process_sei (GstH264Parse * h264parse, GstH264NalUnit * nalu)
+   g_array_free (messages, TRUE);
+ }
+ 
++static guint
++find_next_unescape_index(guint8 * data, guint offset, guint limit)
++{
++    for (guint i = offset; i < limit - 2; i++) {
++        if (data[i] == 0x00 && data[i + 1] == 0x00 && data[i + 2] == 0x03) {
++            return i;
++        }
++    }
++    return limit;
++}
++
++/* Unescapes data replacing occurrences of [0, 0, 3] with [0, 0] and returns the new size */
++static guint
++gst_h264_unescape_stream(guint8 * data, guint limit)
++{
++    guint *scratch_escape_positions = (guint *)g_malloc(limit);
++    guint scratch_escape_positions_num = 0;
++    guint position = 0;
++
++    while (position < limit) {
++        position = find_next_unescape_index(data, position, limit);
++        if (position < limit) {
++            scratch_escape_positions[scratch_escape_positions_num] = position;
++            scratch_escape_positions_num++;
++            position += 3;
++        }
++    }
++
++    guint scratch_escape_count = scratch_escape_positions_num;
++    guint escaped_position = 0; /* The position being read from */
++    guint unescaped_position = 0; /* The position being written to */
++    for (guint i = 0; i < scratch_escape_count; i++) {
++        guint next_escape_position = scratch_escape_positions[i];
++        guint copy_length = next_escape_position - escaped_position;
++        memmove(data + unescaped_position, data + escaped_position, copy_length);
++        unescaped_position += copy_length;
++        data[unescaped_position++] = 0;
++        data[unescaped_position++] = 0;
++        escaped_position += copy_length + 3;
++    }
++
++    guint unescaped_length = limit - scratch_escape_count;
++    guint remaining_length = unescaped_length - unescaped_position;
++    memmove(data + unescaped_position, data + escaped_position, remaining_length);
++    g_free(scratch_escape_positions);
++    return unescaped_length;
++}
++
+ /* caller guarantees 2 bytes of nal payload */
+ static gboolean
+ gst_h264_parse_process_nal (GstH264Parse * h264parse, GstH264NalUnit * nalu)
+@@ -1002,6 +1068,33 @@ gst_h264_parse_process_nal (GstH264Parse * h264parse, GstH264NalUnit * nalu)
        break;
    }
  
@@ -1263,10 +1318,13 @@ index aac388b..0d8d7ae 100644
 +      h264parse->subsample_writer = gst_byte_writer_new_with_size(sizeof (guint16) + sizeof (guint32), FALSE);
 +    }
 +    if (h264parse->encryption_mode == GST_H264_PARSE_ENCRYPTION_CBCS) {
++      guint newSize = 0;
 +      switch (nal_type) {
 +      case GST_H264_NAL_SLICE:
 +      case GST_H264_NAL_SLICE_IDR:
 +        if (nalu->size > 48) {
++          newSize = gst_h264_unescape_stream(nalu->data + nalu->offset, nalu->size);
++          nalu->size = newSize;
 +          gst_byte_writer_put_uint16_be (h264parse->subsample_writer, 32 + 4);
 +          gst_byte_writer_put_uint32_be (h264parse->subsample_writer, nalu->size - 32);
 +        } else {
@@ -1285,7 +1343,7 @@ index aac388b..0d8d7ae 100644
    /* if AVC output needed, collect properly prefixed nal in adapter,
     * and use that to replace outgoing buffer data later on */
    if (h264parse->transform) {
-@@ -1394,6 +1436,21 @@ end:
+@@ -1394,6 +1487,21 @@ end:
  
    gst_h264_parse_parse_frame (parse, frame);
  
@@ -1307,7 +1365,7 @@ index aac388b..0d8d7ae 100644
    return gst_base_parse_finish_frame (parse, frame, framesize);
  
  more:
-@@ -1534,7 +1591,7 @@ gst_h264_parse_get_par (GstH264Parse * h264parse, gint * num, gint * den)
+@@ -1534,7 +1642,7 @@ gst_h264_parse_get_par (GstH264Parse * h264parse, gint * num, gint * den)
  }
  
  static GstCaps *
@@ -1316,7 +1374,7 @@ index aac388b..0d8d7ae 100644
  {
    GstCaps *caps = NULL;
    const gchar **profiles = NULL;
-@@ -1653,7 +1710,10 @@ get_compatible_profile_caps (GstH264SPS * sps)
+@@ -1653,7 +1761,10 @@ get_compatible_profile_caps (GstH264SPS * sps)
  
    if (profiles) {
      GValue value = G_VALUE_INIT;
@@ -1328,7 +1386,7 @@ index aac388b..0d8d7ae 100644
      for (i = 0; profiles[i]; i++) {
        g_value_init (&value, G_TYPE_STRING);
        g_value_set_string (&value, profiles[i]);
-@@ -1676,7 +1736,11 @@ ensure_caps_profile (GstH264Parse * h264parse, GstCaps * caps, GstH264SPS * sps)
+@@ -1676,7 +1787,11 @@ ensure_caps_profile (GstH264Parse * h264parse, GstCaps * caps, GstH264SPS * sps)
  
    peer_caps = gst_pad_get_current_caps (GST_BASE_PARSE_SRC_PAD (h264parse));
    if (!peer_caps || !gst_caps_can_intersect (caps, peer_caps)) {
@@ -1341,7 +1399,7 @@ index aac388b..0d8d7ae 100644
  
      if (peer_caps)
        gst_caps_unref (peer_caps);
-@@ -1690,7 +1754,7 @@ ensure_caps_profile (GstH264Parse * h264parse, GstCaps * caps, GstH264SPS * sps)
+@@ -1690,7 +1805,7 @@ ensure_caps_profile (GstH264Parse * h264parse, GstCaps * caps, GstH264SPS * sps)
    if (peer_caps && !gst_caps_can_intersect (caps, peer_caps)) {
      GstStructure *structure;
  
@@ -1350,7 +1408,7 @@ index aac388b..0d8d7ae 100644
      if (compat_caps != NULL) {
        GstCaps *res_caps = NULL;
  
-@@ -2777,6 +2841,8 @@ gst_h264_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+@@ -2777,6 +2892,8 @@ gst_h264_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
    }
  
    str = gst_caps_get_structure (caps, 0);
@@ -1359,7 +1417,7 @@ index aac388b..0d8d7ae 100644
  
    /* accept upstream info if provided */
    gst_structure_get_int (str, "width", &h264parse->width);
-@@ -2928,7 +2994,13 @@ gst_h264_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+@@ -2928,7 +3045,13 @@ gst_h264_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
      GstCaps *in_caps;
  
      /* prefer input type determined above */
@@ -1398,7 +1456,7 @@ index a8e0120..19fbeb7 100644
  
  struct _GstH264ParseClass
 diff --git a/gst/videoparsers/gsth265parse.c b/gst/videoparsers/gsth265parse.c
-index 4113710..969b6d1 100644
+index 4113710..d38765b 100644
 --- a/gst/videoparsers/gsth265parse.c
 +++ b/gst/videoparsers/gsth265parse.c
 @@ -68,20 +68,31 @@ enum
@@ -1454,13 +1512,14 @@ index 4113710..969b6d1 100644
  }
  
  static void
-@@ -559,6 +575,52 @@ gst_h265_parse_process_sei (GstH265Parse * h265parse, GstH265NalUnit * nalu)
+@@ -559,6 +575,54 @@ gst_h265_parse_process_sei (GstH265Parse * h265parse, GstH265NalUnit * nalu)
    g_array_free (messages, TRUE);
  }
  
-+size_t findNextUnescapeIndex(guint8 *data, size_t offset, size_t limit)
++static guint
++find_next_unescape_index(guint8 * data, guint offset, guint limit)
 +{
-+    for (size_t i = offset; i < limit - 2; i++) {
++    for (guint i = offset; i < limit - 2; i++) {
 +        if (data[i] == 0x00 && data[i + 1] == 0x00 && data[i + 2] == 0x03) {
 +            return i;
 +        }
@@ -1469,45 +1528,46 @@ index 4113710..969b6d1 100644
 +}
 +
 +/* Unescapes data replacing occurrences of [0, 0, 3] with [0, 0] and returns the new size */
-+size_t unescapeStream(guint8 *data, size_t limit)
++static guint
++gst_h265_unescape_stream(guint8 * data, guint limit)
 +{
-+    size_t *scratchEscapePositions = (size_t *)g_malloc(limit);
-+    size_t scratchEscapePositionsnum = 0;
-+    size_t position = 0;
++    guint *scratch_escape_positions = (guint *)g_malloc(limit);
++    guint scratch_escape_positions_num = 0;
++    guint position = 0;
 +
 +    while (position < limit) {
-+        position = findNextUnescapeIndex(data, position, limit);
++        position = find_next_unescape_index(data, position, limit);
 +        if (position < limit) {
-+            scratchEscapePositions[scratchEscapePositionsnum] = position;
-+            scratchEscapePositionsnum++;
++            scratch_escape_positions[scratch_escape_positions_num] = position;
++            scratch_escape_positions_num++;
 +            position += 3;
 +        }
 +    }
 +
-+    size_t scratchEscapeCount = scratchEscapePositionsnum;
-+    size_t escapedPosition = 0; /* The position being read from */
-+    size_t unescapedPosition = 0; /* The position being written to */
-+    for (size_t i = 0; i < scratchEscapeCount; i++) {
-+        size_t nextEscapePosition = scratchEscapePositions[i];
-+        size_t copyLength = nextEscapePosition - escapedPosition;
-+        memmove(data+unescapedPosition, data+escapedPosition, copyLength);
-+        unescapedPosition += copyLength;
-+        data[unescapedPosition++] = 0;
-+        data[unescapedPosition++] = 0;
-+        escapedPosition += copyLength + 3;
++    guint scratch_escape_count = scratch_escape_positions_num;
++    guint escaped_position = 0; /* The position being read from */
++    guint unescaped_position = 0; /* The position being written to */
++    for (guint i = 0; i < scratch_escape_count; i++) {
++        guint next_escape_position = scratch_escape_positions[i];
++        guint copy_length = next_escape_position - escaped_position;
++        memmove(data + unescaped_position, data + escaped_position, copy_length);
++        unescaped_position += copy_length;
++        data[unescaped_position++] = 0;
++        data[unescaped_position++] = 0;
++        escaped_position += copy_length + 3;
 +    }
 +
-+    size_t unescapedLength = limit - scratchEscapeCount;
-+    size_t remainingLength = unescapedLength - unescapedPosition;
-+    memmove(data+unescapedPosition, data+escapedPosition, remainingLength);
-+    g_free(scratchEscapePositions);
-+    return unescapedLength;
++    guint unescaped_length = limit - scratch_escape_count;
++    guint remaining_length = unescaped_length - unescaped_position;
++    memmove(data + unescaped_position, data + escaped_position, remaining_length);
++    g_free(scratch_escape_positions);
++    return unescaped_length;
 +}
 +
  /* caller guarantees 2 bytes of nal payload */
  static gboolean
  gst_h265_parse_process_nal (GstH265Parse * h265parse, GstH265NalUnit * nalu)
-@@ -788,6 +850,32 @@ gst_h265_parse_process_nal (GstH265Parse * h265parse, GstH265NalUnit * nalu)
+@@ -788,6 +852,33 @@ gst_h265_parse_process_nal (GstH265Parse * h265parse, GstH265NalUnit * nalu)
        break;
    }
  
@@ -1521,9 +1581,10 @@ index 4113710..969b6d1 100644
 +      if ((nal_type >= GST_H265_NAL_SLICE_TRAIL_N && nal_type <= GST_H265_NAL_SLICE_RASL_R)
 +          || (nal_type >= GST_H265_NAL_SLICE_BLA_W_LP && nal_type <= GST_H265_NAL_SLICE_CRA_NUT)) {
 +
-+        size_t newSize = unescapeStream(nalu->data + nalu->offset, nalu->size);
-+        nalu->size = newSize;
++        guint newSize = 0;
 +        if (nalu->size > 48) {
++          newSize = gst_h265_unescape_stream(nalu->data + nalu->offset, nalu->size);
++          nalu->size = newSize;
 +          gst_byte_writer_put_uint16_be (h265parse->subsample_writer, 32 + 4);
 +          gst_byte_writer_put_uint32_be (h265parse->subsample_writer, nalu->size - 32);
 +        } else {
@@ -1540,7 +1601,7 @@ index 4113710..969b6d1 100644
    /* if HEVC output needed, collect properly prefixed nal in adapter,
     * and use that to replace outgoing buffer data later on */
    if (h265parse->transform) {
-@@ -1131,6 +1219,21 @@ end:
+@@ -1131,6 +1222,21 @@ end:
  
    gst_h265_parse_parse_frame (parse, frame);
  
@@ -1562,7 +1623,7 @@ index 4113710..969b6d1 100644
    return gst_base_parse_finish_frame (parse, frame, framesize);
  
  more:
-@@ -1465,7 +1568,7 @@ get_level_string (guint8 level_idc)
+@@ -1465,7 +1571,7 @@ get_level_string (guint8 level_idc)
  }
  
  static GstCaps *
@@ -1571,7 +1632,7 @@ index 4113710..969b6d1 100644
  {
    GstCaps *caps = NULL;
    const gchar **profiles = NULL;
-@@ -1510,7 +1613,12 @@ get_compatible_profile_caps (GstH265SPS * sps)
+@@ -1510,7 +1616,12 @@ get_compatible_profile_caps (GstH265SPS * sps)
  
    if (profiles) {
      GValue value = G_VALUE_INIT;
@@ -1585,7 +1646,7 @@ index 4113710..969b6d1 100644
      for (i = 0; profiles[i]; i++) {
        g_value_init (&value, G_TYPE_STRING);
        g_value_set_string (&value, profiles[i]);
-@@ -1533,7 +1641,11 @@ ensure_caps_profile (GstH265Parse * h265parse, GstCaps * caps, GstH265SPS * sps)
+@@ -1533,7 +1644,11 @@ ensure_caps_profile (GstH265Parse * h265parse, GstCaps * caps, GstH265SPS * sps)
  
    peer_caps = gst_pad_get_current_caps (GST_BASE_PARSE_SRC_PAD (h265parse));
    if (!peer_caps || !gst_caps_can_intersect (caps, peer_caps)) {
@@ -1598,7 +1659,7 @@ index 4113710..969b6d1 100644
  
      if (peer_caps)
        gst_caps_unref (peer_caps);
-@@ -1547,7 +1659,7 @@ ensure_caps_profile (GstH265Parse * h265parse, GstCaps * caps, GstH265SPS * sps)
+@@ -1547,7 +1662,7 @@ ensure_caps_profile (GstH265Parse * h265parse, GstCaps * caps, GstH265SPS * sps)
    if (peer_caps && !gst_caps_can_intersect (caps, peer_caps)) {
      GstStructure *structure;
  
@@ -1607,7 +1668,7 @@ index 4113710..969b6d1 100644
      if (compat_caps != NULL) {
        GstCaps *res_caps = NULL;
  
-@@ -2329,6 +2441,9 @@ gst_h265_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+@@ -2329,6 +2444,9 @@ gst_h265_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
  
    str = gst_caps_get_structure (caps, 0);
  
@@ -1617,7 +1678,7 @@ index 4113710..969b6d1 100644
    /* accept upstream info if provided */
    gst_structure_get_int (str, "width", &h265parse->width);
    gst_structure_get_int (str, "height", &h265parse->height);
-@@ -2421,7 +2536,13 @@ gst_h265_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+@@ -2421,7 +2539,13 @@ gst_h265_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
      GstCaps *in_caps;
  
      /* prefer input type determined above */
