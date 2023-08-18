@@ -1,0 +1,40 @@
+From 0e303a002d1bf4d86138ee58f3f15d3a39295e30 Mon Sep 17 00:00:00 2001
+From: "kaiqiang.xiang" <kaiqiang.xiang@amlogic.com>
+Date: Fri, 18 Aug 2023 11:10:23 +0000
+Subject: [PATCH] SWPL-136361 add qtdemux set multiqueue size
+
+---
+ gst/isomp4/qtdemux.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index dbf6453..a9d106f 100755
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -7282,6 +7282,23 @@ gst_qtdemux_process_adapter (GstQTDemux * demux, gboolean force)
+ 
+             gst_qtdemux_check_send_pending_segment (demux);
+ 
++            /* check sync and set multiqueue */
++            if (2 == QTDEMUX_N_STREAMS (demux))
++            {
++              QtDemuxStream *stream_1 = QTDEMUX_NTH_STREAM (demux, 0);
++              QtDemuxStream *stream_2 = QTDEMUX_NTH_STREAM (demux, 1);
++              if ((0 == strncmp(GST_PAD_NAME (stream_1->pad), "video", 5) && 0 == strncmp(GST_PAD_NAME (stream_2->pad), "audio", 5))
++                  || (0 == strncmp(GST_PAD_NAME (stream_1->pad), "audio", 5) && 0 == strncmp(GST_PAD_NAME (stream_2->pad), "video", 5)))
++              {
++                GstStructure *s;
++                GstEvent *event;
++                s = gst_structure_new_empty ("AML-SET-MAX-BYTE-SIZE");
++                event = gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM_STICKY, s);
++                GST_DEBUG("Send SET-MAX-BYTE-SIZE Event");
++                gst_pad_push_event (stream_1->pad, event);
++              }
++            }
++
+             if (demux->moov_node_compressed) {
+               g_node_destroy (demux->moov_node_compressed);
+               g_free (demux->moov_node->data);
+-- 
+2.25.1
+
