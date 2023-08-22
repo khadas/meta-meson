@@ -87,6 +87,7 @@ IMAGE_INSTALL += " \
         gst-plugin-aml-asink \
         gst-plugin-video-sink \
         gst-plugin-aml-v4l2dec \
+        gst-plugin-aml-demux \
         gst-aml-drm-plugins \
         gstreamer1.0-libav \
         gst-player \
