@@ -79,6 +79,8 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'irdeto-sdk irdeto-cashal-rel', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dolby-ms12', 'dolby-ms12', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-dvb-ota', bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', 'aml-dvb-ota-dtvkit', 'aml-dvb-ota-dtvkit-prebuilt', d), '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-pqserver', 'aml-pqserver', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-pqserver', bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', '', 'vendor-files', d), '', d)} \
 "
 
 
@@ -88,11 +90,6 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'aml-hdi', '', d)} \
 "
 
-#    icu \
-#    aml-libdvr \
-#    aml-subtitleserver \
-#    dolby-ms12 \
-#
 
 PACKAGE_INSTALL += "base-files base-passwd initramfs-meson-boot udev-extraconf "
 

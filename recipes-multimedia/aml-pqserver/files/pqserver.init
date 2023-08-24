@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Starts PQ Server service.
+start() {
+	printf "Starting PQ Server service: \n"
+
+	/usr/bin/pqservice &
+}
+
+stop() {
+	printf "Stopping PQ Server service: \n"
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+

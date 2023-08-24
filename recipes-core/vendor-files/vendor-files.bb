@@ -22,6 +22,7 @@ SOC:ap223 = "s905y4"
 SOC:ah212 = "s905x4"
 SOC:aq222 = "s805x2"
 SOC:ap232 = "s905c3"
+SOC:bg201 = "s805c1"
 SOC:pxp = "p1_pxp"
 
 S = "${WORKDIR}/git/"
@@ -40,6 +41,9 @@ do_install() {
 			install -m 0644 -D ${S}/etc/tvconfig/${SOC}/PQ/pq_default.ini ${D}/etc/tvconfig/pq/pq_default.ini
 			if [ -e ${S}/etc/tvconfig/${SOC}/PQ/overscan.db ]; then
 				install -m 0644 -D ${S}/etc/tvconfig/${SOC}/PQ/overscan.db ${D}/etc/tvconfig/pq/overscan.db
+			fi
+			if ${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'false', 'true', d)}; then
+				sed -i 's/\/vendor\/etc\/tvconfig\/pq/\/etc\/tvconfig\/pq/g' ${D}/etc/tvconfig/pq/pq_default.ini
 			fi
 		fi
 		if [ -e ${S}/etc/tvconfig/${SOC}/tvconfig ]; then
