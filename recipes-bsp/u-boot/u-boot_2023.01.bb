@@ -51,6 +51,8 @@ DEPENDS:append = "vim-native zip-native cmake-native"
 DEPENDS:append = " riscv-none-gcc-native "
 
 DEPENDS:append = " coreutils-native python-native python-pycrypto-native "
+DEPENDS:append = "${@bb.utils.contains_any('DISTRO_FEATURES', 'partition-enc partition-enc-local', ' partition-keys ', '', d)}"
+
 #override this in customer layer bbappend for customer specific bootloader binaries
 export BL30_ARG = ""
 export BL2_ARG = ""
@@ -105,6 +107,39 @@ do_compile () {
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
 
+    if [ ! -z "${ENCRYPTED_PARTITIONS}" ]; then
+        bbnote "ENC_PART = ${ENCRYPTED_PARTITIONS}"
+        if [ "${@bb.utils.contains('DISTRO_FEATURES', 'partition-enc', 'true', 'false', d)}" = "true" ]; then
+            # Pre-encryption mode, partition key is wrapped by PWEK
+            SUFFIX=".wrapped.bin"
+        elif [ "${@bb.utils.contains('DISTRO_FEATURES', 'partition-enc-local', 'true', 'false', d)}" = "true" ]; then
+            # Local encryption mode, partition key is used as seed
+            SUFFIX=".bin"
+        else
+            bbfatal "It is likely wrong here!"
+        fi
+
+        TARGET_DIR="${DEPLOY_DIR_IMAGE}/partition_enc_data/"
+        PAIR=""
+        for part in ${ENCRYPTED_PARTITIONS}; do
+            key=${TARGET_DIR}/${part}${SUFFIX}
+            if [ -f ${key} ]; then
+                if [ -z ${PAIR} ]; then
+                    PAIR="${part}:`xxd -p ${key}`"
+                else
+                    PAIR="${PAIR};${part}:`xxd -p ${key}`"
+                fi
+            else
+                bbfatal "${part} partition is encrypted, but it cannot find ${part}${SUFFIX} in ${TARGET_DIR}"
+            fi
+        done
+        if [ ! -z ${PAIR} ]; then
+            KCFLAGS_ADD="${KCFLAGS_ADD} -DPARTITION_ENC_ARGS='\"${PAIR}\"'"
+        fi
+        export KCFLAGS="${KCFLAGS} ${KCFLAGS_ADD}"
+        bbnote "${KCFLAGS_ADD}"
+    fi
+
     LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG} ${IRDETO_UBOOT_ARG}
     #LDFLAGS= ./mk ${UBOOT_TYPE%_config}
 
@@ -116,4 +151,3 @@ do_compile () {
         cp ${S}/bl33/v2023/board/amlogic/${UBOOT_TYPE%_config}/device-keys/fip/rsa/${SOC}/rootrsa-0/key/bl33-level-3-rsa-priv.pem ${DEPLOY_DIR_IMAGE}
     fi
 }
-

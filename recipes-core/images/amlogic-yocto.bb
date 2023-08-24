@@ -3,6 +3,11 @@ SUMMARY = "Amlogic Yocto Image"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 IMAGECLASS ?= " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'selinux-image', 'core-image', d)} "
+
+# Variables should be set before including aml-security.inc
+PARTITION_NAME = "system"
+PARTITION_ENCRYPTION_KEY = "${PARTITION_NAME}.bin"
+require aml-security.inc
 inherit ${IMAGECLASS}
 
 IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', \
@@ -192,7 +197,6 @@ process_for_read_only_rootfs(){
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '', 'process_for_read_only_rootfs; ', d)}"
 
-inherit avb-dm-verity
 # The following is needed only if chained
 AVB_DMVERITY_SIGNINING_KEY = "system_rsa2048.pem"
 AVB_DMVERITY_SIGNINING_ALGORITHM = "SHA256_RSA2048"

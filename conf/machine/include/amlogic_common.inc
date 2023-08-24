@@ -90,15 +90,14 @@ AML_TOOLS_SITE ?= "http://10.18.11.120:8000/Tools"
 #AML_SB_SIGN_CONFIG_PATH = "${COREBASE}/../aml-comp/prebuilt/hosttools/aml-linux-sb"
 
 # For dm-verity
-IMAGE_CLASSES += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'image_types aml-dm-verity-img', '', d)}"
-
-# Sytem partition
-DM_VERITY_IMAGE = "${@bb.utils.contains('MULTILIBS', 'multilib:lib32', 'lib32-amlogic-yocto', 'amlogic-yocto', d)}"
+# System partition ( This should be overwrited by platform conf if the target is not amlogic-yocto )
+SYSTEM_DM_VERITY_IMAGE ??= "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', \
+                             bb.utils.contains('MULTILIBS', 'multilib:lib32', 'lib32-amlogic-yocto', 'amlogic-yocto', d), '', d)}"
+SYSTEM_DM_VERITY_IMAGE_TYPE ??= "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', '${ROOTFS_TYPE}', '', d)}"
 # vendor partition
-VENDOR_DM_VERITY_IMAGE = "vendor-image"
-
-DM_VERITY_IMAGE_TYPE = "ext4"
-STAGING_VERITY_DIR = "${DEPLOY_DIR_IMAGE}"
+VENDOR_DM_VERITY_IMAGE ??= "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', \
+                             bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'vendor-image', '' ,d), '', d)}"
+VENDOR_DM_VERITY_IMAGE_TYPE ??= "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', '${ROOTFS_TYPE}', '', d)}"
 
 XZ_COMPRESSION_LEVEL ?= "-e -M 50% -9"
 

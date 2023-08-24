@@ -1,3 +1,10 @@
+# Variables should be set before including aml-security.inc
+ENABLE_DM_VERITY = "false"
+ENABLE_PARTITION_ENCRYPTION = "false"
+PARTITION_NAME = "boot"
+PARTITION_ENCRYPTION_KEY = "${PARTITION_NAME}.bin"
+require aml-security.inc
+
 inherit image
 SDKEXTCLASS ?= "${@['populate_sdk', 'populate_sdk_ext']['linux' in d.getVar("SDK_OS", True)]}"
 inherit ${SDKEXTCLASS}
@@ -116,28 +123,33 @@ do_rootfs[depends] += "${@bb.utils.contains("DISTRO_FEATURES", "FIT", " u-boot-t
 IMAGE_ROOTFS_EXTRA_SPACE:append = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", " + 4096", "" ,d)}"
 
 deploy_verity_hash() {
-    if [ -f ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env ]; then
+    if [ -f ${DEPLOY_DIR_IMAGE}/${SYSTEM_DM_VERITY_IMAGE}.${SYSTEM_DM_VERITY_IMAGE_TYPE}.verity.env ]; then
         if [ "${AVB_DM_VERITY}" != "true" ]; then
-            bbnote "install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+            bbnote "install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${SYSTEM_DM_VERITY_IMAGE}.${SYSTEM_DM_VERITY_IMAGE_TYPE}.verity.env \
                 ${IMAGE_ROOTFS}/${datadir}/system-dm-verity.env"
-            install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
+            install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${SYSTEM_DM_VERITY_IMAGE}.${SYSTEM_DM_VERITY_IMAGE_TYPE}.verity.env \
                 ${IMAGE_ROOTFS}/${datadir}/system-dm-verity.env
         fi
     else
-        bberror "Cannot find ${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env"
+        bberror "Cannot find ${DEPLOY_DIR_IMAGE}/${SYSTEM_DM_VERITY_IMAGE}.${SYSTEM_DM_VERITY_IMAGE_TYPE}.verity.env"
     fi
 
-    if [ -f ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env ]; then
-        if [ "${AVB_DM_VERITY}" != "true" && "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'true', 'false', d)}" == "true" ]; then
-            bbnote " install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
-                ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env"
-            install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env \
-                ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env
+    if [ "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'true', 'false', d)}" = "true" ]; then
+        if [ -f ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${VENDOR_DM_VERITY_IMAGE_TYPE}.verity.env ]; then
+            if [ "${AVB_DM_VERITY}" != "true" ]; then
+                bbnote " install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${VENDOR_DM_VERITY_IMAGE_TYPE}.verity.env \
+                    ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env"
+                install -D -m 0644 ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${VENDOR_DM_VERITY_IMAGE_TYPE}.verity.env \
+                    ${IMAGE_ROOTFS}/${datadir}/vendor-dm-verity.env
+            fi
+        else
+            bberror "Cannot find ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${VENDOR_DM_VERITY_IMAGE_TYPE}.verity.env"
         fi
-    else
-        bberror "Cannot find ${DEPLOY_DIR_IMAGE}/${VENDOR_DM_VERITY_IMAGE}.${DM_VERITY_IMAGE_TYPE}.verity.env"
     fi
 }
-do_rootfs[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', '${DM_VERITY_IMAGE}:do_image_${DM_VERITY_IMAGE_TYPE}', '', d)}"
-do_rootfs[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', '${VENDOR_DM_VERITY_IMAGE}:do_image_${DM_VERITY_IMAGE_TYPE}', '', d)}"
+
+do_rootfs[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', '${SYSTEM_DM_VERITY_IMAGE}:do_image_${SYSTEM_DM_VERITY_IMAGE_TYPE}', '', d)}"
+do_rootfs[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', \
+                          bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', \
+                          '${VENDOR_DM_VERITY_IMAGE}:do_image_${VENDOR_DM_VERITY_IMAGE_TYPE}', '' ,d), '', d)}"
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'deploy_verity_hash;', '', d)}"

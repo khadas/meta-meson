@@ -4,7 +4,13 @@ LICENSE = "MIT"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 IMAGECLASS ?=  "core-image"
 
+# Variables should be set before including aml-security.inc
+PARTITION_NAME = "system"
+PARTITION_ENCRYPTION_KEY = "${PARTITION_NAME}.bin"
+require aml-security.inc
+
 inherit ${IMAGECLASS}
+
 IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', \
                 bb.utils.contains('ROOTFS_TYPE', 'ubifs', 'ubi', '${ROOTFS_TYPE}', d), 'ext4', d)}"
 
@@ -101,6 +107,7 @@ PACKAGE_INSTALL += "base-files base-passwd initramfs-meson-boot udev-extraconf "
 PACKAGE_EXCLUDE = " kernel-devicetree"
 
 MACHINE_IMAGE_NAME ?= "${PN}"
+
 IMAGE_FEATURES:remove = " read-only-rootfs"
 DEPENDS:append = " android-tools-native"
 
@@ -212,8 +219,6 @@ process_for_zapper2k_rootfs(){
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '', 'process_for_read_only_rootfs; ', d)}"
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'process_for_zapper2k_rootfs; ', '', d)}"
 
-
-inherit avb-dm-verity
 # The following is needed only if chained
 AVB_DMVERITY_SIGNINING_KEY = "system_rsa2048.pem"
 AVB_DMVERITY_SIGNINING_ALGORITHM = "SHA256_RSA2048"

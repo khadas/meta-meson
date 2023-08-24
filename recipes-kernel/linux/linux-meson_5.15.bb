@@ -25,11 +25,17 @@ SRC_URI:append:bg201 = " file://defconfig"
 
 SRC_URI += "file://common.cfg"
 
+# add support partition encryption
+SRC_URI += "${@bb.utils.contains_any('DISTRO_FEATURES', 'partition-enc partition-enc-local', 'file://partition-enc.cfg', '', d)}"
+
 # add support nand
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'file://nand.cfg', '', d)}"
 
 # Enable selinux support in the kernel if the feature is enabled
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.cfg', '', d)}"
+
+# add support dm-verity
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'file://dm-verity.cfg', '', d)}"
 
 #For common patches
 KDIR = "aml-5.15"

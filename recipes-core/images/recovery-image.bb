@@ -2,6 +2,13 @@ SUMMARY = "create recovery image"
 LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
+# Variables should be set before including aml-security.inc
+ENABLE_DM_VERITY = "false"
+ENABLE_PARTITION_ENCRYPTION = "false"
+PARTITION_NAME = "recovery"
+PARTITION_ENCRYPTION_KEY = "${PARTITION_NAME}.bin"
+require aml-security.inc
+
 inherit core-image
 inherit image
 SDKEXTCLASS ?= "${@['populate_sdk', 'populate_sdk_ext']['linux' in d.getVar("SDK_OS", True)]}"
