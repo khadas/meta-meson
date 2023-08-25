@@ -12,6 +12,7 @@ SRC_URI += "\
             file://0011-fix-sizeof-config_para_ex-is-not-equal-to-driver.patch \
             file://0012-fix-the-issue-that-rectangle-area-is-incorrect.patch \
             file://0013-add-Blit2-support.patch \
+            file://0014-fix-the-issue-that-DSPF_LUT8-cannot-work.patch \
             file://directfbrc \
             "
 

@@ -1,0 +1,60 @@
+From 4d799606305931d64fcbbcfa18670e29de0c2d87 Mon Sep 17 00:00:00 2001
+From: Jian Cao <jian.cao@amlogic.com>
+Date: Fri, 25 Aug 2023 14:29:21 +0800
+Subject: [PATCH] fix the issue that DSPF_LUT8 cannot work
+
+Signed-off-by: Jian Cao <jian.cao@amlogic.com>
+---
+ gfxdrivers/amlgfx/aml.h       | 5 +++--
+ gfxdrivers/amlgfx/aml_accel.c | 8 ++++++--
+ 2 files changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/gfxdrivers/amlgfx/aml.h b/gfxdrivers/amlgfx/aml.h
+index 1214137..f5dc1f5 100644
+--- a/gfxdrivers/amlgfx/aml.h
++++ b/gfxdrivers/amlgfx/aml.h
+@@ -253,10 +253,10 @@ typedef struct{
+ }ge2d_op_para_t;
+ 
+ typedef struct{
++	unsigned int lut_data[256];
+ 	unsigned int num_entries;
+-	unsigned long   lut_data[256];
+ }lut_entries;
+-	  
++
+ typedef  struct  {
+ 	int  canvas_index;
+ 	int  top;
+@@ -413,6 +413,7 @@ typedef struct {
+ 
+ #define GE2D_CONFIG_EX	     _IOW(GE2D_IOC_MAGIC, 0x01,  config_para_ex_t)
+ #define	GE2D_SRCCOLORKEY     _IOW(GE2D_IOC_MAGIC, 0x02, config_para_t)
++#define GE2D_SET_CLUT        _IOW(GE2D_IOC_MAGIC, 0x0c, lut_entries)
+ 
+ #endif /*__EDB93XX_H__*/
+ 
+diff --git a/gfxdrivers/amlgfx/aml_accel.c b/gfxdrivers/amlgfx/aml_accel.c
+index 99380ab..b59a0eb 100644
+--- a/gfxdrivers/amlgfx/aml_accel.c
++++ b/gfxdrivers/amlgfx/aml_accel.c
+@@ -130,10 +130,14 @@ static bool aml_updatePalette(void *drv, void *dev)
+ 		{
+ 			DFBColor *color = &amldev->palette->entries[i];
+ 			lut.lut_data[i] = PIXEL_ARGB(color->r, color->g, color->b, color->a);
++			//printf("lut 0x%x\n", lut.lut_data[i]);
+ 		}
+ 
+-		if ( ioctl(amldrv->ge2d_fd, GE2D_SET_BLIT_PALETTE, &lut )<0 )
+-		return false;
++		//if ( ioctl(amldrv->ge2d_fd, GE2D_SET_BLIT_PALETTE, &lut )<0 )
++		if ( ioctl(amldrv->ge2d_fd, GE2D_SET_CLUT, &lut ) < 0 ) {
++			printf("GE2D_SET_CLUT:0x%x failed, count:%d\n", GE2D_SET_CLUT, lut.num_entries);
++			return false;
++		}
+  	 }
+ 
+   	return true;
+-- 
+2.25.1
+
