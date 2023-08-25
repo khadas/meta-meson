@@ -5,6 +5,7 @@ depth = 32
 pixelformat = ARGB    # ARGB8888
 hardware
 accelerator=49
+vsync-after
 
 # Disable Cursor
 #no-cursor
