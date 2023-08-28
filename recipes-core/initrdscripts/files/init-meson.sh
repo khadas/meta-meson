@@ -721,7 +721,7 @@ squashfs_rootfs_mount()
 
     echo "dm-verity for system is $DM_VERITY_STATUS_SYSTEM"
     if [ "$DM_VERITY_STATUS_SYSTEM" = "disabled" ]; then
-        if ! mount -o ro,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
+        if ! mount -t squashfs -o ro,noatime,nodiratime $ROOT_DEVICE $ROOT_MOUNT ; then
             fatal "Could not mount $ROOT_DEVICE"
         fi
     fi
