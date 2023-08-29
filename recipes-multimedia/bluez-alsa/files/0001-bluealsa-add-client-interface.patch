@@ -1,0 +1,2381 @@
+Index: git/utils/cli/a2dp_ctl.h
+===================================================================
+--- /dev/null
++++ git/utils/cli/a2dp_ctl.h
+@@ -0,0 +1,50 @@
++#ifndef _A2DP_CTL_H_
++#define _A2DP_CTL_H_
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++typedef enum{
++    A2DP_EVENT_CONNECT,
++    A2DP_EVENT_DISCONNECT,
++    A2DP_EVENT_PLAYING,
++    A2DP_EVENT_PAUSE,
++    A2DP_EVENT_STOP,
++    A2DP_EVENT_TYPE_PLAYER,
++}A2DP_Event_t;
++
++typedef struct {
++    char addr[18];
++    bool source_flag;
++}A2DP_Dev_t;
++
++int a2dp_ctl_init(void);
++void a2dp_ctl_delinit(void);
++int start_play(void);
++int stop_play(void);
++int pause_play(void);
++int next(void);
++int previous(void);
++int volume_up();
++int volume_down();
++void connect_call_back(int connected);
++void play_call_back(char *status);
++bool adapter_ready(void);
++int adapter_scan(int onoff);
++int connect_dev(const char* bddr, bool sourceFlag);
++int disconnect_dev(const char *bddr);
++unsigned char get_connect_status(A2DP_Dev_t **dev, int *cnt);
++void print_connect_status(void);
++void print_scan_results(void);
++
++int pcm_bluealsa_open(const char *bddr);
++int pcm_bluealsa_close();
++int pcm_bluealsa_write(void *buf, size_t bytes) ;
++void register_callback(void (*conn_cb)(char *addr, bool source_flag, A2DP_Event_t type));
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif
+Index: git/utils/cli/lib_a2dp_ctl.c
+===================================================================
+--- /dev/null
++++ git/utils/cli/lib_a2dp_ctl.c
+@@ -0,0 +1,1117 @@
++/*
++ * BlueALSA - cli.c
++ * Copyright (c) 2016-2022 Arkadiusz Bokowy
++ *
++ * This file is a part of bluez-alsa.
++ *
++ * This project is licensed under the terms of the MIT license.
++ *
++ */
++
++#if HAVE_CONFIG_H
++# include <config.h>
++#endif
++
++#include <errno.h>
++#include <getopt.h>
++#include <stdbool.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <strings.h>
++#include <sys/param.h>
++#include <unistd.h>
++#include <pthread.h>
++
++#include <dbus/dbus.h>
++
++#include "shared/dbus-client.h"
++#include "shared/defs.h"
++#include "shared/hex.h"
++#include "shared/log.h"
++
++#include <gio/gio.h>
++#include <glib.h>
++
++//#include "dbus.h"
++#include <alsa/asoundlib.h>
++#include "a2dp_ctl.h"
++
++#define A2DP_SOURCE_UUID	"0000110a-0000-1000-8000-00805f9b34fb"
++#define A2DP_SINK_UUID		"0000110b-0000-1000-8000-00805f9b34fb"
++#define DEVICE_INTERFACE "org.bluez.Device1"
++
++static GDBusConnection *conn;
++static gboolean A2dpConnected = FALSE;
++
++static struct ba_dbus_ctx dbus_ctx;
++static char dbus_ba_service[32] = BLUEALSA_SERVICE;
++static bool verbose = false;
++static bool initFlag = false;
++static pthread_mutex_t mtx;
++static pthread_mutex_t pcm_mtx;
++
++static snd_pcm_t *pcm_handle_playback = NULL;
++static char pcm_device_spk[] = "bluealsa:DEV=00:00:00:00:00:00";
++static void (*mconnect_call_back)(char *addr, bool source_flag, A2DP_Event_t event);
++
++typedef struct {
++	bool connect_flag;
++	struct ba_pcm pcm;
++}ba_pcm_status_t;
++
++#define INIT_BA_PCM_NUM 4
++typedef struct {
++	size_t max_alloc_num;
++	ba_pcm_status_t *pcms;
++}ba_pcm_info_t;
++
++static ba_pcm_info_t ba_pcm_info;
++
++static int bluez_init() {
++	gchar *address;
++	GError *err = NULL;
++
++	address = g_dbus_address_get_for_bus_sync(G_BUS_TYPE_SYSTEM, NULL, NULL);
++	if (( conn = g_dbus_connection_new_for_address_sync(address,
++					G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT |
++					G_DBUS_CONNECTION_FLAGS_MESSAGE_BUS_CONNECTION,
++					NULL, NULL, &err)) == NULL) {
++		error("Couldn't obtain D-Bus connection: %s", err->message);
++		return -1;
++	}
++}
++
++bool pcm_info_init() {
++	ba_pcm_info.max_alloc_num = INIT_BA_PCM_NUM;
++	ba_pcm_info.pcms = calloc(sizeof(ba_pcm_status_t)*ba_pcm_info.max_alloc_num, 1);
++}
++
++bool add_pcm(struct ba_pcm *pcm) {
++	int idx;
++
++	pthread_mutex_lock(&mtx);
++	for (idx = 0; idx < ba_pcm_info.max_alloc_num; idx++) {
++		if (!ba_pcm_info.pcms[idx].connect_flag) {
++			memcpy(&ba_pcm_info.pcms[idx].pcm, pcm, sizeof(ba_pcm_status_t));
++			ba_pcm_info.pcms[idx].connect_flag = true;
++			break;
++		}
++	}
++	if (idx == ba_pcm_info.max_alloc_num) {
++		int num = idx + 2;
++		ba_pcm_status_t *tmp = ba_pcm_info.pcms;
++
++		ba_pcm_info.pcms = realloc(ba_pcm_info.pcms, sizeof(ba_pcm_status_t) * num);
++		if (ba_pcm_info.pcms == NULL) {
++			error("Couldn't (re)allocate memory for PCM workers: %s", strerror(ENOMEM));
++			ba_pcm_info.pcms = tmp;
++			return false;
++		};
++
++		memcpy(&ba_pcm_info.pcms[idx].pcm, pcm, sizeof(ba_pcm_status_t));
++		ba_pcm_info.pcms[idx].connect_flag = true;
++		ba_pcm_info.max_alloc_num = num;
++	}
++	pthread_mutex_unlock(&mtx);
++	return true;
++}
++
++bool remove_pcm(const char *pcm_path) {
++	int idx;
++	bool flag;
++
++	pthread_mutex_lock(&mtx);
++	for (idx = 0; idx < ba_pcm_info.max_alloc_num; idx++) {
++		if (ba_pcm_info.pcms[idx].connect_flag) {
++			if (strcmp(ba_pcm_info.pcms[idx].pcm.pcm_path, pcm_path) == 0) {
++				ba_pcm_info.pcms[idx].connect_flag = false;
++				break;
++			}
++		}
++	}
++	flag = idx == ba_pcm_info.max_alloc_num ? false : true;
++	pthread_mutex_unlock(&mtx);
++	return flag;
++}
++
++static const char *transport_code_to_string(int transport_code) {
++	switch (transport_code) {
++	case BA_PCM_TRANSPORT_A2DP_SOURCE:
++		return "A2DP-source";
++	case BA_PCM_TRANSPORT_A2DP_SINK:
++		return"A2DP-sink";
++	case BA_PCM_TRANSPORT_HFP_AG:
++		return "HFP-AG";
++	case BA_PCM_TRANSPORT_HFP_HF:
++		return "HFP-HF";
++	case BA_PCM_TRANSPORT_HSP_AG:
++		return "HSP-AG";
++	case BA_PCM_TRANSPORT_HSP_HS:
++		return "HSP-HS";
++	case BA_PCM_TRANSPORT_MASK_A2DP:
++		return "A2DP";
++	case BA_PCM_TRANSPORT_MASK_HFP:
++		return "HFP";
++	case BA_PCM_TRANSPORT_MASK_HSP:
++		return "HSP";
++	case BA_PCM_TRANSPORT_MASK_SCO:
++		return "SCO";
++	case BA_PCM_TRANSPORT_MASK_AG:
++		return "AG";
++	case BA_PCM_TRANSPORT_MASK_HF:
++		return "HF";
++	default:
++		return "Invalid";
++	}
++}
++
++static const char *pcm_mode_to_string(int pcm_mode) {
++	switch (pcm_mode) {
++	case BA_PCM_MODE_SINK:
++		return "sink";
++	case BA_PCM_MODE_SOURCE:
++		return "source";
++	default:
++		return "Invalid";
++	}
++}
++
++static const char *pcm_format_to_string(int pcm_format) {
++	switch (pcm_format) {
++	case 0x0108:
++		return "U8";
++	case 0x8210:
++		return "S16_LE";
++	case 0x8318:
++		return "S24_3LE";
++	case 0x8418:
++		return "S24_LE";
++	case 0x8420:
++		return "S32_LE";
++	default:
++		return "Invalid";
++	}
++}
++
++static bool get_pcm(const char *path, struct ba_pcm *pcm) {
++
++	struct ba_pcm *pcms = NULL;
++	size_t pcms_count = 0;
++	bool found = false;
++	size_t i;
++
++	DBusError err = DBUS_ERROR_INIT;
++	if (!bluealsa_dbus_get_pcms(&dbus_ctx, &pcms, &pcms_count, &err))
++		return false;
++
++	for (i = 0; i < pcms_count; i++)
++		if (strcmp(pcms[i].pcm_path, path) == 0) {
++			memcpy(pcm, &pcms[i], sizeof(*pcm));
++			found = true;
++			break;
++		}
++
++	free(pcms);
++	return found;
++}
++
++static bool print_pcm_codecs(const char *path, DBusError *err) {
++
++	DBusMessage *msg = NULL, *rep = NULL;
++	bool result = false;
++	int count = 0;
++
++	printf("Available codecs:");
++
++	if ((msg = dbus_message_new_method_call(dbus_ctx.ba_service, path,
++					BLUEALSA_INTERFACE_PCM, "GetCodecs")) == NULL) {
++		dbus_set_error(err, DBUS_ERROR_NO_MEMORY, NULL);
++		goto fail;
++	}
++
++	if ((rep = dbus_connection_send_with_reply_and_block(dbus_ctx.conn,
++					msg, DBUS_TIMEOUT_USE_DEFAULT, err)) == NULL) {
++		goto fail;
++	}
++
++	DBusMessageIter iter;
++	if (!dbus_message_iter_init(rep, &iter)) {
++		dbus_set_error(err, DBUS_ERROR_NO_MEMORY, NULL);
++		goto fail;
++	}
++
++	DBusMessageIter iter_codecs;
++	for (dbus_message_iter_recurse(&iter, &iter_codecs);
++			dbus_message_iter_get_arg_type(&iter_codecs) != DBUS_TYPE_INVALID;
++			dbus_message_iter_next(&iter_codecs)) {
++
++		if (dbus_message_iter_get_arg_type(&iter_codecs) != DBUS_TYPE_DICT_ENTRY) {
++			dbus_set_error(err, DBUS_ERROR_FAILED, "Message corrupted");
++			goto fail;
++		}
++
++		DBusMessageIter iter_codecs_entry;
++		dbus_message_iter_recurse(&iter_codecs, &iter_codecs_entry);
++
++		if (dbus_message_iter_get_arg_type(&iter_codecs_entry) != DBUS_TYPE_STRING) {
++			dbus_set_error(err, DBUS_ERROR_FAILED, "Message corrupted");
++			goto fail;
++		}
++
++		const char *codec;
++		dbus_message_iter_get_basic(&iter_codecs_entry, &codec);
++		printf(" %s", codec);
++		++count;
++
++		/* Ignore the properties field, get next codec. */
++	}
++	result = true;
++
++fail:
++	if (count == 0)
++		printf(" [ Unknown ]");
++	printf("\n");
++
++	if (msg != NULL)
++		dbus_message_unref(msg);
++	if (rep != NULL)
++		dbus_message_unref(rep);
++	return result;
++}
++
++static void print_adapters(const struct ba_service_props *props) {
++	printf("Adapters:");
++	for (size_t i = 0; i < props->adapters_len; i++)
++		printf(" %s", props->adapters[i]);
++	printf("\n");
++}
++
++static void print_profiles_and_codecs(const struct ba_service_props *props) {
++	printf("Profiles:\n");
++	for (size_t i = 0; i < props->profiles_len; i++) {
++		printf("  %-11s :", props->profiles[i]);
++		size_t len = strlen(props->profiles[i]);
++		for (size_t ii = 0; ii < props->codecs_len; ii++)
++			if (strncmp(props->codecs[ii], props->profiles[i], len) == 0)
++				printf(" %s", &props->codecs[ii][len + 1]);
++		printf("\n");
++	}
++}
++
++static void print_volume(const struct ba_pcm *pcm) {
++	if (pcm->channels == 2)
++		printf("Volume: L: %u R: %u\n", pcm->volume.ch1_volume, pcm->volume.ch2_volume);
++	else
++		printf("Volume: %u\n", pcm->volume.ch1_volume);
++}
++
++static void print_mute(const struct ba_pcm *pcm) {
++	if (pcm->channels == 2)
++		printf("Muted: L: %c R: %c\n",
++				pcm->volume.ch1_muted ? 'Y' : 'N', pcm->volume.ch2_muted ? 'Y' : 'N');
++	else
++		printf("Muted: %c\n", pcm->volume.ch1_muted ? 'Y' : 'N');
++}
++
++static void print_properties(const struct ba_pcm *pcm, DBusError *err) {
++	printf("Device: %s\n", pcm->device_path);
++	printf("Sequence: %u\n", pcm->sequence);
++	printf("Transport: %s\n", transport_code_to_string(pcm->transport));
++	printf("Mode: %s\n", pcm_mode_to_string(pcm->mode));
++	printf("Format: %s\n", pcm_format_to_string(pcm->format));
++	printf("Channels: %d\n", pcm->channels);
++	printf("Sampling: %d Hz\n", pcm->sampling);
++	print_pcm_codecs(pcm->pcm_path, err);
++	printf("Selected codec: %s\n", pcm->codec);
++	printf("Delay: %#.1f ms\n", (double)pcm->delay / 10);
++	printf("SoftVolume: %s\n", pcm->soft_volume ? "Y" : "N");
++	print_volume(pcm);
++	print_mute(pcm);
++}
++
++typedef bool (*get_services_cb)(const char *name, void *data);
++
++static bool check_bluealsa_service(const char *name, void *data) {
++	bool *result = data;
++	if (strcmp(name, BLUEALSA_SERVICE) == 0) {
++		*result = true;
++		return false;
++	}
++	*result = false;
++	return true;
++}
++
++static void get_services(get_services_cb func, void *data, DBusError *err) {
++
++	DBusMessage *msg = NULL, *rep = NULL;
++
++	if ((msg = dbus_message_new_method_call(DBUS_SERVICE_DBUS,
++					DBUS_PATH_DBUS, DBUS_INTERFACE_DBUS, "ListNames")) == NULL) {
++		dbus_set_error(err, DBUS_ERROR_NO_MEMORY, NULL);
++		goto fail;
++	}
++
++	if ((rep = dbus_connection_send_with_reply_and_block(dbus_ctx.conn,
++					msg, DBUS_TIMEOUT_USE_DEFAULT, err)) == NULL) {
++		goto fail;
++	}
++
++	DBusMessageIter iter;
++	if (!dbus_message_iter_init(rep, &iter)) {
++		dbus_set_error(err, DBUS_ERROR_INVALID_SIGNATURE, "Empty response message");
++		goto fail;
++	}
++
++	DBusMessageIter iter_names;
++	for (dbus_message_iter_recurse(&iter, &iter_names);
++			dbus_message_iter_get_arg_type(&iter_names) != DBUS_TYPE_INVALID;
++			dbus_message_iter_next(&iter_names)) {
++
++		if (dbus_message_iter_get_arg_type(&iter_names) != DBUS_TYPE_STRING) {
++			char *signature = dbus_message_iter_get_signature(&iter);
++			dbus_set_error(err, DBUS_ERROR_INVALID_SIGNATURE,
++					"Incorrect signature: %s != as", signature);
++			dbus_free(signature);
++			goto fail;
++		}
++
++		const char *name;
++		dbus_message_iter_get_basic(&iter_names, &name);
++		if (!func(name, data)) {
++			break;
++		}
++
++	}
++
++fail:
++	if (msg != NULL)
++		dbus_message_unref(msg);
++	if (rep != NULL)
++		dbus_message_unref(rep);
++}
++
++static int parse_pcm_path(const char *pcm_path,  char *addr,  bool *source_type) {
++	// pcm path like:  /org/bluealsa/hci0/dev_E8_07_BF_3A_1F_9E/a2dpsrc/sink
++	char *p = strstr(pcm_path, "dev_");
++	if (p == NULL) {
++		error("invalid pcm path.\n");
++		return -1;
++	}
++	p += 4;
++
++	strncpy(addr, p, 17);
++	addr[2] = addr[5] = addr[8] = addr[11] = addr[14] = ':';
++	addr[17] = 0;
++
++	p += 18;
++	if (!strncmp(p, "a2dpsrc", 7)) {
++		*source_type = true;
++	}
++
++	error("yym: pcm path: %s addr: %s, source flag: %d\n", pcm_path, addr, *source_type);
++	return 0;
++}
++
++static bool get_current_pcm_by_type(struct ba_pcm *pcm, bool sink_flag) {
++	size_t i;
++	bool found = false;
++
++	pthread_mutex_lock(&mtx);
++	for (i = 0; i < ba_pcm_info.max_alloc_num; i++) {
++		if (!ba_pcm_info.pcms[i].connect_flag)
++			continue;
++
++		printf("%s\n", ba_pcm_info.pcms[i].pcm.pcm_path);
++		if ((ba_pcm_info.pcms[i].pcm.transport == BA_PCM_TRANSPORT_A2DP_SINK  && sink_flag) ||
++			(ba_pcm_info.pcms[i].pcm.transport == BA_PCM_TRANSPORT_A2DP_SOURCE  && !sink_flag)) {
++			memcpy(pcm, &ba_pcm_info.pcms[i].pcm, sizeof (struct ba_pcm));
++			found = true;
++			break;
++		}
++	}
++	pthread_mutex_unlock(&mtx);
++	return found;
++}
++
++static bool get_current_pcm_by_addr(struct ba_pcm *pcm, const char *addr) {
++	size_t i;
++	bool found = false;
++
++	pthread_mutex_lock(&mtx);
++	for (i = 0; i < ba_pcm_info.max_alloc_num; i++) {
++		if (!ba_pcm_info.pcms[i].connect_flag)
++			continue;
++
++		// pcm path like:  /org/bluealsa/hci0/dev_E8_07_BF_3A_1F_9E/a2dpsrc/sink
++		char *p = strstr(ba_pcm_info.pcms[i].pcm.pcm_path, "dev_");
++		p += 4;
++
++		char bt_addr[18];
++		strncpy(bt_addr, p, 17);
++		bt_addr[2] = bt_addr[5] = bt_addr[8] = bt_addr[11] = bt_addr[14] = ':';
++		bt_addr[17] = 0;
++
++		if (strcmp(bt_addr, addr) == 0) {
++			memcpy(pcm, &ba_pcm_info.pcms[i].pcm, sizeof (struct ba_pcm));
++			found = true;
++			break;
++		}
++	}
++	pthread_mutex_unlock(&mtx);
++	return found;
++}
++
++static struct ba_pcm *get_ba_pcm(const char *path) {
++
++	size_t i;
++	struct ba_pcm *tmp = NULL;
++	pthread_mutex_lock(&mtx);
++	for (i = 0; i < ba_pcm_info.max_alloc_num; i++) {
++		if (!ba_pcm_info.pcms[i].connect_flag)
++			continue;
++		if (strcmp(ba_pcm_info.pcms[i].pcm.pcm_path, path) == 0) {
++			tmp = &ba_pcm_info.pcms[i].pcm;
++			break;
++		}
++	}
++	pthread_mutex_unlock(&mtx);
++	return tmp;
++}
++
++static bool get_adapter_status() {
++	struct ba_service_props props = { 0 };
++
++	DBusError err = DBUS_ERROR_INIT;
++	if (!bluealsa_dbus_get_props(&dbus_ctx, &props, &err)) {
++		error("D-Bus error: %s", err.message);
++		bluealsa_dbus_props_free(&props);
++		return false;
++	}
++
++	printf("Service: %s\n", dbus_ctx.ba_service);
++	printf("Version: %s\n", props.version);
++
++	bool ready = props.adapters_len;
++
++	//print_adapters(&props);
++	//print_profiles_and_codecs(&props);
++	bluealsa_dbus_props_free(&props);
++
++	return ready;
++}
++
++static int set_volume(const char *path, int ch1_vol, int ch2_vol) {
++	struct ba_pcm pcm;
++	if (!get_pcm(path, &pcm)) {
++		error("Invalid BlueALSA PCM path: %s", path);
++		return EXIT_FAILURE;
++	}
++
++	if (pcm.transport & BA_PCM_TRANSPORT_MASK_A2DP) {
++		if (ch1_vol < 0 || ch1_vol > 127) {
++			error("Invalid volume [0, 127]: %d", ch1_vol);
++			return EXIT_FAILURE;
++		}
++		pcm.volume.ch1_volume = ch1_vol;
++		if (pcm.channels == 2) {
++			if (ch2_vol < 0 || ch2_vol > 127) {
++				error("Invalid volume [0, 127]: %d", ch2_vol);
++				return EXIT_FAILURE;
++			}
++			pcm.volume.ch2_volume = ch2_vol;
++		}
++	}
++	else {
++		if (ch1_vol < 0 || ch1_vol > 15) {
++			error("Invalid volume [0, 15]: %d", ch1_vol);
++			return EXIT_FAILURE;
++		}
++		pcm.volume.ch1_volume = ch1_vol;
++	}
++
++	DBusError err = DBUS_ERROR_INIT;
++	if (!bluealsa_dbus_pcm_update(&dbus_ctx, &pcm, BLUEALSA_PCM_VOLUME, &err)) {
++		error("Volume loudness update failed: %s", err.message);
++		return EXIT_FAILURE;
++	}
++
++	return EXIT_SUCCESS;
++}
++
++static int set_mute(struct ba_pcm pcm, bool muted) {
++	pcm.volume.ch1_muted = pcm.volume.ch2_muted = muted;
++
++	DBusError err = DBUS_ERROR_INIT;
++	if (!bluealsa_dbus_pcm_update(&dbus_ctx, &pcm, BLUEALSA_PCM_VOLUME, &err)) {
++		error("Volume mute update failed: %s", err.message);
++		return EXIT_FAILURE;
++	}
++
++	return EXIT_SUCCESS;
++}
++
++static int set_softvol(struct ba_pcm pcm, bool softvol) {
++	pcm.soft_volume = softvol;
++
++	DBusError err = DBUS_ERROR_INIT;
++	if (!bluealsa_dbus_pcm_update(&dbus_ctx, &pcm, BLUEALSA_PCM_SOFT_VOLUME, &err)) {
++		error("SoftVolume update failed: %s", err.message);
++		return EXIT_FAILURE;
++	}
++
++	return EXIT_SUCCESS;
++}
++
++static DBusHandlerResult dbus_signal_handler(DBusConnection *conn, DBusMessage *message, void *data) {
++	(void)conn;
++	(void)data;
++
++	if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_SIGNAL)
++		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
++
++	const char *interface = dbus_message_get_interface(message);
++	const char *signal = dbus_message_get_member(message);
++
++	DBusMessageIter iter;
++	if (!dbus_message_iter_init(message, &iter))
++		goto fail;
++
++	if (strcmp(interface, DBUS_INTERFACE_OBJECT_MANAGER) == 0) {
++
++		const char *path;
++		if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_OBJECT_PATH)
++			goto fail;
++		dbus_message_iter_get_basic(&iter, &path);
++
++		if (!dbus_message_iter_next(&iter))
++			goto fail;
++
++		if (strcmp(signal, "InterfacesAdded") == 0) {
++
++			DBusMessageIter iter_ifaces;
++			for (dbus_message_iter_recurse(&iter, &iter_ifaces);
++					dbus_message_iter_get_arg_type(&iter_ifaces) != DBUS_TYPE_INVALID;
++					dbus_message_iter_next(&iter_ifaces)) {
++
++				DBusMessageIter iter_iface_entry;
++				if (dbus_message_iter_get_arg_type(&iter_ifaces) != DBUS_TYPE_DICT_ENTRY)
++					goto fail;
++				dbus_message_iter_recurse(&iter_ifaces, &iter_iface_entry);
++
++				const char *iface;
++				if (dbus_message_iter_get_arg_type(&iter_iface_entry) != DBUS_TYPE_STRING)
++					goto fail;
++				dbus_message_iter_get_basic(&iter_iface_entry, &iface);
++
++				if (strcmp(iface, BLUEALSA_INTERFACE_PCM) == 0) {
++
++					printf("yym: PCMAdded %s\n", path);
++					char addr[18];
++					bool source_flag = false;
++					parse_pcm_path(path, addr, &source_flag);
++
++					if (mconnect_call_back)
++						mconnect_call_back(addr, source_flag, A2DP_EVENT_CONNECT);
++
++					DBusMessageIter iter2;
++					if (!dbus_message_iter_init(message, &iter2))
++						goto fail;
++
++					struct ba_pcm pcm;
++					DBusError err = DBUS_ERROR_INIT;
++					if (!bluealsa_dbus_message_iter_get_pcm(&iter2, &err, &pcm)) {
++						error("Couldn't read PCM properties: %s", err.message);
++						dbus_error_free(&err);
++						goto fail;
++					}
++					add_pcm(&pcm);
++					if (verbose) {
++						print_properties(&pcm, &err);
++						printf("\n");
++					}
++				}
++				else if (strcmp(iface, BLUEALSA_INTERFACE_RFCOMM) == 0) {
++					printf("RFCOMMAdded %s\n", path);
++				}
++			}
++
++			return DBUS_HANDLER_RESULT_HANDLED;
++		}
++		else if (strcmp(signal, "InterfacesRemoved") == 0) {
++
++			DBusMessageIter iter_ifaces;
++			for (dbus_message_iter_recurse(&iter, &iter_ifaces);
++					dbus_message_iter_get_arg_type(&iter_ifaces) != DBUS_TYPE_INVALID;
++					dbus_message_iter_next(&iter_ifaces)) {
++
++				const char *iface;
++				if (dbus_message_iter_get_arg_type(&iter_ifaces) != DBUS_TYPE_STRING)
++					goto fail;
++				dbus_message_iter_get_basic(&iter_ifaces, &iface);
++
++				if (strcmp(iface, BLUEALSA_INTERFACE_PCM) == 0) {
++					char addr[18];
++					bool source_flag = false;
++					parse_pcm_path(path, addr, &source_flag);
++					if (mconnect_call_back)
++						mconnect_call_back(addr, source_flag, A2DP_EVENT_DISCONNECT);
++					remove_pcm(path);
++					printf("yym:  PCMRemoved %s\n", path);
++				}
++				else if (strcmp(iface, BLUEALSA_INTERFACE_RFCOMM) == 0)
++					printf("RFCOMMRemoved %s\n", path);
++
++			}
++
++			return DBUS_HANDLER_RESULT_HANDLED;
++		}
++	}
++	if (strcmp(interface, DBUS_INTERFACE_PROPERTIES) == 0) {
++		const char *path;
++		if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_OBJECT_PATH)
++			goto fail;
++		dbus_message_iter_get_basic(&iter, &path);
++
++		if (!dbus_message_iter_next(&iter))
++			goto fail;
++
++		struct ba_pcm *pcm;
++		if ((pcm = get_ba_pcm(path)) == NULL)
++			goto fail;
++		if (!dbus_message_iter_init(message, &iter) ||
++				dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_STRING) {
++			error("Couldn't update PCM: %s", "Invalid signal signature");
++			goto fail;
++		}
++		dbus_message_iter_get_basic(&iter, &interface);
++		dbus_message_iter_next(&iter);
++		if (!bluealsa_dbus_message_iter_get_pcm_props(&iter, NULL, pcm))
++			goto fail;
++
++		return DBUS_HANDLER_RESULT_HANDLED;
++	}
++
++
++fail:
++	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
++}
++
++static int device_player_action(struct ba_pcm ba_pcm, const char *action) {
++
++	DBusMessage *msg = NULL, *rep = NULL;
++	DBusError err = DBUS_ERROR_INIT;
++	char path[160];
++	int ret = 0;
++
++	snprintf(path, sizeof(path), "%s/player0", ba_pcm.device_path);
++	msg = dbus_message_new_method_call("org.bluez", path, "org.bluez.MediaPlayer1", action);
++
++	if ((rep = dbus_connection_send_with_reply_and_block(dbus_ctx.conn, msg,
++					DBUS_TIMEOUT_USE_DEFAULT, &err)) == NULL) {
++		warn("Couldn't pause player: %s", err.message);
++		dbus_error_free(&err);
++		goto fail;
++	}
++
++	debug("Requested playback pause");
++	goto final;
++
++fail:
++	ret = -1;
++
++final:
++	if (msg != NULL)
++		dbus_message_unref(msg);
++	if (rep != NULL)
++		dbus_message_unref(rep);
++	return ret;
++}
++
++static pthread_t thread_id;
++static bool dbus_loop_running = false;
++static void *dbus_thread(void *user_data)
++{
++	while (dbus_loop_running) {
++		struct pollfd pfds[10];
++		nfds_t pfds_len = ARRAYSIZE(pfds);
++
++		if (!bluealsa_dbus_connection_poll_fds(&dbus_ctx, pfds, &pfds_len)) {
++			error("Couldn't get D-Bus connection file descriptors");
++			return NULL;
++		}
++
++		if (poll(pfds, pfds_len, -1) == -1 &&
++				errno == EINTR)
++			continue;
++
++		if (bluealsa_dbus_connection_poll_dispatch(&dbus_ctx, pfds, pfds_len))
++			while (dbus_connection_dispatch(dbus_ctx.conn) == DBUS_DISPATCH_DATA_REMAINS)
++				continue;
++	}
++
++	return NULL;
++}
++
++int a2dp_ctl_init(void) {
++	log_open("a2dp_ctl", false, false);
++	pcm_info_init();
++	dbus_threads_init_default();
++
++	pthread_mutex_init(&mtx, NULL);
++	pthread_mutex_init(&pcm_mtx, NULL);
++
++	DBusError err = DBUS_ERROR_INIT;
++	if (!bluealsa_dbus_connection_ctx_init(&dbus_ctx, dbus_ba_service, &err)) {
++		error("Couldn't initialize D-Bus context: %s", err.message);
++		return EXIT_FAILURE;
++	}
++
++	bluealsa_dbus_connection_signal_match_add(&dbus_ctx,
++			dbus_ba_service, NULL, DBUS_INTERFACE_OBJECT_MANAGER, "InterfacesAdded",
++			"path_namespace='/org/bluealsa'");
++	bluealsa_dbus_connection_signal_match_add(&dbus_ctx,
++			dbus_ba_service, NULL, DBUS_INTERFACE_OBJECT_MANAGER, "InterfacesRemoved",
++			"path_namespace='/org/bluealsa'");
++	bluealsa_dbus_connection_signal_match_add(&dbus_ctx,
++			dbus_ba_service, NULL, DBUS_INTERFACE_PROPERTIES, "PropertiesChanged",
++			"arg0='"BLUEALSA_INTERFACE_PCM"'");
++
++	if (!dbus_connection_add_filter(dbus_ctx.conn, dbus_signal_handler, NULL, NULL)) {
++		error("Couldn't add D-Bus filter: %s", err.message);
++		return EXIT_FAILURE;
++	}
++
++	struct ba_pcm *pcms = NULL;
++	size_t pcms_count = 0;
++	int i;
++	if (!bluealsa_dbus_get_pcms(&dbus_ctx, &pcms, &pcms_count, &err))
++		error("Couldn't get BlueALSA PCM list: %s", err.message);
++	for (i=0; i < pcms_count; i++) {
++		add_pcm(&pcms[i]);
++	}
++	if (pcms) {
++		free(pcms);
++		pcms = NULL;
++	}
++
++	bool running = false;
++	get_services(check_bluealsa_service, &running, &err);
++	if (dbus_error_is_set(&err)) {
++		error("D-Bus error: %s", err.message);
++		bluealsa_dbus_connection_ctx_free(&dbus_ctx);
++		return EXIT_FAILURE;
++	}
++
++	if (running)
++		printf("ServiceRunning %s\n", dbus_ctx.ba_service);
++	else
++		printf("ServiceStopped %s\n", dbus_ctx.ba_service);
++
++	dbus_loop_running = true;
++	if (pthread_create(&thread_id, NULL, dbus_thread, NULL)) {
++		error("thread create failed\n");
++		bluealsa_dbus_connection_ctx_free(&dbus_ctx);
++		return EXIT_FAILURE;
++	}
++	initFlag = true;
++
++	bluez_init();
++
++	error("yym: a2dp init success\n");
++	return 0;
++}
++
++void a2dp_ctl_delinit(void) {
++	dbus_loop_running = false;
++	if (ba_pcm_info.pcms) {
++		free(ba_pcm_info.pcms);
++		ba_pcm_info.pcms = NULL;
++		ba_pcm_info.max_alloc_num = 0;
++	}
++
++	pthread_mutex_destroy(&mtx);
++	pthread_mutex_destroy(&pcm_mtx);
++}
++
++int start_play(void) {
++	if (!initFlag) return -1;
++
++	struct ba_pcm pcm;
++
++	if (get_current_pcm_by_type(&pcm, true)) {
++		device_player_action(pcm, "Play");
++	}
++
++	return 0;
++}
++
++int stop_play(void) {
++	if (!initFlag) return -1;
++	struct ba_pcm pcm;
++
++	if (get_current_pcm_by_type(&pcm, true)) {
++		device_player_action(pcm, "Stop");
++	}
++
++	return 0;
++}
++
++int pause_play(void) {
++	if (!initFlag) return -1;
++	struct ba_pcm pcm;
++
++	if (get_current_pcm_by_type(&pcm, true)) {
++		device_player_action(pcm, "Pause");
++	}
++
++	return 0;
++}
++
++int next(void) {
++	if (!initFlag) return -1;
++	struct ba_pcm pcm;
++
++	if (get_current_pcm_by_type(&pcm, true)) {
++		device_player_action(pcm, "Next");
++	}
++
++	return 0;
++}
++
++int previous(void) {
++	if (!initFlag) return -1;
++	struct ba_pcm pcm;
++
++	if (get_current_pcm_by_type(&pcm, true)) {
++		device_player_action(pcm, "Previous");
++	}
++
++	return 0;
++}
++
++int volume_up() {
++	//device_player_action(, "Stop");
++	return 0;
++}
++
++int volume_down() {
++	//device_player_action(, "Stop");
++	return 0;
++}
++
++bool adapter_ready(void) {
++	if (!initFlag) return -1;
++	return get_adapter_status();
++}
++
++int adapter_scan(int onoff) {
++	if (!initFlag) return -1;
++	return 0;
++}
++
++static bool check_conn_dev_valid(const char *baddr, char *obj) {
++	if (NULL == conn) {
++		error("No connection!! Please init first\n");
++		return false;
++	}
++
++	if (strlen(baddr) != strlen("xx:xx:xx:xx:xx:xx")) {
++		error("Bad bddr\n");
++		return false;
++	}
++
++	char addr[32];
++	strcpy(addr, baddr);
++	addr[2] = addr[5] = addr[8] = addr[11] = addr[14] = '_';
++	sprintf(obj, "/org/bluez/hci0/dev_%s", addr);
++	return true;
++}
++
++static bool conn_with_bluez(char *obj, char *method, GVariant *param) {
++	GVariant *result;
++	int ret = 1;
++	GError *error = NULL;
++
++	error("Target obj: %s\n", obj);
++	result = g_dbus_connection_call_sync(conn,
++			"org.bluez",
++			obj,
++			DEVICE_INTERFACE,
++			method,
++			param,
++			NULL,
++			G_DBUS_CALL_FLAGS_NONE,
++			-1,
++			NULL,
++			&error);
++
++	if (result == NULL) {
++		info("Error: %s\n", error->message);
++		g_error_free (error);
++		return ret;
++	} else
++		g_variant_unref(result);
++
++	return 0;
++}
++
++int disconnect_dev(const char *baddr)
++{
++	char obj[256] = {0};
++
++	if (!check_conn_dev_valid(baddr, obj))
++		return -1;
++
++	if (!conn_with_bluez(obj, "Disconnect", NULL))
++		return -1;
++
++	return 0;
++}
++
++int connect_dev(const char* baddr, bool sourceFlag)
++{
++	char obj[256] = {0};
++	int idx;
++
++	error("yym: connect device %s\n", baddr);
++	for (idx = 0; idx < ba_pcm_info.max_alloc_num; idx++) {
++		if (ba_pcm_info.pcms[idx].connect_flag) {
++			char addr[18];
++			bool source_flag;
++			parse_pcm_path(ba_pcm_info.pcms[idx].pcm.pcm_path, addr, &source_flag);
++			if (strcmp(addr, baddr) == 0) {
++				error("device : %s connected\n", baddr);
++				return 0;
++			}
++		}
++	}
++
++	if (!check_conn_dev_valid(baddr, obj))
++		return -1;
++
++	error("yym:  dev is valid\n");
++	GVariant *param;
++	/*if we are central, we should connect target's sink uuid*/
++	if (sourceFlag) //strcmp(device_mode, "central") == 0)
++		param = g_variant_new("(s)", A2DP_SINK_UUID);
++	else
++		param = NULL;//g_variant_new("(s)", A2DP_SOURCE_UUID);
++
++	if (!conn_with_bluez(obj, "ConnectProfile", param))
++		return -1;
++}
++
++unsigned char get_connect_status(A2DP_Dev_t **dev, int *cnt) {
++	if (!initFlag) return -1;
++
++	struct ba_pcm pcm;
++	size_t connect_cnt = 0;
++	int i;
++
++	for (i = 0; i < ba_pcm_info.max_alloc_num; i++) {
++		if (ba_pcm_info.pcms[i].connect_flag) {
++			connect_cnt++;
++		}
++	}
++	if (!connect_cnt) return false;
++
++	A2DP_Dev_t *dev_info = calloc(sizeof(A2DP_Dev_t) * connect_cnt, 1);
++	bool source_flag;
++	int idx = 0;;
++
++	for (i = 0; i < ba_pcm_info.max_alloc_num; i++) {
++		error("yym: pcm_path: %s\n", ba_pcm_info.pcms[i].pcm.pcm_path);
++		if (!ba_pcm_info.pcms[i].connect_flag)
++			continue;
++
++		parse_pcm_path(ba_pcm_info.pcms[i].pcm.pcm_path, dev_info[idx].addr, &dev_info[idx].source_flag);
++		idx++;
++	}
++	*cnt = connect_cnt;
++	*dev = dev_info;
++	return true;
++}
++
++void print_connect_status(void) {
++
++}
++
++int pcm_bluealsa_open(const char *bddr) {
++	int ret = -1;
++
++	pthread_mutex_lock(&pcm_mtx);
++	if (pcm_handle_playback) {
++		info("device opened: %s, close before reopen\n", pcm_device_spk);
++		pcm_bluealsa_close();
++	}
++
++	snprintf(pcm_device_spk, sizeof(pcm_device_spk), "bluealsa:DEV=%s", bddr);
++	info("yym: %s %s\n", __func__, pcm_device_spk);
++	ret = snd_pcm_open(&pcm_handle_playback, pcm_device_spk,
++						  SND_PCM_STREAM_PLAYBACK,	/*speaker as output device*/
++						  SND_PCM_NONBLOCK);						/*NOBLOCK MODE*/
++	if (ret < 0) {
++		info("speaker open fail:%s\n", strerror(errno));
++		pthread_mutex_unlock(&pcm_mtx);
++		return ret;
++	}
++
++	ret = snd_pcm_set_params(pcm_handle_playback, SND_PCM_FORMAT_S16_LE,
++								  SND_PCM_ACCESS_RW_INTERLEAVED,
++								  2,			  /*1 channel*/
++								  48000,		  /*8k sample rete*/
++								  1,			  /*allow alsa resample*/
++								  500000);		  /*expected max latence = 500ms*/
++	if (ret < 0) {
++		info("snd_pcm_set_params fail:%s\n", strerror(errno));
++	}
++	pthread_mutex_unlock(&pcm_mtx);
++	return ret;
++}
++
++int pcm_bluealsa_close() {
++	int ret;
++	pthread_mutex_lock(&pcm_mtx);
++	if (pcm_handle_playback == NULL) {
++		info("%s already closed\n", __func__);
++		pthread_mutex_unlock(&pcm_mtx);
++		return 0;
++	}
++	snd_pcm_drop(pcm_handle_playback);
++
++	ret = snd_pcm_close(pcm_handle_playback);
++	if (ret < 0)
++		info("speaker close fail:%s\n", strerror(errno));
++
++	pcm_handle_playback = NULL;
++	pthread_mutex_unlock(&pcm_mtx);
++	return 0;
++}
++
++int pcm_bluealsa_write(void *buf, size_t bytes) {
++	pthread_mutex_lock(&pcm_mtx);
++	if (pcm_handle_playback == NULL) {
++		info("%s dev not open\n", __func__);
++		pthread_mutex_unlock(&pcm_mtx);
++		return 0;
++	}
++	snd_pcm_uframes_t frames = bytes / 4;
++	int ret;
++
++	ret = snd_pcm_writei(pcm_handle_playback, buf, frames);
++	/*if write failed somehow, just ignore, we don't want to wast too much time*/
++	if (ret == -EPIPE) {
++		info("speaker write underrun\n");
++		snd_pcm_prepare(pcm_handle_playback);
++	} else if (ret == -EBADFD) {
++		info("speaker write  EBADFD\n");
++	}
++	pthread_mutex_unlock(&pcm_mtx);
++	return ret;
++}
++
++void register_callback(void (*conn_cb)(char *addr, bool source_flag, A2DP_Event_t type)){
++	mconnect_call_back = conn_cb;
++}
++
+Index: git/utils/cli/Makefile.am
+===================================================================
+--- git.orig/utils/cli/Makefile.am
++++ git/utils/cli/Makefile.am
+@@ -21,4 +21,34 @@ bluealsa_cli_LDADD = \
+ 	@DBUS1_LIBS@ \
+ 	@LIBUNWIND_LIBS@
+ 
++lib_LTLIBRARIES = liba2dp_ctl.la
++
++liba2dp_ctl_la_SOURCES = \
++	../../src/shared/a2dp-codecs.c \
++	../../src/shared/dbus-client.c \
++	../../src/shared/hex.c \
++	../../src/shared/log.c \
++	lib_a2dp_ctl.c
++
++liba2dp_ctl_la_CFLAGS = \
++	-I$(top_srcdir)/src \
++	@ALSA_CFLAGS@ \
++	@DBUS1_CFLAGS@ \
++	@BLUEZ_CFLAGS@ \
++	@GIO2_CFLAGS@ \
++	@GLIB2_CFLAGS@ \
++	@LIBUNWIND_CFLAGS@
++
++#AM_LDFLAGS = -module -avoid-version
++
++liba2dp_ctl_la_LIBADD = \
++	@ALSA_LIBS@ \
++	@DBUS1_LIBS@ \
++	@GIO2_LIBS@ \
++	@GLIB2_LIBS@ \
++	@LIBUNWIND_CFLAGS@
++
++liba2dp_ctldir = ${includedir}
++liba2dp_ctl_HEADERS = a2dp_ctl.h
++
+ endif
+Index: git/src/a2dp-aac.c
+===================================================================
+--- git.orig/src/a2dp-aac.c
++++ git/src/a2dp-aac.c
+@@ -137,6 +137,8 @@ void a2dp_aac_init(void) {
+ 		a2dp_aac_source.capabilities.aac.channels = AAC_CHANNELS_1;
+ 	if (config.a2dp.force_44100)
+ 		AAC_SET_FREQUENCY(a2dp_aac_source.capabilities.aac, AAC_SAMPLING_FREQ_44100);
++	else if (config.a2dp.force_48000)
++		AAC_SET_FREQUENCY(a2dp_aac_source.capabilities.aac, AAC_SAMPLING_FREQ_48000);
+ 
+ 	if (!config.aac_prefer_vbr)
+ 		a2dp_aac_source.capabilities.aac.vbr = 0;
+Index: git/src/a2dp.c
+===================================================================
+--- git.orig/src/a2dp.c
++++ git/src/a2dp.c
+@@ -594,6 +594,13 @@ static unsigned int a2dp_codec_select_sa
+ 					return codec->samplings[slot][i].value;
+ 				break;
+ 			}
++	if (config.a2dp.force_48000)
++		for (i = 0; i < codec->samplings_size[slot]; i++)
++			if (codec->samplings[slot][i].frequency == 48000) {
++				if (capabilities & codec->samplings[slot][i].value)
++					return codec->samplings[slot][i].value;
++				break;
++			}
+ 
+ 	/* favor higher sampling frequencies */
+ 	for (i = codec->samplings_size[slot]; i > 0; i--)
+Index: git/src/a2dp-mpeg.c
+===================================================================
+--- git.orig/src/a2dp-mpeg.c
++++ git/src/a2dp-mpeg.c
+@@ -173,6 +173,8 @@ void a2dp_mpeg_init(void) {
+ 		a2dp_mpeg_source.capabilities.mpeg.channel_mode = MPEG_CHANNEL_MODE_MONO;
+ 	if (config.a2dp.force_44100)
+ 		a2dp_mpeg_source.capabilities.mpeg.frequency = MPEG_SAMPLING_FREQ_44100;
++	else if (config.a2dp.force_48000)
++		a2dp_mpeg_source.capabilities.mpeg.frequency = MPEG_SAMPLING_FREQ_48000;
+ 
+ }
+ 
+Index: git/src/a2dp-sbc.c
+===================================================================
+--- git.orig/src/a2dp-sbc.c
++++ git/src/a2dp-sbc.c
+@@ -127,7 +127,7 @@ void a2dp_sbc_init(void) {
+ 			config.sbc_quality == SBC_QUALITY_XQPLUS) {
+ 		info("Activating SBC Dual Channel HD (SBC %s)",
+ 				config.sbc_quality == SBC_QUALITY_XQ ? "XQ" : "XQ+");
+-		config.a2dp.force_44100 = true;
++		config.a2dp.force_48000 = true;
+ 	}
+ 
+ 	if (config.a2dp.force_mono)
+@@ -139,6 +139,8 @@ void a2dp_sbc_init(void) {
+ 		a2dp_sbc_source.capabilities.sbc.channel_mode = SBC_CHANNEL_MODE_MONO;
+ 	if (config.a2dp.force_44100)
+ 		a2dp_sbc_source.capabilities.sbc.frequency = SBC_SAMPLING_FREQ_44100;
++	else if (config.a2dp.force_48000) // only provide 48000khz audio data.
++		a2dp_sbc_source.capabilities.sbc.frequency = SBC_SAMPLING_FREQ_48000;
+ 
+ }
+ 
+Index: git/src/bluealsa-config.c
+===================================================================
+--- git.orig/src/bluealsa-config.c
++++ git/src/bluealsa-config.c
+@@ -83,6 +83,7 @@ struct ba_config config = {
+ 	.a2dp.volume = false,
+ 	.a2dp.force_mono = false,
+ 	.a2dp.force_44100 = false,
++	.a2dp.force_48000 = true,
+ 
+ 	/* Try to use high SBC encoding quality as a default. */
+ 	.sbc_quality = SBC_QUALITY_HIGH,
+Index: git/src/bluealsa-config.h
+===================================================================
+--- git.orig/src/bluealsa-config.h
++++ git/src/bluealsa-config.h
+@@ -119,6 +119,8 @@ struct ba_config {
+ 		 * to force lower sampling in order to save Bluetooth bandwidth. */
+ 		bool force_44100;
+ 
++		bool force_48000;
++
+ 	} a2dp;
+ 
+ 	/* BlueALSA supports 5 SBC qualities: low, medium, high, XQ and XQ+. The XQ
+Index: git/src/main.c
+===================================================================
+--- git.orig/src/main.c
++++ git/src/main.c
+@@ -380,7 +380,7 @@ int main(int argc, char **argv) {
+ 			config.a2dp.force_mono = true;
+ 			break;
+ 		case 7 /* --a2dp-force-audio-cd */ :
+-			config.a2dp.force_44100 = true;
++			config.a2dp.force_48000 = true;
+ 			break;
+ 		case 9 /* --a2dp-volume */ :
+ 			config.a2dp.volume = true;
+Index: git/utils/aplay/bt-halplay.c
+===================================================================
+--- /dev/null
++++ git/utils/aplay/bt-halplay.c
+@@ -0,0 +1,1022 @@
++/*
++ * BlueALSA - aplay.c
++ * Copyright (c) 2016-2021 Arkadiusz Bokowy
++ *
++ * This file is a part of bluez-alsa.
++ *
++ * This project is licensed under the terms of the MIT license.
++ *
++ */
++
++#if HAVE_CONFIG_H
++# include <config.h>
++#endif
++
++#include <assert.h>
++#include <errno.h>
++#include <getopt.h>
++#include <math.h>
++#include <poll.h>
++#include <pthread.h>
++#include <signal.h>
++#include <stdbool.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++
++#include <alsa/asoundlib.h>
++#include <bluetooth/bluetooth.h>
++#include <dbus/dbus.h>
++
++#include "shared/dbus-client.h"
++#include "shared/defs.h"
++#include "shared/ffb.h"
++#include "shared/log.h"
++#include "alsa-mixer.h"
++#include "alsa-pcm.h"
++#include "dbus.h"
++
++#include "audio_if.h"
++
++struct pcm_worker {
++	pthread_t thread;
++	/* used BlueALSA PCM device */
++	struct ba_pcm ba_pcm;
++	/* file descriptor of PCM FIFO */
++	int ba_pcm_fd;
++	/* file descriptor of PCM control */
++	int ba_pcm_ctrl_fd;
++	/* opened playback PCM device */
++//	snd_pcm_t *pcm;
++	/* mixer for volume control */
++//	snd_mixer_t *mixer;
++//	snd_mixer_elem_t *mixer_elem;
++	/* if true, playback is active */
++	bool active;
++	/* human-readable BT address */
++	char addr[18];
++};
++
++/* handler for aml audio server */
++static audio_hw_device_t *hal_audio_device = NULL;
++static struct audio_stream_out *hal_audio_stream = NULL;
++static struct audio_config hal_audio_config;
++static bool  audio_hal_open_flag = false;
++
++static unsigned int verbose = 0;
++static bool list_bt_devices = false;
++static bool list_bt_pcms = false;
++static const char *pcm_device = "default";
++static const char *mixer_device = "default";
++static const char *mixer_elem_name = "Master";
++static unsigned int mixer_elem_index = 0;
++static bool ba_profile_a2dp = true;
++static bool ba_addr_any = false;
++static bdaddr_t *ba_addrs = NULL;
++static size_t ba_addrs_count = 0;
++static unsigned int pcm_buffer_time = 500000;
++static unsigned int pcm_period_time = 100000;
++static bool pcm_mixer = true;
++
++static struct ba_dbus_ctx dbus_ctx;
++static char dbus_ba_service[32] = BLUEALSA_SERVICE;
++
++static struct ba_pcm *ba_pcms = NULL;
++static size_t ba_pcms_count = 0;
++
++static pthread_rwlock_t workers_lock = PTHREAD_RWLOCK_INITIALIZER;
++static struct pcm_worker *workers = NULL;
++static size_t workers_count = 0;
++static size_t workers_size = 0;
++
++static bool main_loop_on = true;
++static void main_loop_stop(int sig) {
++	/* Call to this handler restores the default action, so on the
++	 * second call the program will be forcefully terminated. */
++
++	struct sigaction sigact = { .sa_handler = SIG_DFL };
++	sigaction(sig, &sigact, NULL);
++
++	main_loop_on = false;
++}
++
++static int parse_bt_addresses(char *argv[], size_t count) {
++
++	ba_addrs_count = count;
++	if ((ba_addrs = malloc(sizeof(*ba_addrs) * ba_addrs_count)) == NULL)
++		return -1;
++
++	size_t i;
++	for (i = 0; i < ba_addrs_count; i++) {
++		if (str2ba(argv[i], &ba_addrs[i]) != 0)
++			return errno = EINVAL, -1;
++		if (bacmp(&ba_addrs[i], BDADDR_ANY) == 0)
++			ba_addr_any = true;
++	}
++
++	return 0;
++}
++
++static const char *bluealsa_get_profile(const struct ba_pcm *pcm) {
++	switch (pcm->transport) {
++	case BA_PCM_TRANSPORT_A2DP_SOURCE:
++	case BA_PCM_TRANSPORT_A2DP_SINK:
++		return "A2DP";
++	case BA_PCM_TRANSPORT_HFP_AG:
++	case BA_PCM_TRANSPORT_HFP_HF:
++	case BA_PCM_TRANSPORT_HSP_AG:
++	case BA_PCM_TRANSPORT_HSP_HS:
++		return "SCO";
++	default:
++		error("Unknown transport: %#x", pcm->transport);
++		return "[...]";
++	}
++}
++
++static snd_pcm_format_t bluealsa_get_snd_pcm_format(const struct ba_pcm *pcm) {
++	switch (pcm->format) {
++	case 0x0108:
++		return SND_PCM_FORMAT_U8;
++	case 0x8210:
++		return SND_PCM_FORMAT_S16_LE;
++	case 0x8318:
++		return SND_PCM_FORMAT_S24_3LE;
++	case 0x8418:
++		return SND_PCM_FORMAT_S24_LE;
++	case 0x8420:
++		return SND_PCM_FORMAT_S32_LE;
++	default:
++		error("Unknown PCM format: %#x", pcm->format);
++		return SND_PCM_FORMAT_UNKNOWN;
++	}
++}
++
++static void audio_hal_close_stream() {
++	error("close output speaker...\n");
++	if (hal_audio_device && hal_audio_stream) {
++		hal_audio_device->close_output_stream(hal_audio_device, hal_audio_stream);
++		hal_audio_stream = NULL;
++	}
++
++	audio_hal_open_flag = false;
++}
++
++static bool audio_hal_open_stream(struct pcm_worker *w) {
++
++	debug("Used configuration:\n"
++		  "  Sampling rate: %u Hz\n"
++		  "  Channels: %u\n",
++	w->ba_pcm.sampling, w->ba_pcm.channels);
++	memset(&hal_audio_config, 0, sizeof(hal_audio_config));
++	hal_audio_config.sample_rate = w->ba_pcm.sampling;
++	hal_audio_config.channel_mask = AUDIO_CHANNEL_OUT_STEREO;
++	hal_audio_config.format = AUDIO_FORMAT_PCM_16_BIT;
++
++	debug("open hal_audio_device speaker...\n");
++	if (hal_audio_device->open_output_stream(hal_audio_device,
++			0, AUDIO_DEVICE_OUT_SPEAKER,
++			AUDIO_OUTPUT_FLAG_PRIMARY, &hal_audio_config,
++			&hal_audio_stream, NULL)) {
++		error("output speaker open failed\n");
++		return false;
++	}
++
++	int ret = hal_audio_stream->common.standby(&hal_audio_stream->common);
++	if (ret) {
++		error("hal_audio_stream standby error: %s", strerror(errno));
++		audio_hal_close_stream();
++		return false;
++	}
++	audio_hal_open_flag = true;
++#if 0
++	err = hal_audio_stream->set_volume(hal_audio_stream, 0.8f, 0.8f);
++	if (err) {
++		fprintf(stderr, "%s %d, err:%x\n", __func__, __LINE__, err);
++		return -1;
++	}
++#endif
++	return true;
++}
++
++static void print_bt_device_list(void) {
++
++	static const struct {
++		const char *label;
++		unsigned int mode;
++	} section[2] = {
++		{ "**** List of PLAYBACK Bluetooth Devices ****", BA_PCM_MODE_SINK },
++		{ "**** List of CAPTURE Bluetooth Devices ****", BA_PCM_MODE_SOURCE },
++	};
++
++	const char *tmp;
++	size_t i, ii;
++
++	for (i = 0; i < ARRAYSIZE(section); i++) {
++		printf("%s\n", section[i].label);
++		for (ii = 0, tmp = ""; ii < ba_pcms_count; ii++) {
++
++			struct ba_pcm *pcm = &ba_pcms[ii];
++			struct bluez_device dev = { 0 };
++
++			if (!(pcm->mode == section[i].mode))
++				continue;
++
++			if (strcmp(pcm->device_path, tmp) != 0) {
++				tmp = ba_pcms[ii].device_path;
++
++				DBusError err = DBUS_ERROR_INIT;
++				if (dbus_bluez_get_device(dbus_ctx.conn, pcm->device_path, &dev, &err) == -1) {
++					warn("Couldn't get BlueZ device properties: %s", err.message);
++					dbus_error_free(&err);
++				}
++
++				char bt_addr[18];
++				ba2str(&dev.bt_addr, bt_addr);
++
++				printf("%s: %s [%s], %s%s\n",
++					dev.hci_name, bt_addr, dev.name,
++					dev.trusted ? "trusted ": "", dev.icon);
++
++			}
++
++			printf("  %s (%s): %s %d channel%s %d Hz\n",
++				bluealsa_get_profile(pcm),
++				pcm->codec,
++				snd_pcm_format_name(bluealsa_get_snd_pcm_format(pcm)),
++				pcm->channels, pcm->channels != 1 ? "s" : "",
++				pcm->sampling);
++
++		}
++	}
++
++}
++
++static void print_bt_pcm_list(void) {
++
++	DBusError err = DBUS_ERROR_INIT;
++	struct bluez_device dev = { 0 };
++	const char *tmp = "";
++	size_t i;
++
++	for (i = 0; i < ba_pcms_count; i++) {
++		struct ba_pcm *pcm = &ba_pcms[i];
++
++		if (strcmp(pcm->device_path, tmp) != 0) {
++			tmp = ba_pcms[i].device_path;
++			if (dbus_bluez_get_device(dbus_ctx.conn, pcm->device_path, &dev, &err) == -1) {
++				warn("Couldn't get BlueZ device properties: %s", err.message);
++				dbus_error_free(&err);
++			}
++		}
++
++		char bt_addr[18];
++		ba2str(&dev.bt_addr, bt_addr);
++
++		printf(
++				"bluealsa:SRV=%s,DEV=%s,PROFILE=%s\n"
++				"    %s, %s%s, %s\n"
++				"    %s (%s): %s %d channel%s %d Hz\n",
++			dbus_ba_service,
++			bt_addr,
++			pcm->transport & BA_PCM_TRANSPORT_MASK_A2DP ? "a2dp" : "sco",
++			dev.name,
++			dev.trusted ? "trusted ": "", dev.icon,
++			pcm->mode == BA_PCM_MODE_SINK ? "playback" : "capture",
++			bluealsa_get_profile(pcm),
++			pcm->codec,
++			snd_pcm_format_name(bluealsa_get_snd_pcm_format(pcm)),
++			pcm->channels, pcm->channels != 1 ? "s" : "",
++			pcm->sampling);
++	}
++
++}
++
++static struct ba_pcm *get_ba_pcm(const char *path) {
++
++	size_t i;
++
++	for (i = 0; i < ba_pcms_count; i++)
++		if (strcmp(ba_pcms[i].pcm_path, path) == 0)
++			return &ba_pcms[i];
++
++	return NULL;
++}
++
++static struct pcm_worker *get_active_worker(void) {
++
++	struct pcm_worker *w = NULL;
++	size_t i;
++
++	pthread_rwlock_rdlock(&workers_lock);
++
++	for (i = 0; i < workers_count; i++)
++		if (workers[i].active) {
++			w = &workers[i];
++			break;
++		}
++
++	pthread_rwlock_unlock(&workers_lock);
++
++	return w;
++}
++
++static int pause_device_player(const struct ba_pcm *ba_pcm) {
++
++	DBusMessage *msg = NULL, *rep = NULL;
++	DBusError err = DBUS_ERROR_INIT;
++	char path[160];
++	int ret = 0;
++
++	snprintf(path, sizeof(path), "%s/player0", ba_pcm->device_path);
++	msg = dbus_message_new_method_call("org.bluez", path, "org.bluez.MediaPlayer1", "Pause");
++
++	if ((rep = dbus_connection_send_with_reply_and_block(dbus_ctx.conn, msg,
++					DBUS_TIMEOUT_USE_DEFAULT, &err)) == NULL) {
++		warn("Couldn't pause player: %s", err.message);
++		dbus_error_free(&err);
++		goto fail;
++	}
++
++	debug("Requested playback pause");
++	goto final;
++
++fail:
++	ret = -1;
++
++final:
++	if (msg != NULL)
++		dbus_message_unref(msg);
++	if (rep != NULL)
++		dbus_message_unref(rep);
++	return ret;
++}
++
++
++static void pcm_worker_routine_exit(struct pcm_worker *worker) {
++	if (worker->ba_pcm_fd != -1) {
++		close(worker->ba_pcm_fd);
++		worker->ba_pcm_fd = -1;
++	}
++	if (worker->ba_pcm_ctrl_fd != -1) {
++		close(worker->ba_pcm_ctrl_fd);
++		worker->ba_pcm_ctrl_fd = -1;
++	}
++	//if (worker->pcm != NULL) {
++		//snd_pcm_close(worker->pcm);
++	//	worker->pcm = NULL;
++	//}
++	//if (worker->mixer != NULL) {
++		//snd_mixer_close(worker->mixer);
++	//	worker->mixer_elem = NULL;
++	//	worker->mixer = NULL;
++	//}
++	audio_hal_close_stream();
++	debug("Exiting PCM worker %s", worker->addr);
++}
++
++static void *pcm_worker_routine(struct pcm_worker *w) {
++
++	snd_pcm_format_t pcm_format = bluealsa_get_snd_pcm_format(&w->ba_pcm);
++	ssize_t pcm_format_size = 2; //* w->ba_pcm.channels;//snd_pcm_format_size(pcm_format, 1);
++	size_t pcm_1s_samples = w->ba_pcm.sampling * w->ba_pcm.channels;
++	ffb_t buffer = { 0 };
++
++	/* Cancellation should be possible only in the carefully selected place
++	 * in order to prevent memory leaks and resources not being released. */
++	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
++
++	pthread_cleanup_push(PTHREAD_CLEANUP(pcm_worker_routine_exit), w);
++	pthread_cleanup_push(PTHREAD_CLEANUP(ffb_free), &buffer);
++
++	/* create buffer big enough to hold 100 ms of PCM data */
++	if (ffb_init(&buffer, pcm_1s_samples / 10, pcm_format_size) == -1) {
++		error("Couldn't create PCM buffer: %s", strerror(errno));
++		goto fail;
++	}
++
++	DBusError err = DBUS_ERROR_INIT;
++	if (!bluealsa_dbus_pcm_open(&dbus_ctx, w->ba_pcm.pcm_path,
++				&w->ba_pcm_fd, &w->ba_pcm_ctrl_fd, &err)) {
++		error("Couldn't open PCM: %s", err.message);
++		dbus_error_free(&err);
++		goto fail;
++	}
++
++	/* Initialize the max read length to 10 ms. Later, when the PCM device
++	 * will be opened, this value will be adjusted to one period size. */
++	size_t pcm_max_read_len_init = pcm_1s_samples / 100 * pcm_format_size;
++	size_t pcm_max_read_len = pcm_max_read_len_init;
++	size_t pcm_open_retries = 0;
++
++	/* These variables determine how and when the pause command will be send
++	 * to the device player. In order not to flood BT connection with AVRCP
++	 * packets, we are going to send pause command every 0.5 second. */
++	size_t pause_threshold = pcm_1s_samples / 2 * pcm_format_size;
++	size_t pause_counter = 0;
++	size_t pause_bytes = 0;
++
++	struct pollfd pfds[] = {{ w->ba_pcm_fd, POLLIN, 0 }};
++	int timeout = -1;
++
++	debug("Starting PCM loop");
++	while (main_loop_on) {
++		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
++
++		ssize_t ret;
++
++		/* Reading from the FIFO won't block unless there is an open connection
++		 * on the writing side. However, the server does not open PCM FIFO until
++		 * a transport is created. With the A2DP, the transport is created when
++		 * some clients (BT device) requests audio transfer. */
++		switch (poll(pfds, ARRAYSIZE(pfds), timeout)) {
++		case -1:
++			if (errno == EINTR)
++				continue;
++			error("PCM FIFO poll error: %s", strerror(errno));
++			goto fail;
++		case 0:
++			debug("Device marked as inactive: %s", w->addr);
++			pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
++			pcm_max_read_len = pcm_max_read_len_init;
++			pause_counter = pause_bytes = 0;
++			ffb_rewind(&buffer);
++			audio_hal_close_stream();
++			w->active = false;
++			timeout = -1;
++			continue;
++		}
++
++		/* FIFO has been terminated on the writing side */
++		if (pfds[0].revents & POLLHUP)
++			break;
++
++		#define MIN(a,b) a < b ? a : b
++		size_t _in = MIN(pcm_max_read_len, ffb_blen_in(&buffer));
++		if ((ret = read(w->ba_pcm_fd, buffer.tail, _in)) == -1) {
++			if (errno == EINTR)
++				continue;
++			error("PCM FIFO read error: %s", strerror(errno));
++			goto fail;
++		}
++
++		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
++
++		/* If PCM mixer is disabled, check whether we should play audio. */
++		#if 0
++		if (!pcm_mixer) {
++			struct pcm_worker *worker = get_active_worker();
++			if (worker != NULL && worker != w) {
++				if (pause_counter < 5 && (pause_bytes += ret) > pause_threshold) {
++					if (pause_device_player(&w->ba_pcm) == -1)
++						/* pause command does not work, stop further requests */
++						pause_counter = 5;
++					pause_counter++;
++					pause_bytes = 0;
++					timeout = 100;
++				}
++				continue;
++			}
++		}
++		#endif
++
++		if (!audio_hal_open_flag) {
++
++			unsigned int buffer_time = pcm_buffer_time;
++			unsigned int period_time = pcm_period_time;
++			//snd_pcm_uframes_t buffer_size;
++			snd_pcm_uframes_t period_size = 128*4;
++			char *tmp;
++
++			/* After PCM open failure wait one second before retry. This can not be
++			 * done with a single sleep() call, because we have to drain PCM FIFO. */
++			if (pcm_open_retries++ % 20 != 0) {
++				usleep(50000);
++				continue;
++			}
++			audio_hal_open_stream(w);
++
++#if 0
++			if (alsa_pcm_open(&w->pcm, pcm_device, pcm_format, w->ba_pcm.channels,
++						w->ba_pcm.sampling, &buffer_time, &period_time, &tmp) != 0) {
++				warn("Couldn't open PCM: %s", tmp);
++				pcm_max_read_len = pcm_max_read_len_init;
++				usleep(50000);
++				free(tmp);
++				continue;
++			}
++
++			if (alsa_mixer_open(&w->mixer, &w->mixer_elem,
++						mixer_device, mixer_elem_name, mixer_elem_index, &tmp) != 0) {
++				warn("Couldn't open mixer: %s", tmp);
++				free(tmp);
++			}
++
++			/* initial volume synchronization */
++			pcm_worker_mixer_volume_sync(w, &w->ba_pcm);
++
++			snd_pcm_get_params(w->pcm, &buffer_size, &period_size);
++#endif
++			pcm_max_read_len = period_size * w->ba_pcm.channels * pcm_format_size;
++			pcm_open_retries = 0;
++#if 0
++			if (verbose >= 2) {
++				printf("Used configuration for %s:\n"
++						"  PCM buffer time: %u us (%zu bytes)\n"
++						"  PCM period time: %u us (%zu bytes)\n"
++						"  PCM format: %s\n"
++						"  Sampling rate: %u Hz\n"
++						"  Channels: %u\n",
++						w->addr,
++						buffer_time, snd_pcm_frames_to_bytes(w->pcm, buffer_size),
++						period_time, snd_pcm_frames_to_bytes(w->pcm, period_size),
++						snd_pcm_format_name(pcm_format),
++						w->ba_pcm.sampling,
++						w->ba_pcm.channels);
++			}
++#endif
++		}
++
++
++		/* mark device as active and set timeout to 500ms */
++		w->active = true;
++		timeout = 500;
++
++		ffb_seek(&buffer, ret / pcm_format_size);
++
++		/* calculate the overall number of frames in the buffer */
++		snd_pcm_sframes_t frames = ffb_len_out(&buffer) / w->ba_pcm.channels;
++
++		int bytes = frames * 4;
++		if ((ret = hal_audio_stream->write(hal_audio_stream, buffer.data, bytes)) < 0)
++			switch (-ret) {
++			case EPIPE:
++				debug("An underrun has occurred");
++				//snd_pcm_prepare(w->pcm);
++				usleep(50000);
++				//frames = 0;
++				break;
++			default:
++				error("Couldn't write to PCM: %s", snd_strerror(ret));
++				goto fail;
++			}
++		//error("yym:  frames:%d, bytes: %d\n", frames, bytes);
++		/* move leftovers to the beginning and reposition tail */
++		ffb_shift(&buffer, frames * w->ba_pcm.channels);
++
++	}
++
++fail:
++	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
++	pthread_cleanup_pop(1);
++	pthread_cleanup_pop(1);
++	return NULL;
++}
++
++static bool pcm_hw_params_equal(
++		const struct ba_pcm *ba_pcm_1,
++		const struct ba_pcm *ba_pcm_2) {
++	if (ba_pcm_1->format != ba_pcm_2->format)
++		return false;
++	if (ba_pcm_1->channels != ba_pcm_2->channels)
++		return false;
++	if (ba_pcm_1->sampling != ba_pcm_2->sampling)
++		return false;
++	return true;
++}
++
++/**
++ * Stop the worker thread at workers[index]. */
++static void pcm_worker_stop(size_t index) {
++
++	/* Safety check for out-of-bounds read. */
++	assert(index < workers_count);
++
++	pthread_rwlock_wrlock(&workers_lock);
++
++	pthread_cancel(workers[index].thread);
++	pthread_join(workers[index].thread, NULL);
++
++	if (index != --workers_count)
++		/* Move the last worker in the array to position
++		 * index, to prevent any "gaps" in the array. */
++		memcpy(&workers[index], &workers[workers_count], sizeof(workers[index]));
++
++	pthread_rwlock_unlock(&workers_lock);
++
++}
++
++static struct pcm_worker *supervise_pcm_worker_start(const struct ba_pcm *ba_pcm) {
++
++	size_t i;
++	for (i = 0; i < workers_count; i++)
++		if (strcmp(workers[i].ba_pcm.pcm_path, ba_pcm->pcm_path) == 0) {
++			/* If the codec has changed after the device connected, then the
++			 * audio format may have changed. If it has, the worker thread
++			 * needs to be restarted. */
++			if (!pcm_hw_params_equal(&workers[i].ba_pcm, ba_pcm))
++				pcm_worker_stop(i);
++			else
++				return &workers[i];
++		}
++
++	pthread_rwlock_wrlock(&workers_lock);
++
++	workers_count++;
++	if (workers_size < workers_count) {
++		struct pcm_worker *tmp = workers;
++		workers_size += 4;  /* coarse-grained realloc */
++		if ((workers = realloc(workers, sizeof(*workers) * workers_size)) == NULL) {
++			error("Couldn't (re)allocate memory for PCM workers: %s", strerror(ENOMEM));
++			workers = tmp;
++			pthread_rwlock_unlock(&workers_lock);
++			return NULL;
++		}
++	}
++
++	struct pcm_worker *worker = &workers[workers_count - 1];
++	memcpy(&worker->ba_pcm, ba_pcm, sizeof(worker->ba_pcm));
++	ba2str(&worker->ba_pcm.addr, worker->addr);
++	worker->active = false;
++	worker->ba_pcm_fd = -1;
++	worker->ba_pcm_ctrl_fd = -1;
++	//worker->pcm = NULL;
++
++	pthread_rwlock_unlock(&workers_lock);
++
++	debug("Creating PCM worker %s", worker->addr);
++
++	if ((errno = pthread_create(&worker->thread, NULL,
++					PTHREAD_ROUTINE(pcm_worker_routine), worker)) != 0) {
++		error("Couldn't create PCM worker %s: %s", worker->addr, strerror(errno));
++		workers_count--;
++		return NULL;
++	}
++
++	return worker;
++}
++
++static struct pcm_worker *supervise_pcm_worker_stop(const struct ba_pcm *ba_pcm) {
++
++	size_t i;
++	for (i = 0; i < workers_count; i++)
++		if (strcmp(workers[i].ba_pcm.pcm_path, ba_pcm->pcm_path) == 0)
++			pcm_worker_stop(i);
++
++	return NULL;
++}
++
++static struct pcm_worker *supervise_pcm_worker(const struct ba_pcm *ba_pcm) {
++
++	if (ba_pcm == NULL)
++		return NULL;
++
++	if (ba_pcm->mode != BA_PCM_MODE_SOURCE)
++		goto stop;
++
++	if ((ba_profile_a2dp && !(ba_pcm->transport & BA_PCM_TRANSPORT_MASK_A2DP)) ||
++			(!ba_profile_a2dp && !(ba_pcm->transport & BA_PCM_TRANSPORT_MASK_SCO)))
++		goto stop;
++
++	/* check whether SCO has selected codec */
++	if (ba_pcm->transport & BA_PCM_TRANSPORT_MASK_SCO &&
++			ba_pcm->sampling == 0) {
++		debug("Skipping SCO with codec not selected");
++		goto stop;
++	}
++
++	if (ba_addr_any)
++		goto start;
++
++	size_t i;
++	for (i = 0; i < ba_addrs_count; i++)
++		if (bacmp(&ba_addrs[i], &ba_pcm->addr) == 0)
++			goto start;
++
++stop:
++	return supervise_pcm_worker_stop(ba_pcm);
++start:
++	return supervise_pcm_worker_start(ba_pcm);
++}
++
++static DBusHandlerResult dbus_signal_handler(DBusConnection *conn, DBusMessage *message, void *data) {
++	(void)conn;
++	(void)data;
++
++	if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_SIGNAL)
++		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
++
++	const char *path = dbus_message_get_path(message);
++	const char *interface = dbus_message_get_interface(message);
++	const char *signal = dbus_message_get_member(message);
++
++	DBusMessageIter iter;
++	struct pcm_worker *worker;
++
++	if (strcmp(interface, DBUS_INTERFACE_OBJECT_MANAGER) == 0) {
++
++		if (strcmp(signal, "InterfacesAdded") == 0) {
++			if (!dbus_message_iter_init(message, &iter))
++				goto fail;
++			struct ba_pcm pcm;
++			DBusError err = DBUS_ERROR_INIT;
++			debug("InterfacesAdded\n");
++			if (!bluealsa_dbus_message_iter_get_pcm(&iter, &err, &pcm)) {
++				error("Couldn't add new PCM: %s", err.message);
++				dbus_error_free(&err);
++				goto fail;
++			}
++			if (pcm.transport == BA_PCM_TRANSPORT_NONE)
++				goto fail;
++			struct ba_pcm *tmp = ba_pcms;
++			if ((ba_pcms = realloc(ba_pcms, (ba_pcms_count + 1) * sizeof(*ba_pcms))) == NULL) {
++				error("Couldn't add new PCM: %s", strerror(ENOMEM));
++				ba_pcms = tmp;
++				goto fail;
++			}
++			memcpy(&ba_pcms[ba_pcms_count++], &pcm, sizeof(*ba_pcms));
++			supervise_pcm_worker(&pcm);
++			return DBUS_HANDLER_RESULT_HANDLED;
++		}
++
++		if (strcmp(signal, "InterfacesRemoved") == 0) {
++			debug("InterfacesRemoved\n");
++			if (!dbus_message_iter_init(message, &iter) ||
++					dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_OBJECT_PATH) {
++				error("Couldn't remove PCM: %s", "Invalid signal signature");
++				goto fail;
++			}
++			dbus_message_iter_get_basic(&iter, &path);
++			struct ba_pcm *pcm;
++			if ((pcm = get_ba_pcm(path)) == NULL)
++				goto fail;
++			supervise_pcm_worker_stop(pcm);
++			return DBUS_HANDLER_RESULT_HANDLED;
++		}
++
++	}
++
++	if (strcmp(interface, DBUS_INTERFACE_PROPERTIES) == 0) {
++		struct ba_pcm *pcm;
++		if ((pcm = get_ba_pcm(path)) == NULL)
++			goto fail;
++		if (!dbus_message_iter_init(message, &iter) ||
++				dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_STRING) {
++			error("Couldn't update PCM: %s", "Invalid signal signature");
++			goto fail;
++		}
++		dbus_message_iter_get_basic(&iter, &interface);
++		dbus_message_iter_next(&iter);
++		if (!bluealsa_dbus_message_iter_get_pcm_props(&iter, NULL, pcm))
++			goto fail;
++		//if ((worker = supervise_pcm_worker(pcm)) != NULL)
++		//	pcm_worker_mixer_volume_update(worker, pcm);
++		return DBUS_HANDLER_RESULT_HANDLED;
++	}
++
++fail:
++	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
++}
++
++int main(int argc, char *argv[]) {
++
++	int opt;
++	const char *opts = "hVvlLB:D:M:";
++	const struct option longopts[] = {
++		{ "help", no_argument, NULL, 'h' },
++		{ "version", no_argument, NULL, 'V' },
++		{ "verbose", no_argument, NULL, 'v' },
++		{ "list-devices", no_argument, NULL, 'l' },
++		{ "list-pcms", no_argument, NULL, 'L' },
++		{ "dbus", required_argument, NULL, 'B' },
++		{ "pcm", required_argument, NULL, 'D' },
++		{ "pcm-buffer-time", required_argument, NULL, 3 },
++		{ "pcm-period-time", required_argument, NULL, 4 },
++//		{ "mixer-device", required_argument, NULL, 'M' },
++//		{ "mixer-name", required_argument, NULL, 6 },
++//		{ "mixer-index", required_argument, NULL, 7 },
++		{ "profile-a2dp", no_argument, NULL, 1 },
++		{ "profile-sco", no_argument, NULL, 2 },
++		{ "single-audio", no_argument, NULL, 5 },
++		{ 0, 0, 0, 0 },
++	};
++
++	while ((opt = getopt_long(argc, argv, opts, longopts, NULL)) != -1)
++		switch (opt) {
++		case 'h' /* --help */ :
++			printf("Usage:\n"
++					"  %s [OPTION]... [BT-ADDR]...\n"
++					"\nOptions:\n"
++					"  -h, --help\t\t\tprint this help and exit\n"
++					"  -V, --version\t\t\tprint version and exit\n"
++					"  -v, --verbose\t\t\tmake output more verbose\n"
++					"  -l, --list-devices\t\tlist available BT audio devices\n"
++					"  -L, --list-pcms\t\tlist available BT audio PCMs\n"
++					"  -B, --dbus=NAME\t\tBlueALSA service name suffix\n"
++					"  -D, --pcm=NAME\t\tplayback PCM device to use\n"
++					"  --pcm-buffer-time=INT\t\tplayback PCM buffer time\n"
++					"  --pcm-period-time=INT\t\tplayback PCM period time\n"
++					"  -M, --mixer-device=NAME\tmixer device to use\n"
++					"  --mixer-name=NAME\t\tmixer element name\n"
++					"  --mixer-index=NUM\t\tmixer element channel index\n"
++					"  --profile-a2dp\t\tuse A2DP profile (default)\n"
++					"  --profile-sco\t\t\tuse SCO profile\n"
++					"  --single-audio\t\tsingle audio mode\n"
++					"\nNote:\n"
++					"If one wants to receive audio from more than one Bluetooth device, it is\n"
++					"possible to specify more than one MAC address. By specifying any/empty MAC\n"
++					"address (00:00:00:00:00:00), one will allow connections from any Bluetooth\n"
++					"device. Without given explicit MAC address any/empty MAC is assumed.\n",
++					argv[0]);
++			return EXIT_SUCCESS;
++
++		case 'V' /* --version */ :
++			printf("%s\n", PACKAGE_VERSION);
++			return EXIT_SUCCESS;
++
++		case 'v' /* --verbose */ :
++			verbose++;
++			break;
++
++		case 'l' /* --list-devices */ :
++			list_bt_devices = true;
++			break;
++		case 'L' /* --list-pcms */ :
++			list_bt_pcms = true;
++			break;
++
++		case 'B' /* --dbus=NAME */ :
++			snprintf(dbus_ba_service, sizeof(dbus_ba_service), BLUEALSA_SERVICE ".%s", optarg);
++			if (!dbus_validate_bus_name(dbus_ba_service, NULL)) {
++				error("Invalid BlueALSA D-Bus service name: %s", dbus_ba_service);
++				return EXIT_FAILURE;
++			}
++			break;
++
++		case 'D' /* --pcm=NAME */ :
++			pcm_device = optarg;
++			break;
++		case 3 /* --pcm-buffer-time=INT */ :
++			pcm_buffer_time = atoi(optarg);
++			break;
++		case 4 /* --pcm-period-time=INT */ :
++			pcm_period_time = atoi(optarg);
++			break;
++
++		case 'M' /* --mixer-device=NAME */ :
++			mixer_device = optarg;
++			break;
++		case 6 /* --mixer-name=NAME */ :
++			mixer_elem_name = optarg;
++			break;
++		case 7 /* --mixer-index=NUM */ :
++			mixer_elem_index = atoi(optarg);
++			break;
++
++		case 1 /* --profile-a2dp */ :
++			ba_profile_a2dp = true;
++			break;
++		case 2 /* --profile-sco */ :
++			ba_profile_a2dp = false;
++			break;
++
++		case 5 /* --single-audio */ :
++			pcm_mixer = false;
++			break;
++
++		default:
++			fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
++			return EXIT_FAILURE;
++		}
++
++	log_open(argv[0], false, false);
++	dbus_threads_init_default();
++
++	DBusError err = DBUS_ERROR_INIT;
++	if (!bluealsa_dbus_connection_ctx_init(&dbus_ctx, dbus_ba_service, &err)) {
++		error("Couldn't initialize D-Bus context: %s", err.message);
++		return EXIT_FAILURE;
++	}
++
++	if (list_bt_devices || list_bt_pcms) {
++
++		if (!bluealsa_dbus_get_pcms(&dbus_ctx, &ba_pcms, &ba_pcms_count, &err)) {
++			warn("Couldn't get BlueALSA PCM list: %s", err.message);
++			return EXIT_FAILURE;
++		}
++
++		if (list_bt_pcms)
++			print_bt_pcm_list();
++
++		if (list_bt_devices)
++			print_bt_device_list();
++
++		return EXIT_SUCCESS;
++	}
++#if 0
++	if (optind == argc)
++		ba_addr_any = true;
++	else if (parse_bt_addresses(&argv[optind], argc - optind) == -1) {
++		error("Couldn't parse BT addresses: %s", strerror(errno));
++		return EXIT_FAILURE;
++	}
++
++	if (verbose >= 1) {
++
++		char *ba_str = malloc(19 * ba_addrs_count + 1);
++		char *tmp = ba_str;
++		size_t i;
++
++		for (i = 0; i < ba_addrs_count; i++, tmp += 19)
++			ba2str(&ba_addrs[i], stpcpy(tmp, ", "));
++
++		printf("Selected configuration:\n"
++				"  BlueALSA service: %s\n"
++				"  PCM device: %s\n"
++				"  PCM buffer time: %u us\n"
++				"  PCM period time: %u us\n"
++				"  ALSA mixer device: %s\n"
++				"  ALSA mixer element: '%s',%u\n"
++				"  Bluetooth device(s): %s\n"
++				"  Profile: %s\n",
++				dbus_ba_service,
++				pcm_device, pcm_buffer_time, pcm_period_time,
++				mixer_device, mixer_elem_name, mixer_elem_index,
++				ba_addr_any ? "ANY" : &ba_str[2],
++				ba_profile_a2dp ? "A2DP" : "SCO");
++
++		free(ba_str);
++	}
++#else
++	ba_addr_any = true;
++#endif
++
++	bluealsa_dbus_connection_signal_match_add(&dbus_ctx,
++			dbus_ba_service, NULL, DBUS_INTERFACE_OBJECT_MANAGER, "InterfacesAdded",
++			"path_namespace='/org/bluealsa'");
++	bluealsa_dbus_connection_signal_match_add(&dbus_ctx,
++			dbus_ba_service, NULL, DBUS_INTERFACE_OBJECT_MANAGER, "InterfacesRemoved",
++			"path_namespace='/org/bluealsa'");
++	bluealsa_dbus_connection_signal_match_add(&dbus_ctx,
++			dbus_ba_service, NULL, DBUS_INTERFACE_PROPERTIES, "PropertiesChanged",
++			"arg0='"BLUEALSA_INTERFACE_PCM"'");
++
++	if (!dbus_connection_add_filter(dbus_ctx.conn, dbus_signal_handler, NULL, NULL)) {
++		error("Couldn't add D-Bus filter: %s", err.message);
++		return EXIT_FAILURE;
++	}
++
++	if (!bluealsa_dbus_get_pcms(&dbus_ctx, &ba_pcms, &ba_pcms_count, &err))
++		warn("Couldn't get BlueALSA PCM list: %s", err.message);
++
++	size_t i;
++	for (i = 0; i < ba_pcms_count; i++)
++		supervise_pcm_worker(&ba_pcms[i]);
++
++	struct sigaction sigact = { .sa_handler = main_loop_stop };
++	sigaction(SIGTERM, &sigact, NULL);
++	sigaction(SIGINT, &sigact, NULL);
++
++	int inited = audio_hw_load_interface(&hal_audio_device);
++	if (inited) {
++		fprintf(stderr, "%s %d error:%d\n", __func__, __LINE__, inited);
++		return EXIT_FAILURE;
++	}
++
++	if (hal_audio_device->get_supported_devices) {
++		uint32_t support_dev = 0;
++		support_dev = hal_audio_device->get_supported_devices(hal_audio_device);
++		debug("supported device: %x\n", support_dev);
++	}
++
++	inited = hal_audio_device->init_check(hal_audio_device);
++	if (inited) {
++		error("device not inited, quit\n");
++		audio_hw_unload_interface(hal_audio_device);
++		return EXIT_FAILURE;
++	}
++
++	debug("Starting main loop, init audio hal success\n");
++	while (main_loop_on) {
++
++		struct pollfd pfds[10];
++		nfds_t pfds_len = ARRAYSIZE(pfds);
++
++		if (!bluealsa_dbus_connection_poll_fds(&dbus_ctx, pfds, &pfds_len)) {
++			error("Couldn't get D-Bus connection file descriptors");
++			return EXIT_FAILURE;
++		}
++
++		if (poll(pfds, pfds_len, -1) == -1 &&
++				errno == EINTR)
++			continue;
++
++		if (bluealsa_dbus_connection_poll_dispatch(&dbus_ctx, pfds, pfds_len))
++			while (dbus_connection_dispatch(dbus_ctx.conn) == DBUS_DISPATCH_DATA_REMAINS)
++				continue;
++
++	}
++
++	audio_hw_unload_interface(hal_audio_device);
++	return EXIT_SUCCESS;
++}
+Index: git/utils/aplay/Makefile.am
+===================================================================
+--- git.orig/utils/aplay/Makefile.am
++++ git/utils/aplay/Makefile.am
+@@ -28,4 +28,29 @@ bluealsa_aplay_LDADD = \
+ 	@DBUS1_LIBS@ \
+ 	@LIBUNWIND_LIBS@
+ 
++bin_PROGRAMS += bt-halplay
++bt_halplay_SOURCES = \
++	../../src/shared/a2dp-codecs.c \
++	../../src/shared/dbus-client.c \
++	../../src/shared/ffb.c \
++	../../src/shared/log.c \
++	alsa-mixer.c \
++	alsa-pcm.c \
++	dbus.c \
++	bt-halplay.c
++
++bt_halplay_CFLAGS = \
++	-I$(top_srcdir)/src \
++	-laudio_client \
++	@ALSA_CFLAGS@ \
++	@BLUEZ_CFLAGS@ \
++	@DBUS1_CFLAGS@ \
++	@LIBUNWIND_CFLAGS@
++
++bt_halplay_LDADD = \
++	@ALSA_LIBS@ \
++	@BLUEZ_LIBS@ \
++	@DBUS1_LIBS@ \
++	@LIBUNWIND_LIBS@
++
+ endif
