@@ -122,6 +122,7 @@ EXTERNALSRC:pn-aml-secmem = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmedia
 EXTERNALSRC:pn-optee-video-firmware = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/secfirmload/secloadbin' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/secfirmload/secloadbin')) else ''}"
 EXTERNALSRC:pn-gst-aml-drmbufferpool-plugins = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/gst-aml-drmbufferpool1/gst-aml-drmbufferpool-1.0' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/gst-aml-drmbufferpool1/gst-aml-drmbufferpool-1.0')) else ''}"
 EXTERNALSRC:pn-aml-mediahal-sdk = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/mediahal-sdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/mediahal-sdk')) else ''}"
+EXTERNALSRC:pn-libvideorender = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libvideorender' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libvideorender')) else ''}"
 EXTERNALSRC:pn-aml-htmllocal-starboard = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/cobalt-starboard-21' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/cobalt-starboard-21')) else ''}"
 EXTERNALSRC:pn-htmllocal-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/cobalt-starboard-21/htmllocal' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/cobalt-starboard-21/htmllocal')) else ''}"
 EXTERNALSRC:pn-playready = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/playready-bin' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/playready-bin')) else ''}"

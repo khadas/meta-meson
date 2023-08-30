@@ -126,6 +126,7 @@ RDEPENDS:packagegroup-amlogic-baserootfs = "\
     pulseaudio \
     ffmpeg \
     gst-agmplayer \
+    libvideorender \
     libopus \
     playscripts \
     ${@bb.utils.contains('DISTRO_FEATURES', 'westeros', \

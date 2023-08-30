@@ -91,6 +91,7 @@ IMAGE_INSTALL += " \
         gst-aml-drm-plugins \
         gstreamer1.0-libav \
         gst-agmplayer \
+        libvideorender \
         gst-player \
         ', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'weston', \
