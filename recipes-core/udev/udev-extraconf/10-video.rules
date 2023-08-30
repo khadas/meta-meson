@@ -13,6 +13,8 @@ KERNEL=="videotunnel", GROUP="video", MODE="660"
 KERNEL=="amresource_mgr", GROUP="video", MODE="660"
 KERNEL=="amstream_vframe", GROUP="video", MODE="660"
 KERNEL=="amvideo", GROUP="video", MODE="660"
+KERNEL=="amstream_hevc_frame", GROUP="video", MODE="660"
+
 
 KERNEL=="tee0", GROUP="system", MODE="660"
 KERNEL=="tee_comm_hdcp", GROUP="system", MODE="660"
