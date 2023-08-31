@@ -54,7 +54,7 @@ DISTRO_FEATURES:append = " gstreamer1"
 DISTRO_FEATURES:append = " aml-dtv "
 DISTRO_FEATURES:append = " recovery "
 DISTRO_FEATURES:append = " swupdate "
-
+DISTRO_FEATURES:append = " arc-via-spdif"
 
 OVERRIDES .= ":am301:t5d:onepass"
 MACHINEOVERRIDES .= ":client"
