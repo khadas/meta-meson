@@ -167,5 +167,6 @@ EXTERNALSRC:pn-aml-dvb-ota-dtvkit-prebuilt = "${@'${MESON_ROOT_PATH}/aml-comp/ve
 EXTERNALSRC:pn-aml-avb-dm-verity = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_avb_dm_verity' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_avb_dm_verity')) else ''}"
 EXTERNALSRC_pn-disney-src = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus')) else ''}"
 EXTERNALSRC_pn-disney-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus/wpe-plugin-disney' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus/wpe-plugin-disney')) else ''}"
+EXTERNALSRC_pn-disney-basic-tests = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus')) else ''}"
 EXTERNALSRC_pn-disney-shield-agent = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus')) else ''}"
-EXTERNALSRC_pn-disney-shield-extension = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus')) else ''}"
+EXTERNALSRC_pn-disney-shield-extensions = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus')) else ''}"
