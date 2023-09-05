@@ -66,10 +66,17 @@ if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
 EOF
     fi
 
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}; then
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/mtdblock6         /factory                   yaffs2     defaults              0  0
+ /dev/mtdblock7         /tee                       yaffs2     defaults              0  0
+EOF
+    else
     cat >> ${D}${sysconfdir}/fstab <<EOF
  /dev/mtdblock5         /factory                   yaffs2     defaults              0  0
  /dev/mtdblock6         /tee                       yaffs2     defaults              0  0
 EOF
+    fi
 else
     vendor_dev="vendor"
     # if dm-verity is enabled, mount /dev/mapper/vendor(/dev/dm-1) as ro
@@ -110,8 +117,8 @@ do_install:append:s1a () {
 
 if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
     cat >> ${D}${sysconfdir}/fstab <<EOF
- /dev/mtdblock5         /factory                   yaffs2     defaults              0  0
- /dev/mtdblock6         /tee                       yaffs2     defaults              0  0
+ /dev/mtdblock4         /factory                   yaffs2     defaults              0  0
+ /dev/mtdblock5         /tee                       yaffs2     defaults              0  0
 EOF
 fi
 
