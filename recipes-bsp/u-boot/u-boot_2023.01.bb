@@ -62,7 +62,10 @@ BL31_ARG = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '--bl31 bl31/bl31_2.
 BL32_SOC_FAMILY = "TBD"
 BL32_SOC_FAMILY:s1a = "s1a"
 BL32_ARG = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '--bl32 bl32/bl32_3.18/bin/${BL32_SOC_FAMILY}/blob-bl32.nand.bin.signed', '', d)}"
-BL32_ARG:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '--bl32 bl32/bl32_3.18/bin/${BL32_SOC_FAMILY}/s805c1eng/blob-bl32.bin.signed', '', d)}" 
+BL32_ARG:s1a = ""
+
+BL33_ARG = "${@bb.utils.contains('DISTRO_FEATURES','AVB','--avb2','',d)}"
+BL33_ARG += " ${@bb.utils.contains('DISTRO_FEATURES', 'AVB_recovery_partition', '--avb2-recovery', '', d)}"
 
 #VMX UBOOT PATH depends on SoC
 VMX_UBOOT_PATH = "TBD"
@@ -71,16 +74,21 @@ VMX_UBOOT_PATH:aq2432 = "s805c3"
 VMX_UBOOT_NAND_OPTION = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '.nand', '', d)}"
 VMX_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '--bl32 vmx-sdk/bootloader/${VMX_UBOOT_PATH}/bl32/blob-bl32${VMX_UBOOT_NAND_OPTION}.bin.signed', '', d)}"
 
+NAGRA_UBOOT_ARG = ""
+
 #IRDETO UBOOT PATH depends on SoC
 IRDETO_UBOOT_PATH = "TBD"
 IRDETO_UBOOT_PATH:sc2 = "sc2"
 IRDETO_UBOOT_PATH:ap232 = "s4d/s905c3"
 IRDETO_UBOOT_PATH:aq2432 = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 's4d/s805c3_nand', 's4d/s805c3_emmc', d)}"
 IRDETO_UBOOT_PATH:bf201 = "s805c1a/Yocto"
+IRDETO_UBOOT_PATH:bg201 = "s805c1/Yocto"
+IRDETO_UBOOT_PATH:bg209 = "s805c1/Yocto"
 IRDETO_BL2e_ARG="--bl2e irdeto-sdk/bootloader/${IRDETO_UBOOT_PATH}/bl2/blob-bl2e.sto.bin.signed"
 IRDETO_BL32_ARG="--bl32 irdeto-sdk/bootloader/${IRDETO_UBOOT_PATH}/bl32/blob-bl32.bin.signed"
 IRDETO_BL40_ARG="--bl40 irdeto-sdk/bootloader/${IRDETO_UBOOT_PATH}/bl40/blob-bl40.bin.signed"
-IRDETO_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', '${IRDETO_BL2e_ARG} ${IRDETO_BL32_ARG} ${IRDETO_BL40_ARG}', '', d)}"
+IRDETO_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', '${IRDETO_BL2e_ARG} ${IRDETO_BL40_ARG}', '', d)}"
+IRDETO_UBOOT_ARG += " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-ree-only', '', '${IRDETO_BL32_ARG}', d)}"
 
 CFLAGS +=" -DCONFIG_YOCTO "
 KCFLAGS +=" -DCONFIG_YOCTO "
@@ -97,8 +105,8 @@ do_compile () {
     unset SOURCE_DATE_EPOCH
     UBOOT_TYPE="${UBOOT_MACHINE}"
 
-    #LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL31_ARG} ${BL32_ARG} ${BL33_ARG}
-    LDFLAGS= ./mk ${UBOOT_TYPE%_config}
+    LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG} ${IRDETO_UBOOT_ARG}
+    #LDFLAGS= ./mk ${UBOOT_TYPE%_config}
 
     cp -rf build/* fip/
 
