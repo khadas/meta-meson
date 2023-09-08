@@ -1,7 +1,8 @@
 SUMMARY = "Volatile bind mount setup and configuration for read-only-rootfs"
 DESCRIPTION = "${SUMMARY}"
 LICENSE = "MIT"
-LIC_FILES_CHKSUM = "file://../COPYING.MIT;md5=5750f3aa4ea2b00c2bf21b2b2a7b714d"
+LIC_FILES_CHKSUM = "file://COPYING.MIT;md5=5750f3aa4ea2b00c2bf21b2b2a7b714d"
+S = "${WORKDIR}"
 
 SRC_URI = "\
     file://mount-copybind \
@@ -84,7 +85,7 @@ do_install () {
     install -m 0755 mount-copybind ${D}${base_sbindir}/
 
     install -d ${D}${systemd_unitdir}/system
-    for service in ${SYSTEMD_SERVICE_${PN}}; do
+    for service in ${SYSTEMD_SERVICE:${PN}}; do
         install -m 0644 $service ${D}${systemd_unitdir}/system/
     done
     install -m 0644 ${WORKDIR}/var-lib.mount ${D}${systemd_unitdir}/system/

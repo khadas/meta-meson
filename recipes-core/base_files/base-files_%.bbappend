@@ -225,3 +225,4 @@ FILES:${PN}:append:t7 = " /vendor/* /factory/* "
 dirs755:append:t7 = " /vendor /factory "
 
 INSANE_SKIP:${PN} = "dev-so"
+INSANE_SKIP:${PN} += "empty-dirs"

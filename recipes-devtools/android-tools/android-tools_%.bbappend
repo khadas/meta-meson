@@ -15,6 +15,7 @@ SYSTEMD_AUTO_ENABLE = "enable"
 SYSTEMD_AUTO_ENABLE:aq2432 = "${@bb.utils.contains('RELEASE_MODE', 'PROD', 'disable', 'enable', d)}"
 SYSTEMD_AUTO_ENABLE:bf201 = "${@bb.utils.contains('RELEASE_MODE', 'PROD', 'disable', 'enable', d)}"
 SYSTEMD_SERVICE:${PN} = "adbd.service"
+SYSTEMD_SERVICE:${PN}-adbd:remove = "android-tools-adbd.service"
 
 INITSCRIPT_NAME = "adbd"
 INITSCRIPT_PARAMS = "start 90 2 3 4 5 . stop 80 0 6 1 ."

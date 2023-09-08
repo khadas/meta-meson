@@ -4,7 +4,7 @@ LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 #For common patches
-SRC_URI_append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/wlcdmi-bin')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/wlcdmi-bin')}"
 
 S = "${WORKDIR}/git"
 SRCREV ?= "${AUTOREV}"
@@ -59,12 +59,12 @@ do_install() {
     fi
 }
 
-INSANE_SKIP_${PN} = "dev-so ldflags dev-elf"
-INSANE_SKIP_${PN}-dev = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"
 
-SYSTEMD_SERVICE_${PN} = "wlcdmi.service"
+SYSTEMD_SERVICE:${PN} = "wlcdmi.service"
 
-FILES_${PN} += "${bindir}/* ${libdir}/*.so"
-FILES_${PN} += "${libdir}/wlcdmidrm {libdir}/wlcdmidrm/*"
-FILES_${PN} += "${systemd_unitdir}/system/*"
-FILES_${PN}-dev = "${includedir}/*"
+FILES:${PN} += "${bindir}/* ${libdir}/*.so"
+FILES:${PN} += "${libdir}/wlcdmidrm {libdir}/wlcdmidrm/*"
+FILES:${PN} += "${systemd_unitdir}/system/*"
+FILES:${PN}-dev = "${includedir}/*"
