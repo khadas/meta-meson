@@ -1,24 +1,172 @@
-From 2fb11b3ed7f5bd59d7962e055f784a1c81e33dc9 Mon Sep 17 00:00:00 2001
+From 70eff69569529780337d4b1832a76ce1b7f57abc Mon Sep 17 00:00:00 2001
 From: HenryLee <henry_1_lee@163.com>
-Date: Mon, 26 Jun 2023 16:02:02 +0800
-Subject: [PATCH] Add Customized Key
+Date: Mon, 11 Sep 2023 16:00:57 +0800
+Subject: [PATCH] Key Debug
 
 Signed-off-by: HenryLee <henry_1_lee@163.com>
 ---
- inputdrivers/linux_input/linux_input.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ include/directfb_keyboard.h            | 13 ++++++++
+ include/directfb_keynames.h            |  7 +++++
+ inputdrivers/linux_input/linux_input.c | 43 +++++++++++++++++++++-----
+ 3 files changed, 56 insertions(+), 7 deletions(-)
 
+diff --git a/include/directfb_keyboard.h b/include/directfb_keyboard.h
+index 4ed6de1..68e8b85 100644
+--- a/include/directfb_keyboard.h
++++ b/include/directfb_keyboard.h
+@@ -469,6 +469,13 @@ typedef enum {
+      DIKS_REDIAL                   = DFB_KEY( SPECIAL, 0x6F ),
+      DIKS_FLASH                    = DFB_KEY( SPECIAL, 0x70 ),
+      DIKS_HOLD                     = DFB_KEY( SPECIAL, 0x71 ),
++     DIKS_PROPS                    = DFB_KEY( SPECIAL, 0x72 ),
++     DIKS_UNDO                     = DFB_KEY( SPECIAL, 0x73 ),
++     DIKS_CAMERA                   = DFB_KEY( SPECIAL, 0x74 ),
++     DIKS_CHAT                     = DFB_KEY( SPECIAL, 0x75 ),
++     DIKS_SEARCH                   = DFB_KEY( SPECIAL, 0x76 ),
++     DIKS_FINANCE                  = DFB_KEY( SPECIAL, 0x77 ),
++     DIKS_BLUETOOTH                = DFB_KEY( SPECIAL, 0x78 ),
+ 
+      /*
+       * Unicode private area - DirectFB Function keys
+@@ -487,6 +494,12 @@ typedef enum {
+      DIKS_F10                      = DFB_FUNCTION_KEY( 10 ),
+      DIKS_F11                      = DFB_FUNCTION_KEY( 11 ),
+      DIKS_F12                      = DFB_FUNCTION_KEY( 12 ),
++     DIKS_FN                       = DFB_FUNCTION_KEY( 13 ),
++     DIKS_FN_ESC                   = DFB_FUNCTION_KEY( 14 ),
++     DIKS_FN_F1                    = DFB_FUNCTION_KEY( 15 ),
++     DIKS_FN_F4                    = DFB_FUNCTION_KEY( 16 ),
++     DIKS_FN_F5                    = DFB_FUNCTION_KEY( 17 ),
++     DIKS_FN_F6                    = DFB_FUNCTION_KEY( 18 ),
+ 
+      /*
+       * Unicode private area - DirectFB Modifier keys
+diff --git a/include/directfb_keynames.h b/include/directfb_keynames.h
+index 66ed8d9..70d0861 100644
+--- a/include/directfb_keynames.h
++++ b/include/directfb_keynames.h
+@@ -164,10 +164,15 @@ struct DFBKeySymbolName {
+      { DIKS_AUX, "AUX" }, \
+      { DIKS_MP3, "MP3" }, \
+      { DIKS_PHONE, "PHONE" }, \
++     { DIKS_CAMERA, "REPEAT" }, \
+      { DIKS_AUDIO, "AUDIO" }, \
+      { DIKS_VIDEO, "VIDEO" }, \
+      { DIKS_INTERNET, "INTERNET" }, \
+      { DIKS_MAIL, "MAIL" }, \
++     { DIKS_CHAT, "\-\/\-\-" }, \
++     { DIKS_SEARCH, "DUIDE" }, \
++     { DIKS_FINANCE, "SLEEP" }, \
++     { DIKS_BLUETOOTH, "FAV" }, \
+      { DIKS_NEWS, "NEWS" }, \
+      { DIKS_DIRECTORY, "DIRECTORY" }, \
+      { DIKS_LIST, "LIST" }, \
+@@ -192,6 +197,8 @@ struct DFBKeySymbolName {
+      { DIKS_PLAYPAUSE, "PLAYPAUSE" }, \
+      { DIKS_PLAY, "PLAY" }, \
+      { DIKS_STOP, "STOP" }, \
++     { DIKS_PROPS, "ZOOMIN" }, \
++     { DIKS_UNDO, "ZOOMOUT" }, \
+      { DIKS_RESTART, "RESTART" }, \
+      { DIKS_SLOW, "SLOW" }, \
+      { DIKS_FAST, "FAST" }, \
 diff --git a/inputdrivers/linux_input/linux_input.c b/inputdrivers/linux_input/linux_input.c
-index 03deebc..0dc6cdb 100644
+index 03deebc..7a09ebc 100644
 --- a/inputdrivers/linux_input/linux_input.c
 +++ b/inputdrivers/linux_input/linux_input.c
-@@ -1085,7 +1085,8 @@ get_device_info( int              fd,
+@@ -261,7 +261,7 @@ int basic_keycodes [] = {
+ 
+      /*DIKS_AGAIN, DIKS_PROPS, DIKS_UNDO, DIKS_FRONT, DIKS_COPY,
+      DIKS_OPEN, DIKS_PASTE, DIKS_FIND, DIKS_CUT,*/
+-     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN,
++     DIKI_UNKNOWN, DIKS_PROPS, DIKS_UNDO, DIKI_UNKNOWN, DIKI_UNKNOWN,
+      DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN,
+ 
+      DIKS_HELP, DIKS_MENU, DIKS_CALCULATOR, DIKS_SETUP,
+@@ -338,14 +338,14 @@ int basic_keycodes [] = {
+      DIKS_PRINT,
+ 
+      /* KEY_HP             */  DIKI_UNKNOWN,
+-     /* KEY_CAMERA         */  DIKI_UNKNOWN,
++     /* KEY_CAMERA         */  DIKS_CAMERA,
+      /* KEY_SOUND          */  DIKS_AUDIO,
+      /* KEY_QUESTION       */  DIKS_HELP,
+      /* KEY_EMAIL          */  DIKS_MAIL,
+-     /* KEY_CHAT           */  DIKI_UNKNOWN,
+-     /* KEY_SEARCH         */  DIKI_UNKNOWN,
++     /* KEY_CHAT           */  DIKS_CHAT,
++     /* KEY_SEARCH         */  DIKS_SEARCH,
+      /* KEY_CONNECT        */  DIKI_UNKNOWN,
+-     /* KEY_FINANCE        */  DIKI_UNKNOWN,
++     /* KEY_FINANCE        */  DIKS_FINANCE,
+      /* KEY_SPORT          */  DIKI_UNKNOWN,
+      /* KEY_SHOP           */  DIKI_UNKNOWN,
+      /* KEY_ALTERASE       */  DIKI_UNKNOWN,
+@@ -353,6 +353,20 @@ int basic_keycodes [] = {
+      /* KEY_BRIGHTNESSDOWN */  DIKI_UNKNOWN,
+      /* KEY_BRIGHTNESSUP   */  DIKI_UNKNOWN,
+      /* KEY_MEDIA          */  DIKI_UNKNOWN,
++     /* KEY_SWITCHVIDEOMODE*/  DIKI_UNKNOWN,
++     /* KEY_KBDILLUMTOGGLE */  DIKI_UNKNOWN,
++     /* KEY_KBDILLUMDOWN   */  DIKI_UNKNOWN,
++     /* KEY_KBDILLUMUP     */  DIKI_UNKNOWN,
++     /* KEY_SEND           */  DIKI_UNKNOWN,
++     /* KEY_REPLY          */  DIKI_UNKNOWN,
++     /* KEY_FORWARDMAIL    */  DIKI_UNKNOWN,
++     /* KEY_SAVE           */  DIKI_UNKNOWN,
++     /* KEY_DOCUMENTS      */  DIKI_UNKNOWN,
++     /* KEY_BATTERY        */  DIKI_UNKNOWN,
++     /* KEY_BLUETOOTH      */  DIKS_BLUETOOTH,
++     /* KEY_WLAN           */  DIKI_UNKNOWN,
++     /* KEY_UWB            */  DIKI_UNKNOWN,
++     /* KEY_UNKNOWN        */  DIKI_UNKNOWN,
+ };
+ 
+ static const
+@@ -368,7 +382,18 @@ int ext_keycodes [] = {
+      DIKS_CALENDAR, DIKS_RED, DIKS_GREEN, DIKS_YELLOW, DIKS_BLUE,
+      DIKS_CHANNEL_UP, DIKS_CHANNEL_DOWN, DIKS_FIRST, DIKS_LAST, DIKS_AB,
+      DIKS_NEXT, DIKS_RESTART, DIKS_SLOW, DIKS_SHUFFLE, DIKS_FASTFORWARD,
+-     DIKS_PREVIOUS, DIKS_NEXT, DIKS_DIGITS, DIKS_TEEN, DIKS_TWEN, DIKS_BREAK
++     DIKS_PREVIOUS, DIKS_NEXT, DIKS_DIGITS, DIKS_TEEN, DIKS_TWEN, DIKS_BREAK,
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 70
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 75
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 80
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 85
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 90
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 95
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 100
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 105
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 110
++     DIKI_UNKNOWN, DIKS_FN, DIKS_FN_ESC, DIKS_FN_F1, DIKI_UNKNOWN, // 115
++     DIKI_UNKNOWN, DIKS_FN_F4, DIKS_FN_F5, DIKS_FN_F6, DIKI_UNKNOWN // 120
+ };
+ 
+ /*
+@@ -917,6 +942,7 @@ linux_input_EventThread( DirectThread *thread, void *driver_data )
+                }
+           }
+           else {
++               D_DEBUG_AT( Debug_LinuxInput, "%s(), line: %d\n", __FUNCTION__, __LINE__ );
+                status = select( fdmax + 1, &set, NULL, NULL, NULL );
+           }
+ 
+@@ -941,6 +967,8 @@ linux_input_EventThread( DirectThread *thread, void *driver_data )
+ 
+           readlen = read( data->fd, levt, sizeof(levt) );
+ 
++          D_DEBUG_AT( Debug_LinuxInput, "%s(), event type: %d, event code %d, event value: %d\n", __FUNCTION__, levt[0].type, levt[0].code, levt[0].value );
++
+           if (readlen < 0 && errno != EINTR)
+                break;
+ 
+@@ -1085,7 +1113,8 @@ get_device_info( int              fd,
               on front panels - handle as remote control and make sure not to
               treat normal (full key) keyboards likewise */
            if (!num_keys)
 -               for (i=KEY_HOME; i<=KEY_PAGEDOWN; i++)
 +               //for (i=KEY_HOME; i<=KEY_PAGEDOWN; i++)
-+               for (i=KEY_HOME; i<=KEY_POWER; i++)
++               for (i=KEY_HOME; i<=KEY_UNKNOWN; i++)
                      if (test_bit( i, keybit ))
                           num_ext_keys++;
  
