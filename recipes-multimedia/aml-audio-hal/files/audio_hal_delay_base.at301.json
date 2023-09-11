@@ -15,7 +15,7 @@
   "vendor.media.audio.hal.ms12.netflix.pcmout" : 20,
   "vendor.media.audio.hal.ms12.netflix.ddout" : 50,
   "vendor.media.audio.hal.ms12.netflix.ddpout" : 40,
-  "vendor.media.audio.hal.ms12.netflix.matout" : 20,
+  "vendor.media.audio.hal.ms12.netflix.matout" : 0,
   "vendor.media.audio.hal.ms12.pcmout" : 70,
   "vendor.media.audio.hal.ms12.ddout" : 50,
   "vendor.media.audio.hal.ms12.ddpout" : 110,
