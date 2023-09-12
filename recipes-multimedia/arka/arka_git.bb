@@ -6,7 +6,6 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI = "git://${AML_GIT_ROOT}${AML_GIT_ROOT_YOCTO_SUFFIX}/zapper/arka;protocol=${AML_GIT_PROTOCOL};branch=master;nobranch=1"
 SRC_URI:append = " file://arka.service "
 SRC_URI:append = " file://arka.init "
-SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', ' file://0001-reduce-unnecessary-ui-item-for-yocto-sdk.patch', '', d)}"
 SRCREV = "${AUTOREV}"
 
 PV = "git${SRCPV}"
@@ -28,6 +27,8 @@ RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service"
 OECMAKE_GENERATOR = "Unix Makefiles"
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D}  -D_STBLABS_SAT_SCAN_"
 EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', '-DDISABLE_AUDIO_SERVER=1', '', d)}"
+EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-project-sun', '-DARKA_PROJECT=sunepg', \
+    bb.utils.contains('DISTRO_FEATURES', 'arka-project-aml', '-DARKA_PROJECT=amlepg', '-DARKA_PROJECT=aslepg', d), d)}"
 EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '-DUSE_EGL=ON', '', d)}"
 
 INCLUDE_DIRS = " \
