@@ -252,10 +252,7 @@ else
     #wait for usb device
     echo "can not find software.swu in data, now find usb device......"
     sleep 5
-    name="sda1"
-    if [ ! -e "/dev/sda1" ]; then
-        name="sda"
-    fi
+    name="`mount | grep /run/media | cut -d " " -f3 | cut -d "/" -f4`"
     if [ -f "/run/media/$name/software.swu" ]; then
         export TMPDIR=/run/media/$name
         show_swupdateui
