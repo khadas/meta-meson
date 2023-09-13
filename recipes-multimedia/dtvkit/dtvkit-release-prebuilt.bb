@@ -49,7 +49,7 @@ do_install () {
 	mkdir -p ${D}/usr/include/dtvkit/midware/stb/inc
 	mkdir -p ${D}/usr/include/dtvkit/platform/inc
 	mkdir -p ${D}/usr/include/dtvkit/hw/inc
-	mkdir -p ${D}/lib/teetz
+	mkdir -p ${D}/lib/optee_armtz
 	mkdir -p ${D}/etc/
 
     install -D -m 0644 ${S}/inc/DVBCore/include/dvbcore/dvb/inc/*.h ${D}/usr/include/dtvkit/dvb/inc
@@ -77,15 +77,15 @@ do_install () {
     install -D -m 0644 ${S}/config/*.json  ${D}/etc/
     install -D -m 0644 ${S}/version.txt  ${D}/etc/dtvkitserver_releaseinfo.txt
     echo "TDK_VERSION is ${TDK_VERSION}"
-    if [ -f "${S}/ta/${TDK_VERSION}/*.ta" ];then
-       install -D -m 0755 ${S}/ta/${TDK_VERSION}/*.ta ${D}/lib/teetz/
+    if [ -f ${S}/ta/${TDK_VERSION}/*.ta ];then
+       install -D -m 0755 ${S}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
     fi
 
     install -d ${D}${sysconfdir}/init.d
     install -m 0755 ${WORKDIR}/dtvkit.init ${D}${sysconfdir}/init.d/dtvkit
 }
 
-FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/* /lib/teetz/* "
+FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/* /lib/optee_armtz/* "
 FILES:${PN}-dev = "${includedir}/* "
 
 INSANE_SKIP:${PN} = "ldflags already-stripped"
