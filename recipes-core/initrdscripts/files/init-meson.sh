@@ -747,7 +747,7 @@ ubi_vendor_attach()
 
 data_ubi_handle()
 {
-    data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+    data_mtd_number=$(cat /proc/mtd | grep -E -w "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
 
     mkdir -p $2
     if ! uenv get factory-reset | grep -q 'value:\[1\]'; then
@@ -777,7 +777,7 @@ data_ubi_handle()
 
 data_yaffs2_handle()
 {
-    data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+    data_mtd_number=$(cat /proc/mtd | grep -E -w "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
 
     mkdir -p $1
     if ! uenv get factory-reset | grep -q 'value:\[1\]'; then
