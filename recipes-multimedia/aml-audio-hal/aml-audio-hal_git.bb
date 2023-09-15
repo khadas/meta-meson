@@ -57,6 +57,7 @@ SRC_URI  += "\
   file://audio_hal_delay_base.ap222.json \
   file://audio_hal_delay_base.ah212.json \
   file://audio_hal_delay_base.ap232.json \
+  file://audio_hal_delay_base.s1a.json \
 "
 
 PROPERTY_SET_CONF = "aml_audio_config.json"
@@ -76,6 +77,7 @@ PROPERTY_SET_AVSYNC:am301 = "audio_hal_delay_base.am301.json"
 PROPERTY_SET_AVSYNC:ah212 = "audio_hal_delay_base.ah212.json"
 PROPERTY_SET_AVSYNC:ap222 = "audio_hal_delay_base.ap222.json"
 PROPERTY_SET_AVSYNC:ap232 = "audio_hal_delay_base.ap232.json"
+PROPERTY_SET_AVSYNC:s1a = "audio_hal_delay_base.s1a.json"
 
 do_install:append() {
     install -d ${D}/${sysconfdir}/halaudio
