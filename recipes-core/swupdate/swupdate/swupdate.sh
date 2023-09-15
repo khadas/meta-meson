@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #get data ubi number
-data_mtd_number=$(cat /proc/mtd | grep  -E "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
+data_mtd_number=$(cat /proc/mtd | grep -E -w "data" | awk -F : '{print $1}' | grep -o '[0-9]\+')
 
 SWUPDATE_PATH=/mnt/swupdate/
 SWUPDATE_FILE_PATH=""
