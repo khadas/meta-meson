@@ -37,6 +37,9 @@ TDK_VERSION:t5w = "v3.8/dev/T962D4"
 #Widevine Version
 WIDEVINE_VERSION = "16"
 
+#Playready Version
+PLAYREADY_VERSION = "4.4"
+
 AML_GIT_ROOT ?= "git.myamlogic.com"
 AML_GIT_PROTOCOL ?= "git"
 AML_GIT_ROOT_YOCTO_SUFFIX ?= "/yocto"
