@@ -14,9 +14,21 @@ EXTRA_OEMAKE=" STAGING_DIR=${STAGING_DIR_TARGET} \
                  "
 
 DEPENDS = " wayland glib-2.0 curl"
+DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'playready', ' playready', '', d)}"
+DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'widevine', ' aml-mediadrm-widevine', '', d)}"
+DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', ' vmx-sdk-rel vmx-release-binaries vmx-plugin', '', d)}"
 
 ARM_TARGET = "arm.aapcs-linux.hard"
 ARM_TARGET_aarch64 = "aarch64.lp64."
+
+def get_widevine_version(datastore):
+    return datastore.getVar("WIDEVINE_VERSION", True)
+
+def get_playready_version(datastore):
+    return datastore.getVar("PLAYREADY_VERSION", True)
+
+WIDEVINE_VER = "${@get_widevine_version(d)}"
+PLAYREADY_VER = "${@get_playready_version(d)}"
 
 do_install() {
     install -d -m 0755 ${D}${libdir}
@@ -26,7 +38,17 @@ do_install() {
     install -d -m 0755 ${D}${libdir}/pkgconfig
 
     install -D -m 0644 ${S}/${ARM_TARGET}/libwlcdmi.so ${D}${libdir}
-    install -D -m 0644 ${S}/${ARM_TARGET}/plugins/* ${D}${libdir}/wlcdmidrm
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'playready', 'true', 'false', d)}; then
+         install -D -m 0644 ${S}/${ARM_TARGET}/plugins/libplayready_wlcdmi_plugin.so.${PLAYREADY_VER} ${D}${libdir}/wlcdmidrm
+    fi
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'widevine', 'true', 'false', d)}; then
+         install -D -m 0644 ${S}/${ARM_TARGET}/plugins/libwidevine_wlcdmi_plugin.so.${WIDEVINE_VER} ${D}${libdir}/wlcdmidrm
+    fi
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'true', 'false', d)}; then
+         install -D -m 0644 ${S}/${ARM_TARGET}/plugins/libverimatrix_wlcdmi_plugin.so ${D}${libdir}/wlcdmidrm
+    fi
+
     install -D -m 0755 ${S}/${ARM_TARGET}/wlcdmi_server ${D}/usr/bin
     install -D -m 0644 ${S}/noarch/include/*.h ${D}/usr/include
     install -D -m 0644 ${S}/noarch/pkgconfig/wlcdmi.pc ${D}${libdir}/pkgconfig
