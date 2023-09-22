@@ -66,6 +66,12 @@ SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-imw', ' fi
 # sun direct
 SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-128m-sei', ' file://s1a_128m_sei_overlay.dtsi', '', d)}"
 
+# Enable Network
+SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-network', ' file://zapper-network.cfg file://s1a_enable_ethernet_overlay.dtsi', '', d)}"
+
+# Enable NFS
+SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-nfs', ' file://zapper-nfs.cfg', '', d)}"
+
 #For amlbian dtsoverlay
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://partition_debian.dtsi', '', d)}"
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'hdmionly', ' file://hdmionly_overlay.dtsi', '', d)}"
