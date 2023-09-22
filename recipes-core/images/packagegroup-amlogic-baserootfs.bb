@@ -147,7 +147,7 @@ RDEPENDS:packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'netflix', \
         'netflix netflix-plugin aml-netflix-esn', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', \
-        'bluetooth-mgr bluetooth-core bluez-alsa bluez5-obex', '', d)} \
+        'bluez-alsa bluez5-obex', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amazon', \
         'amazon-prime-plugin amazon-prime-video', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amazon-uits', \
