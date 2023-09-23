@@ -12,7 +12,17 @@ SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 PR = "r0"
 
-DEPENDS = "aml-mediahal-sdk directfb libgpiod aml-libdvr aml-subtitleserver"
+DEPENDS = "aml-mediahal-sdk directfb libgpiod aml-libdvr aml-subtitleserver meson-display libdrm"
+
+INCLUDE_DIRS = " \
+    -I${STAGING_DIR_TARGET}${includedir}/directfb/ \
+    -I${STAGING_DIR_TARGET}${libdir}/include/ \
+    -I${STAGING_DIR_TARGET}${includedir}/libdrm_meson \
+    -I${STAGING_DIR_TARGET}${includedir}/libdrm \
+    -I${STAGING_DIR_TARGET}${includedir}/display_settings \
+    "
+
+TARGET_CFLAGS += "${INCLUDE_DIRS}"
 
 SRC_URI = "file://${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi"
 
