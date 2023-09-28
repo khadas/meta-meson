@@ -29,10 +29,10 @@ S="${WORKDIR}/git"
 
 ENABLE_APLUGIN = "no"
 EXTRA_OEMAKE:append = "${@bb.utils.contains('ENABLE_APLUGIN', 'yes', ' aplugin=y', '', d)}"
-DEPENDS += " aml-amaudioutils liblog"
+DEPENDS += " aml-amaudioutils liblog aml-audio-hal"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', '', ' grpc grpc-native boost protobuf-native dolby-ms12', d)}"
 DEPENDS:append = "${@bb.utils.contains('ENABLE_APLUGIN', 'yes', ' alsa-lib', '', d)}"
-RDEPENDS:${PN} += " aml-amaudioutils liblog"
+RDEPENDS:${PN} += " aml-amaudioutils liblog aml-audio-hal"
 RDEPENDS:${PN}-testapps += " ${PN} liblog"
 
 EXTRA_OEMAKE:append = "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', ' rm_audioserver=y', '', d)}"
@@ -50,8 +50,6 @@ do_install() {
         install -d ${D}${libdir}
         install -d ${D}/usr/bin
         install -d ${D}/usr/include
-        install -d ${D}/usr/include/hardware
-        install -d ${D}/usr/include/system
         install -m 755 -D ${S}/halplay ${D}/usr/bin/
         install -m 755 -D ${S}/hal_dump ${D}/usr/bin/
         install -m 755 -D ${S}/hal_capture ${D}/usr/bin/
@@ -68,12 +66,6 @@ do_install() {
         if ${@bb.utils.contains("ENABLE_APLUGIN", "yes", "true", "false", d)}; then
             install -m 644 -D ${S}/libasound_module_pcm_ahal.so -t ${D}${libdir}/alsa-lib/
         fi
-        for f in ${S}/include/hardware/*.h; do \
-            install -m 644 -D ${f} -t ${D}/usr/include/hardware; \
-        done
-        for f in ${S}/include/system/*.h; do \
-            install -m 644 -D ${f} -t ${D}/usr/include/system; \
-        done
 
         if ${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', 'false', 'true', d)}; then
             install -m 755 -D ${S}/audio_server -t ${D}/usr/bin/

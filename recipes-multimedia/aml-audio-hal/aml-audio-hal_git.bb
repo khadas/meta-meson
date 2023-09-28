@@ -80,6 +80,8 @@ PROPERTY_SET_AVSYNC:ap232 = "audio_hal_delay_base.ap232.json"
 PROPERTY_SET_AVSYNC:s1a = "audio_hal_delay_base.s1a.json"
 
 do_install:append() {
+    install -d ${D}/usr/include/hardware
+    install -d ${D}/usr/include/system
     install -d ${D}/${sysconfdir}/halaudio
     install -m 0755 ${WORKDIR}/${PROPERTY_SET_CONF} ${D}/${sysconfdir}/halaudio/aml_audio_config.json
     install -m 0755 ${WORKDIR}/${PROPERTY_SET_AVSYNC} ${D}/${sysconfdir}/halaudio/audio_hal_delay_base.json
@@ -87,6 +89,13 @@ do_install:append() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
         sed -i '/Codec_Support_List/i \\t"Audio_Delay_Max":100,' ${D}/${sysconfdir}/halaudio/aml_audio_config.json
     fi
+
+    for f in ${S}/include/hardware/*.h; do \
+        install -m 644 -D ${f} -t ${D}/usr/include/hardware; \
+    done
+    for f in ${S}/include/system/*.h; do \
+        install -m 644 -D ${f} -t ${D}/usr/include/system; \
+    done
 }
 
 FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/*"
