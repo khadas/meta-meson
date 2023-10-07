@@ -2,7 +2,7 @@ Index: git/utils/cli/a2dp_ctl.h
 ===================================================================
 --- /dev/null
 +++ git/utils/cli/a2dp_ctl.h
-@@ -0,0 +1,50 @@
+@@ -0,0 +1,52 @@
 +#ifndef _A2DP_CTL_H_
 +#define _A2DP_CTL_H_
 +
@@ -16,28 +16,29 @@ Index: git/utils/cli/a2dp_ctl.h
 +    A2DP_EVENT_PLAYING,
 +    A2DP_EVENT_PAUSE,
 +    A2DP_EVENT_STOP,
-+    A2DP_EVENT_TYPE_PLAYER,
 +}A2DP_Event_t;
++
++typedef enum {
++    A2DP_CTRL_PLAY,
++    A2DP_CTRL_PAUSE,
++    A2DP_CTRL_STOP,
++    A2DP_CTRL_NEXT,
++    A2DP_CTRL_PRE,
++    A2DP_CTRL_VOLUP,
++    A2DP_CTRL_VOLDOWN
++}A2DP_Control_t;
 +
 +typedef struct {
 +    char addr[18];
-+    bool source_flag;
++    bool is_sink;
 +}A2DP_Dev_t;
 +
 +int a2dp_ctl_init(void);
 +void a2dp_ctl_delinit(void);
-+int start_play(void);
-+int stop_play(void);
-+int pause_play(void);
-+int next(void);
-+int previous(void);
-+int volume_up();
-+int volume_down();
-+void connect_call_back(int connected);
-+void play_call_back(char *status);
++int a2dp_control(A2DP_Control_t control);
 +bool adapter_ready(void);
 +int adapter_scan(int onoff);
-+int connect_dev(const char* bddr, bool sourceFlag);
++int connect_dev(const char* bddr, bool is_sink);
 +int disconnect_dev(const char *bddr);
 +unsigned char get_connect_status(A2DP_Dev_t **dev, int *cnt);
 +void print_connect_status(void);
@@ -46,7 +47,8 @@ Index: git/utils/cli/a2dp_ctl.h
 +int pcm_bluealsa_open(const char *bddr);
 +int pcm_bluealsa_close();
 +int pcm_bluealsa_write(void *buf, size_t bytes) ;
-+void register_callback(void (*conn_cb)(char *addr, bool source_flag, A2DP_Event_t type));
++
++void register_callback(void (*conn_cb)(char *addr, bool is_sink, A2DP_Event_t type));
 +
 +#ifdef __cplusplus
 +}
@@ -57,7 +59,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 ===================================================================
 --- /dev/null
 +++ git/utils/cli/lib_a2dp_ctl.c
-@@ -0,0 +1,1117 @@
+@@ -0,0 +1,1241 @@
 +/*
 + * BlueALSA - cli.c
 + * Copyright (c) 2016-2022 Arkadiusz Bokowy
@@ -99,7 +101,10 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +#define A2DP_SOURCE_UUID	"0000110a-0000-1000-8000-00805f9b34fb"
 +#define A2DP_SINK_UUID		"0000110b-0000-1000-8000-00805f9b34fb"
++
 +#define DEVICE_INTERFACE "org.bluez.Device1"
++#define PLAYER_INTERFACE "org.bluez.MediaPlayer1"
++#define TRANSPORT_INTERFACE "org.bluez.MediaTransport1"
 +
 +static GDBusConnection *conn;
 +static gboolean A2dpConnected = FALSE;
@@ -113,7 +118,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +static snd_pcm_t *pcm_handle_playback = NULL;
 +static char pcm_device_spk[] = "bluealsa:DEV=00:00:00:00:00:00";
-+static void (*mconnect_call_back)(char *addr, bool source_flag, A2DP_Event_t event);
++static void (*mconnect_call_back)(char *addr, bool is_sink, A2DP_Event_t event);
 +
 +typedef struct {
 +	bool connect_flag;
@@ -128,6 +133,94 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +static ba_pcm_info_t ba_pcm_info;
 +
++static gint ifa_signal_handle = 0;
++static gint ifr_signal_handle = 0;
++static char TRANSPORT_OBJECT[128] = {0};
++static GMainLoop *main_loop;
++static pthread_t thread_id;
++
++
++static void signal_interfaces_added(GDBusConnection *conn,
++		const gchar *sender,
++		const gchar *path,
++		const gchar *interface,
++		const gchar *signal,
++		GVariant *params,
++		void *userdata)
++{
++	GVariantIter *interfaces, *interface_content;
++	char *object, *interface_name;
++
++
++	g_variant_get(params, "(oa{sa{sv}})", &object, &interfaces);
++
++	while (g_variant_iter_next(interfaces, "{sa{sv}}", &interface_name, &interface_content)) {
++		if (strcmp(interface_name, TRANSPORT_INTERFACE) == 0) {
++			memset(TRANSPORT_OBJECT, 0, sizeof(TRANSPORT_OBJECT));
++			info("Media_Transport registered: %s\n", object);
++			strncpy(TRANSPORT_OBJECT, object, sizeof(TRANSPORT_OBJECT) -1);
++		}
++
++		g_free(interface_name);
++		g_variant_iter_free(interface_content);
++	}
++
++	g_variant_iter_free(interfaces);
++	g_free(object);
++}
++
++static void signal_interfaces_removed(GDBusConnection *conn,
++		const gchar *sender,
++		const gchar *path,
++		const gchar *interface,
++		const gchar *signal,
++		GVariant *params,
++		void *userdata)
++{
++	GVariantIter *interfaces;
++	char *object, *interface_name;
++
++	g_variant_get(params, "(oas)", &object, &interfaces);
++
++	while (g_variant_iter_next(interfaces, "s", &interface_name)) {
++		if (strcmp(interface_name, TRANSPORT_INTERFACE) == 0) {
++			info("Media_Transport unregisterd\n");
++			memset(TRANSPORT_OBJECT, 0, sizeof(TRANSPORT_OBJECT));
++		}
++		g_free(interface_name);
++	}
++
++	g_variant_iter_free(interfaces);
++	g_free(object);
++}
++
++static void subscribe_signals(void)
++{
++	//we monitor interface added here
++	ifa_signal_handle = g_dbus_connection_signal_subscribe(conn, "org.bluez", "org.freedesktop.DBus.ObjectManager",
++			"InterfacesAdded", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE,
++			signal_interfaces_added, NULL, NULL);
++
++	//we monitor interface remove here
++	ifr_signal_handle = g_dbus_connection_signal_subscribe(conn, "org.bluez", "org.freedesktop.DBus.ObjectManager",
++			"InterfacesRemoved", NULL, NULL, G_DBUS_SIGNAL_FLAGS_NONE,
++			signal_interfaces_removed, NULL, NULL);
++}
++
++static void unsubscribe_signals(void)
++{
++	g_dbus_connection_signal_unsubscribe(conn, ifa_signal_handle);
++	g_dbus_connection_signal_unsubscribe(conn, ifr_signal_handle);
++}
++
++static void *bluez_dbus_thread(void *user_data)
++{
++	main_loop = g_main_loop_new(NULL, FALSE);
++	g_main_loop_run(main_loop);
++
++	return NULL;
++}
++
 +static int bluez_init() {
 +	gchar *address;
 +	GError *err = NULL;
@@ -140,6 +233,23 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +		error("Couldn't obtain D-Bus connection: %s", err->message);
 +		return -1;
 +	}
++
++	subscribe_signals();
++	if (pthread_create(&thread_id, NULL, bluez_dbus_thread, NULL)) {
++		info("thread create failed\n");
++		unsubscribe_signals();
++		return -1;
++	}
++
++	return 0;
++}
++
++static int bluez_deinit() {
++	unsubscribe_signals();
++	conn = NULL;
++
++	if (NULL != main_loop)
++		g_main_loop_quit(main_loop);
 +}
 +
 +bool pcm_info_init() {
@@ -451,7 +561,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +		dbus_message_unref(rep);
 +}
 +
-+static int parse_pcm_path(const char *pcm_path,  char *addr,  bool *source_type) {
++static int parse_pcm_path(const char *pcm_path,  char *addr,  bool *is_sink) {
 +	// pcm path like:  /org/bluealsa/hci0/dev_E8_07_BF_3A_1F_9E/a2dpsrc/sink
 +	char *p = strstr(pcm_path, "dev_");
 +	if (p == NULL) {
@@ -466,14 +576,14 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +	p += 18;
 +	if (!strncmp(p, "a2dpsrc", 7)) {
-+		*source_type = true;
++		*is_sink = true;
 +	}
 +
-+	error("yym: pcm path: %s addr: %s, source flag: %d\n", pcm_path, addr, *source_type);
++	error("yym: pcm path: %s addr: %s, source flag: %d\n", pcm_path, addr, *is_sink);
 +	return 0;
 +}
 +
-+static bool get_current_pcm_by_type(struct ba_pcm *pcm, bool sink_flag) {
++static bool get_current_pcm_by_type(struct ba_pcm *pcm, bool is_sink) {
 +	size_t i;
 +	bool found = false;
 +
@@ -482,9 +592,9 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +		if (!ba_pcm_info.pcms[i].connect_flag)
 +			continue;
 +
-+		printf("%s\n", ba_pcm_info.pcms[i].pcm.pcm_path);
-+		if ((ba_pcm_info.pcms[i].pcm.transport == BA_PCM_TRANSPORT_A2DP_SINK  && sink_flag) ||
-+			(ba_pcm_info.pcms[i].pcm.transport == BA_PCM_TRANSPORT_A2DP_SOURCE  && !sink_flag)) {
++		info("%s\n", ba_pcm_info.pcms[i].pcm.pcm_path);
++		if ((ba_pcm_info.pcms[i].pcm.transport == BA_PCM_TRANSPORT_A2DP_SINK  && is_sink) ||
++			(ba_pcm_info.pcms[i].pcm.transport == BA_PCM_TRANSPORT_A2DP_SOURCE  && !is_sink)) {
 +			memcpy(pcm, &ba_pcm_info.pcms[i].pcm, sizeof (struct ba_pcm));
 +			found = true;
 +			break;
@@ -668,11 +778,11 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +					printf("yym: PCMAdded %s\n", path);
 +					char addr[18];
-+					bool source_flag = false;
-+					parse_pcm_path(path, addr, &source_flag);
++					bool is_sink = false;
++					parse_pcm_path(path, addr, &is_sink);
 +
 +					if (mconnect_call_back)
-+						mconnect_call_back(addr, source_flag, A2DP_EVENT_CONNECT);
++						mconnect_call_back(addr, is_sink, A2DP_EVENT_CONNECT);
 +
 +					DBusMessageIter iter2;
 +					if (!dbus_message_iter_init(message, &iter2))
@@ -712,12 +822,12 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +				if (strcmp(iface, BLUEALSA_INTERFACE_PCM) == 0) {
 +					char addr[18];
-+					bool source_flag = false;
-+					parse_pcm_path(path, addr, &source_flag);
++					bool is_sink = false;
++					parse_pcm_path(path, addr, &is_sink);
 +					if (mconnect_call_back)
-+						mconnect_call_back(addr, source_flag, A2DP_EVENT_DISCONNECT);
++						mconnect_call_back(addr, is_sink, A2DP_EVENT_DISCONNECT);
 +					remove_pcm(path);
-+					printf("yym:  PCMRemoved %s\n", path);
++					error("yym:  PCMRemoved %s\n", path);
 +				}
 +				else if (strcmp(iface, BLUEALSA_INTERFACE_RFCOMM) == 0)
 +					printf("RFCOMMRemoved %s\n", path);
@@ -755,37 +865,6 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +fail:
 +	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-+}
-+
-+static int device_player_action(struct ba_pcm ba_pcm, const char *action) {
-+
-+	DBusMessage *msg = NULL, *rep = NULL;
-+	DBusError err = DBUS_ERROR_INIT;
-+	char path[160];
-+	int ret = 0;
-+
-+	snprintf(path, sizeof(path), "%s/player0", ba_pcm.device_path);
-+	msg = dbus_message_new_method_call("org.bluez", path, "org.bluez.MediaPlayer1", action);
-+
-+	if ((rep = dbus_connection_send_with_reply_and_block(dbus_ctx.conn, msg,
-+					DBUS_TIMEOUT_USE_DEFAULT, &err)) == NULL) {
-+		warn("Couldn't pause player: %s", err.message);
-+		dbus_error_free(&err);
-+		goto fail;
-+	}
-+
-+	debug("Requested playback pause");
-+	goto final;
-+
-+fail:
-+	ret = -1;
-+
-+final:
-+	if (msg != NULL)
-+		dbus_message_unref(msg);
-+	if (rep != NULL)
-+		dbus_message_unref(rep);
-+	return ret;
 +}
 +
 +static pthread_t thread_id;
@@ -892,71 +971,167 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +	pthread_mutex_destroy(&mtx);
 +	pthread_mutex_destroy(&pcm_mtx);
++
++	bluez_deinit();
 +}
 +
-+int start_play(void) {
-+	if (!initFlag) return -1;
-+
-+	struct ba_pcm pcm;
-+
-+	if (get_current_pcm_by_type(&pcm, true)) {
-+		device_player_action(pcm, "Play");
++static bool check_conn_dev_valid(const char *baddr, char *obj) {
++	if (strlen(baddr) != strlen("xx:xx:xx:xx:xx:xx")) {
++		error("Bad bddr\n");
++		return false;
 +	}
 +
-+	return 0;
++	char addr[32];
++	strcpy(addr, baddr);
++	addr[2] = addr[5] = addr[8] = addr[11] = addr[14] = '_';
++	sprintf(obj, "/org/bluez/hci0/dev_%s", addr);
++	return true;
 +}
 +
-+int stop_play(void) {
-+	if (!initFlag) return -1;
-+	struct ba_pcm pcm;
++static int conn_with_bluez(char *obj, char * interface, char *method, GVariant *param, bool resultFlag, GVariant **result) {
++	GVariant *tmp;
++	int ret = 1;
++	GError *error = NULL;
 +
-+	if (get_current_pcm_by_type(&pcm, true)) {
-+		device_player_action(pcm, "Stop");
++	if (NULL == conn) {
++		error("No connection!! Please init first\n");
++		return -1;
 +	}
 +
++	error("Target obj: %s\n", obj);
++	tmp = g_dbus_connection_call_sync(conn,
++			"org.bluez",
++			obj,
++			interface,
++			method,
++			param,
++			NULL,
++			G_DBUS_CALL_FLAGS_NONE,
++			-1,
++			NULL,
++			&error);
++
++	if (tmp == NULL) {
++		error("Error: %s\n", error->message);
++		g_error_free (error);
++		return ret;
++	} else {
++		if (resultFlag) {
++			*result = tmp;
++		} else {
++			g_variant_unref(tmp);
++		}
++	}
++	error("connect bluez successfully\n");
++
 +	return 0;
 +}
 +
-+int pause_play(void) {
-+	if (!initFlag) return -1;
-+	struct ba_pcm pcm;
++static int device_player_action(struct ba_pcm ba_pcm, const char *action) {
 +
-+	if (get_current_pcm_by_type(&pcm, true)) {
-+		device_player_action(pcm, "Pause");
++  DBusMessage *msg = NULL, *rep = NULL;
++  DBusError err = DBUS_ERROR_INIT;
++  char path[160];
++  int ret = 0;
++
++  snprintf(path, sizeof(path), "%s/player0", ba_pcm.device_path);
++  msg = dbus_message_new_method_call("org.bluez", path,
++                                     "org.bluez.MediaPlayer1", action);
++
++  if ((rep = dbus_connection_send_with_reply_and_block(
++           dbus_ctx.conn, msg, DBUS_TIMEOUT_USE_DEFAULT, &err)) == NULL) {
++    warn("Couldn't pause player: %s", err.message);
++    dbus_error_free(&err);
++    goto fail;
++  }
++
++  debug("Requested playback pause");
++  goto final;
++
++fail:
++  ret = -1;
++
++final:
++  if (msg != NULL)
++    dbus_message_unref(msg);
++  if (rep != NULL)
++    dbus_message_unref(rep);
++  return ret;
++}
++
++
++static int modify_tansport_volume_property(gboolean up)
++{
++	GVariant *result = NULL, *child = NULL, *parameters = NULL;
++	int value = 0, temp = 0, ret = -1;
++	GError *error = NULL;
++
++	parameters = g_variant_new("(ss)", TRANSPORT_INTERFACE, "Volume");
++	/*------------------read volume-----------------------------------------------*/
++	if (conn_with_bluez(TRANSPORT_OBJECT, "org.freedesktop.DBus.Properties", "Get", parameters, true, &result)) {
++		g_variant_unref(parameters);
++		info("volume read failed\n");
++		return -1;
 +	}
 +
-+	return 0;
-+}
++	debug("result: %s\n", g_variant_print(result, TRUE));
++	debug("result type : %s\n", g_variant_get_type_string(result));
++	g_variant_get(result, "(v)", &child);
++	g_variant_get(child, "q", &value);
 +
-+int next(void) {
-+	if (!initFlag) return -1;
-+	struct ba_pcm pcm;
++	/*-------------------modify value--------------------------------------------*/
++	temp = value;
++	value = up ? (value + 10) : (value - 10);
 +
-+	if (get_current_pcm_by_type(&pcm, true)) {
-+		device_player_action(pcm, "Next");
++	//volume rang from 0~127
++	value = value > 127 ? 127 : value;
++	value = value > 0   ? value : 0;
++	info("volume set: %u->%u\n", temp, value);
++
++	g_variant_unref(child);
++	g_variant_unref(parameters);
++	g_variant_unref(result);
++
++	/*------------------set volume-----------------------------------------------*/
++	child = g_variant_new_uint16(value);
++	parameters = g_variant_new("(ssv)", TRANSPORT_INTERFACE, "Volume", child);
++	if (conn_with_bluez(TRANSPORT_OBJECT, "org.freedesktop.DBus.Properties", "Set", parameters, true, &result)) {
++		info("volume set failed\n");
++		return -1;
 +	}
 +
-+	return 0;
++	g_variant_unref(child);
++	g_variant_unref(parameters);
++	g_variant_unref(result);
++	return ret;
 +}
 +
-+int previous(void) {
++int a2dp_control(A2DP_Control_t control) {
 +	if (!initFlag) return -1;
 +	struct ba_pcm pcm;
++	char ctrl_string[16];
 +
-+	if (get_current_pcm_by_type(&pcm, true)) {
-+		device_player_action(pcm, "Previous");
++	if (control == A2DP_CTRL_PLAY) {
++		strcpy(ctrl_string, "Play");
++	} else if (control == A2DP_CTRL_PAUSE) {
++		strcpy(ctrl_string, "Pause");
++	} else if (control == A2DP_CTRL_STOP) {
++		strcpy(ctrl_string, "Stop");
++	} else if (control == A2DP_CTRL_NEXT) {
++		strcpy(ctrl_string, "Next");
++	} else if (control == A2DP_CTRL_PRE) {
++		strcpy(ctrl_string, "Previous");
++	} else if (control == A2DP_CTRL_VOLUP) {
++		return modify_tansport_volume_property(true);
++	} else if (control == A2DP_CTRL_VOLDOWN) {
++		return modify_tansport_volume_property(false);
++	} else {
++		error ("invalid control %d\n", control);
++		return -1;
 +	}
-+
-+	return 0;
-+}
-+
-+int volume_up() {
-+	//device_player_action(, "Stop");
-+	return 0;
-+}
-+
-+int volume_down() {
-+	//device_player_action(, "Stop");
++	if (get_current_pcm_by_type(&pcm, true)) {
++		device_player_action(pcm, ctrl_string);
++	}
 +	return 0;
 +}
 +
@@ -970,52 +1145,6 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	return 0;
 +}
 +
-+static bool check_conn_dev_valid(const char *baddr, char *obj) {
-+	if (NULL == conn) {
-+		error("No connection!! Please init first\n");
-+		return false;
-+	}
-+
-+	if (strlen(baddr) != strlen("xx:xx:xx:xx:xx:xx")) {
-+		error("Bad bddr\n");
-+		return false;
-+	}
-+
-+	char addr[32];
-+	strcpy(addr, baddr);
-+	addr[2] = addr[5] = addr[8] = addr[11] = addr[14] = '_';
-+	sprintf(obj, "/org/bluez/hci0/dev_%s", addr);
-+	return true;
-+}
-+
-+static bool conn_with_bluez(char *obj, char *method, GVariant *param) {
-+	GVariant *result;
-+	int ret = 1;
-+	GError *error = NULL;
-+
-+	error("Target obj: %s\n", obj);
-+	result = g_dbus_connection_call_sync(conn,
-+			"org.bluez",
-+			obj,
-+			DEVICE_INTERFACE,
-+			method,
-+			param,
-+			NULL,
-+			G_DBUS_CALL_FLAGS_NONE,
-+			-1,
-+			NULL,
-+			&error);
-+
-+	if (result == NULL) {
-+		info("Error: %s\n", error->message);
-+		g_error_free (error);
-+		return ret;
-+	} else
-+		g_variant_unref(result);
-+
-+	return 0;
-+}
-+
 +int disconnect_dev(const char *baddr)
 +{
 +	char obj[256] = {0};
@@ -1023,13 +1152,13 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	if (!check_conn_dev_valid(baddr, obj))
 +		return -1;
 +
-+	if (!conn_with_bluez(obj, "Disconnect", NULL))
++	if (conn_with_bluez(obj, DEVICE_INTERFACE, "Disconnect", NULL, false, NULL))
 +		return -1;
 +
 +	return 0;
 +}
 +
-+int connect_dev(const char* baddr, bool sourceFlag)
++int connect_dev(const char* baddr, bool is_sink)
 +{
 +	char obj[256] = {0};
 +	int idx;
@@ -1038,8 +1167,8 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	for (idx = 0; idx < ba_pcm_info.max_alloc_num; idx++) {
 +		if (ba_pcm_info.pcms[idx].connect_flag) {
 +			char addr[18];
-+			bool source_flag;
-+			parse_pcm_path(ba_pcm_info.pcms[idx].pcm.pcm_path, addr, &source_flag);
++			bool sinkFlag;
++			parse_pcm_path(ba_pcm_info.pcms[idx].pcm.pcm_path, addr, &sinkFlag);
 +			if (strcmp(addr, baddr) == 0) {
 +				error("device : %s connected\n", baddr);
 +				return 0;
@@ -1053,13 +1182,15 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	error("yym:  dev is valid\n");
 +	GVariant *param;
 +	/*if we are central, we should connect target's sink uuid*/
-+	if (sourceFlag) //strcmp(device_mode, "central") == 0)
++	if (is_sink) //strcmp(device_mode, "central") == 0)
 +		param = g_variant_new("(s)", A2DP_SINK_UUID);
 +	else
-+		param = NULL;//g_variant_new("(s)", A2DP_SOURCE_UUID);
++		param = g_variant_new("(s)", A2DP_SOURCE_UUID);
 +
-+	if (!conn_with_bluez(obj, "ConnectProfile", param))
++	if (conn_with_bluez(obj, DEVICE_INTERFACE, "ConnectProfile", param, false, NULL))
 +		return -1;
++
++	return 0;
 +}
 +
 +unsigned char get_connect_status(A2DP_Dev_t **dev, int *cnt) {
@@ -1077,7 +1208,6 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	if (!connect_cnt) return false;
 +
 +	A2DP_Dev_t *dev_info = calloc(sizeof(A2DP_Dev_t) * connect_cnt, 1);
-+	bool source_flag;
 +	int idx = 0;;
 +
 +	for (i = 0; i < ba_pcm_info.max_alloc_num; i++) {
@@ -1085,7 +1215,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +		if (!ba_pcm_info.pcms[i].connect_flag)
 +			continue;
 +
-+		parse_pcm_path(ba_pcm_info.pcms[i].pcm.pcm_path, dev_info[idx].addr, &dev_info[idx].source_flag);
++		parse_pcm_path(ba_pcm_info.pcms[i].pcm.pcm_path, dev_info[idx].addr, &dev_info[idx].is_sink);
 +		idx++;
 +	}
 +	*cnt = connect_cnt;
@@ -1093,16 +1223,12 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	return true;
 +}
 +
-+void print_connect_status(void) {
-+
-+}
-+
 +int pcm_bluealsa_open(const char *bddr) {
 +	int ret = -1;
 +
 +	pthread_mutex_lock(&pcm_mtx);
 +	if (pcm_handle_playback) {
-+		info("device opened: %s, close before reopen\n", pcm_device_spk);
++		error("device opened: %s, close before reopen\n", pcm_device_spk);
 +		pcm_bluealsa_close();
 +	}
 +
@@ -1112,7 +1238,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +						  SND_PCM_STREAM_PLAYBACK,	/*speaker as output device*/
 +						  SND_PCM_NONBLOCK);						/*NOBLOCK MODE*/
 +	if (ret < 0) {
-+		info("speaker open fail:%s\n", strerror(errno));
++		error("speaker open %s fail:%s\n", pcm_device_spk, strerror(errno));
 +		pthread_mutex_unlock(&pcm_mtx);
 +		return ret;
 +	}
@@ -1124,7 +1250,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +								  1,			  /*allow alsa resample*/
 +								  500000);		  /*expected max latence = 500ms*/
 +	if (ret < 0) {
-+		info("snd_pcm_set_params fail:%s\n", strerror(errno));
++		error("snd_pcm_set_params %s fail:%s\n", pcm_device_spk, strerror(errno));
 +	}
 +	pthread_mutex_unlock(&pcm_mtx);
 +	return ret;
@@ -1134,7 +1260,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	int ret;
 +	pthread_mutex_lock(&pcm_mtx);
 +	if (pcm_handle_playback == NULL) {
-+		info("%s already closed\n", __func__);
++		error("%s already closed\n", __func__);
 +		pthread_mutex_unlock(&pcm_mtx);
 +		return 0;
 +	}
@@ -1142,7 +1268,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +	ret = snd_pcm_close(pcm_handle_playback);
 +	if (ret < 0)
-+		info("speaker close fail:%s\n", strerror(errno));
++		error("speaker close fail:%s\n", strerror(errno));
 +
 +	pcm_handle_playback = NULL;
 +	pthread_mutex_unlock(&pcm_mtx);
@@ -1152,7 +1278,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +int pcm_bluealsa_write(void *buf, size_t bytes) {
 +	pthread_mutex_lock(&pcm_mtx);
 +	if (pcm_handle_playback == NULL) {
-+		info("%s dev not open\n", __func__);
++		error("%s dev not open\n", __func__);
 +		pthread_mutex_unlock(&pcm_mtx);
 +		return 0;
 +	}
@@ -1162,16 +1288,16 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	ret = snd_pcm_writei(pcm_handle_playback, buf, frames);
 +	/*if write failed somehow, just ignore, we don't want to wast too much time*/
 +	if (ret == -EPIPE) {
-+		info("speaker write underrun\n");
++		error("speaker write underrun\n");
 +		snd_pcm_prepare(pcm_handle_playback);
 +	} else if (ret == -EBADFD) {
-+		info("speaker write  EBADFD\n");
++		error("speaker write  EBADFD\n");
 +	}
 +	pthread_mutex_unlock(&pcm_mtx);
 +	return ret;
 +}
 +
-+void register_callback(void (*conn_cb)(char *addr, bool source_flag, A2DP_Event_t type)){
++void register_callback(void (*conn_cb)(char *addr, bool is_source, A2DP_Event_t type)){
 +	mconnect_call_back = conn_cb;
 +}
 +
