@@ -58,6 +58,7 @@ SRC_URI  += "\
   file://audio_hal_delay_base.ah212.json \
   file://audio_hal_delay_base.ap232.json \
   file://audio_hal_delay_base.s1a.json \
+  file://ms12_audio_profiles.ini \
 "
 
 PROPERTY_SET_CONF = "aml_audio_config.json"
@@ -85,6 +86,7 @@ do_install:append() {
     install -d ${D}/${sysconfdir}/halaudio
     install -m 0755 ${WORKDIR}/${PROPERTY_SET_CONF} ${D}/${sysconfdir}/halaudio/aml_audio_config.json
     install -m 0755 ${WORKDIR}/${PROPERTY_SET_AVSYNC} ${D}/${sysconfdir}/halaudio/audio_hal_delay_base.json
+    install -m 0755 ${WORKDIR}/ms12_audio_profiles.ini ${D}/${sysconfdir}/halaudio/ms12_audio_profiles.ini
     install -m 0644 ${WORKDIR}/${PROPERTY_SET_MIXER} ${D}/${sysconfdir}/mixer_paths.xml
     if ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
         sed -i '/Codec_Support_List/i \\t"Audio_Delay_Max":100,' ${D}/${sysconfdir}/halaudio/aml_audio_config.json
