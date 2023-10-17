@@ -51,5 +51,19 @@
 
 
   "__comment":"/*msync nonms12 tuning part(dcv lib) */",
-  "vendor.media.audio.hal.nonms12.tunnel.bypass" : -20
+  "vendor.media.audio.hal.nonms12.tunnel.bypass" : -20,
+  "__comment":"/*end of msync nonms12 tuning part */",
+
+
+  "__comment":"/*hdmi source tuning part */",
+  "audio.hal.hdmi.ms12.decoder" : 32,
+  "audio.hal.hdmi.ms12.encoder" : 32,
+  "audio.hal.hdmi.ms12.pipeline" : 6,
+  "audio.hal.hdmi.ms12.dd.ddp.buffer" : 10,
+  "audio.hal.hdmi.ms12.mat.buffer" : 10,
+  "audio.hal.hdmi.ms12.dap" : 0,
+  "audio.hal.hdmi.ms12.avr" : 60,
+  "audio.hal.hdmi.ms12.avr.rawpcm" : 20,
+  "audio.hal.hdmi.ms12.avr.pcm" : 10,
+  "__comment":"/*end of hdmi source tuning part */"
 }

@@ -30,10 +30,9 @@ do_install() {
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'true', 'false', d)}; then
         sed -i "s/#load_ramdisk_ko/load_ramdisk_ko/g" ${D}/init
-    fi
-
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'true', 'false', d)}; then
-       sed -i "s/#upstream_emmc_mount/upstream_emmc_mount/g" ${D}/init
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'false', 'true', d)}; then
+            sed -i "s/#upstream_emmc_mount/upstream_emmc_mount/g" ${D}/init
+        fi
     fi
 }
 

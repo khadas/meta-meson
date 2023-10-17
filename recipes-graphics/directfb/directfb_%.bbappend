@@ -6,11 +6,12 @@ SRC_URI += "\
             file://0002-Extend-Customized-Key.patch \
             file://0006-add-amlgfx-for-directfb.patch \
             file://0007-fix-amlgfx-blend-op-error-issue.patch \
-            file://0008-fix-osd-pan-display-wait-vsync-too-long-issue.patch \
             file://0009-add-amlgfx-DSBLIT_BLEND_COLORALPHA.patch \
             file://0010-fix-amlgfx-dfdok-show.patch \
             file://0011-fix-sizeof-config_para_ex-is-not-equal-to-driver.patch \
             file://0012-fix-the-issue-that-rectangle-area-is-incorrect.patch \
+            file://0013-add-Blit2-support.patch \
+            file://0014-fix-the-issue-that-DSPF_LUT8-cannot-work.patch \
             file://directfbrc \
             "
 

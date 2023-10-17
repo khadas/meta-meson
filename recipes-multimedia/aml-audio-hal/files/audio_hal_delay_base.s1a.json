@@ -1,0 +1,37 @@
+{
+  "__comment":"/* NAME:audio_hal_delay_base.s1a.json*/",
+
+
+  "__comment":"/*dtv NONMS12 tuning part(dcv lib) */",
+  "__comment":"//input format",
+  "vendor.media.audio.hal.nonms12.dtv.pcm" : 0,
+  "vendor.media.audio.hal.nonms12.dtv.dd" : 0,
+  "vendor.media.audio.hal.nonms12.dtv.ddp" : 0,
+
+
+  "__comment":"//port speaker",
+  "vendor.media.audio.hal.nonms12.tv.dtv.speaker" : 0,
+  "vendor.media.audio.hal.nonms12.stb.dtv.speaker" : 45,
+
+
+  "__comment":"//port A2DP",
+  "vendor.media.audio.hal.nonms12.tv.dtv.mix.a2dp" : 120,
+
+
+  "__comment":"//port arc",
+  "vendor.media.audio.hal.nonms12.dtv.arc.pcm" : 0,
+  "vendor.media.audio.hal.nonms12.dtv.arc.dd" : 60,
+  "vendor.media.audio.hal.nonms12.dtv.arc.ddp" : 90,
+
+
+  "__comment":"//passthrough arc",
+  "vendor.media.audio.hal.nonms12.dtv.pt.arc.dd" : 0,
+  "vendor.media.audio.hal.nonms12.dtv.pt.arc.ddp" : 0,
+
+
+  "__comment":"//STB_box hdmi out",
+  "vendor.media.audio.hal.nonms12.dtv.hdmi.pcm" : 60,
+  "vendor.media.audio.hal.nonms12.dtv.hdmi.dd" : 0,
+  "vendor.media.audio.hal.nonms12.dtv.hdmi.ddp" : 130,
+  "__comment":"/*end dtv NONMS12 tuning part */"
+}

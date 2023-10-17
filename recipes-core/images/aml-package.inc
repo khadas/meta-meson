@@ -118,27 +118,6 @@ do_aml_pack() {
     fi
     ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/${PACK_CONF} ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
 
-    #sign image
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'scs', 'true', 'false', d)}; then
-        cp -rf ${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/device-keys ${DEPLOY_DIR_IMAGE}/
-        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/fw_arb.cfg ${DEPLOY_DIR_IMAGE}/
-
-        if [ "${AML_SCS_SIGN_TOOL}" = "" ];then
-            AML_SCS_SIGN=${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/amlogic_scs_sign_whole_pkg.bash
-        else
-            AML_SCS_SIGN=${AML_SCS_SIGN_TOOL}
-        fi
-
-        UBOOT_TYPE="${UBOOT_MACHINE}"
-        local chipset_name=$(echo ${CHIPSET_NAME} | tr 'A-Z' 'a-z')
-        ${AML_SCS_SIGN} --soc ${chipset_name} \
-            --aml_key ${DEPLOY_DIR_IMAGE}/device-keys \
-            --fw_arb_cfg ${DEPLOY_DIR_IMAGE}/fw_arb.cfg \
-            --aml_img ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img \
-            --bootloader_zip ${DEPLOY_DIR_IMAGE}/${UBOOT_TYPE%_config}-u-boot.aml.zip \
-            --output ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_enc.img
-    fi
-
     if ${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', 'true', 'false', d)}; then
         cp -rf ${STAGING_DIR_NATIVE}${bindir}/aml-linux-sb/keys ${DEPLOY_DIR_IMAGE}/
 
@@ -202,6 +181,37 @@ do_aml_pack() {
         sed 's@_lib32_@_@' -i ${DEPLOY_DIR_IMAGE}/sw-description
 
         ${DEPLOY_DIR_IMAGE}/sw_package_create.sh ${DEPLOY_DIR_IMAGE}
+    fi
+
+    #sign image
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'scs', 'true', 'false', d)}; then
+        cp -rf ${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/device-keys ${DEPLOY_DIR_IMAGE}/
+        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/fw_arb.cfg ${DEPLOY_DIR_IMAGE}/
+
+        if [ "${AML_SCS_SIGN_TOOL}" = "" ];then
+            AML_SCS_SIGN=${STAGING_DIR_NATIVE}${bindir}/aml-linux-scs/amlogic_scs_sign_whole_pkg.bash
+        else
+            AML_SCS_SIGN=${AML_SCS_SIGN_TOOL}
+        fi
+
+        UBOOT_TYPE="${UBOOT_MACHINE}"
+        local chipset_name=$(echo ${CHIPSET_NAME} | tr 'A-Z' 'a-z')
+        ${AML_SCS_SIGN} --soc ${chipset_name} \
+            --aml_key ${DEPLOY_DIR_IMAGE}/device-keys \
+            --fw_arb_cfg ${DEPLOY_DIR_IMAGE}/fw_arb.cfg \
+            --aml_img ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img \
+            --bootloader_zip ${DEPLOY_DIR_IMAGE}/${UBOOT_TYPE%_config}-u-boot.aml.zip \
+            --output ${DEPLOY_DIR_IMAGE}/aml_upgrade_package_enc.img
+
+        #sign ota image
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'true', 'false', d)}; then
+            ${AML_SCS_SIGN} --soc ${chipset_name} \
+                --aml_key ${DEPLOY_DIR_IMAGE}/device-keys \
+                --ota_key ${DEPLOY_DIR_IMAGE}/swupdate-priv.pem  \
+                --ota_swu ${DEPLOY_DIR_IMAGE}/software.swu  \
+                --bootloader_zip ${DEPLOY_DIR_IMAGE}/${UBOOT_TYPE%_config}-u-boot.aml.zip \
+                --output ${DEPLOY_DIR_IMAGE}/software.sign.swu
+        fi
     fi
 }
 

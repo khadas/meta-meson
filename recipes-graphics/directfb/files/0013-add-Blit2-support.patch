@@ -1,0 +1,478 @@
+From 112201ce2e5de205757344eee5e5cb93464d02f8 Mon Sep 17 00:00:00 2001
+From: Jian Cao <jian.cao@amlogic.com>
+Date: Thu, 27 Jul 2023 21:39:36 +0800
+Subject: [PATCH] add Blit2 support
+
+Signed-off-by: Jian Cao <jian.cao@amlogic.com>
+---
+ gfxdrivers/amlgfx/aml.c       |   1 +
+ gfxdrivers/amlgfx/aml.h       |   4 +-
+ gfxdrivers/amlgfx/aml_accel.c | 171 +++++++++++++++++++++++++++-------
+ gfxdrivers/amlgfx/aml_accel.h |   1 +
+ gfxdrivers/amlgfx/aml_state.c |  59 ++++++++++++
+ tests/dfbtest_blit2.c         |  16 ++--
+ 6 files changed, 211 insertions(+), 41 deletions(-)
+
+diff --git a/gfxdrivers/amlgfx/aml.c b/gfxdrivers/amlgfx/aml.c
+index 92c7b7f..539f6fc 100644
+--- a/gfxdrivers/amlgfx/aml.c
++++ b/gfxdrivers/amlgfx/aml.c
+@@ -134,6 +134,7 @@ driver_init_driver( CoreGraphicsDevice  *device,
+ 
+ 	funcs->FillRectangle = amlFillRectangle;
+ 	funcs->Blit          = amlBlit;
++	funcs->Blit2          = amlBlit2;
+ 	funcs->StretchBlit = amlStretchBlit;
+ 
+ 	return DFB_OK;
+diff --git a/gfxdrivers/amlgfx/aml.h b/gfxdrivers/amlgfx/aml.h
+index 1214137..2ecad7e 100644
+--- a/gfxdrivers/amlgfx/aml.h
++++ b/gfxdrivers/amlgfx/aml.h
+@@ -211,7 +211,7 @@
+ 											DSBLIT_SRC_PREMULTIPLY |DSBLIT_SRC_COLORKEY | \
+ 											DSBLIT_ROTATE180 )
+ 
+-#define AML_SUPPORTED_BLITTINGFUNCTIONS (DFXL_STRETCHBLIT | DFXL_BLIT)
++#define AML_SUPPORTED_BLITTINGFUNCTIONS (DFXL_STRETCHBLIT | DFXL_BLIT | DFXL_BLIT2)
+ 
+ typedef struct{
+ 	int x;		/*X coordinate of its top-left point*/
+@@ -366,9 +366,11 @@ typedef struct {
+ 	int format_function_type;
+ 	
+ 	config_info src_info;
++	config_info src2_info;
+ 	config_info dst_info;
+ 
+ 	DFBDimension src_size;
++	DFBDimension src2_size;
+ 	DFBDimension dst_size;
+ 	
+ 	unsigned int src_colorkey;
+diff --git a/gfxdrivers/amlgfx/aml_accel.c b/gfxdrivers/amlgfx/aml_accel.c
+index f221ff6..c1a1879 100644
+--- a/gfxdrivers/amlgfx/aml_accel.c
++++ b/gfxdrivers/amlgfx/aml_accel.c
+@@ -142,13 +142,8 @@ static bool aml_updatePalette(void *drv, void *dev)
+ static void
+ amlSet_Canvas(DFBDimension size, int *canvas_w, int *canvas_h)
+ {
+-	if (((size.w)%8) != 0){
+-		*canvas_w = (((size.w)/8)+1)*8;
+-	}else{
+-		*canvas_w = size.w;
+-	}
+-
+-		*canvas_h = size.h;
++	*canvas_w = size.w;
++	*canvas_h = size.h;
+ }
+ 
+ static bool
+@@ -650,17 +645,20 @@ amlBlend_ColorPremultiply_ConstColor( void *drv, void *dev, DFBRectangle *src_re
+ 
+ static bool
+ amlBlend_Config_Ex( void *drv, void *dev,
+-		DFBRectangle *src_rect, DFBRectangle *dst_rect, config_info* src_info,
++		DFBRectangle *src_rect, DFBRectangle *src2_rect, DFBRectangle *dst_rect, config_info* src_info,
+ 		config_info* src2_info, config_info* dst_info,int flag )
+ {
+ 	AMLGFX_DriverData *amldrv = (AMLGFX_DriverData *) drv;
+ 	AMLGFX_DeviceData *amldev = (AMLGFX_DeviceData *) dev;
+ 	int s_canvas_w = 0;
+ 	int s_canvas_h = 0;
++	int s2_canvas_w = 0;
++	int s2_canvas_h = 0;
+ 	int d_canvas_w = 0;
+ 	int d_canvas_h = 0;
+ 
+ 	debug("------src_info phys is 0x%x, mem_type is %d\n", src_info->phys, src_info->mem_type);
++	debug("------src2_info phys is 0x%x, mem_type is %d\n", src2_info->phys, src2_info->mem_type);
+ 	debug("------dst_info phys is 0x%x, mem_type is %d\n", dst_info->phys, dst_info->mem_type);
+ 	debug("global alpha is 0x%x. const color is 0x%x\n", amldev->gl_alpha, amldev->color);
+ 	
+@@ -699,6 +697,18 @@ amlBlend_Config_Ex( void *drv, void *dev,
+ 		amldev->ge2d_config_ex.src2_planes[0].w = d_canvas_w;
+ 		amldev->ge2d_config_ex.src2_para.height = dst_rect->h;
+ 		amldev->ge2d_config_ex.src2_planes[0].h = d_canvas_h;
++	} else {
++		if (!src2_rect) {
++			printf("%s,%d, src2_rect is NULL\n",__FUNCTION__,__LINE__);
++			return false;
++		}
++		amlSet_Canvas(amldev->src2_size, &s2_canvas_w, &s2_canvas_h);
++		amldev->ge2d_config_ex.src2_para.top = src2_rect->y;
++		amldev->ge2d_config_ex.src2_para.left = src2_rect->x;
++		amldev->ge2d_config_ex.src2_para.width = src2_rect->w;
++		amldev->ge2d_config_ex.src2_planes[0].w = s2_canvas_w;
++		amldev->ge2d_config_ex.src2_para.height = src2_rect->h;
++		amldev->ge2d_config_ex.src2_planes[0].h = s2_canvas_h;
+ 	}
+ 	
+ 	amldev->ge2d_config_ex.dst_planes[0].addr = dst_info->phys;
+@@ -749,7 +759,7 @@ amlBlend_Config_Ex( void *drv, void *dev,
+ }
+ 
+ static bool
+-amlBlend_Start( void *drv, void *dev, DFBRectangle *src_rect, DFBRectangle *dst_rect, int dx, int dy )
++amlBlend_Start( void *drv, void *dev, DFBRectangle *src_rect, DFBRectangle *src2_rect, DFBRectangle *dst_rect, int dx, int dy )
+ {
+ 	int dst_x, dst_y, dst_w, dst_h;
+ 	AMLGFX_DriverData *amldrv = (AMLGFX_DriverData *) drv;
+@@ -768,6 +778,9 @@ amlBlend_Start( void *drv, void *dev, DFBRectangle *src_rect, DFBRectangle *dst_
+ 
+ 	debug("src_rect x is %d, y is %d, w is %d, h is %d\n",
+ 			src_rect->x, src_rect->y, src_rect->w, src_rect->h);
++	if (src2_rect)
++		debug("src2_rect x is %d, y is %d, w is %d, h is %d\n",
++			src2_rect->x, src2_rect->y, src2_rect->w, src2_rect->h);
+ 	debug("dst_rect x is %d, y is %d, w is %d, h is %d\n",
+ 			dst_rect->x, dst_rect->y, dst_rect->w, dst_rect->h);
+ 	debug("dx is %d, dy is %d\n", dx, dy);
+@@ -779,11 +792,17 @@ amlBlend_Start( void *drv, void *dev, DFBRectangle *src_rect, DFBRectangle *dst_
+ 	amldev->op_ge2d_info.src1_rect.w = src_rect->w;
+ 	amldev->op_ge2d_info.src1_rect.h = src_rect->h;
+ 
+-	amldev->op_ge2d_info.src2_rect.x = dst_x;
+-	amldev->op_ge2d_info.src2_rect.y = dst_y;
+-	amldev->op_ge2d_info.src2_rect.w = dst_w;
+-	amldev->op_ge2d_info.src2_rect.h = dst_h;
+-
++	if (src2_rect) {
++		amldev->op_ge2d_info.src2_rect.x = src2_rect->x;
++		amldev->op_ge2d_info.src2_rect.y = src2_rect->y;
++		amldev->op_ge2d_info.src2_rect.w = src2_rect->w;
++		amldev->op_ge2d_info.src2_rect.h = src2_rect->h;
++	} else {
++		amldev->op_ge2d_info.src2_rect.x = dst_x;
++		amldev->op_ge2d_info.src2_rect.y = dst_y;
++		amldev->op_ge2d_info.src2_rect.w = dst_w;
++		amldev->op_ge2d_info.src2_rect.h = dst_h;
++	}
+ 	amldev->op_ge2d_info.dst_rect.x = dst_x;
+ 	amldev->op_ge2d_info.dst_rect.y = dst_y;
+ 	amldev->op_ge2d_info.dst_rect.w = dst_w;
+@@ -847,16 +866,104 @@ amlBlit( void *drv, void *dev, DFBRectangle *rect, int dx, int dy )
+ 	}else{
+ 		switch (amldev->blitfunction_type){
+ 			case GE2D_BLEND_PRE_ALPHACHANNEL:
+-			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, rect, &dst_rect, dx, dy);
++			amlBlend_Config_Ex(drv, dev, rect, NULL, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, NULL, &dst_rect, dx, dy);
++			break;
++			case GE2D_BLEND_ALPHACHANNEL:
++			amlBlend_Config_Ex(drv, dev, rect, NULL, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, NULL, &dst_rect, dx, dy);
++			break;
++			case GE2D_BLEND_COLORIZE_ALPHA:
++			amlBlend_Config_Ex(drv, dev, rect, NULL, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, NULL, &dst_rect, dx, dy);
++			break;
++			case GE2D_BLEND_SRC_COLORKEY:
++			amlBlit_ConfigEx(drv, dev, rect, amldev->src_info, amldev->dst_info);
++			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_ENABLE);
++			amlBlit_Start(drv, dev, rect, dx, dy, GE2D_BLIT, SRC_TO_DST);
++			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_DISENABLE);
++			break;
++			case GE2D_BLEND_COLORIZE:
++			amlBlend_Config_Ex(drv, dev, rect, NULL, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_ColorPremultiply_ConstColor(drv, dev, rect, &dst_rect, dx, dy);
++			break;
++			case GE2D_BLEND_SRC_COLORKEY_COLORIZE:
++			amlBlend_Config_Ex(drv, dev, rect, NULL, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_ENABLE);
++			amlBlend_ColorPremultiply_ConstColor(drv, dev, rect, &dst_rect, dx, dy);
++			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_DISENABLE);
++			break;
++			case GE2D_ROTATION:
++			amlBlit_ConfigEx(drv, dev, rect, amldev->src_info, amldev->dst_info);
++			amlBlit_Start(drv, dev, rect, dx, dy, GE2D_BLIT, SRC_TO_DST);
++			break;
++			case GE2D_BLEND_NOFX:
++			amlBlit_ConfigEx(drv, dev, rect, amldev->src_info, amldev->dst_info);
++			amlBlit_Start(drv, dev, rect, dx, dy, GE2D_BLIT, SRC_TO_DST);
++			break;
++			case GE2D_BLEND_COLORALPHA:
++			amlBlend_Config_Ex(drv, dev, rect, NULL, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, NULL, &dst_rect, dx, dy);
++			break;
++			default:
++			printf("------the blit blitfunction_type is not support\n");
++			break;
++		}
++	}
++	//D_DEBUG_AT(BLIT_AML, "blit ok\n");
++	return true;
++}
++
++bool
++amlBlit2( void *drv, void *dev, DFBRectangle *rect, int dx, int dy, int sx2, int sy2 )
++{
++	AMLGFX_DriverData *amldrv = (AMLGFX_DriverData *) drv;
++	AMLGFX_DeviceData *amldev = (AMLGFX_DeviceData *) dev;
++	DFBRectangle dst_rect, src2_rect;
++
++	dst_rect.x = dx;
++	dst_rect.y = dy;
++	dst_rect.w = rect->w;
++	dst_rect.h = rect->h;
++
++	src2_rect.x = sx2;
++	src2_rect.y = sy2;
++	src2_rect.w = rect->w;
++	src2_rect.h = rect->h;
++	//D_DEBUG_AT( BLIT_AML, "blit rect[%d %d %d %d] dxy[%d %d]\n",rect->x,rect->y,rect->w,rect->h,dx,dy);
++
++	if (amldev->support_flag == false || amldev->blitfunction_type == GE2D_NOT_SUPPORT){
++		printf("Not support amlBlit please check configure\n");
++		if(amldev->blitfunction_type == GE2D_NOT_SUPPORT){
++			printf("=====GE2D_NOT_SUPPORT=====\n");
++		}
++		return false;/*chengman modifier 2013-1-6*/
++	}
++
++	if (!(amldev->clip.x1 <= dx) || !(amldev->clip.y1 <= dy) ||
++			!( amldev->clip.x2 >= (dx + rect->w - 1) ) || !( amldev->clip.y2 >= (dy + rect->h - 1) )) {
++		printf("The blit region is not valid\n");
++		return false;
++	}
++
++	aml_updatePalette(drv, dev);
++
++	if ((amldev->format_change) && (amldev->format_function_type == FORMAT_CHANGE_NOALPHA)){
++			amlBlit_ConfigEx(drv, dev, rect, amldev->src_info, amldev->dst_info);
++			amlBlit_Start(drv, dev, rect, dx, dy, GE2D_BLIT_NOALPHA, SRC_TO_DST);
++	}else{
++		switch (amldev->blitfunction_type){
++			case GE2D_BLEND_PRE_ALPHACHANNEL:
++			amlBlend_Config_Ex(drv, dev, rect, &src2_rect, &dst_rect, &amldev->src_info, &amldev->src2_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, &src2_rect, &dst_rect, dx, dy);
+ 			break;
+ 			case GE2D_BLEND_ALPHACHANNEL:
+-			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, rect, &dst_rect, dx, dy);
++			amlBlend_Config_Ex(drv, dev, rect, &src2_rect, &dst_rect, &amldev->src_info, &amldev->src2_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, &src2_rect, &dst_rect, dx, dy);
+ 			break;
+ 			case GE2D_BLEND_COLORIZE_ALPHA:
+-			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, rect, &dst_rect, dx, dy);
++			amlBlend_Config_Ex(drv, dev, rect, &src2_rect, &dst_rect, &amldev->src_info, &amldev->src2_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, &src2_rect, &dst_rect, dx, dy);
+ 			break;
+ 			case GE2D_BLEND_SRC_COLORKEY:
+ 			amlBlit_ConfigEx(drv, dev, rect, amldev->src_info, amldev->dst_info);
+@@ -865,11 +972,11 @@ amlBlit( void *drv, void *dev, DFBRectangle *rect, int dx, int dy )
+ 			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_DISENABLE);
+ 			break;
+ 			case GE2D_BLEND_COLORIZE:
+-			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Config_Ex(drv, dev, rect, &src2_rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+ 			amlBlend_ColorPremultiply_ConstColor(drv, dev, rect, &dst_rect, dx, dy);
+ 			break;
+ 			case GE2D_BLEND_SRC_COLORKEY_COLORIZE:
+-			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Config_Ex(drv, dev, rect, &src2_rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+ 			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_ENABLE);
+ 			amlBlend_ColorPremultiply_ConstColor(drv, dev, rect, &dst_rect, dx, dy);
+ 			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_DISENABLE);
+@@ -883,8 +990,8 @@ amlBlit( void *drv, void *dev, DFBRectangle *rect, int dx, int dy )
+ 			amlBlit_Start(drv, dev, rect, dx, dy, GE2D_BLIT, SRC_TO_DST);
+ 			break;
+ 			case GE2D_BLEND_COLORALPHA:
+-			amlBlend_Config_Ex(drv, dev, rect, &dst_rect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, rect, &dst_rect, dx, dy);
++			amlBlend_Config_Ex(drv, dev, rect, &src2_rect, &dst_rect, &amldev->src_info, &amldev->src2_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, rect, &src2_rect, &dst_rect, dx, dy);
+ 			break;
+ 			default:
+ 			printf("------the blit blitfunction_type is not support\n");
+@@ -1044,16 +1151,16 @@ amlStretchBlit( void *drv, void *dev, DFBRectangle *srect, DFBRectangle *drect )
+ 	}else{
+ 		switch (amldev->blitfunction_type){
+ 			case GE2D_BLEND_PRE_ALPHACHANNEL:
+-			amlBlend_Config_Ex(drv, dev, srect, drect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, srect, drect, drect->x, drect->y);
++			amlBlend_Config_Ex(drv, dev, srect, NULL, drect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, srect, NULL, drect, drect->x, drect->y);
+ 			break;
+ 			case GE2D_BLEND_ALPHACHANNEL:
+-			amlBlend_Config_Ex(drv, dev, srect, drect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, srect, drect, drect->x, drect->y);
++			amlBlend_Config_Ex(drv, dev, srect, NULL, drect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, srect, NULL, drect, drect->x, drect->y);
+ 			break;
+ 			case GE2D_BLEND_COLORIZE_ALPHA:
+-			amlBlend_Config_Ex(drv, dev, srect, drect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+-			amlBlend_Start(drv, dev, srect, drect, drect->x, drect->y);
++			amlBlend_Config_Ex(drv, dev, srect, NULL, drect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Start(drv, dev, srect, NULL, drect, drect->x, drect->y);
+ 			break;
+ 			case GE2D_BLEND_SRC_COLORKEY:
+ 			amlStretchBlit_ConfigEx(drv, dev, srect, drect, amldev->src_info, amldev->dst_info);
+@@ -1062,11 +1169,11 @@ amlStretchBlit( void *drv, void *dev, DFBRectangle *srect, DFBRectangle *drect )
+ 			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_DISENABLE);
+ 			break;
+ 			case GE2D_BLEND_COLORIZE:
+-			amlBlend_Config_Ex(drv, dev, srect, drect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Config_Ex(drv, dev, srect, NULL, drect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+ 			amlBlend_ColorPremultiply_ConstColor(drv, dev, srect, drect, drect->x, drect->y);
+ 			break;
+ 			case GE2D_BLEND_SRC_COLORKEY_COLORIZE:
+-			amlBlend_Config_Ex(drv, dev, srect, drect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
++			amlBlend_Config_Ex(drv, dev, srect, NULL, drect, &amldev->src_info, &amldev->dst_info, &amldev->dst_info, PREMULT_NONE);
+ 			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_ENABLE);
+ 			amlBlend_ColorPremultiply_ConstColor(drv, dev, srect, drect, drect->x, drect->y);
+ 			aml_setColorKey(drv, dev, KEY_OUT, COLOR_KEY_DISENABLE);
+diff --git a/gfxdrivers/amlgfx/aml_accel.h b/gfxdrivers/amlgfx/aml_accel.h
+index 0c4479c..c189fd2 100644
+--- a/gfxdrivers/amlgfx/aml_accel.h
++++ b/gfxdrivers/amlgfx/aml_accel.h
+@@ -92,6 +92,7 @@ extern DFBResult amlEngineSync(void *drv, void *dev);
+ extern void amlFlushTextureCache(void *drv, void *dev);
+ extern bool amlFillRectangle( void *drv, void *dev, DFBRectangle *rect );
+ extern bool amlBlit( void *drv, void *dev, DFBRectangle *rect, int dx, int dy );
++extern bool amlBlit2( void *drv, void *dev, DFBRectangle *rect, int dx, int dy, int sx2, int sy2 );
+ extern bool amlStretchBlit( void *drv, void *dev, DFBRectangle *srect, DFBRectangle *drect );
+ //extern bool amlBlend( void *drv, void *dev, DFBRectangle *rect, int dx, int dy, int sx2, int sy2 );
+ #endif
+diff --git a/gfxdrivers/amlgfx/aml_state.c b/gfxdrivers/amlgfx/aml_state.c
+index b38e252..db3be1d 100644
+--- a/gfxdrivers/amlgfx/aml_state.c
++++ b/gfxdrivers/amlgfx/aml_state.c
+@@ -191,6 +191,37 @@ aml_set_src(AMLGFX_DriverData *amldrv,
+ 	amldev->aml_smf.smf_source = 1;
+ }
+ 
++static inline void
++aml_set_src2(AMLGFX_DriverData *amldrv,
++		AMLGFX_DeviceData *amldev,
++		CardState *state)
++{
++	debug("------\n");
++	if (amldev->aml_smf.smf_source2)
++		return;
++
++	amldev->src2_info.addr = (unsigned long)state->src2.addr;
++	amldev->src2_info.phys = state->src2.phys;
++	amldev->src2_info.pitch = state->src2.pitch;
++
++#ifdef ZOOM_BY_DFB /*chengman modifier 2012-12-20 for debug res_change*/
++	if(state->source2->num_buffers > 1 && state->from== CSBR_BACK)
++	{
++		amldev->src2_size.w = state->source2->config.size.w;
++		amldev->src2_size.h = state->source2->config.size.h;
++	}
++	else
++	{
++		amldev->src2_size.w = state->source2->config.front_size.w;
++		amldev->src2_size.h = state->source2->config.front_size.h;
++	}
++#else
++	amldev->src2_size.w = state->source2->config.size.w;
++	amldev->src2_size.h = state->source2->config.size.h;
++#endif
++	amldev->aml_smf.smf_source2 = 1;
++}
++
+ static inline void
+ aml_set_color( AMLGFX_DriverData *amldrv, AMLGFX_DeviceData *amldev,
+ 					CardState *state )
+@@ -347,6 +378,26 @@ aml_src_dst_formattype(AMLGFX_DriverData *amldrv,
+ 		aml_set_format(buffer, &amldev->src_info);
+ 	}
+ 
++	if (state->src2.buffer){
++		buffer = state->src2.buffer;
++		switch (buffer->format){
++			case DSPF_RGB16:
++				amldev->bNeedCLUTReload = false;
++				amldev->format_function_type = FORMAT_CHANGE_NOALPHA;
++			break;
++			case DSPF_LUT8:
++				amldev->palette = srcSurf->palette;
++				amldev->bNeedCLUTReload = true;
++				amldev->format_function_type = FORMAT_CHANGE_NORMAL;
++			break;
++			default:
++				amldev->bNeedCLUTReload = false;
++				amldev->format_function_type = FORMAT_CHANGE_NORMAL;
++			break;
++		}
++		aml_set_format(buffer, &amldev->src2_info);
++	}
++
+ 	if (state->dst.buffer){
+ 		buffer = state->dst.buffer;
+ 		switch (buffer->format) {
+@@ -578,6 +629,14 @@ amlSetState( void *drv, void *dev,
+ 			aml_set_blend_config(amldrv, amldev, state);
+ 			state->set |= DFXL_BLIT;
+ 			break;
++		case DFXL_BLIT2:
++			aml_set_src( amldrv, amldev, state );
++			aml_set_src2( amldrv, amldev, state );
++			if (state->blittingflags & DSBLIT_SRC_COLORKEY)
++				aml_set_src_color_key(amldrv, amldev, state);
++			aml_set_blend_config(amldrv, amldev, state);
++			state->set |= DFXL_BLIT2;
++			break;
+ 		case DFXL_STRETCHBLIT:
+ 			aml_set_src( amldrv, amldev, state );
+ 			if (state->blittingflags & DSBLIT_SRC_COLORKEY)
+diff --git a/tests/dfbtest_blit2.c b/tests/dfbtest_blit2.c
+index 7bf2058..b4379d6 100644
+--- a/tests/dfbtest_blit2.c
++++ b/tests/dfbtest_blit2.c
+@@ -53,7 +53,7 @@ main( int argc, char *argv[] )
+      DFBColor               red   = { 0xC0, 0xc0, 0x00, 0x00 }; // premultiplied
+      DFBColor               blue  = { 0xC0, 0x00, 0x00, 0xc0 }; // "
+      DFBColor               white = { 0xFF, 0xff, 0xff, 0xff }; // "
+-     DFBRectangle           rect  = { 0, 0, 100, 100 };
++     DFBRectangle           rect  = { 0, 0, 104, 104 };
+      DFBPoint               p_dst = { 0, 0 };
+      DFBPoint               p_src = { 50, 50 };
+ 
+@@ -82,13 +82,13 @@ main( int argc, char *argv[] )
+       *       |        |         |        |         |        |    |
+       *       '--------'         '--------'         |--------'    |
+       *                                             |      white  |
+-      *         100x100            100x100          '-------------'
++      *         104x104            104x104          '-------------'
+       *  
+-      *                                                   150x150
++      *                                                   160x160
+       */
+      desc.flags       = DSDESC_WIDTH | DSDESC_HEIGHT | DSDESC_PIXELFORMAT;
+-     desc.width       = 100;
+-     desc.height      = 100;
++     desc.width       = 104;
++     desc.height      = 104;
+      desc.pixelformat = DSPF_ARGB;
+ 
+      ret = dfb->CreateSurface( dfb, &desc, &dst );
+@@ -105,8 +105,8 @@ main( int argc, char *argv[] )
+           goto error_src;
+      }
+ 
+-     desc.width  = 150;
+-     desc.height = 150;
++     desc.width  = 160;
++     desc.height = 160;
+ 
+      ret = dfb->CreateSurface( dfb, &desc, &src2 );
+      if (ret) {
+@@ -158,7 +158,7 @@ main( int argc, char *argv[] )
+       *  |      white  |
+       *  '-------------'
+       *  
+-      *        100x100
++      *        104x104
+       */
+      dst->BatchBlit2( dst, src, src2, &rect, &p_dst, &p_src, 1 );
+ 
+-- 
+2.25.1
+

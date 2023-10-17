@@ -74,11 +74,11 @@ DISTRO_FEATURES:append = " bluetooth bluez5 "
 EXTRA_BLUETOOTH_STUFF := "${@bb.utils.contains('DISTRO_FEATURES', 'bluetooth', bb.utils.contains('DISTRO_FEATURES', 'bluez5', ' bluez5', ' bluez4', d), '', d)}"
 DISTRO_FEATURES:append = "${EXTRA_BLUETOOTH_STUFF}"
 
-# For YouTube Cert. Now it's for 2023
+# For YouTube Cert. Now it's for 2024
 DEVICE_PROPERTY_FIRMWARE_VERSION = "1.0.0"
 DEVICE_PROPERTY_MODEL_NAME = "OTT-4K-Ref"
 DEVICE_PROPERTY_OPERATOR_NAME = "SDKRelease"
-DEVICE_PROPERTY_YOUTUBE_CERT_SCOPE = "amlogic-2023-amlogicottref4k2023"
+DEVICE_PROPERTY_YOUTUBE_CERT_SCOPE = "amlogic-2024-amlogicott4kref2024v2"
 DEVICE_PROPERTY_PERSIST_DIALSERVER_NAME="AmlogicOTT-AH212"
 # YouTube define device type
 # BDP:   Blu-Ray Player
@@ -88,7 +88,7 @@ DEVICE_PROPERTY_PERSIST_DIALSERVER_NAME="AmlogicOTT-AH212"
 # TV:    Television Set
 DEVICE_PROPERTY_DEVICE_TYPE = "OTT"
 DEVICE_PROPERTY_CHIPSET = "S905X4"
-DEVICE_PROPERTY_MODEL_YEAR = "2023"
+DEVICE_PROPERTY_MODEL_YEAR = "2024"
 # End For YouTube
 
 
