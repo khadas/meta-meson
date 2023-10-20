@@ -28,6 +28,7 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
            file://0027-10.0.0-add-debug-tool.patch \
            file://0028-10.0.0-add-pts-check-flow.patch \
            file://0029-10.0.0-optimize-video-frame-drop-issue.patch \
+           file://0030-10.0.0-modify-connector-change-flow.patch \
            "
 
 SRC_URI[md5sum] = "bc4abe2ee6904a4890a0c641c6257f91"
