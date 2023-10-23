@@ -1,0 +1,10 @@
+[Unit]
+Description=DVB TEST Startup
+After=binder.service
+
+[Service]
+User=root
+ExecStart=/usr/bin/aml_dtv_testserver
+
+[Install]
+WantedBy=multi-user.target

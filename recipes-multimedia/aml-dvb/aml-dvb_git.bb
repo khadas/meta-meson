@@ -56,6 +56,13 @@ do_install() {
     install -D -m 0644 ${S}/include/am_mw/atsc/*.h -t ${D}${includedir}/am_mw/atsc
     install -D -m 0644 ${S}/am_mw/libam_mw.so ${D}${libdir}
     install -D -m 0644 ${S}/am_mw/libam_mw.a ${D}${libdir}
+
+    install -d ${D}${includedir}/ndk
+    install -D -m 0644 ${S}/android/ndk/include/*.h -t ${D}${includedir}/ndk
+    install -d ${D}${includedir}/ndk/linux/amports
+    install -D -m 0644 ${S}/android/ndk/include/linux/amports/*.h -t ${D}${includedir}/ndk/linux/amports
+    install -d ${D}${includedir}/ndk/linux/dvb
+    install -D -m 0644 ${S}/android/ndk/include/linux/dvb/*.h -t ${D}${includedir}/ndk/linux/dvb
 }
 
 FILES:${PN} = "${libdir}/* ${bindir}/*"
