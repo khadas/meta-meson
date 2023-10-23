@@ -48,14 +48,14 @@ TARGET_CFLAGS += "-fPIC -D_REENTRANT ${INCLUDE_DIRS}"
 TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', ' -shared -rdynamic ', '', d)}"
 
 do_install:append() {
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'ArkaDvb', 'false', 'true', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'arka-launcher', 'true', 'false', d)}; then
       install -D -m 0644 ${WORKDIR}/arka.service ${D}${systemd_unitdir}/system/arka.service
 
       install -d ${D}${sysconfdir}/init.d
       install -m 0755 ${WORKDIR}/arka.init ${D}${sysconfdir}/init.d/arka
     fi
 }
-SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'ArkaDvb', '', 'arka.service', d)}"
+SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'arka-launcher', 'arka.service', '', d)}"
 
 FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/Arka/png ${systemd_unitdir}/system/"
 FILES_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '${libdir}', '', d)}"

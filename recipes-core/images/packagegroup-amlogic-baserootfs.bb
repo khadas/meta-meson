@@ -190,9 +190,10 @@ RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libvphevcodec', 'gst-plugin-venc-h265', '', d), '', d)} \
    "
 
-#For AsperitasDvb
+#Arka DVB App
 RDEPENDS:packagegroup-amlogic-baserootfs += " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'AsperitasDvb', 'webkitbrowser-plugin lighttpd asperitas-dvb', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'arka', 'arka', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'arka-prebuilt-pkg', 'arka-prebuilt-pkg', '', d)} \
     "
 
 #Add ubifs tools

@@ -135,8 +135,8 @@ IMAGE_INSTALL += " \
 
 IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'webkitbrowser', 'webkitbrowser-plugin lighttpd', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'AsperitasDvb', 'asperitas-dvb', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'ArkaDvb', 'arka', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'arka', 'arka', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'arka-prebuilt-pkg', 'arka-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'youtube-prebuilt-pkg', 'youtube-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'irdeto-sdk irdeto-cashal-rel', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'mtd-utils-ubifs', '',d)} \
