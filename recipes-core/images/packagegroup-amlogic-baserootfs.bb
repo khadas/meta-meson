@@ -164,6 +164,7 @@ RDEPENDS:packagegroup-amlogic-baserootfs = "\
     tzcode \
     format-partitions \
     meson-display \
+    rsync \
     "
 
 RDEPENDS:packagegroup-amlogic-baserootfs += " \
