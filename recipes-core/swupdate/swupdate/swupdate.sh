@@ -279,6 +279,6 @@ else
         #execute swupdate for clear misc, no need into recovery after reboot
         swupdate
         urlmisc clean
-        umount /run/media/$name
+        #umount /run/media/$name
     fi
 fi

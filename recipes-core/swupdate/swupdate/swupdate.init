@@ -1,13 +1,13 @@
 #!/bin/sh
 
-# Starts zram service.
+# Starts swupdate service.
 start() {
-	printf "Starting zram service: \n"
+	printf "Starting swupdate service: \n"
 	/usr/bin/swupdate.sh rootfs_type
 }
 
 stop() {
-	printf "Stopping zram service: \n"
+	printf "Stopping swupdate service: \n"
 }
 
 case "$1" in
