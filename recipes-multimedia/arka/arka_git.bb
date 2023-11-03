@@ -20,7 +20,8 @@ INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
 DEPENDS = " dtvkit-release-prebuilt jsoncpp libbinder aml-audio-service meson-display udev aml-hdmicec aml-mp-sdk"
-DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', 'westeros freetype', 'directfb', d)}"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
+    bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'directfb', d)}"
 
 RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service"
 
@@ -29,7 +30,8 @@ EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D}  -D_STBLABS_SAT_
 EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', '-DDISABLE_AUDIO_SERVER=1', '', d)}"
 EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-project-sun', '-DARKA_PROJECT=sunepg', \
     bb.utils.contains('DISTRO_FEATURES', 'arka-project-aml', '-DARKA_PROJECT=amlepg', '-DARKA_PROJECT=aslepg', d), d)}"
-EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '-DUSE_EGL=ON', '', d)}"
+EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
+    bb.utils.contains('DISTRO_FEATURES', 'weston', '-DUSE_EGL=ON -DUSE_WESTON=ON', '-DUSE_EGL=ON', d), '', d)}"
 
 INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${libdir}/include/ \
@@ -46,6 +48,7 @@ INCLUDE_DIRS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', ' \
 
 TARGET_CFLAGS += "-fPIC -D_REENTRANT ${INCLUDE_DIRS}"
 TARGET_CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', ' -shared -rdynamic ', '', d)}"
+TARGET_CXXFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', ' -fpermissive ', '', d)}"
 
 do_install:append() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'arka-launcher', 'true', 'false', d)}; then

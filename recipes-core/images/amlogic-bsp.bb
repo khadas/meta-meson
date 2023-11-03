@@ -75,6 +75,9 @@ IMAGE_INSTALL += " \
         'bluez-alsa bluez5-obex', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'drmplayer-bin ffmpeg-vendor', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'aml-dtvdemod', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit', 'dtvkit-release-prebuilt', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'arka', 'arka', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'arka-prebuilt-pkg', 'arka-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'playready', 'playready', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-userspace tee-supplicant optee-video-firmware aml-provision', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'widevine', 'aml-mediadrm-widevine', '', d)} \
