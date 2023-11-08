@@ -11,7 +11,7 @@
 
   "__comment":"//port speaker",
   "vendor.media.audio.hal.nonms12.tv.dtv.speaker" : 0,
-  "vendor.media.audio.hal.nonms12.stb.dtv.speaker" : 45,
+  "vendor.media.audio.hal.nonms12.stb.dtv.speaker" : 0,
 
 
   "__comment":"//port A2DP",
@@ -30,8 +30,8 @@
 
 
   "__comment":"//STB_box hdmi out",
-  "vendor.media.audio.hal.nonms12.dtv.hdmi.pcm" : 60,
+  "vendor.media.audio.hal.nonms12.dtv.hdmi.pcm" : 30,
   "vendor.media.audio.hal.nonms12.dtv.hdmi.dd" : 0,
-  "vendor.media.audio.hal.nonms12.dtv.hdmi.ddp" : 130,
+  "vendor.media.audio.hal.nonms12.dtv.hdmi.ddp" : 90,
   "__comment":"/*end dtv NONMS12 tuning part */"
 }
