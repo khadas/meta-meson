@@ -23,7 +23,7 @@ index c9b32ab..5a460db 100644
 -		return false;
 -
 +	if (plane->state_cur->output && plane->state_cur->output != output) {
-+		plane->state_cur->output = output;
++		//plane->state_cur->output = output;
 +		//return false;
 +	}
  	/* Check whether the plane can be used with this CRTC; possible_crtcs

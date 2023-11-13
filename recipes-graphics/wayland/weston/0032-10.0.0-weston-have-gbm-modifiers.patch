@@ -1,0 +1,29 @@
+diff --git a/compositor/meson.build b/compositor/meson.build
+index 5c1e1be..7fc67c0 100644
+--- a/compositor/meson.build
++++ b/compositor/meson.build
+@@ -177,6 +177,7 @@ if get_option('systemd')
+ endif
+ 
+ config_h.set('AML_MAX_OUTPUT_PIPLINE', get_option('WESTON_MAX_OUTPUT_PIPLINE'))
++config_h.set('HAVE_GBM_MODIFIERS', get_option('WESTON_HAVE_GBM_MODIFIERS'))
+ 
+ weston_ini_config = configuration_data()
+ weston_ini_config.set('bindir', dir_bin)
+diff --git a/meson_options.txt b/meson_options.txt
+index 2e57cca..11c0544 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -262,6 +262,12 @@ option(
+ 	value: false,
+ 	description: 'weston use default drm z-order'
+ )
++option(
++	'WESTON_HAVE_GBM_MODIFIERS',
++	type: 'boolean',
++	value: true,
++	description: 'weston have gbm modifiers'
++)
+ option(
+ 	'WESTON_FORCE_BACKGROUND_TRANSPARENT',
+ 	type: 'boolean',

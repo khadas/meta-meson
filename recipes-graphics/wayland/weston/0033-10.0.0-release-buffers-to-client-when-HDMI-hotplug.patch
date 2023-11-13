@@ -1,0 +1,271 @@
+diff --git a/compositor/main.c b/compositor/main.c
+index 894e2d0..a19d3c4 100644
+--- a/compositor/main.c
++++ b/compositor/main.c
+@@ -2410,8 +2410,16 @@ static void drm_head_changed(struct wet_compositor *wet, struct weston_head *hea
+ 	weston_log("\n %s %d head:%s connected:%d,enabled:%d,changed:%d forced:%d should_enable:%d\n",
+ 		__FUNCTION__,__LINE__,head->name, connected, enabled,changed,forced,should_enable);
+ 	if (((connected || forced) && should_enable) && !enabled) {
++			if (strcmp("HDMI-A-1", head->name) == 0) {
++			weston_log("\n enable HDMI  and release stranded buffers\n");
++			weston_release_stranded_buffers();
++		}
+ 		drm_head_prepare_enable(wet, head);
+ 	} else if (!((connected || forced) && should_enable) && enabled) {
++			if (strcmp("HDMI-A-1", head->name) == 0) {
++			weston_log("\n disable HDMI and release stranded buffers\n");
++			weston_release_stranded_buffers();
++		}
+ 		drm_head_disable(head);
+ 	} else if (enabled && changed) {
+ 		weston_log("Detected a monitor change on head '%s', "
+diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
+index f7545fd..8e75791 100644
+--- a/desktop-shell/shell.c
++++ b/desktop-shell/shell.c
+@@ -4722,7 +4722,9 @@ shell_reposition_view_on_output_change(struct weston_view *view)
+ 
+ 		x = first_output->x + first_output->width / 4;
+ 		y = first_output->y + first_output->height / 4;
+-
++
++		x= 0.0; // change default position to (0, 0) if not visible
++		y = 0.0;
+ 		weston_view_set_position(view, x, y);
+ 	} else {
+ 		weston_view_geometry_dirty(view);
+diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
+index 9072606..4140c7d 100644
+--- a/include/libweston/libweston.h
++++ b/include/libweston/libweston.h
+@@ -1214,6 +1214,7 @@ struct weston_buffer {
+ 	int y_inverted;
+ 	void *backend_private;
+ 	uint64_t pts;
++	bool commit_fail;
+ };
+ 
+ struct weston_buffer_reference {
+@@ -1793,6 +1794,9 @@ weston_compositor_set_default_pointer_grab(struct weston_compositor *compositor,
+ struct weston_surface *
+ weston_surface_create(struct weston_compositor *compositor);
+ 
++void
++weston_release_stranded_buffers();
++
+ void
+ weston_view_opacity(struct weston_view *view, float opacity);
+ 
+diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
+index 093f0a3..99c526a 100644
+--- a/libweston/backend-drm/drm-internal.h
++++ b/libweston/backend-drm/drm-internal.h
+@@ -320,6 +320,7 @@ struct drm_backend {
+ #ifdef BUILD_AML_TV
+ 	int vdin_detect_fd;
+ #endif
++	bool allow_modeset;
+ };
+ 
+ struct drm_mode {
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 93dee09..df201a0 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -914,7 +914,8 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
+ 	 *      content.
+ 	 */
+ 	b->state_invalid = true;
+-	
++
++	b->allow_modeset = true;
+ #ifdef MESON_DRM_FIX_UI_SIZE
+ 	// fixed ui mode needn't reset egl.
+ 	return 0;
+@@ -3659,6 +3660,7 @@ drm_backend_create(struct weston_compositor *compositor,
+ 		return NULL;
+ 
+ 	b->state_invalid = true;
++	b->allow_modeset = true;
+ 	b->drm.fd = -1;
+ 
+ #ifdef BUILD_AML_TV
+diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
+index f9ae44a..6c2a988 100755
+--- a/libweston/backend-drm/kms.c
++++ b/libweston/backend-drm/kms.c
+@@ -1093,6 +1093,8 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
+ 		/* If we need to reset all our state (e.g. because we've
+ 		 * just started, or just been VT-switched in), explicitly
+ 		 * disable all the CRTCs and connectors we aren't using. */
++#if 0
++
+ 		wl_list_for_each(head_base,
+ 				 &b->compositor->head_list, compositor_link) {
+ 			struct drm_property_info *info;
+@@ -1150,6 +1152,7 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
+ 			ret |= crtc_add_prop(req, crtc, WDRM_CRTC_ACTIVE, 0);
+ 			ret |= crtc_add_prop(req, crtc, WDRM_CRTC_MODE_ID, 0);
+ 		}
++#endif
+ 
+ 		/* Disable all the planes; planes which are being used will
+ 		 * override this state in the output-state application. */
+@@ -1160,7 +1163,8 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
+ 			plane_add_prop(req, plane, WDRM_PLANE_FB_ID, 0);
+ 		}
+ 
+-		flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
++			if (b->allow_modeset)
++			flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
+ 	}
+ 
+ 	wl_list_for_each(output_state, &pending_state->output_list, link) {
+@@ -1182,6 +1186,22 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
+ 	ret = drmModeAtomicCommit(b->drm.fd, req, flags, b);
+ 	drm_debug(b, "[atomic] drmModeAtomicCommit\n");
+ 
++	if (ret != 0) {
++		struct drm_output_state *output_state_tmp;
++		wl_list_for_each(output_state_tmp, &pending_state->output_list, link) {
++			if (output_state->output->virtual)
++				continue;
++			struct drm_plane_state *plane_state_tmp;
++			wl_list_for_each(plane_state_tmp, &output_state_tmp->plane_list, link) {
++				if(plane_state_tmp && plane_state_tmp->fb && plane_state_tmp->fb_ref.buffer.buffer) {
++					plane_state_tmp->fb_ref.buffer.buffer->commit_fail = true;
++					weston_log("\n%s %d buffer :%p commit  fail\n", 
++					__FUNCTION__,__LINE__, plane_state_tmp->fb_ref.buffer.buffer);
++				}
++			}
++		}
++	}
++
+ 	/* Test commits do not take ownership of the state; return
+ 	 * without freeing here. */
+ 	if (mode == DRM_STATE_TEST_ONLY) {
+@@ -1201,6 +1221,9 @@ drm_pending_state_apply_atomic(struct drm_pending_state *pending_state,
+ 
+ 	b->state_invalid = false;
+ 
++	if (b->allow_modeset)
++		b->allow_modeset = false;
++
+ 	assert(wl_list_empty(&pending_state->output_list));
+ 
+ out:
+@@ -1429,11 +1452,13 @@ atomic_flip_handler(int fd, unsigned int frame, unsigned int sec,
+ 
+ 	drm_debug(b, "[atomic][CRTC:%u] flip processing started output_change:%d\n",
+ 		crtc_id,crtc->output_change );
+-	assert(b->atomic_modeset);
+-	assert(output->atomic_complete_pending);
+-	output->atomic_complete_pending = false;
++	if ( b->atomic_modeset && output->atomic_complete_pending) {
++		//assert(b->atomic_modeset);
++		//assert(output->atomic_complete_pending);
++		output->atomic_complete_pending = false;
++		drm_output_update_complete(output, flags, sec, usec);
++	}
+ 
+-	drm_output_update_complete(output, flags, sec, usec);
+ 	crtc->output_change = false;
+ 	drm_debug(b, "[atomic][CRTC:%u] flip processing completed\n", crtc_id);
+ 	struct timespec repaint_start = b->compositor->last_repaint_start;
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 7cab0ab..7c4bbf0 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -703,9 +703,6 @@ weston_surface_create(struct weston_compositor *compositor)
+ 
+ #if MESON_VIDEO_PLAN_SUPPORT
+ 	surface->is_video_surface = false;
+-	video_buffer_release[FRAME_CURR] = NULL;
+-	video_buffer_release[FRAME_PREV] = NULL;
+-	video_buffer_release[FRAME_FREE] = NULL;
+ 	
+ #endif
+ 	surface->video_plane = 255;
+@@ -2608,6 +2605,28 @@ static bool is_video_buffer(struct weston_buffer *buffer)
+ #endif
+ return isVideoBuffer;
+ }
++
++WL_EXPORT void weston_release_stranded_buffers()
++{
++	if (video_buffer_release[FRAME_FREE] != NULL) {
++		weston_log("\n weston_release_stranded_buffers  line:%d :%p, time:%lld \n", __LINE__,video_buffer_release[FRAME_FREE], getCuerrntTimeMillis());
++		wl_buffer_send_release(video_buffer_release[FRAME_FREE]->resource);
++		video_buffer_release[FRAME_FREE] = NULL;
++	}
++	if (video_buffer_release[FRAME_PREV] != NULL) {
++		weston_log("\n weston_release_stranded_buffers  line:%d :%p, time:%lld \n", __LINE__,video_buffer_release[FRAME_PREV], getCuerrntTimeMillis());
++		wl_buffer_send_release(video_buffer_release[FRAME_PREV]->resource);
++		video_buffer_release[FRAME_PREV] = NULL;
++	}
++	if (video_buffer_release[FRAME_CURR] != NULL) {
++		weston_log("\n weston_release_stranded_buffers  line:%d :%p, time:%lld \n", __LINE__,video_buffer_release[FRAME_CURR], getCuerrntTimeMillis());
++		wl_buffer_send_release(video_buffer_release[FRAME_CURR]->resource);
++		video_buffer_release[FRAME_CURR] = NULL;
++	}
++	release_cur = false;
++	release_pre = false;
++}
++
+ static void buffer_send_release(struct weston_buffer_reference *ref)
+ {
+ 	if (!is_video_buffer(ref->buffer)) {
+@@ -2621,6 +2640,7 @@ static void buffer_send_release(struct weston_buffer_reference *ref)
+ 		{
+ 			//no matter get fence or not,send release anyway
+ 			wl_buffer_send_release(video_buffer_release[FRAME_FREE]->resource);
++			video_buffer_release[FRAME_FREE] = NULL;
+ 		}
+ 		if(video_buffer_release[FRAME_PREV]!=NULL && release_cur == true) {
+ 			release_pre = true;
+@@ -2629,6 +2649,7 @@ static void buffer_send_release(struct weston_buffer_reference *ref)
+ 			fence_rc = video_fence(video_buffer_release[FRAME_PREV]);
+ 			if(fence_rc ==1) {
+ 				wl_buffer_send_release(video_buffer_release[FRAME_PREV]->resource);
++				video_buffer_release[FRAME_PREV] = NULL;
+ 				release_pre = true;
+ 			} else {
+ 				release_pre = false;
+@@ -2639,15 +2660,22 @@ static void buffer_send_release(struct weston_buffer_reference *ref)
+ 			fence_rc = video_fence(video_buffer_release[FRAME_CURR]);
+ 			if(fence_rc ==1) {
+ 				wl_buffer_send_release(video_buffer_release[FRAME_CURR]->resource);
++				video_buffer_release[FRAME_CURR] = NULL;
+ 				release_cur = true;
+ 			} else {
+ 				release_cur = false;
+ 			}
+ 		}
++		if (!release_cur && video_buffer_release[FRAME_CURR]->commit_fail)
++		{
++			wl_buffer_send_release(video_buffer_release[FRAME_CURR]->resource);
++			video_buffer_release[FRAME_CURR]->commit_fail = false;
++			video_buffer_release[FRAME_CURR] = NULL;
++			release_cur = true;
++		}
+ 	}
+ }
+ 
+-
+ WL_EXPORT void
+ weston_buffer_reference(struct weston_buffer_reference *ref,
+ 			struct weston_buffer *buffer)
+@@ -2763,7 +2791,12 @@ weston_surface_attach(struct weston_surface *surface,
+ 							dmabuf->direct_display = true;
+ 					}
+ 					if (dmabuf->direct_display) {
+-						surface->is_video_surface = true;
++						if (surface->is_video_surface == false) {
++							video_buffer_release[FRAME_CURR] = NULL;
++							video_buffer_release[FRAME_PREV] = NULL;
++							video_buffer_release[FRAME_FREE] = NULL;
++							surface->is_video_surface = true;
++						}
+ 					}
+ 					break;
+ 				default:

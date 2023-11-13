@@ -1,0 +1,452 @@
+diff --git a/clients/simple-dmabuf-egl.c b/clients/simple-dmabuf-egl.c
+index 33df4cf..8f9aade 100644
+--- a/clients/simple-dmabuf-egl.c
++++ b/clients/simple-dmabuf-egl.c
+@@ -1211,6 +1211,7 @@ display_set_up_egl(struct display *display)
+ 		goto error;
+ 	}
+ 
++#ifdef HAVE_GBM_MODIFIERS
+ 	if (weston_check_egl_extension(egl_extensions,
+ 				       "EGL_EXT_image_dma_buf_import_modifiers")) {
+ 		display->egl.has_dma_buf_import_modifiers = true;
+@@ -1218,6 +1219,7 @@ display_set_up_egl(struct display *display)
+ 			(void *) eglGetProcAddress("eglQueryDmaBufModifiersEXT");
+ 		assert(display->egl.query_dma_buf_modifiers);
+ 	}
++#endif
+ 
+ 	display->egl.create_image =
+ 		(void *) eglGetProcAddress("eglCreateImageKHR");
+diff --git a/compositor/main.c b/compositor/main.c
+index ae37c45..f207804 100644
+--- a/compositor/main.c
++++ b/compositor/main.c
+@@ -2150,9 +2150,11 @@ drm_try_enable(struct weston_output *output,
+ 			;
+ 
+ 		/* No heads left to undo and failed to enable. */
+-		if (undo->heads[undo->n] == NULL)
++		if (undo->heads[undo->n] == NULL) {
++			weston_log("%s, L%d, No heads left to undo and failed to enablen",
++				__FUNCTION__, __LINE__);
+ 			return -1;
+-
++		}
+ 		assert(failed->n < ARRAY_LENGTH(failed->heads));
+ 
+ 		/* undo one head */
+@@ -2259,7 +2261,9 @@ drm_process_layoutputs(struct wet_compositor *wet)
+ {
+ 	struct wet_layoutput *lo;
+ 	int ret = 0;
+-
++	#if AML_MAX_OUTPUT_PIPLINE > 0
++	bool have_output = false; //any one could output as true
++	#endif
+ 	wl_list_for_each(lo, &wet->layoutput_list, compositor_link) {
+ 		if (lo->add.n == 0)
+ 			continue;
+@@ -2267,9 +2271,20 @@ drm_process_layoutputs(struct wet_compositor *wet)
+ 		if (drm_process_layoutput(wet, lo) < 0) {
+ 			lo->add = (struct wet_head_array){};
+ 			ret = -1;
++		#if AML_MAX_OUTPUT_PIPLINE > 0
++			if (have_output)
++				ret = 0;
++			weston_log("%s, L%d, output have %d ret %d, name %s\n", __FUNCTION__, __LINE__, have_output, ret, lo->name);
++			#endif
++		}
++		#if AML_MAX_OUTPUT_PIPLINE > 0
++		else {
++			weston_log("%s, L%d, have output %s\n", __FUNCTION__, __LINE__, lo->name);
++			have_output = true;
+ 		}
++		#endif
+ 	}
+-
++	weston_log("%s, L%d, return %d\n", __FUNCTION__, __LINE__, ret);
+ 	return ret;
+ }
+ 
+@@ -2317,6 +2332,8 @@ static void drm_get_should_enable_heads_by_priority(struct weston_compositor *co
+ 	bool connected;
+ 	bool forced;
+ 	int priority = 0;
++	bool enabled;
++	bool changed;
+ 	struct wet_compositor *wet = to_wet_compositor(compositor);
+ 	int *priority_array = (int *)zalloc(sizeof(int) * out_size);
+ 
+@@ -2328,14 +2345,34 @@ static void drm_get_should_enable_heads_by_priority(struct weston_compositor *co
+ 	memset(out, 0, sizeof(struct weston_head*) * out_size);
+ 
+ 	while ((head = weston_compositor_iterate_heads(compositor, head))) {
++		struct weston_config_section *section;
++		const char *name = weston_head_get_name(head);
++		section = drm_config_find_controlling_output_section(wet->config, name);
++		if (!section) {
++			weston_log("%s, L%d, the %s output in not in config, IGNORE it\n", __FUNCTION__, __LINE__, name);
++			continue;
++		}
++
++		/* When hdmi disconnect, set head as disconnect after sent head change.
++		   In this case, hdmi drm change handle may be lost,
++		    if signal handle after head state cheanged to disconnect.
++			So add 'enabled' checking to avoid hdmi head be ignoed */
++		enabled = weston_head_is_enabled(head);
+ 		connected = weston_head_is_connected(head);
+ 		forced = drm_head_should_force_enable(wet, head);
+ 		priority = drm_get_head_priority(wet, head);
+-
+-		if (!(connected || forced)) {
++		changed = weston_head_is_device_changed(head);
++	
++		if (!(connected || forced || enabled)) {
+ 			continue;
+ 		}
+ 
++		if (strcmp(name, "HDMI-A-1") == 0 && !(connected || forced) && enabled) {
++			drm_head_disable(head);
++			weston_release_stranded_buffers();
++ 			continue;
++ 		}
++		
+ 		for (i = 0; i < out_size; i++) {
+ 			if (priority > priority_array[i] || out[i] == NULL) {
+ 				for (j = out_size - 1; j > i; j--) {
+@@ -2360,6 +2397,30 @@ static void drm_get_should_enable_heads_by_priority(struct weston_compositor *co
+ 	weston_log("\n");
+ }
+ 
++static void drm_head_changed(struct wet_compositor *wet, struct weston_head *head, bool should_enable)
++{
++	bool connected = false;
++	bool enabled = false;
++	bool changed = false;
++	bool forced = false;
++	connected = weston_head_is_connected(head);
++	enabled = weston_head_is_enabled(head);
++	changed = weston_head_is_device_changed(head);
++	forced = drm_head_should_force_enable(wet, head);
++	weston_log("\n %s %d head:%s connected:%d,enabled:%d,changed:%d forced:%d should_enable:%d\n",
++		__FUNCTION__,__LINE__,head->name, connected, enabled,changed,forced,should_enable);
++	if (((connected || forced) && should_enable) && !enabled) {
++		drm_head_prepare_enable(wet, head);
++	} else if (!((connected || forced) && should_enable) && enabled) {
++		drm_head_disable(head);
++	} else if (enabled && changed) {
++		weston_log("Detected a monitor change on head '%s', "
++				"not bothering to do anything about it.\n",
++				weston_head_get_name(head));
++	}
++	weston_head_reset_device_changed(head);
++}
++
+ 
+ static void
+ drm_heads_changed(struct wl_listener *listener, void *arg)
+@@ -2375,10 +2436,15 @@ drm_heads_changed(struct wl_listener *listener, void *arg)
+ #if AML_MAX_OUTPUT_PIPLINE > 0
+ 	struct weston_head* head_should_enable[AML_MAX_OUTPUT_PIPLINE] = {NULL};
+ 	drm_get_should_enable_heads_by_priority(compositor, head_should_enable, AML_MAX_OUTPUT_PIPLINE);
++	int i;
++	for (i = 0; i < AML_MAX_OUTPUT_PIPLINE; i++) {
++		if ( head_should_enable[i]) {
++			head = head_should_enable[i];
++			drm_head_changed(wet, head, true);
++		}
++	}
+ #endif
+-	/* We need to collect all cloned heads into outputs before enabling the
+-	 * output.
+-	 */
++
+ 	while ((head = weston_compositor_iterate_heads(compositor, head))) {
+ #if AML_MAX_OUTPUT_PIPLINE > 0
+ 		bool should_enable = false;
+@@ -2388,24 +2454,12 @@ drm_heads_changed(struct wl_listener *listener, void *arg)
+ 				should_enable = true;
+ 			}
+ 		}
++		if (should_enable == true)
++			continue;
+ #else
+ 		bool should_enable = true;
+ #endif
+-		connected = weston_head_is_connected(head);
+-		enabled = weston_head_is_enabled(head);
+-		changed = weston_head_is_device_changed(head);
+-		forced = drm_head_should_force_enable(wet, head);
+-
+-		if (((connected || forced) && should_enable) && !enabled) {
+-			drm_head_prepare_enable(wet, head);
+-		} else if (!((connected || forced) && should_enable) && enabled) {
+-			drm_head_disable(head);
+-		} else if (enabled && changed) {
+-			weston_log("Detected a monitor change on head '%s', "
+-				   "not bothering to do anything about it.\n",
+-				   weston_head_get_name(head));
+-		}
+-		weston_head_reset_device_changed(head);
++		drm_head_changed(wet, head, should_enable);
+ 	}
+ 
+ 	if (drm_process_layoutputs(wet) < 0)
+diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
+index 130a42d..f7545fd 100644
+--- a/desktop-shell/shell.c
++++ b/desktop-shell/shell.c
+@@ -1942,7 +1942,7 @@ shell_surface_set_output(struct shell_surface *shsurf,
+ }
+ 
+ static void
+-weston_view_set_initial_position(struct weston_view *view,
++weston_view_set_initial_position(struct shell_surface *shsurf,
+ 				 struct desktop_shell *shell);
+ 
+ static void
+@@ -1960,7 +1960,7 @@ unset_fullscreen(struct shell_surface *shsurf)
+ 		weston_view_set_position(shsurf->view,
+ 					 shsurf->saved_x, shsurf->saved_y);
+ 	else
+-		weston_view_set_initial_position(shsurf->view, shsurf->shell);
++		weston_view_set_initial_position(shsurf, shsurf->shell);
+ 	shsurf->saved_position_valid = false;
+ 
+ 	if (shsurf->saved_rotation_valid) {
+@@ -1983,7 +1983,7 @@ unset_maximized(struct shell_surface *shsurf)
+ 		weston_view_set_position(shsurf->view,
+ 					 shsurf->saved_x, shsurf->saved_y);
+ 	else
+-		weston_view_set_initial_position(shsurf->view, shsurf->shell);
++		weston_view_set_initial_position(shsurf, shsurf->shell);
+ 	shsurf->saved_position_valid = false;
+ 
+ 	if (shsurf->saved_rotation_valid) {
+@@ -2439,7 +2439,7 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
+ 	} else if (shsurf->xwayland.is_set) {
+ 		set_position_from_xwayland(shsurf);
+ 	} else {
+-		weston_view_set_initial_position(shsurf->view, shell);
++		weston_view_set_initial_position(shsurf, shell);
+ 	}
+ 
+ 	/* Surface stacking order, see also activate(). */
+@@ -4182,10 +4182,11 @@ transform_handler(struct wl_listener *listener, void *data)
+ }
+ 
+ static void
+-weston_view_set_initial_position(struct weston_view *view,
++weston_view_set_initial_position(struct shell_surface *shsurf,
+ 				 struct desktop_shell *shell)
+ {
+ 	struct weston_compositor *compositor = shell->compositor;
++	struct weston_view *view = shsurf->view;
+ 	int ix = 0, iy = 0;
+ 	int32_t range_x, range_y;
+ 	int32_t x, y;
+@@ -4208,10 +4209,14 @@ weston_view_set_initial_position(struct weston_view *view,
+ 		}
+ 	}
+ 
+-	wl_list_for_each(output, &compositor->output_list, link) {
+-		if (pixman_region32_contains_point(&output->region, ix, iy, NULL)) {
+-			target_output = output;
+-			break;
++	if(shsurf->fullscreen_output != NULL)
++		target_output = shsurf->fullscreen_output;
++	else{
++		wl_list_for_each(output, &compositor->output_list, link) {
++			if (pixman_region32_contains_point(&output->region, ix, iy, NULL)) {
++				target_output = output;
++				break;
++			}
+ 		}
+ 	}
+ 
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index e9b36e3..a9a7d20 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -135,6 +135,88 @@ drm_backend_create_faked_zpos(struct drm_backend *b)
+ 	}
+ }
+ 
++static bool drm_change_to_dummy_mode( struct weston_compositor *compositor )
++{
++	bool ret = false;
++	bool dummy_conn_found = false;
++	struct weston_head *base;
++	struct drm_head *head;
++	drmModeConnector *conn = NULL;
++	int i;
++	int dummy_index = -1;
++	int rc = -1;
++	int rc1 = -1;
++	int rc2 = -1;
++	int rc3 = -1;
++	struct weston_output* output = NULL;
++	struct drm_output* drm_output = NULL;
++	uint32_t flags = 0;
++	wl_list_for_each(base,
++			 &compositor->head_list, compositor_link) {
++		head = to_drm_head(base);
++		if (head->connector.conn->connector_type == DRM_MODE_CONNECTOR_VIRTUAL) {
++			conn = head->connector.conn;
++			dummy_conn_found = true;
++			weston_log("\n dummy connector exist\n");
++			break;
++		}
++	}
++	if (!dummy_conn_found) {
++		wl_list_for_each(base,
++			 &compositor->head_list, compositor_link) {
++			head = to_drm_head(base);
++			if (head->connector.conn->connector_type == DRM_MODE_CONNECTOR_HDMIA) {
++				conn = head->connector.conn;
++				weston_log("\n dummy connector exist\n");
++				break;
++			}
++		}
++	}
++	if (conn) {
++		for (i = 0; i < conn->count_modes; i ++) {
++			if ( !strcmp(conn->modes[i].name,"dummy_l"))
++			{
++				dummy_index = i;
++				weston_log("\n dummy_l mode exist :%d\n", dummy_index);
++				break;
++			}
++		}
++	}
++	if (dummy_index >= 0)
++	{
++		uint32_t blobId= 0;
++		output = weston_compositor_find_output_by_name(compositor, "HDMI-A-1");
++		drm_output = to_drm_output(output);
++		struct drm_property_info *info = &head->connector.props[WDRM_CONNECTOR_CRTC_ID];
++		drmModeAtomicReq *req = drmModeAtomicAlloc();
++		rc = drmModeAtomicAddProperty(req, head->connector.connector_id,
++					info->prop_id, drm_output->crtc->crtc_id);
++		weston_log("\n %s %d (%d %d %d)\n",__FUNCTION__,__LINE__,
++			head->connector.connector_id, info->prop_id, drm_output->crtc->crtc_id);
++		rc= drmModeCreatePropertyBlob( head->backend->drm.fd, &conn->modes[dummy_index],
++										sizeof(drmModeModeInfo), &blobId );
++		if ( rc == 0 )
++		{
++			if (drm_output) {
++				info = &drm_output->crtc->props_crtc[WDRM_CRTC_MODE_ID];
++				rc1 = drmModeAtomicAddProperty(req, drm_output->crtc->crtc_id,
++										info->prop_id, blobId);
++				info = &drm_output->crtc->props_crtc[WDRM_CRTC_ACTIVE];
++				rc2 = drmModeAtomicAddProperty(req, drm_output->crtc->crtc_id,
++										info->prop_id, 1);
++			}
++			weston_log("\n %s %d (%d %d %d)\n",__FUNCTION__,__LINE__, rc, rc1, rc2);
++			if (rc1 >=0 && rc2 >=0) {
++				flags |= DRM_MODE_ATOMIC_ALLOW_MODESET;
++				rc3 = drmModeAtomicCommit( head->backend->drm.fd, req, flags, 0 );
++				weston_log("\n %s %d commit :%d errno:%d\n",__FUNCTION__,__LINE__, rc3, errno);
++				ret = (rc3==0) ? true : false;
++			}
++		}
++	}
++	return ret;
++}
++
+ static int
+ drm_get_frame_time(struct weston_output *output_base, uint64_t* frametime, 
+ 		uint64_t* refresh_interval)
+@@ -1060,9 +1142,9 @@ create_sprites(struct drm_backend *b)
+ 			strerror(errno));
+ 		return;
+ 	}
++	for (i = kplane_res->count_planes; i >0; i--) {
++		kplane = drmModeGetPlane(b->drm.fd, kplane_res->planes[i-1]);
+ 
+-	for (i = 0; i < kplane_res->count_planes; i++) {
+-		kplane = drmModeGetPlane(b->drm.fd, kplane_res->planes[i]);
+ 		if (!kplane)
+ 			continue;
+ 
+@@ -1894,6 +1976,18 @@ static int drm_output_switch_mode_helper(output_ctx ctx, drm_helper_mode* mode)
+ 	//hack: use weston_mode's flags as drm_mode's flags.
+ 	m.flags = mode->flags;
+ 	m.aspect_ratio = 0;
++	weston_log("\n  %s %d, (%d %d %d %d)\n", 
++		__FUNCTION__,__LINE__, m.width, m.height, m.refresh, mode->flags);
++	if (mode->width == 720 && mode->height == 480 && mode->refresh == 56)
++	{
++		if (!drm_change_to_dummy_mode(((struct weston_output *)ctx)->compositor)) {
++			weston_log("\n  %s %d, set dummy mode and return \n", 
++							__FUNCTION__,__LINE__);
++			ret = -1;
++		}
++		return ret;
++	}
++
+ 	for (ratio = 0;  ratio >= ARRAY_LENGTH(aspect_ratio_as_string); ratio++) {
+ 		if (0 == strcmp(mode->aspect_ratio, aspect_ratio_as_string[ratio])) {
+ 			m.aspect_ratio = ratio;
+@@ -2004,11 +2098,12 @@ drm_output_enable(struct weston_output *base)
+ 	wl_list_for_each(plane, &b->plane_list, link) {
+ 		if (!drm_plane_is_available(plane, output))
+ 			continue;
+-		if (plane->is_video_plane)
++		if (plane->is_video_plane) {
+ 			plane->video_plane = output->video_plane_count++;
++			weston_log("drm_output_enable video plane for current output id:%d is_video_plane:%d video plane:%d \n",
++			plane->plane_id, plane->is_video_plane, plane->video_plane);
++		}
+ 	}
+-	weston_log("drm_output_enable plane id:%d is_video_plane:%d video plane:%d \n",
+-	plane->plane_id, plane->is_video_plane, plane->video_plane);
+ 
+ #ifdef ENABLE_DRM_HELP
+ 	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
+@@ -2858,12 +2953,14 @@ session_notify(struct wl_listener *listener, void *data)
+ 
+ 	if (compositor->session_active) {
+ 		weston_log("activating session\n");
++		drmSetMaster(b->drm.fd);
+ 		weston_compositor_wake(compositor);
+ 		weston_compositor_damage_all(compositor);
+ 		b->state_invalid = true;
+ 		udev_input_enable(&b->input);
+ 	} else {
+ 		weston_log("deactivating session\n");
++		drm_change_to_dummy_mode(b->compositor);
+ 		udev_input_disable(&b->input);
+ 
+ 		weston_compositor_offscreen(compositor);
+@@ -2894,6 +2991,7 @@ session_notify(struct wl_listener *listener, void *data)
+ 			drmModeSetPlane(b->drm.fd, plane->plane_id, crtc->crtc_id,
+ 					0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+ 		}
++		drmDropMaster(b->drm.fd);
+ 	}
+ }
+ 
+diff --git a/libweston/weston-launch.c b/libweston/weston-launch.c
+index a202572..523a87d 100644
+--- a/libweston/weston-launch.c
++++ b/libweston/weston-launch.c
+@@ -455,7 +455,7 @@ handle_socket_msg(struct weston_launch *wl)
+ 		break;
+ 	case WESTON_LAUNCHER_DEACTIVATE_DONE:
+ 		close_input_fds(wl);
+-		drmDropMaster(wl->drm_fd);
++		//drmDropMaster(wl->drm_fd);
+ 		ioctl(wl->tty, VT_RELDISP, 1);
+ 		break;
+ 	}
+@@ -568,7 +568,7 @@ handle_signal(struct weston_launch *wl)
+ 		break;
+ 	case SIGUSR2:
+ 		ioctl(wl->tty, VT_RELDISP, VT_ACKACQ);
+-		drmSetMaster(wl->drm_fd);
++		//drmSetMaster(wl->drm_fd);
+ 		send_reply(wl, WESTON_LAUNCHER_ACTIVATE);
+ 		break;
+ 	default:
