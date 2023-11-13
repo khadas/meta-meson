@@ -15,7 +15,7 @@ RDEPENDS:${PN} = "aml-audio-service c-ares expat fdk-aac freetype glib-2.0 \
     libgstapp-1.0 libgstaudio-1.0 libgstvideo-1.0 libicui18n libicuuc libjpeg-turbo \
     libnghttp2 libnl libnl-genl libpng libssl libstdc++ libunwind libwebp \
     optee-userspace openjpeg playready tremor westeros \
-    wpeframework wpeframework-interfaces"
+    wpeframework wpeframework-interfaces aml-netflix-esn"
 
 
 FILES:${PN}-dev = "${includedir}/"
