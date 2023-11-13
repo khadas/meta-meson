@@ -1,0 +1,49 @@
+From 614d6a47e42e3f8cea3f58adc996bbb15079eba5 Mon Sep 17 00:00:00 2001
+From: "sheng.liu" <sheng.liu@amlogic.com>
+Date: Mon, 13 Nov 2023 06:32:53 +0000
+Subject: [PATCH] gstreamer1.0-plugins-base: rm video-convert and video-scale
+ element [1/1]
+
+PD#SWPL-144105
+
+Problem:
+Resolution change error because of video-convert element
+
+Solution:
+rm video-convert and video-scale element
+
+Verify:
+AH212
+---
+ gst/playback/gstplaysink.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/gst/playback/gstplaysink.c b/gst/playback/gstplaysink.c
+index 9b4c38d..0fc26b3 100644
+--- a/gst/playback/gstplaysink.c
++++ b/gst/playback/gstplaysink.c
+@@ -44,7 +44,8 @@ GST_DEBUG_CATEGORY_STATIC (gst_play_sink_debug);
+ #define VOLUME_MAX_DOUBLE 10.0
+ 
+ #define DEFAULT_FLAGS             GST_PLAY_FLAG_AUDIO | GST_PLAY_FLAG_VIDEO | GST_PLAY_FLAG_TEXT | \
+-                                  GST_PLAY_FLAG_SOFT_VOLUME | GST_PLAY_FLAG_SOFT_COLORBALANCE
++                                  GST_PLAY_FLAG_SOFT_VOLUME | GST_PLAY_FLAG_SOFT_COLORBALANCE | \
++                                  GST_PLAY_FLAG_NATIVE_VIDEO
+ 
+ #define GST_PLAY_CHAIN(c) ((GstPlayChain *)(c))
+ 
+@@ -3882,8 +3883,10 @@ gst_play_sink_set_flags (GstPlaySink * playsink, GstPlayFlags flags)
+ {
+   g_return_val_if_fail (GST_IS_PLAY_SINK (playsink), FALSE);
+ 
++  // Add GST_PLAY_FLAG_NATIVE_VIDEO
++  // Because Amlogic UGMP Pipeline do not need video-convert and video-scale
+   GST_OBJECT_LOCK (playsink);
+-  playsink->flags = flags;
++  playsink->flags = flags | GST_PLAY_FLAG_NATIVE_VIDEO;
+   GST_OBJECT_UNLOCK (playsink);
+ 
+   return TRUE;
+-- 
+2.25.1
+
