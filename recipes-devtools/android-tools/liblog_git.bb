@@ -13,6 +13,7 @@ PV = "${SRCPV}"
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_commonlib;protocol=${AML_GIT_PROTOCOL};branch=master;"
 #SRC_URI += "file://liblog.patch"
 SRC_URI += "file://LICENSE-2.0"
+SRC_URI += "file://logcat.conf"
 
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
@@ -24,6 +25,8 @@ EXTRA_OEMAKE = "OUT_DIR=${B} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} D
 
 #do_package_qa[noexec] = "1"
 
+EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-logcat', 'USE_FAKE_DEVICE=y', '', d)}"
+
 do_compile(){
     ${MAKE} ${EXTRA_OEMAKE} -C ${S}
 }
@@ -33,9 +36,14 @@ do_install(){
     install -d ${D}${includedir}
     install -m 0644 ${B}/liblog*.so* ${D}${libdir}
     cp -ra ${S}/include/* ${D}${includedir}
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'disable-logcat', "true", "false", d)}; then
+        install -d ${D}${sysconfdir}
+	install -m 755 ${WORKDIR}/logcat.conf ${D}${sysconfdir}
+    fi
 }
 
 FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-logcat', '${sysconfdir}/*', '', d)}"
 FILES:${PN}-dev = "${includedir}/* "
 
 INSANE_SKIP:${PN}-dev = "dev-so"
