@@ -172,3 +172,4 @@ EXTERNALSRC_pn-disney-plugin = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disne
 EXTERNALSRC_pn-disney-basic-tests = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus')) else ''}"
 EXTERNALSRC_pn-disney-shield-agent = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus')) else ''}"
 EXTERNALSRC_pn-disney-shield-extensions = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus')) else ''}"
+EXTERNALSRC_pn-meson-mode-policy = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/mode_policy/libs/modepolicy' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/mode_policy/libs/modepolicy')) else ''}"
