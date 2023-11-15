@@ -85,3 +85,6 @@ DISTRO_FEATURES:append = " UI_720P"
 
 # For nrdp6
 DISTRO_FEATURES:append = " tv-fhd-model"
+
+# Misc
+DEVICE_PROPERTY_PERSIST_PMODE_BYPASS_DIM = "1"

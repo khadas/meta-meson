@@ -26,6 +26,8 @@ SRC_URI = "git://github.com/sbabic/swupdate.git;protocol=https \
         file://0001-network_initializer-move-cleanup_files-before-going-.patch \
         file://0001-amlogic-update-based-on-2021.04.patch \
         file://0002-fix-compile-warnings.patch \
+        file://0003-add-uboot-update-backup-write-for-nand.patch \
+        file://0003-add-emmc-kernel5.15-support.patch \
         file://defconfig \
         file://hwrevision \
         file://sw-versions \
@@ -253,6 +255,7 @@ do_install () {
     # config boardname
     sed 's@boardname@${MACHINE_ARCH}@' -i ${D}/etc/hwrevision
     sed 's@_lib32_@_@' -i ${D}/etc/hwrevision
+    sed 's@_k5.15@@' -i ${D}/etc/hwrevision
 }
 
 SYSTEMD_PACKAGES = "${PN} ${PN}-progress"

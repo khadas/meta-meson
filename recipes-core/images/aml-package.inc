@@ -179,7 +179,13 @@ do_aml_pack() {
 
         sed 's@boardname@${MACHINE_ARCH}@' -i ${DEPLOY_DIR_IMAGE}/sw-description
         sed 's@_lib32_@_@' -i ${DEPLOY_DIR_IMAGE}/sw-description
-
+        sed 's@_k5.15@@' -i ${DEPLOY_DIR_IMAGE}/sw-description
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'true', 'false', d)}; then
+            if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'false', 'true', d)}; then
+                sed 's@bootloader@bootloader_up@' -i ${DEPLOY_DIR_IMAGE}/sw-description
+                sed 's@value = "1";@value = "2";@' -i ${DEPLOY_DIR_IMAGE}/sw-description
+            fi
+        fi
         ${DEPLOY_DIR_IMAGE}/sw_package_create.sh ${DEPLOY_DIR_IMAGE}
     fi
 

@@ -104,6 +104,9 @@ if [[ ! -z "$SWUPDATE_FILE_PATH" ]]; then
         urlmisc clean
         sync
         sleep 2
+        if [ -b /dev/bootloader_up ]; then
+            uenv set write_boot 1
+        fi
         reboot
         echo "swupdate reboot now!"
     fi
@@ -271,6 +274,9 @@ else
             urlmisc clean
             sync
             sleep 2
+            if [ -b /dev/bootloader_up ]; then
+                uenv set write_boot 1
+            fi
             reboot
             echo "swupdate reboot now!"
         fi
@@ -279,6 +285,6 @@ else
         #execute swupdate for clear misc, no need into recovery after reboot
         swupdate
         urlmisc clean
-        umount /run/media/$name
+        #umount /run/media/$name
     fi
 fi

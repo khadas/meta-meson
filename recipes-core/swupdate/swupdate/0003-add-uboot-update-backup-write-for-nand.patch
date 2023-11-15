@@ -1,0 +1,143 @@
+From c4df44eadb50a46705d1dcc76f19577554284df1 Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Thu, 12 Oct 2023 13:48:58 +0800
+Subject: [PATCH] add uboot update backup write for nand
+
+Change-Id: Ibed28d42b914c8873efbd8f18c0710508f9e6726
+---
+ handlers/flash_handler.c | 28 +++++++++++++++++++++++-----
+ include/swupdate.h       |  2 ++
+ parser/parser.c          | 15 +++++++++++++++
+ 3 files changed, 40 insertions(+), 5 deletions(-)
+
+diff --git a/handlers/flash_handler.c b/handlers/flash_handler.c
+index 9585abf..70c6812 100644
+--- a/handlers/flash_handler.c
++++ b/handlers/flash_handler.c
+@@ -81,7 +81,7 @@ static void erase_buffer(void *buffer, size_t size)
+ 		memset(buffer, kEraseByte, size);
+ }
+ 
+-static int flash_write_nand(int mtdnum, struct img_type *img)
++static int flash_write_nand(int mtdnum, long long mtdoffset, struct img_type *img)
+ {
+ 	char mtd_device[LINESIZE];
+ 	struct flash_description *flash = get_flash_info();
+@@ -94,7 +94,7 @@ static int flash_write_nand(int mtdnum, struct img_type *img)
+ 	unsigned char *filebuf = NULL;
+ 	size_t filebuf_max = 0;
+ 	size_t filebuf_len = 0;
+-	long long mtdoffset = img->seek;
++	//long long mtdoffset = img->seek;
+ 	int ifd = img->fdin;
+ 	int fd = -1;
+ 	bool failed = true;
+@@ -107,6 +107,10 @@ static int flash_write_nand(int mtdnum, struct img_type *img)
+ 	if (!img->size)
+ 		return 0;
+ 
++	TRACE("img->offset: %d", img->offset);
++	TRACE("img->size: %ld", img->size);
++	TRACE("mtdoffset: 0x%0x",  mtdoffset);
++
+ 	pagelen = mtd->min_io_size;
+ 	imglen = img->size;
+ 	snprintf(mtd_device, sizeof(mtd_device), "/dev/mtd%d", mtdnum);
+@@ -122,12 +126,18 @@ static int flash_write_nand(int mtdnum, struct img_type *img)
+ 		return -EINVAL;
+ 	}
+ 
+-	if(flash_erase_sector(mtdnum, img->offset, img->size)) {
++	if(flash_erase_sector(mtdnum, img->offset+mtdoffset, img->size)) {
+ 		ERROR("I cannot erasing %s",
+ 			img->device);
+ 		return -1;
+ 	}
+ 
++	ret = lseek(ifd, 0, SEEK_SET);
++	if (ret < 0) {
++		TRACE("lseek failed!\n");
++		return -1;
++	}
++
+ 	if ((fd = open(mtd_device, O_RDWR)) < 0) {
+ 		ERROR( "%s: %s: %s", __func__, mtd_device, strerror(errno));
+ 		return -ENODEV;
+@@ -330,11 +340,17 @@ static int flash_write_nor(int mtdnum, struct img_type *img)
+ static int flash_write_image(int mtdnum, struct img_type *img)
+ {
+ 	struct flash_description *flash = get_flash_info();
++	int ret = 1, i = 0;
+ 
+ 	if (!isNand(flash, mtdnum))
+ 		return flash_write_nor(mtdnum, img);
+-	else
+-		return flash_write_nand(mtdnum, img);
++	else {
++		do {
++			ret &= flash_write_nand(mtdnum, img->offsetaddress*i, img);
++			i++;
++		} while (i < img->backuptimes);
++		return ret;
++	}
+ }
+ 
+ static int flash_write_boot(struct img_type *img) {
+@@ -396,6 +412,7 @@ static int install_flash_image(struct img_type *img,
+ 		return -1;
+ 	}
+ 
++#if 0
+     if (strcmp(img->fname, "u-boot.bin.usb.bl2")==0) {
+        if(flash_erase_offset_size(mtdnum, img->seek, BL2_SIZE)) {
+            ERROR("I cannot erasing %s",
+@@ -415,6 +432,7 @@ static int install_flash_image(struct img_type *img,
+            return -1;
+        }
+     }
++#endif
+ 
+ 	TRACE("Copying %s into /dev/mtd%d", img->fname, mtdnum);
+ 	if (flash_write_image(mtdnum, img)) {
+diff --git a/include/swupdate.h b/include/swupdate.h
+index 93672b8..917e368 100644
+--- a/include/swupdate.h
++++ b/include/swupdate.h
+@@ -77,6 +77,8 @@ struct img_type {
+ 	char extract_file[MAX_IMAGE_FNAME];
+ 	char filesystem[MAX_IMAGE_FNAME];
+ 	unsigned long long seek;
++	unsigned long long offsetaddress;  /* write image offset address */
++	int backuptimes; /* backup image times */
+ 	skip_t skip;
+ 	int provided;
+ 	int compressed;
+diff --git a/parser/parser.c b/parser/parser.c
+index 7d62cb6..d21f8dd 100644
+--- a/parser/parser.c
++++ b/parser/parser.c
+@@ -412,6 +412,21 @@ static int parse_common_attributes(parsertype p, void *elem, struct img_type *im
+ 		return -1;
+ 	}
+ 
++	seek_str[0] = '\0';
++	GET_FIELD_STRING(p, elem, "offsetaddress", seek_str);
++	image->offsetaddress = ustrtoull(seek_str, 0);
++	if (errno){
++		ERROR("offsetaddress argument: ustrtoull failed");
++		return -1;
++	}
++
++	get_field(p, elem, "backuptimes", &image->backuptimes);
++
++	if (image->backuptimes != 0) {
++		TRACE("offsetaddress: 0x%0x", image->offsetaddress);
++		TRACE("backuptimes: %d", image->backuptimes);
++	}
++
+ 	if ((compressed = get_field_string(p, elem, "compressed")) != NULL) {
+ 		if (!strcmp(compressed, "zlib")) {
+ 			image->compressed = COMPRESSED_ZLIB;
+-- 
+2.29.0
+

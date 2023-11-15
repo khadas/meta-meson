@@ -1,3 +1,3 @@
-KERNEL=="mmcblk0p13", SYMLINK+="vendor"
-KERNEL=="mmcblk0p12", SYMLINK+="factory"
-KERNEL=="mmcblk0p11", SYMLINK+="tee"
+KERNEL=="mmcblk0p14", SYMLINK+="vendor"
+KERNEL=="mmcblk0p13", SYMLINK+="factory"
+KERNEL=="mmcblk0p12", SYMLINK+="tee"

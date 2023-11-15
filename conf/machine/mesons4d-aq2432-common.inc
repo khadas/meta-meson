@@ -26,7 +26,7 @@ DISTRO_FEATURES:remove = " bluetooth bluez5 "
 
 DISTRO_FEATURES:append = " UI_720P low-memory"
 DISTRO_FEATURES:append = " appmanager aamp"
-DISTRO_FEATURES:append = " ArkaDvb use-egl arka-project-aml"
+DISTRO_FEATURES:append = " arka use-egl arka-project-aml"
 DISTRO_FEATURES:append = " webkitbrowser"
 DISTRO_FEATURES:append = " fota-upgrade swupdate-download"
 DISTRO_FEATURES:append = " remove-test-files"

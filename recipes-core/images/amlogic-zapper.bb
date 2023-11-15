@@ -81,6 +81,7 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-dvb-ota', bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', 'aml-dvb-ota-dtvkit', 'aml-dvb-ota-dtvkit-prebuilt', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-pqserver', 'aml-pqserver', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-pqserver', bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', '', 'vendor-files', d), '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtvtest', 'aml-dtv-test', '', d)} \
 "
 
 

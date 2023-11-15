@@ -51,5 +51,83 @@
 
 
   "__comment":"/*msync nonms12 tuning part(dcv lib) */",
-  "vendor.media.audio.hal.nonms12.tunnel.bypass" : -20
+  "vendor.media.audio.hal.nonms12.tunnel.bypass" : -20,
+  "__comment":"/*end of msync nonms12 tuning part */",
+
+
+  "__comment":"/*dtv NONMS12 tuning part(dcv lib) */",
+  "__comment":"//input format",
+  "vendor.media.audio.hal.nonms12.dtv.pcm" : 0,
+  "vendor.media.audio.hal.nonms12.dtv.dd" : 0,
+  "vendor.media.audio.hal.nonms12.dtv.ddp" : 0,
+
+
+  "__comment":"//port speaker",
+  "vendor.media.audio.hal.nonms12.tv.dtv.speaker" : 0,
+  "vendor.media.audio.hal.nonms12.stb.dtv.speaker" : 60,
+
+
+  "__comment":"//port A2DP",
+  "vendor.media.audio.hal.nonms12.tv.dtv.mix.a2dp" : 120,
+
+
+  "__comment":"//port arc",
+  "vendor.media.audio.hal.nonms12.dtv.arc.pcm" : 0,
+  "vendor.media.audio.hal.nonms12.dtv.arc.dd" : 60,
+  "vendor.media.audio.hal.nonms12.dtv.arc.ddp" : 90,
+
+
+  "__comment":"//passthrough arc",
+  "vendor.media.audio.hal.nonms12.dtv.pt.arc.dd" : 0,
+  "vendor.media.audio.hal.nonms12.dtv.pt.arc.ddp" : 0,
+
+
+  "__comment":"//STB_box hdmi out",
+  "vendor.media.audio.hal.nonms12.dtv.hdmi.pcm" : 85,
+  "vendor.media.audio.hal.nonms12.dtv.hdmi.dd" : 0,
+  "vendor.media.audio.hal.nonms12.dtv.hdmi.ddp" : 100,
+  "__comment":"/*end dtv NONMS12 tuning part */",
+
+
+  "__comment":"/*dtv MS12 tuning part */",
+  "__comment":"//input format",
+  "vendor.media.audio.hal.ms12.dtv.pcm" : 0,
+  "vendor.media.audio.hal.ms12.dtv.dd" : 120,
+  "vendor.media.audio.hal.ms12.dtv.ddp" : 150,
+  "vendor.media.audio.hal.ms12.dtv.ac4" : 150,
+  "vendor.media.audio.hal.ms12.dtv.aac" : 10,
+
+
+  "__comment":"//port speaker",
+  "vendor.media.audio.hal.ms12.tv.dtv.speaker" : 0,
+  "vendor.media.audio.hal.ms12.stb.dtv.speaker" : -55,
+
+
+  "__comment":"//port A2DP",
+  "vendor.media.audio.hal.ms12.tv.dtv.mix.a2dp" : 200,
+
+
+  "__comment":"//port arc",
+  "vendor.media.audio.hal.ms12.dtv.arc.pcm" : 0,
+  "vendor.media.audio.hal.ms12.dtv.arc.dd" : 100,
+  "vendor.media.audio.hal.ms12.dtv.arc.ddp" : 120,
+  "vendor.media.audio.hal.ms12.dtv.arc.mat" : 120,
+
+
+  "__comment":"//passthrough arc",
+  "vendor.media.audio.hal.ms12.dtv.pt.arc.dd" : 0,
+  "vendor.media.audio.hal.ms12.dtv.pt.arc.ddp" : 0,
+
+
+  "__comment":"//STB_box hdmi out",
+  "vendor.media.audio.hal.ms12.dtv.hdmi.pcm" : -55,
+  "vendor.media.audio.hal.ms12.dtv.hdmi.dd" : 0,
+  "vendor.media.audio.hal.ms12.dtv.hdmi.ddp" : 0,
+  "vendor.media.audio.hal.ms12.dtv.hdmi.mat" : -40,
+
+
+  "__comment":"//STB_box passthrough hdmi",
+  "vendor.media.audio.hal.ms12.dtv.passthrough.dd" : 0,
+  "vendor.media.audio.hal.ms12.dtv.passthrough.ddp" : -100,
+  "__comment":"/*end dtv MS12 tuning part */"
 }

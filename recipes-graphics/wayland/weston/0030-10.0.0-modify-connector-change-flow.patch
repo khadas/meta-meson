@@ -1,0 +1,115 @@
+diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
+index 752c491..ae8e78b 100644
+--- a/libweston/backend-drm/drm-internal.h
++++ b/libweston/backend-drm/drm-internal.h
+@@ -538,6 +538,8 @@ struct drm_crtc {
+ 
+ 	/* Holds the properties for the CRTC */
+ 	struct drm_property_info props_crtc[WDRM_CRTC__COUNT];
++	bool output_change;
++	struct drm_output *disable_output;
+ };
+ 
+ struct drm_output {
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index c9b32ab..5a460db 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -224,9 +224,10 @@ drm_plane_is_available(struct drm_plane *plane, struct drm_output *output)
+ 		return false;
+ 
+ 	/* The plane is still active on another output. */
+-	if (plane->state_cur->output && plane->state_cur->output != output)
+-		return false;
+-
++	if (plane->state_cur->output && plane->state_cur->output != output) {
++		plane->state_cur->output = output;
++		//return false;
++	}
+ 	/* Check whether the plane can be used with this CRTC; possible_crtcs
+ 	 * is a bitmask of CRTC indices (pipe), rather than CRTC object ID. */
+ 	return !!(plane->possible_crtcs & (1 << output->crtc->pipe));
+@@ -2084,13 +2085,8 @@ drm_output_disable(struct weston_output *base)
+ 	struct drm_output *output = to_drm_output(base);
+ 
+ 	assert(!output->virtual);
+-
+-	if (output->page_flip_pending || output->atomic_complete_pending) {
+-		output->disable_pending = true;
+-		return -1;
+-	}
+-
+-	weston_log("Disabling output %s\n", output->base.name);
++	weston_log("Disabling output %s (page_flip_pending:%d  atomic_complete_pending:%d output->base.enabled:%d)\n",
++		output->base.name, output->page_flip_pending, output->atomic_complete_pending, output->base.enabled );
+ 
+ #ifdef ENABLE_DRM_HELP
+ 	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
+@@ -2102,6 +2098,12 @@ drm_output_disable(struct weston_output *base)
+ 		}
+ 	}
+ #endif
++	struct drm_crtc *crtc = output->crtc;
++	if (output->page_flip_pending || output->atomic_complete_pending) {
++		weston_log("\n %s %d output_change:%d\n", __FUNCTION__,__LINE__, crtc->output_change );
++		crtc->output_change = true;
++		crtc->disable_output = output;
++	}
+ 
+ 	if (output->base.enabled)
+ 		drm_output_deinit(&output->base);
+diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
+index c0a447c..6466a2a 100755
+--- a/libweston/backend-drm/kms.c
++++ b/libweston/backend-drm/kms.c
+@@ -1415,20 +1415,26 @@ atomic_flip_handler(int fd, unsigned int frame, unsigned int sec,
+ 
+ 	output = crtc->output;
+ 
++	if (crtc->output_change) {
++		output = crtc->disable_output;
++	}
++
+ 	/* During the initial modeset, we can disable CRTCs which we don't
+ 	 * actually handle during normal operation; this will give us events
+ 	 * for unknown outputs. Ignore them. */
+-	if (!output || !output->base.enabled)
++	if ( (!output || !output->base.enabled) && !crtc->output_change)
+ 		return;
+ 
+ 	drm_output_update_msc(output, frame);
+ 
+-	drm_debug(b, "[atomic][CRTC:%u] flip processing started\n", crtc_id);
++	drm_debug(b, "[atomic][CRTC:%u] flip processing started output_change:%d\n",
++		crtc_id,crtc->output_change );
+ 	assert(b->atomic_modeset);
+ 	assert(output->atomic_complete_pending);
+ 	output->atomic_complete_pending = false;
+ 
+ 	drm_output_update_complete(output, flags, sec, usec);
++	crtc->output_change = false;
+ 	drm_debug(b, "[atomic][CRTC:%u] flip processing completed\n", crtc_id);
+ 	struct timespec repaint_start = b->compositor->last_repaint_start;
+ 	uint64_t repaint_start_us = ((uint64_t)(repaint_start.tv_sec))*1000000LL + ((uint64_t)repaint_start.tv_nsec)/1000; 
+diff --git a/libweston/backend-drm/state-propose.c b/libweston/backend-drm/state-propose.c
+index 6d892d6..84c185c 100644
+--- a/libweston/backend-drm/state-propose.c
++++ b/libweston/backend-drm/state-propose.c
+@@ -891,7 +891,7 @@ drm_output_propose_state(struct weston_output *output_base,
+ 			return NULL;
+ 		}
+ 
+-		if (scanout_fb->width != output_base->current_mode->width ||
++		/*if (scanout_fb->width != output_base->current_mode->width ||
+ 		    scanout_fb->height != output_base->current_mode->height) {
+ 			drm_debug(b, "\t\t[state] cannot propose mixed mode "
+ 			             "for output %s (%lu): previous fb has "
+@@ -900,7 +900,7 @@ drm_output_propose_state(struct weston_output *output_base,
+ 				  (unsigned long) output->base.id);
+ 			drm_output_state_free(state);
+ 			return NULL;
+-		}
++		}*/
+ 
+ 		scanout_state = drm_plane_state_duplicate(state,
+ 							  plane->state_cur);

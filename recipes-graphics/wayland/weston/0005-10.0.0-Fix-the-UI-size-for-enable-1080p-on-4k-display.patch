@@ -140,8 +140,8 @@ index 4278770..9e6e491 100644
  
 +#ifdef MESON_DRM_FIX_UI_SIZE
 +	if (output->base.current_mode && output->current_mode_need_restore) {
-+		output->base.current_mode->width = output->display_size.width;
-+		output->base.current_mode->height = output->display_size.height;
++		output->base.current_mode->width = b->fixed_ui_size.width;
++		output->base.current_mode->height = b->fixed_ui_size.height;
 +		output->current_mode_need_restore = false;
 +	}
 +#endif

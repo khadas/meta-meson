@@ -164,12 +164,14 @@ RDEPENDS:packagegroup-amlogic-baserootfs = "\
     tzcode \
     format-partitions \
     meson-display \
+    rsync \
     "
 
 RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'amazon-prebuilt-pkg', 'amazon-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'youtube-prebuilt-pkg', 'youtube-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'netflix-prebuilt-pkg', 'netflix-prebuilt-pkg', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dab-adapter-prebuilt-pkg', 'dab-adapter-prebuilt-pkg', '', d)} \
     "
 
 #For Nagra CAS
@@ -189,9 +191,10 @@ RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'gst-plugin-venc', bb.utils.contains('DISTRO_FEATURES', 'aml-libvphevcodec', 'gst-plugin-venc-h265', '', d), '', d)} \
    "
 
-#For AsperitasDvb
+#Arka DVB App
 RDEPENDS:packagegroup-amlogic-baserootfs += " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'AsperitasDvb', 'webkitbrowser-plugin lighttpd asperitas-dvb', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'arka', 'arka', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'arka-prebuilt-pkg', 'arka-prebuilt-pkg', '', d)} \
     "
 
 #Add ubifs tools

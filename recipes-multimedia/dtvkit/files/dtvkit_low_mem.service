@@ -9,11 +9,11 @@ ExecStart=/usr/bin/dtvkitserver
 ExecStop=/bin/kill $MAINPID
 KillMode=mixed
 
-ExecStartPre=/bin/systemctl set-environment CAS_TYPE=nagra
-ExecStartPre=/bin/systemctl set-environment NAGRA_CAS_EMI=0x4020
-ExecStartPre=/bin/systemctl set-environment LOW_MEM_PLATFORM=1
-ExecStartPre=/bin/systemctl set-environment DTVKIT_EXT=/usr/lib/libdtvkit_ota_monitor.so
-ExecStartPre=/bin/systemctl set-environment IRDETO_REGIONAL_FILTER_ENABLE=1
+Environment="CAS_TYPE=nagra"
+Environment="NAGRA_CAS_EMI=0x4020"
+Environment="LOW_MEM_PLATFORM=1"
+Environment="DTVKIT_EXT=/usr/lib/libdtvkit_ota_monitor.so"
+Environment="IRDETO_REGIONAL_FILTER_ENABLE=1"
 
 [Install]
 WantedBy=multi-user.target

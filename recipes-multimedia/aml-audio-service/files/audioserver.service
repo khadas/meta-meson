@@ -11,7 +11,7 @@ Environment="vendor_media_audiohal_adswitch=1"
 ExecStartPre=-/bin/bash -c "mkfifo /tmp/paudiofifo;chmod 666 /tmp/paudiofifo"
 ExecStartPre=-/bin/bash -c "mkdir -p /tmp/ds;touch /tmp/dms12.lock; /usr/bin/dolby_fw_dms12 /usr/lib/libdolbyms12.so /tmp/ds/0x4d_0x5331_0x32.so"
 ExecStart=/usr/bin/audio_server
-ExecStartPost=-/bin/bash -c "rm /tmp/dms12.lock;chmod 0666 /sys/class/amstream/reset_audio_port;chmod 0666 /sys/class/tsync/event"
+ExecStartPost=-/bin/bash -c "rm /tmp/dms12.lock"
 
 [Install]
 WantedBy=multi-user.target

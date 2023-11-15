@@ -1,0 +1,28 @@
+#!/bin/sh
+
+export LOW_MEM_PLATFORM=1
+
+# Starts dtvkit service.
+start() {
+	printf "Starting dtv test service: \n"
+	/usr/bin/aml_dtv_testserver &
+}
+
+stop() {
+	printf "Stopping dtv test service: \n"
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  *)
+	echo "Usage: $0 {start|stop}"
+	exit 1
+esac
+
+exit $?
+

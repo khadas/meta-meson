@@ -28,7 +28,10 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
            file://0027-10.0.0-add-debug-tool.patch \
            file://0028-10.0.0-add-pts-check-flow.patch \
            file://0029-10.0.0-optimize-video-frame-drop-issue.patch \
+           file://0030-10.0.0-modify-connector-change-flow.patch \
            "
+
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'arka', 'file://0031-10.0.0-add-arka-dvb-client.patch', '', d)}"
 
 SRC_URI[md5sum] = "bc4abe2ee6904a4890a0c641c6257f91"
 SRC_URI[sha256sum] = "5c23964112b90238bed39e5dd1e41cd71a79398813cdc3bbb15a9fdc94e547ae"
@@ -135,6 +138,7 @@ PACKAGES += "${@bb.utils.contains('PACKAGECONFIG', 'xwayland', '${PN}-xwayland',
 
 FILES:${PN}-dev += "${libdir}/${BPN}/libexec_weston.so"
 FILES:${PN} = "${bindir}/weston ${bindir}/weston-terminal ${bindir}/weston-info ${bindir}/weston-launch ${bindir}/wcap-decode ${libexecdir} ${libdir}/${BPN}/*.so* ${datadir}"
+FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'arka', '${bindir}/weston-arkadvb', '', d)}"
 
 FILES:libweston-${WESTON_MAJOR_VERSION} = "${libdir}/lib*${SOLIBS} ${libdir}/libweston-${WESTON_MAJOR_VERSION}/*.so"
 SUMMARY:libweston-${WESTON_MAJOR_VERSION} = "Helper library for implementing 'wayland window managers'."

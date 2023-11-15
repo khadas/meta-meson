@@ -23,13 +23,17 @@ IRDETO_PATH:s4 = "s905c3"
 IRDETO_PATH:aq2432 = "s805c3"
 IRDETO_PATH:bf201 = "s805c1a"
 
+REE_ONLY = "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-ree-only', 'true', 'false', d)}"
+
 do_install() {
     install -d -m 0755 ${D}/usr/lib
     install -d -m 0755 ${D}/lib/optee_armtz
     install -d -m 0755 ${D}/usr/include
     install -D -m 0644 ${S}/lib/ca/libirdetoca.so ${D}/usr/lib
-    install -D -m 0644 ${S}/lib/ta/${IRDETO_PATH}/b64fd559-658d-48a4-bbc7-b95d8663f457.ta ${D}/lib/optee_armtz
-    install -D -m 0644 ${S}/lib/ta/${IRDETO_PATH}/1d0f7170-3209-481c-b4ad-8fca95113b71.ta ${D}/lib/optee_armtz
+    if [ "${REE_ONLY}" = "false" ]; then
+        install -D -m 0644 ${S}/lib/ta/${IRDETO_PATH}/b64fd559-658d-48a4-bbc7-b95d8663f457.ta ${D}/lib/optee_armtz
+        install -D -m 0644 ${S}/lib/ta/${IRDETO_PATH}/1d0f7170-3209-481c-b4ad-8fca95113b71.ta ${D}/lib/optee_armtz
+    fi
     install -D -m 0644 ${S}/include/*.h ${D}/usr/include
 }
 

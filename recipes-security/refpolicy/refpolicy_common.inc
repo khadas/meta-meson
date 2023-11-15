@@ -156,6 +156,7 @@ EXTRA_OEMAKE += "NAME=${POLICY_NAME} \
 	MCS_CATS=${POLICY_MCS_CATS}"
 
 EXTRA_OEMAKE += "tc_usrbindir=${STAGING_BINDIR_NATIVE}"
+EXTRA_OEMAKE += "tc_sbindir=${STAGING_DIR_NATIVE}/sbin"
 EXTRA_OEMAKE += "OUTPUT_POLICY=`${STAGING_BINDIR_NATIVE}/checkpolicy -V | cut -d' ' -f1`"
 EXTRA_OEMAKE += "CC='${BUILD_CC}' CFLAGS='${BUILD_CFLAGS}' PYTHON='${PYTHON}'"
 
@@ -184,8 +185,11 @@ do_compile() {
 	oe_runmake policy
 }
 
-prepare_policy_store () {
+install_refpolicy () {
 	oe_runmake 'DESTDIR=${D}' 'prefix=${D}${prefix}' install
+}
+
+prepare_policy_store () {
 	POL_PRIORITY=100
 	POL_SRC=${D}${datadir}/selinux/${POLICY_NAME}
 	POL_STORE=${D}${localstatedir}/lib/selinux/${POLICY_NAME}
@@ -273,8 +277,11 @@ SELINUXTYPE=${POLICY_NAME}
 }
 
 do_install () {
-	prepare_policy_store
-	rebuild_policy
+	install_refpolicy
+	if [ "${POLICY_MONOLITHIC}" = "n" ]; then
+		prepare_policy_store
+		rebuild_policy
+	fi
 	install_misc_files
 	install_config
 }

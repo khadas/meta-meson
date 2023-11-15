@@ -2,8 +2,8 @@ do_install:append () {
   if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
     cat << EOF >> ${D}${sysconfdir}/profile
 # set pager
-export PAGER=/bin/cat
-export SYSTEMD_PAGER=/bin/cat
+export PAGER=cat
+export SYSTEMD_PAGER=cat
 # Set locale
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8

@@ -10,16 +10,8 @@ SRC_URI = "${@' '.join(['file://' + f + ';subdir=ipk' \
 
 S = "${WORKDIR}/ipk"
 
-inherit update-rc.d
-
-INITSCRIPT_NAME = "arka"
-INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
-
-RDEPENDS:${PN} = "dtvkit-release-prebuilt jsoncpp libbinder \
-                aml-audio-service meson-display udev aml-hdmicec aml-mp-sdk \
-                dtvkit-release-prebuilt aml-audio-service \
-                "
-RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', 'freetype', 'directfb', d)}"
+RDEPENDS:${PN} = "mosquitto \
+    "
 
 FILES:${PN}-dev = " ${includedir}/"
 FILES:${PN} = "/"
