@@ -14,11 +14,17 @@ if [ -z $BUILD_DIR ]; then
 	BUILD_DIR="build"
 fi
 
+if [ -d "$MESON_PATH/../meta-aml-cfg" ]; then
+    MESON_CFG_PATH=$MESON_PATH/../meta-aml-cfg
+else
+    MESON_CFG_PATH=$MESON_PATH
+fi
+
 if [ -n "$1" ] && [ $(echo "$1" | grep -v  '-') ]; then
-    DEFCONFIG_ARRAY=($(pushd $MESON_PATH/conf/machine 2>&1 >> /dev/null; find -name "*$1*\.conf" | sed 's@./@@' | sed 's@\.conf@@' | sort))
+    DEFCONFIG_ARRAY=($(pushd $MESON_CFG_PATH/conf/machine 2>&1 >> /dev/null; find -name "*$1*\.conf" | sed 's@./@@' | sed 's@\.conf@@' | sort))
     shift
 else
-    DEFCONFIG_ARRAY=($(pushd $MESON_PATH/conf/machine 2>&1 >> /dev/null; find -name '*\.conf' | sed 's@./@@' | sed 's@\.conf@@' | sort))
+    DEFCONFIG_ARRAY=($(pushd $MESON_CFG_PATH/conf/machine 2>&1 >> /dev/null; find -name '*\.conf' | sed 's@./@@' | sed 's@\.conf@@' | sort))
 fi
 
 DEFCONFIG_ARRAY_LEN=${#DEFCONFIG_ARRAY[@]}
@@ -179,6 +185,12 @@ BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-zapperplus"
 EOF
     fi
 
+    if [ -d ${MESON_ROOT_PATH}/meta-aml-cfg ]; then
+      cat >> conf/bblayers.conf <<EOF
+BBLAYERS =+ "\${MESON_ROOT_PATH}/meta-aml-cfg"
+EOF
+    fi
+
 # Add meta-perl only if not already present.
     if [ -d ${MESON_ROOT_PATH}/meta-openembedded/meta-perl ]; then
       cat >> conf/bblayers.conf <<EOF
@@ -288,7 +300,7 @@ EOF
     echo "==========================================="
 
 	echo "Common targets are:"
-	for file in `ls ${MESON_PATH}/recipes-core/images`
+	for file in `ls ${MESON_CFG_PATH}/recipes-core/images`
 	do
 	  if  [ "bb" = "${file#*.}" ]; then
 	  echo "${file%%.*}"
@@ -302,7 +314,7 @@ EOF
 	  MANIFEST=$(grep include ./../.repo/manifest.xml | cut -d '"' -f 2)
 	fi
 	MANIFEST=${MANIFEST%.*}
-	echo " Manifest Name = ${MANIFEST}"
+	echo "Manifest Name = ${MANIFEST}"
 	if [ -f "./../.repo/manifests/${MANIFEST}.conf" ]; then
 	  cp ./../.repo/manifests/${MANIFEST}.conf ./conf/auto.conf
 	else
