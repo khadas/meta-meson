@@ -14,7 +14,7 @@ PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/gst-plugin-aml-v4l2dec-1.0"
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
-inherit autotools pkgconfig features_check
+inherit autotools pkgconfig
 
 FILES:${PN} += "/usr/lib/gstreamer-1.0/*"
 INSANE_SKIP:${PN} = "ldflags dev-so "

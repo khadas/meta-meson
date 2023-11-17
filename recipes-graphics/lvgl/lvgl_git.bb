@@ -11,7 +11,7 @@ SRC_URI = "gitsm://github.com/lvgl/lvgl;destsuffix=${S};protocol=https;nobranch=
 SRCREV = "d38eb1e689fa5a64c25e677275172d9c8a4ab2f0"
 
 inherit cmake
-inherit features_check pkgconfig
+inherit pkgconfig
 
 PV = "8.1.0"
 EXTRA_OECMAKE = "-DLIB_INSTALL_DIR=${BASELIB}"

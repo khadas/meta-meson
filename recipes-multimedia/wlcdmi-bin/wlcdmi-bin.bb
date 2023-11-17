@@ -19,7 +19,7 @@ DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'widevine', ' aml-medi
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', ' vmx-sdk-rel vmx-release-binaries vmx-plugin', '', d)}"
 
 ARM_TARGET = "arm.aapcs-linux.hard"
-ARM_TARGET_aarch64 = "aarch64.lp64."
+ARM_TARGET:aarch64 = "aarch64.lp64."
 
 def get_widevine_version(datastore):
     return datastore.getVar("WIDEVINE_VERSION", True)

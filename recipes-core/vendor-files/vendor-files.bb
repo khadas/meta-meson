@@ -27,7 +27,7 @@ SOC:bg201 = "s805c1"
 SOC:aq2432 = "s805c3"
 SOC:pxp = "p1_pxp"
 
-S = "${WORKDIR}/git/"
+S = "${WORKDIR}/git"
 
 do_install() {
 	if [ -d ${S}/etc/tvconfig/${SOC} ]; then

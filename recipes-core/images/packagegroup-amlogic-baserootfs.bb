@@ -3,6 +3,27 @@ SUMMARY = "Amlogic Yocto packgegroup"
 LICENSE = "MIT"
 
 inherit packagegroup
+EXPORT_FUNCTIONS get_package_mapping
+#PACKAGE_ARCH = "${TUNE_PKGARCH}"
+def get_package_mapping (pkg, basepkg, d, depversions=None):
+    import oe.packagedata
+    data = oe.packagedata.read_subpkgdata(pkg, d)
+    key = "PKG:%s" % pkg
+    if key in data:
+        if bb.data.inherits_class('allarch', d) and bb.data.inherits_class('packagegroup', d) and pkg != data[key]:
+          bb.warn("An allarch packagegroup shouldn't depend on packages which are dynamically renamed (%s to %s)" % (pkg, data[key]))
+        if bb.data.inherits_class('allarch', d) and not d.getVar('MULTILIB_VARIANTS') \
+        and data[key] == basepkg:
+            return pkg
+        if depversions == []:
+            rprovkey = "RPROVIDES:%s" % pkg
+            if rprovkey in data:
+                if pkg in bb.utils.explode_dep_versions2(data[rprovkey]):
+                    bb.note("%s rprovides %s, not replacing the latter" % (data[key], pkg))
+                    return pkg
+        return data[key]
+    return pkg
+
 
 PACKAGES = "\
     packagegroup-amlogic-baserootfs \
@@ -215,6 +236,6 @@ RDEPENDS:packagegroup-amlogic-baserootfs += " \
     "
 
 #Add wlcdmi
-RDEPENDS_packagegroup-amlogic-baserootfs += " \
+RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'wlcdmi', 'wlcdmi-bin gst-plugin-aml-wlcdmi', '', d)} \
     "

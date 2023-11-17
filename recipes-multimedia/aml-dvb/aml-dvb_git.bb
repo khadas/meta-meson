@@ -1,5 +1,5 @@
 SUMMARY = "aml dvb samples"
-LICENSE = "LGPL-2.0+"
+LICENSE = "LGPL-2.0-or-later"
 LIC_FILES_CHKSUM = "file://Doxyfile;md5=c771730fa57fc498cd9dc7d74b84934d"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/dvb.git;protocol=${AML_GIT_PROTOCOL};branch=tv-kernel-4.9"
@@ -67,5 +67,5 @@ do_install() {
 
 FILES:${PN} = "${libdir}/* ${bindir}/*"
 FILES:${PN}-dev = "${includedir}/* "
-INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf installed-vs-shipped"
 INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"

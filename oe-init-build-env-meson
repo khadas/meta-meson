@@ -60,7 +60,7 @@ cp $OEROOT/poky/.templateconf $OEROOT
 
 . $OEROOT/meta-meson/scripts/setup-environment-internal
 export MESON_ROOT_PATH=$OEROOT
-export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} MESON_ROOT_PATH"
+export BB_ENV_PASSTHROUGH_ADDITIONS="${BB_ENV_PASSTHROUGH_ADDITIONS} MESON_ROOT_PATH"
 unset OEROOT
 unset BBPATH
 

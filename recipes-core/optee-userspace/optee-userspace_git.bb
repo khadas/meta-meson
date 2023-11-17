@@ -46,5 +46,5 @@ FILES:${PN} += "${bindir}/tee-supplicant"
 FILES:${PN}-dev = ""
 FILES:${PN}-securebl32 += " /usr/share/tdk/secureos/*"
 
-INSANE_SKIP:${PN} = "ldflags dev-so dev-elf"
+INSANE_SKIP:${PN} = "ldflags dev-so dev-elf installed-vs-shipped"
 

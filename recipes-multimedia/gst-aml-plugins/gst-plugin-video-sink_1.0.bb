@@ -13,7 +13,7 @@ PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/gst-plugin-video-sink-1.0"
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
-inherit autotools pkgconfig features_check
+inherit autotools pkgconfig
 
 do_configure:append() {
   cd ${S}

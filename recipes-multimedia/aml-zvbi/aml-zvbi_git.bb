@@ -1,5 +1,5 @@
 SUMMARY = "aml customization of zvbi library"
-LICENSE = "LGPL-2.0+"
+LICENSE = "LGPL-2.0-or-later"
 LIC_FILES_CHKSUM = "file://README;md5=91789e3b1cce0c7cd3f26db7a9f9bfac"
 
 inherit autotools pkgconfig

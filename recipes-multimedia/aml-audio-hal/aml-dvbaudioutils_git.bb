@@ -16,7 +16,7 @@ DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-amadec', '', ' alsa
 
 EXTRA_OEMAKE:append = "${@bb.utils.contains('DISTRO_FEATURES', 'disable-amadec', ' rm_amadec=y', ' rm_amadec=n', d)}"
 
-RDEPENDS:${PN} += "liblog"
+RDEPENDS:${PN} += "liblog aml-amaudioutils"
 do_compile () {
     cd ${S}/dtv_audio_utils
     oe_runmake -j1 ${EXTRA_OEMAKE} all

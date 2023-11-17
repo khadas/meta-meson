@@ -24,7 +24,7 @@ LIC_FILES_CHKSUM = "file://MODULE_LICENSE_APACHE2;md5=d41d8cd98f00b204e9800998ec
 SECTION = "apps"
 DEPENDS = ""
 
-SRC_URI = "git://github.com/csimmonds/procrank_linux.git file://make.patch"
+SRC_URI = "git://github.com/csimmonds/procrank_linux.git;protocol=https;branch=master file://make.patch"
 SRCREV = "21c30ab4514a5b15ac6e813e21bee0d3d714cb08"
 
 S = "${WORKDIR}/git"

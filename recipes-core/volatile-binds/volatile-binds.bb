@@ -11,6 +11,7 @@ SRC_URI = "\
     file://var-lib.mount \
 "
 
+S = "${WORKDIR}"
 inherit allarch systemd features_check
 
 REQUIRED_DISTRO_FEATURES = "systemd"
@@ -106,5 +107,5 @@ do_install:append() {
 do_install[dirs] = "${WORKDIR}"
 
 SYSTEMD_SERVICE:${PN} += "var-lib.mount"
-SYSTEMD_SERVICE:${PN}:remove += "var-lib.mount"
-FILES:${PN}:remove += "${systemd_unitdir}/system/var-lib.mount"
+SYSTEMD_SERVICE:${PN}:remove = "var-lib.mount"
+FILES:${PN}:remove = "${systemd_unitdir}/system/var-lib.mount"

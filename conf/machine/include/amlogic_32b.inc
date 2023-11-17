@@ -4,8 +4,8 @@ DEFAULTTUNE = "armv7athf-neon"
 PREFERRED_PROVIDER_virtual/gst-plugins-playersinkbin = "gst-plugins-playersinkbin-rpi"
 #PREFERRED_PROVIDER_virtual/iarmmgrs-hal = "iarmmgrs-hal-amlogic"
 #PREFERRED_PROVIDER_virtual/mfrlib = "mfrlib-amlogic"
-#DISTRO_FEATURES:remove += "opengl gl"
-DISTRO_FEATURES:remove += "parodus 3g zeroconf"
+#DISTRO_FEATURES:remove = "opengl gl"
+DISTRO_FEATURES:remove = "parodus 3g zeroconf"
 VIRTUAL-RUNTIME_alsa-state ?= "alsa-states"
 
 # append drm(wayland drm backend)

@@ -12,7 +12,7 @@ DEPENDS += "aml-amaudioutils liblog aml-libdvr aml-mediahal-sdk aml-cas-hal aml-
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_mp_sdk')}"
 SRCREV = "${AUTOREV}"
 #DEPENDS += "libbinder"
-S="${WORKDIR}/git/"
+S="${WORKDIR}/git"
 RDEPENDS:${PN} += "aml-amaudioutils liblog aml-libdvr aml-mediahal-sdk aml-cas-hal aml-subtitleserver"
 EXTRA_OEMAKE = "STAGING_DIR=${STAGING_DIR_TARGET} \
 		  TARGET_DIR=${D} \

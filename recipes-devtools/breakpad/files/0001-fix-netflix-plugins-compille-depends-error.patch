@@ -1,0 +1,45 @@
+From efb2bee58f1a646320b41df7094d5f44fd798a6e Mon Sep 17 00:00:00 2001
+From: "Jiacai.Liu" <jiacai.liu@amlogic.com>
+Date: Thu, 26 Oct 2023 15:13:07 +0800
+Subject: [PATCH] aaaa:  [1/1]
+
+PD#SWPL-
+
+Problem:
+
+Solution:
+
+Verify:
+local
+
+Signed-off-by: Jiacai.Liu <jiacai.liu@amlogic.com>
+---
+ src/google_breakpad/common/breakpad_types.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/google_breakpad/common/breakpad_types.h b/src/google_breakpad/common/breakpad_types.h
+index d8828043..42016295 100644
+--- a/src/google_breakpad/common/breakpad_types.h
++++ b/src/google_breakpad/common/breakpad_types.h
+@@ -40,15 +40,15 @@
+ #ifndef GOOGLE_BREAKPAD_COMMON_BREAKPAD_TYPES_H__
+ #define GOOGLE_BREAKPAD_COMMON_BREAKPAD_TYPES_H__
+ 
++#ifndef __STDC_FORMAT_MACROS
++#define __STDC_FORMAT_MACROS
++#endif  /* __STDC_FORMAT_MACROS */
+ #if (defined(_INTTYPES_H) || defined(_INTTYPES_H_)) && \
+     !defined(__STDC_FORMAT_MACROS)
+ #error "inttypes.h has already been included before this header file, but "
+ #error "without __STDC_FORMAT_MACROS defined."
+ #endif
+ 
+-#ifndef __STDC_FORMAT_MACROS
+-#define __STDC_FORMAT_MACROS
+-#endif  /* __STDC_FORMAT_MACROS */
+ #include <inttypes.h>
+ 
+ typedef struct {
+-- 
+2.25.1
+

@@ -85,3 +85,4 @@ SYSTEMD_BLUEALSA_ARGS ?= "-p a2dp-source -p a2dp-sink"
 # Choose bluealsa-aplay arguments to be used in bluealsa-aplay systemd service
 # Defaults to be empty:
 SYSTEMD_BLUEALSA_APLAY_ARGS ?= ""
+INSANE_SKIP:${PN} = "installed-vs-shipped"

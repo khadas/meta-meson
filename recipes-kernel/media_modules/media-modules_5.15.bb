@@ -1,7 +1,7 @@
 inherit module
 
 SUMMARY = "Amlogic media driver"
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
 
 MBRANCH = "amlogic-5.15-dev"

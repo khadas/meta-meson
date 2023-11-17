@@ -11,8 +11,8 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/lib
 SRCREV ?= "${AUTOREV}"
 
 S = "${WORKDIR}/git"
-DEPENDS = "aml-mediahal-sdk"
-#RDEPENDS:${PN} = "aml-mediahal-sdk"
+DEPENDS = "aml-mediahal-sdk optee-userspace"
+RDEPENDS:${PN} = "optee-userspace aml-mediahal-sdk"
 
 ARM_TARGET = "arm.aapcs-linux.hard"
 ARM_TARGET:aarch64 = "aarch64.lp64."
@@ -32,4 +32,4 @@ do_install() {
 
 FILES:${PN} = "${libdir}/* ${bindir}/* ${includedir}/* /lib/optee_armtz/*"
 FILES:${PN}-dev = "${includedir}/* "
-INSANE_SKIP:${PN} = "already-stripped"
+INSANE_SKIP:${PN} = "already-stripped installed-vs-shipped ldflags"

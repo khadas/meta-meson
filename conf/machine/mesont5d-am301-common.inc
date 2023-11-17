@@ -8,6 +8,10 @@ PREFERRED_PROVIDER_virtual/egl = "libgles-eabihf-dvalin-wayland-drm"
 PREFERRED_PROVIDER_virtual/libgl = "libgles-eabihf-dvalin-wayland-drm"
 PREFERRED_PROVIDER_virtual/libgles1 = "libgles-eabihf-dvalin-wayland-drm"
 PREFERRED_PROVIDER_virtual/libgles2 = "libgles-eabihf-dvalin-wayland-drm"
+PREFERRED_PROVIDER_virtual/nativesdk-egl = "libgles-eabihf-dvalin-wayland-drm"
+PREFERRED_PROVIDER_virtual/egl-native = "libgles-eabihf-dvalin-wayland-drm"
+PREFERRED_PROVIDER_virtual/nativesdk-libgl = "nativesdk-mesa-gl"
+PREFERRED_PROVIDER_virtual/libgl-native = "mesa-gl-native"
 
 MACHINE_EXTRA_RRECOMMENDS += " \
         rtk8723du \

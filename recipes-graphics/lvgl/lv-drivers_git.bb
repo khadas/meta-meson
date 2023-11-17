@@ -15,7 +15,6 @@ SRCREV = "419a757c23aaa67c676fe3a2196d64808fcf2254"
 DEPENDS = "libxkbcommon lvgl"
 
 inherit cmake
-inherit features_check
 
 S = "${WORKDIR}/${PN}-${PV}"
 

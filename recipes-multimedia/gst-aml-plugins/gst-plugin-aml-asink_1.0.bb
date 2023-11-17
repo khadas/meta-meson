@@ -13,7 +13,7 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/gst
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-S = "${WORKDIR}/git/"
+S = "${WORKDIR}/git"
 
 EXTRA_OECONF += "--enable-ms12=yes"
 EXTRA_OECONF += "--enable-dts=yes"
@@ -23,7 +23,7 @@ DEPENDS += "${@bb.utils.contains('EXTRA_OECONF', '--enable-mediasync=yes', 'aml-
 RDEPENDS:${PN} += "${@bb.utils.contains('EXTRA_OECONF', '--enable-mediasync=yes', 'aml-mediahal-sdk', '', d)}"
 
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
-inherit autotools pkgconfig features_check
+inherit autotools pkgconfig
 
 do_configure:append() {
   cd ${S}

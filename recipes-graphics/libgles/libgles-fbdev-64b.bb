@@ -16,7 +16,7 @@ DEPENDS += "patchelf-native"
 SRCREV = "ff2ef217a995bba2fd9b4337f38bb0dfcf3f3ccc"
 VERSION = "r7p0"
 SRC_URI = "git://git.myamlogic.com/linux/amlogic/mali-linux.git;nobranch=1"
-MIRRORS:prepend += "git://git.myamlogic.com/linux/amlogic/mali-linux.git git://git@openlinux.amlogic.com/yocto/platform/hardware/arm/mali-linux.git;protocol=ssh; \n"
+MIRRORS:prepend = "git://git.myamlogic.com/linux/amlogic/mali-linux.git git://git@openlinux.amlogic.com/yocto/platform/hardware/arm/mali-linux.git;protocol=ssh; \n"
 
 S = "${WORKDIR}/git"
 

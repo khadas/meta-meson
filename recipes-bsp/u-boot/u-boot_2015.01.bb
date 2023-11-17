@@ -7,9 +7,9 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files_2015/bl31/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2015/bl31_1.3/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2015/fip:"
 
-LICENSE = "GPLv2+"
+LICENSE = "GPL-2.0-or-later"
 
-LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0;md5=801f80980d171dd6425610833a22dbe6"
+LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;md5=801f80980d171dd6425610833a22dbe6"
 
 EXTRA_OEMAKE = ''
 PACKAGE_ARCH = "${MACHINE_ARCH}"

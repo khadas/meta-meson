@@ -1,5 +1,5 @@
 SUMMARY = "aml dvb ota samples"
-LICENSE = "LGPL-2.0+"
+LICENSE = "LGPL-2.0-or-later"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 SRCREV ?= "${AUTOREV}"

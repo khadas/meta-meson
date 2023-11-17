@@ -7,6 +7,7 @@ SRCREV ?= "${AUTOREV}"
 
 DEPENDS += " libdrm libdrm-meson json-c"
 DEPENDS += "linux-uapi-headers"
+RDEPENDS:${PN} += " libdrm-meson"
 #do_configure[noexec] = "1"
 inherit autotools pkgconfig
 

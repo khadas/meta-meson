@@ -50,5 +50,5 @@ do_install() {
 }
 FILES:${PN} += "${libdir}/*.so /lib/optee_armtz/* ${bindir}/*"
 FILES:${PN}-dev = "${includedir}/* "
-INSANE_SKIP:${PN} = "ldflags dev-so dev-elf already-stripped"
+INSANE_SKIP:${PN} = "ldflags dev-so dev-elf already-stripped installed-vs-shipped"
 INSANE_SKIP:${PN}-dev = "ldflags dev-so dev-elf already-stripped"

@@ -9,6 +9,7 @@ IMAGE_FSTYPES = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', \
                 bb.utils.contains('ROOTFS_TYPE', 'ubifs', 'ubi', '${ROOTFS_TYPE}', d), 'ext4', d)}"
 
 require aml-package.inc
+PACKAGE_DEBUG_SPLIT_STYLE = 'debug-without-src'
 
 LICENSE = "MIT"
 
@@ -26,7 +27,7 @@ IMAGE_INSTALL += " \
 # unicode locale support
 IMAGE_INSTALL:append = " glibc-utils localedef"
 
-PACKAGE_EXCLUDE = " kernel-devicetree"
+PACKAGE_EXCLUDE = " kernel-devicetree "
 
 MACHINE_IMAGE_NAME ?= "${PN}"
 IMAGE_FEATURES:remove = " read-only-rootfs"

@@ -26,9 +26,9 @@ IMAGE_INSTALL:append = "\
 AVB_DM_VERITY = '${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('DISTRO_FEATURES', 'AVB', 'true', 'False' ,d), 'False', d)}'
 
 # Original version in Python3
-#IMAGE_INSTALL:append += '${@'python3 avbtool-dm-verity' if AVB_DM_VERITY == 'true'  else ''}'
+#IMAGE_INSTALL:append = '${@'python3 avbtool-dm-verity' if AVB_DM_VERITY == 'true'  else ''}'
 # New version coded in C
-IMAGE_INSTALL:append += '${@'aml-avb-dm-verity' if AVB_DM_VERITY == 'true'  else ''}'
+IMAGE_INSTALL:append = '${@'aml-avb-dm-verity' if AVB_DM_VERITY == 'true'  else ''}'
 #IMAGE_INSTALL:append:aarch64 = "\
 #                    kernel-modules \
 #                    gpu \

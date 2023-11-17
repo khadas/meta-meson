@@ -45,3 +45,4 @@ do_install() {
         install -m 0755 ${S}/fota_upgrade ${D}${bindir}
     fi
 }
+INSANE_SKIP:${PN} = "installed-vs-shipped"

@@ -9,7 +9,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/mediahal-sdk')}"
 
 DEPENDS += "aml-audio-service libdrm-meson"
-RDEPENDS:${PN} += "aml-audio-service libdrm-meson"
+RDEPENDS:${PN} += "aml-audio-service libdrm-meson aml-amaudioutils"
 
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'wayland', '' ,d)}"
 RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'wayland', '' ,d)}"

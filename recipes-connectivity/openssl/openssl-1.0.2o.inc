@@ -38,7 +38,7 @@ EXTRA_OECONF += "no-hw"
 EXTRA_OECONF += "no-srp"
 EXTRA_OECONF += "no-idea"
 EXTRA_OECONF += "no-rc4"
-EXTRA_OECONF:remove += "--disable-static"
+EXTRA_OECONF:remove = "--disable-static"
 
 AR:append = " r"
 TERMIO_libc-musl = "-DTERMIOS"

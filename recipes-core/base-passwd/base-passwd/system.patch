@@ -1,6 +1,7 @@
-diff -uprN base-passwd-3.5.29.orig/group.master base-passwd-3.5.29/group.master
---- base-passwd-3.5.29.orig/group.master	2021-12-16 18:49:05.572123452 +0800
-+++ base-passwd-3.5.29/group.master	2021-12-16 18:41:34.745789710 +0800
+diff --git a/group.master b/group.master
+index 5b62284..bbcd253 100644
+--- a/group.master
++++ b/group.master
 @@ -4,7 +4,7 @@ bin:*:2:
  sys:*:3:
  adm:*:4:
@@ -44,13 +45,14 @@ diff -uprN base-passwd-3.5.29.orig/group.master base-passwd-3.5.29/group.master
 +system:*:1000:
 +session:*:2000:system
  nogroup:*:65534:
-diff -uprN base-passwd-3.5.29.orig/passwd.master base-passwd-3.5.29/passwd.master
---- base-passwd-3.5.29.orig/passwd.master	2021-12-16 18:42:52.574616026 +0800
-+++ base-passwd-3.5.29/passwd.master	2021-12-13 11:32:33.657504502 +0800
-@@ -15,4 +15,6 @@ backup:*:34:34:backup:/var/backups:/bin/
- list:*:38:38:Mailing List Manager:/var/list:/bin/sh
- irc:*:39:39:ircd:/var/run/ircd:/bin/sh
- gnats:*:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/bin/sh
+diff --git a/passwd.master b/passwd.master
+index 0cd5ffd..dd71c83 100644
+--- a/passwd.master
++++ b/passwd.master
+@@ -15,4 +15,6 @@ backup:*:34:34:backup:/var/backups:/sbin/nologin
+ list:*:38:38:Mailing List Manager:/var/list:/sbin/nologin
+ irc:*:39:39:ircd:/var/run/ircd:/sbin/nologin
+ gnats:*:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/sbin/nologin
 +system:*:1000:1000::/:/sbin/nologin
 +session:*:2000:2000::/:/sbin/nologin
- nobody:*:65534:65534:nobody:/nonexistent:/bin/sh
+ nobody:*:65534:65534:nobody:/nonexistent:/sbin/nologin

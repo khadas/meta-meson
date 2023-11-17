@@ -5,13 +5,13 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 do_configure[noexec] = "1"
 inherit autotools pkgconfig
 DEPENDS += "liblog libdrm-meson wayland wayland-protocols wayland-native"
-RDEPENDS_${PN} += "libdrm-meson liblog"
+RDEPENDS:${PN} += "libdrm-meson liblog"
 #SRC_URI = "git://${AML_GIT_ROOT}/linux/multimedia/libvideorender.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-S = "${WORKDIR}/git/"
+S = "${WORKDIR}/git"
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} DESTDIR=${D}"
 
 SOURCE_DIR = "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston', 'westeros', d), bb.utils.contains('DISTRO_FEATURES', 'videotunnel', 'videotunnel', 'drm', d), d)}"
@@ -32,6 +32,6 @@ do_install() {
     install -D -m 0644 ${S}/${SOURCE_DIR}/libvideorender_client.so ${D}${libdir}
 }
 
-FILES_${PN} = "${bindir}/* ${libdir}/*"
-FILES_${PN}-dev = "${includedir}/* "
-INSANE_SKIP_${PN} = "ldflags"
+FILES:${PN} = "${bindir}/* ${libdir}/*"
+FILES:${PN}-dev = "${includedir}/* "
+INSANE_SKIP:${PN} = "ldflags"

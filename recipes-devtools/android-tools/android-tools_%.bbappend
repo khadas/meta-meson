@@ -11,16 +11,17 @@ SRC_URI += "file://adbd_prepare.sh"
 SRC_URI += "file://adb_udc_file"
 #SRC_URI += "file://0001-adbd-enable-tcpip.patch;patchdir=system/core"
 
-SYSTEMD_AUTO_ENABLE = "enable"
+SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 SYSTEMD_AUTO_ENABLE:aq2432 = "${@bb.utils.contains('RELEASE_MODE', 'PROD', 'disable', 'enable', d)}"
 SYSTEMD_AUTO_ENABLE:bf201 = "${@bb.utils.contains('RELEASE_MODE', 'PROD', 'disable', 'enable', d)}"
-SYSTEMD_SERVICE:${PN} = "adbd.service"
+SYSTEMD_SERVICE:${PN} += "adbd.service"
 SYSTEMD_SERVICE:${PN}-adbd:remove = "android-tools-adbd.service"
 
 INITSCRIPT_NAME = "adbd"
 INITSCRIPT_PARAMS = "start 90 2 3 4 5 . stop 80 0 6 1 ."
 
 TOOLS = " adbd"
+SYSTEMD_PACKAGES += "${PN}"
 ADB_UDC = "ff400000.dwc2_a"
 ADB_UDC:s4 = "fdd00000.dwc2_a"
 ADB_UDC:sc2 = "fdd00000.dwc2_a"
@@ -28,6 +29,10 @@ ADB_UDC:t7 = "fdd00000.crgudc2"
 ADB_UDC:t3 = "fdf00000.dwc2_a"
 ADB_UDC:s1a = "fe310000.crgudc2"
 
+FILES:${PN}-adbd:remove = " ${bindir}/adbd "
+FILES:${PN} += "\
+    ${bindir}/adbd \
+    ${systemd_unitdir}/system/adbd.service "
 do_install:append() {
 
     if echo ${TOOLS} | grep -q "cutils" ; then

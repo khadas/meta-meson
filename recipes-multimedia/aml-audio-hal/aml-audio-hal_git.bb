@@ -21,23 +21,23 @@ inherit cmake pkgconfig
 S="${WORKDIR}/git"
 TARGET_CFLAGS += "-fPIC"
 
-PACKAGECONFIG:append += "${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'dtv', '', d)}"
+PACKAGECONFIG:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', 'dtv', '', d)}"
 PACKAGECONFIG[dtv] = "-DUSE_DTV=ON,-DUSE_DTV=OFF,"
 
 PACKAGECONFIG += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-msync', '', 'msync', d)}"
 PACKAGECONFIG[msync] = "-DUSE_MSYNC=ON,-DUSE_MSYNC=OFF,"
 
-PACKAGECONFIG:append:sc2 += "sc2"
-PACKAGECONFIG:append:s4 += "sc2"
+PACKAGECONFIG:append:sc2 = " sc2"
+PACKAGECONFIG:append:s4 = " sc2"
 PACKAGECONFIG[sc2] = "-DUSE_SC2=ON,-DUSE_SC2=OFF,"
 
-PACKAGECONFIG:append += "${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'eq_drc', '', d)}"
+PACKAGECONFIG:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', 'eq_drc', '', d)}"
 PACKAGECONFIG[eq_drc] = "-DUSE_EQ_DRC=ON,-DUSE_EQ_DRC=OFF,"
 
-PACKAGECONFIG:append += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-amadec', '', 'amadec', d)}"
+PACKAGECONFIG:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'disable-amadec', '', 'amadec', d)}"
 PACKAGECONFIG[amadec] = "-DUSE_AMADEC=ON,-DUSE_AMADEC=OFF,"
 
-PACKAGECONFIG:append += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', 'rm_audioserver', '', d)}"
+PACKAGECONFIG:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', 'rm_audioserver', '', d)}"
 PACKAGECONFIG[rm_audioserver] = "-DDISABLE_SERVER=ON,-DDISABLE_SERVER=OFF,"
 
 SRC_URI  += "\

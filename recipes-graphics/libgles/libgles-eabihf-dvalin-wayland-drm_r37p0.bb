@@ -10,7 +10,7 @@ do_populate_lic[noexec] = "1"
 # These libraries shouldn't get installed in world builds unless something
 # explicitly depends upon them.
 EXCLUDE_FROM_WORLD = "1"
-PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl virtual/libgbm virtual/mesa virtual/mesa-gl"
+PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl virtual/libgl virtual/libgbm virtual/mesa virtual/mesa-gl virtual/nativesdk-egl virtual/egl-native"
 RPROVIDES:${PN} += "libGLESv2.so libEGL.so libGLESv1_CM.so libMali.so"
 DEPENDS += "patchelf-native libdrm wayland"
 
@@ -95,4 +95,4 @@ do_install() {
 
 FILES:${PN} += "${libdir}/*.so ${datadir}"
 FILES:${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
-INSANE_SKIP:${PN} = "ldflags dev-so already-stripped"
+INSANE_SKIP:${PN} = "ldflags dev-so already-stripped libdir"

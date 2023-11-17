@@ -37,6 +37,7 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}
 
 LINUX_VERSION ?= "5.15.119"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
+KERNEL_FEATURES:remove = "cfg/fs/vfat.scc"
 
 PR = "r2"
 SRCREV ?="${AUTOREV}"
@@ -47,20 +48,20 @@ KCONFIG_MODE = "alldefconfig"
 
 S = "${WORKDIR}/git"
 KBUILD_DEFCONFIG = "final_defconfig"
-DEPENDS += "elfutils-native"
+DEPENDS += "elfutils-native lzop-native "
 
 GKI_DEFCONFIG = "gki_defconfig"
-GKI_DEFCONFIG_kernel32 = "a32_base_defconfig"
+GKI_DEFCONFIG:kernel32 = "a32_base_defconfig"
 GKI_AMLOGIC_DEFCONFIG = "amlogic_gki.fragment"
-GKI_AMLOGIC_DEFCONFIG_kernel32 = "amlogic_a32.fragment"
+GKI_AMLOGIC_DEFCONFIG:kernel32 = "amlogic_a32.fragment"
 GKI10_DEFCONFIG = "amlogic_gki.10"
 GKIDEBUG_DEFCONFIG = "amlogic_gki.debug"
 GCC_DEFCONFIG = "amlogic_gcc64_deconfig"
-GCC_DEFCONFIG_kernel32 = "amlogic_gcc32_defconfig"
+GCC_DEFCONFIG:kernel32 = "amlogic_gcc32_defconfig"
 
 FINAL_DEFCONFIG_PATH = "${S}/arch/${ARCH}/configs"
 GKI_DEFCONFIG_PATH = "${S}/arch/arm64/configs"
-GKI_DEFCONFIG_PATH_kernel32 = "${S}/common_drivers/arch/arm/configs"
+GKI_DEFCONFIG_PATH:kernel32 = "${S}/common_drivers/arch/arm/configs"
 GKI_AML_CONFIG_PATH = "${S}/common_drivers/arch/${ARCH}/configs"
 
 SOC = ""

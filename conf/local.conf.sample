@@ -214,15 +214,15 @@ PATCHRESOLVE = "noop"
 # files and damages the build in ways which may not be easily recoverable.
 # It's necesary to monitor /tmp, if there is no space left the build will fail
 # with very exotic errors.
-BB_DISKMON_DIRS = "\
+BB_DISKMON_DIRS ??= "\
     STOPTASKS,${TMPDIR},1G,100K \
     STOPTASKS,${DL_DIR},1G,100K \
     STOPTASKS,${SSTATE_DIR},1G,100K \
     STOPTASKS,/tmp,100M,100K \
-    ABORT,${TMPDIR},100M,1K \
-    ABORT,${DL_DIR},100M,1K \
-    ABORT,${SSTATE_DIR},100M,1K \
-    ABORT,/tmp,10M,1K"
+    HALT,${TMPDIR},100M,1K \
+    HALT,${DL_DIR},100M,1K \
+    HALT,${SSTATE_DIR},100M,1K \
+    HALT,/tmp,10M,1K"
 
 #
 # Shared-state files from other locations
@@ -266,7 +266,7 @@ BB_SRCREV_POLICY ??= "cache"
 # CONF_VERSION is increased each time build/conf/ changes incompatibly and is used to
 # track the version of this file when it was generated. This can safely be ignored if
 # this doesn't mean anything to you.
-CONF_VERSION = "1"
+CONF_VERSION = "2"
 
 #
 # Debugging Tools
@@ -276,5 +276,5 @@ CONF_VERSION = "1"
 # This option enables gperftools heap checking for the entire build (for recipes that set ENABLE_GPERFTOOLS_HEAPCHECK_WP_DISTRO = “1”).
 # It can be added on a per-recipe basis by adding ENABLE_GPERFTOOLS_HEAPCHECK_WP_RECIPE = “1” to a recipe.
 #DISTRO_FEATURES_RDK += "comcast-gperftools-heapcheck-wp"
-LICENSE_FLAGS_WHITELIST="commercial"
+LICENSE_FLAGS_ACCEPTED="commercial"
 

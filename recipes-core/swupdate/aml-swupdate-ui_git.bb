@@ -16,7 +16,7 @@ S = "${WORKDIR}/git"
 
 # configurate lvgl app needs below two conditions
 EXTRA_OEMAKE = "${@bb.utils.contains("SWUPDATE_UI_LIB", "lvgl", "CONFIG_LVGL_APP=y", "" ,d)}"
-PACKAGECONFIG:append += "${@bb.utils.contains("SWUPDATE_UI_LIB", "lvgl", " lvgl", " directfb" ,d)}"
+PACKAGECONFIG:append = "${@bb.utils.contains("SWUPDATE_UI_LIB", "lvgl", " lvgl", " directfb" ,d)}"
 PACKAGECONFIG[lvgl] = "-lvgl,-no-lvgl,lvgl lv-drivers"
 PACKAGECONFIG[directfb] = "-directfb,-no-directfb,directfb"
 

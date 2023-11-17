@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 SRCREV ?="${AUTOREV}"
 
-PACKAGES = "${PN} FILES-${PN}-lib ${PN}-dev ${PN}-dbg ${PN}-staticdev"
+#PACKAGES = "${PN} FILES-${PN}-lib ${PN}-dev ${PN}-dbg ${PN}-staticdev"
 
 do_configure[noexec] = "1"
 
@@ -25,3 +25,4 @@ do_install () {
 
 FILES:${PN} = " ${libdir}/*"
 FILES:${PN}-dev = "${includedir}/*"
+INSANE_SKIP:${PN} = "ldflags"

@@ -14,14 +14,14 @@ PV = "${SRCPV}"
 DEPENDS = " gstreamer1.0 gstreamer1.0-plugins-base glib-2.0 zlib aml-secmem "
 DEPENDS += "gstreamer1.0-plugins-bad"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'miraclecast', 'wfd-hdcp', '', d)}"
-RDEPENDS:${PN} += "aml-secmem"
+RDEPENDS:${PN} += " aml-secmem wfd-hdcp"
 
 S = "${WORKDIR}/git/gst-aml-drm-plugins-1.0"
 
 EXTRA_OECONF += "--enable-essos-rm=no"
 
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
-inherit autotools pkgconfig features_check
+inherit autotools pkgconfig
 FILES:${PN} += "${libdir}/gstreamer-1.0/*"
 INSANE_SKIP:${PN} = "ldflags dev-so "
 INHIBIT_PACKAGE_STRIP = "1"

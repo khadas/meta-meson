@@ -11,9 +11,9 @@ DEPENDS = "gstreamer1.0 gstreamer1.0-plugins-base aml-subtitleserver"
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-S = "${WORKDIR}/git/"
+S = "${WORKDIR}/git"
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
-inherit autotools pkgconfig features_check
+inherit autotools pkgconfig
 
 FILES:${PN} += "${libdir}/gstreamer-1.0/*"
 INSANE_SKIP:${PN} = "ldflags dev-so "

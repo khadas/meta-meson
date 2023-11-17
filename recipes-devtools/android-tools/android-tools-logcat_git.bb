@@ -30,4 +30,4 @@ do_install(){
     install -m 0755 ${S}/logcat ${D}${bindir}
     install -m 0755 ${S}/logcat_test ${D}${bindir}
 }
-
+INSANE_SKIP:${PN} = "ldflags"

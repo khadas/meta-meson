@@ -1,6 +1,6 @@
 DESCRIPTION = "Amlogic Version of libflac"
 PR = "r0"
-LICENSE = "LGPLv2"
+LICENSE = "LGPL-2.0-only"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751419260aa954499f7abaabaa882bbe"
 
 inherit cmake pkgconfig

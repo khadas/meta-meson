@@ -1,7 +1,7 @@
 inherit module
 
 SUMMARY = "Arm G31(dvalin) graphic driver"
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://t83x/kernel/license.txt;md5=13e14ae1bd7ad5bff731bba4a31bb510"
 include gpu.inc
 

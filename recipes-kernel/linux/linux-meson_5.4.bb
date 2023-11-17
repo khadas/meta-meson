@@ -7,6 +7,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 SRCTREECOVEREDTASKS:remove = "do_patch"
 FILESEXTRAPATHS:prepend := "${THISDIR}/5.4:"
 FILESEXTRAPATHS:prepend:aq2432 := "${THISDIR}/5.4/aq2432:"
+KERNEL_FEATURES:remove = "cfg/fs/vfat.scc"
 
 # t5d lowmem
 FILESEXTRAPATHS:prepend:t5d := "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', '${THISDIR}/5.4/t5d-lowmem:', '', d)}"
@@ -76,6 +77,14 @@ GKI_DEFCONFIG = "meson64_gki_module_config"
 #Force NO GKI for 32bit kernel
 GKI_DEFCONFIG:kernel32 = ""
 
+DEPENDS += " lzop-native "
+
+python () {
+    d.setVar("KERNEL_DANGLING_FEATURES_WARN_ONLY","1")
+}
+
+
+
 gki_module_compile () {
   oe_runmake -C ${STAGING_KERNEL_DIR}/${1} CC="${KERNEL_CC}" LD="${KERNEL_LD}" O=${B} M=${1} KERNEL_SRC=${S}
 }
@@ -119,4 +128,4 @@ do_install:append () {
     gki_module_install sound/soc/codecs/amlogic
   fi
 }
-
+INSANE_SKIP:${PN} = "installed-vs-shipped"

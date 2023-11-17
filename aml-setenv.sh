@@ -276,7 +276,7 @@ EOF
     #export AML_SB_SIGN_TOOL=${MESON_ROOT_PATH}/Aml_Linux_SecureBootV3_SignTool/amlogic_secureboot_sign_whole_pkg.bash
     # Setup Boot V3 config files keyes
     #export AML_SB_SIGN_CONFIG_PATH=${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-linux-sb
-    export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} AML_PATCH_PATH AML_SCS_SIGN_TOOL AML_SCS_SIGN_CONFIG_PATH"
+    export BB_ENV_PASSTHROUGH_ADDITIONS="${BB_ENV_PASSTHROUGH_ADDITIONS} AML_PATCH_PATH AML_SCS_SIGN_TOOL AML_SCS_SIGN_CONFIG_PATH"
     echo "==========================================="
     echo
     echo "MACHINE=${TARGET_MACHINE}"

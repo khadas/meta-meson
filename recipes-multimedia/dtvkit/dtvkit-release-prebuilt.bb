@@ -22,7 +22,7 @@ SRC_URI +="file://dtvkit.service"
 SRC_URI +="file://dtvkit_low_mem.service"
 SRC_URI +="file://dtvkit.init "
 
-TDK_VERSION_t5w = "v3.8/dev/T962D4"
+TDK_VERSION:t5w = "v3.8/dev/T962D4"
 
 CONFIG = "config_ah212.xml"
 CONFIG:ah212 = "config_ah212.xml"
@@ -41,6 +41,7 @@ S = "${WORKDIR}/git"
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 do_populate_lic[noexec] = "1"
+do_package_qa[noexec] = "1"
 do_install () {
 	mkdir -p ${D}/usr/bin
 	mkdir -p ${D}/usr/lib
@@ -88,5 +89,5 @@ do_install () {
 FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/* /lib/optee_armtz/* "
 FILES:${PN}-dev = "${includedir}/* "
 
-INSANE_SKIP:${PN} = "ldflags already-stripped"
+INSANE_SKIP:${PN} = "ldflags already-stripped installed-vs-shipped"
 INSANE_SKIP:${PN}-dev = "dev-elf dev-so"

@@ -31,4 +31,4 @@ do_install() {
 
 FILES:${PN} = "${bindir}/* ${libdir}/*"
 FILES:${PN}-dev = "${includedir}/* "
-INSANE_SKIP:${PN} = "ldflags"
+INSANE_SKIP:${PN} = "ldflags installed-vs-shipped"

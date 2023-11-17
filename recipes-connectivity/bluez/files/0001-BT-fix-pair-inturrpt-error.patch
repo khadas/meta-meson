@@ -10,8 +10,8 @@ Index: bluez-5.55/src/device.c
 +{
 +	static int retry = 3;
 +
-+	if (device->connect || main_opts.reverse_discovery) {
-+		DBG("device state %d %d", device->connect, main_opts.reverse_discovery);
++	if (device->connect || btd_opts.reverse_discovery) {
++		DBG("device state %d %d", device->connect, btd_opts.reverse_discovery);
 +		DBG("current paired state %d", device->le_state.paired);
 +		if (device->le_state.paired) {
 +			gatt_client_init(device);

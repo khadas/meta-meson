@@ -6,8 +6,8 @@ DEPENDS += "aml-ubootenv aml-bootloader-message libconfig"
 # SWUpdate licensing is described in the following pages:
 # https://sbabic.github.io/swupdate/licensing.html
 # rst form: file://doc/source/licensing.rst
-LICENSE = "GPLv2+ & LGPLv2+ & MIT"
-LICENSE:${PN}-lua = "LGPLv2+"
+LICENSE = "GPL-2.0-or-later & LGPL-2.0-or-later & MIT"
+LICENSE:${PN}-lua = "LGPL-2.0-or-later"
 LICENSE:${PN}-www = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSES/GPL-2.0-only.txt;md5=4ee23c52855c222cba72583d301d2338 \
                     file://LICENSES/LGPL-2.1-or-later.txt;md5=4fbd65380cdd255951079008b364516c \
@@ -22,7 +22,7 @@ inherit cml1 systemd pkgconfig update-rc.d
 INITSCRIPT_NAME = "swupdate"
 INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 
-SRC_URI = "git://github.com/sbabic/swupdate.git;protocol=https \
+SRC_URI = "git://github.com/sbabic/swupdate.git;branch=master;protocol=https \
         file://0001-network_initializer-move-cleanup_files-before-going-.patch \
         file://0001-amlogic-update-based-on-2021.04.patch \
         file://0002-fix-compile-warnings.patch \

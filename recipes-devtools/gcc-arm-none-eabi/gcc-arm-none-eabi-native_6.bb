@@ -11,7 +11,7 @@ SRC_URI="https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-a
 SRC_URI[gcc-arm-none-eabi-6-2017-q2_linux.md5sum] = "13747255194398ee08b3ba42e40e9465"
 SRC_URI[gcc-arm-none-eabi-6-2017-q2_linux.sha256sum] = "e68e4b2fe348ecb567c27985355dff75b65319a0f6595d44a18a8c5e05887cc3"
 
-S = "${WORKDIR}/gcc-arm-none-eabi-6-2017-q2-update/"
+S = "${WORKDIR}/gcc-arm-none-eabi-6-2017-q2-update"
 
 do_install() {
     install -d ${D}${STAGING_DIR_NATIVE}${GCC_ARM_NONE_TOOLCHAIN}

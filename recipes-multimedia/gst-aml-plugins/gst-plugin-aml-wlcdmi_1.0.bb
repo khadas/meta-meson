@@ -11,7 +11,7 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/gst
 #EXTERNALSRC = "${TOPDIR}/../aml-comp/multimedia/gst-plugin-aml-wlcdmi"
 #EXTERNALSRC_BUILD = "${WORKDIR}/build"
 
-inherit meson pkgconfig features_check
+inherit meson pkgconfig
 
 SRCREV ?= "${AUTOREV}"
 #PV = "${SRCPV}"
