@@ -1,5 +1,6 @@
 [Unit]
 Description=binder servicemanager
+Wants=dev-binderfs.mount
 
 [Service]
 ExecStartPre=/usr/bin/binder.sh

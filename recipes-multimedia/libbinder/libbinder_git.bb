@@ -13,6 +13,7 @@ PV = "${SRCPV}"
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_commonlib;protocol=${AML_GIT_PROTOCOL};branch=master;"
 SRC_URI += "file://LICENSE-2.0.txt"
 SRC_URI += "file://binder.service"
+SRC_URI += "file://dev-binderfs.mount"
 SRC_URI += "file://binder.sh"
 SRC_URI += "file://binder.init"
 
@@ -46,6 +47,7 @@ do_install(){
     install -m 0644 ${S}/include/binder/* ${D}${includedir}/binder
     install -m 0644 ${S}/include/utils/* ${D}${includedir}/utils
     install -m 0644 ${WORKDIR}/binder.service ${D}/${systemd_unitdir}/system
+    install -m 0644 ${WORKDIR}/dev-binderfs.mount ${D}/${systemd_unitdir}/system
     install -m 0755 ${WORKDIR}/binder.sh ${D}/${bindir}
 }
 
@@ -64,7 +66,7 @@ SYSTEMD_SERVICE:${PN} = "binder.service"
 
 FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}"
 FILES:${PN}-dev = "${includedir}/* "
-FILES:${PN} += "${systemd_unitdir}/system/binder.service"
+FILES:${PN} += "${systemd_unitdir}/system/*"
 
 INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
 INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"
