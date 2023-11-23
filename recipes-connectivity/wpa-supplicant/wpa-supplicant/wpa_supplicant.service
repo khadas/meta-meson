@@ -2,7 +2,6 @@
 Description=WPA supplicant
 Before=network.target
 Wants=network.target
-After=wifi.service
 
 [Service]
 Type=oneshot
