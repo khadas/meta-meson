@@ -77,7 +77,7 @@ RDEPENDS:packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'aamp', 'aamp', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'fota-upgrade', 'aml-utils-fota-upgrade', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'cpio update-swfirmware', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'system-user', 'sandbox-setup', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'system-user', 'sandbox-setup useradd', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'vmx-sdk-rel vmx-release-binaries vmx-plugin', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'drmplayer-bin', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-cas', 'aml-cas-hal aml-secdmx', '', d)} \
