@@ -3,7 +3,6 @@ LICENSE = "CLOSED"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI = "git://${AML_GIT_ROOT}${AML_GIT_ROOT_YOCTO_SUFFIX}/zapper/arka;protocol=${AML_GIT_PROTOCOL};branch=master;nobranch=1"
 SRC_URI:append = " file://arka.service "
 SRC_URI:append = " file://arka.init "
 SRCREV = "${AUTOREV}"
