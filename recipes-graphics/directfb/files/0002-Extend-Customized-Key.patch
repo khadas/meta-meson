@@ -1,34 +1,36 @@
-From 70eff69569529780337d4b1832a76ce1b7f57abc Mon Sep 17 00:00:00 2001
+From 253901fc6c2371641e1660fe7aa38c356201003e Mon Sep 17 00:00:00 2001
 From: HenryLee <henry_1_lee@163.com>
 Date: Mon, 11 Sep 2023 16:00:57 +0800
 Subject: [PATCH] Key Debug
 
 Signed-off-by: HenryLee <henry_1_lee@163.com>
 ---
- include/directfb_keyboard.h            | 13 ++++++++
- include/directfb_keynames.h            |  7 +++++
- inputdrivers/linux_input/linux_input.c | 43 +++++++++++++++++++++-----
- 3 files changed, 56 insertions(+), 7 deletions(-)
+ include/directfb_keyboard.h            | 15 ++++
+ include/directfb_keynames.h            |  6 ++
+ inputdrivers/linux_input/linux_input.c | 96 +++++++++++++++++++++-----
+ 3 files changed, 100 insertions(+), 17 deletions(-)
 
 diff --git a/include/directfb_keyboard.h b/include/directfb_keyboard.h
-index 4ed6de1..68e8b85 100644
+index 4ed6de1..26b2f75 100644
 --- a/include/directfb_keyboard.h
 +++ b/include/directfb_keyboard.h
-@@ -469,6 +469,13 @@ typedef enum {
+@@ -469,6 +469,15 @@ typedef enum {
       DIKS_REDIAL                   = DFB_KEY( SPECIAL, 0x6F ),
       DIKS_FLASH                    = DFB_KEY( SPECIAL, 0x70 ),
       DIKS_HOLD                     = DFB_KEY( SPECIAL, 0x71 ),
 +     DIKS_PROPS                    = DFB_KEY( SPECIAL, 0x72 ),
 +     DIKS_UNDO                     = DFB_KEY( SPECIAL, 0x73 ),
 +     DIKS_CAMERA                   = DFB_KEY( SPECIAL, 0x74 ),
-+     DIKS_CHAT                     = DFB_KEY( SPECIAL, 0x75 ),
-+     DIKS_SEARCH                   = DFB_KEY( SPECIAL, 0x76 ),
-+     DIKS_FINANCE                  = DFB_KEY( SPECIAL, 0x77 ),
-+     DIKS_BLUETOOTH                = DFB_KEY( SPECIAL, 0x78 ),
++     DIKS_SEARCH                   = DFB_KEY( SPECIAL, 0x75 ),
++     DIKS_SLEEP                    = DFB_KEY( SPECIAL, 0x76 ),
++     DIKS_ZOOMIN                   = DFB_KEY( SPECIAL, 0x77 ),
++     DIKS_ZOOMOUT                  = DFB_KEY( SPECIAL, 0x78 ),
++     DIKS_MEDIA_REPEAT             = DFB_KEY( SPECIAL, 0x79 ),
++     DIKS_3D_MODE                  = DFB_KEY( SPECIAL, 0x7A ),
  
       /*
        * Unicode private area - DirectFB Function keys
-@@ -487,6 +494,12 @@ typedef enum {
+@@ -487,6 +496,12 @@ typedef enum {
       DIKS_F10                      = DFB_FUNCTION_KEY( 10 ),
       DIKS_F11                      = DFB_FUNCTION_KEY( 11 ),
       DIKS_F12                      = DFB_FUNCTION_KEY( 12 ),
@@ -42,39 +44,38 @@ index 4ed6de1..68e8b85 100644
       /*
        * Unicode private area - DirectFB Modifier keys
 diff --git a/include/directfb_keynames.h b/include/directfb_keynames.h
-index 66ed8d9..70d0861 100644
+index 66ed8d9..524e5de 100644
 --- a/include/directfb_keynames.h
 +++ b/include/directfb_keynames.h
-@@ -164,10 +164,15 @@ struct DFBKeySymbolName {
+@@ -164,10 +164,14 @@ struct DFBKeySymbolName {
       { DIKS_AUX, "AUX" }, \
       { DIKS_MP3, "MP3" }, \
       { DIKS_PHONE, "PHONE" }, \
-+     { DIKS_CAMERA, "REPEAT" }, \
++     { DIKS_MEDIA_REPEAT, "REPEAT" }, \
       { DIKS_AUDIO, "AUDIO" }, \
       { DIKS_VIDEO, "VIDEO" }, \
       { DIKS_INTERNET, "INTERNET" }, \
       { DIKS_MAIL, "MAIL" }, \
-+     { DIKS_CHAT, "\-\/\-\-" }, \
-+     { DIKS_SEARCH, "DUIDE" }, \
-+     { DIKS_FINANCE, "SLEEP" }, \
-+     { DIKS_BLUETOOTH, "FAV" }, \
++     { DIKS_PROGRAM, "DUIDE" }, \
++     { DIKS_FN_F1, "SOURCE" }, \
++     { DIKS_SLEEP, "SLEEP" }, \
       { DIKS_NEWS, "NEWS" }, \
       { DIKS_DIRECTORY, "DIRECTORY" }, \
       { DIKS_LIST, "LIST" }, \
-@@ -192,6 +197,8 @@ struct DFBKeySymbolName {
+@@ -192,6 +196,8 @@ struct DFBKeySymbolName {
       { DIKS_PLAYPAUSE, "PLAYPAUSE" }, \
       { DIKS_PLAY, "PLAY" }, \
       { DIKS_STOP, "STOP" }, \
-+     { DIKS_PROPS, "ZOOMIN" }, \
-+     { DIKS_UNDO, "ZOOMOUT" }, \
++     { DIKS_ZOOMIN, "ZOOMIN" }, \
++     { DIKS_ZOOMOUT, "ZOOMOUT" }, \
       { DIKS_RESTART, "RESTART" }, \
       { DIKS_SLOW, "SLOW" }, \
       { DIKS_FAST, "FAST" }, \
 diff --git a/inputdrivers/linux_input/linux_input.c b/inputdrivers/linux_input/linux_input.c
-index 03deebc..7a09ebc 100644
+index 03deebc..20c9a7e 100644
 --- a/inputdrivers/linux_input/linux_input.c
 +++ b/inputdrivers/linux_input/linux_input.c
-@@ -261,7 +261,7 @@ int basic_keycodes [] = {
+@@ -261,14 +261,14 @@ int basic_keycodes [] = {
  
       /*DIKS_AGAIN, DIKS_PROPS, DIKS_UNDO, DIKS_FRONT, DIKS_COPY,
       DIKS_OPEN, DIKS_PASTE, DIKS_FIND, DIKS_CUT,*/
@@ -83,7 +84,15 @@ index 03deebc..7a09ebc 100644
       DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN,
  
       DIKS_HELP, DIKS_MENU, DIKS_CALCULATOR, DIKS_SETUP,
-@@ -338,14 +338,14 @@ int basic_keycodes [] = {
+ 
+      /*KEY_SLEEP, KEY_WAKEUP, KEY_FILE, KEY_SENDFILE, KEY_DELETEFILE,
+      KEY_XFER,*/
+-     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN,
++     DIKS_SLEEP, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN,
+      DIKI_UNKNOWN,
+ 
+      /*KEY_PROG1, KEY_PROG2,*/
+@@ -338,12 +338,12 @@ int basic_keycodes [] = {
       DIKS_PRINT,
  
       /* KEY_HP             */  DIKI_UNKNOWN,
@@ -92,17 +101,13 @@ index 03deebc..7a09ebc 100644
       /* KEY_SOUND          */  DIKS_AUDIO,
       /* KEY_QUESTION       */  DIKS_HELP,
       /* KEY_EMAIL          */  DIKS_MAIL,
--     /* KEY_CHAT           */  DIKI_UNKNOWN,
+      /* KEY_CHAT           */  DIKI_UNKNOWN,
 -     /* KEY_SEARCH         */  DIKI_UNKNOWN,
-+     /* KEY_CHAT           */  DIKS_CHAT,
 +     /* KEY_SEARCH         */  DIKS_SEARCH,
       /* KEY_CONNECT        */  DIKI_UNKNOWN,
--     /* KEY_FINANCE        */  DIKI_UNKNOWN,
-+     /* KEY_FINANCE        */  DIKS_FINANCE,
+      /* KEY_FINANCE        */  DIKI_UNKNOWN,
       /* KEY_SPORT          */  DIKI_UNKNOWN,
-      /* KEY_SHOP           */  DIKI_UNKNOWN,
-      /* KEY_ALTERASE       */  DIKI_UNKNOWN,
-@@ -353,6 +353,20 @@ int basic_keycodes [] = {
+@@ -353,22 +353,78 @@ int basic_keycodes [] = {
       /* KEY_BRIGHTNESSDOWN */  DIKI_UNKNOWN,
       /* KEY_BRIGHTNESSUP   */  DIKI_UNKNOWN,
       /* KEY_MEDIA          */  DIKI_UNKNOWN,
@@ -116,34 +121,100 @@ index 03deebc..7a09ebc 100644
 +     /* KEY_SAVE           */  DIKI_UNKNOWN,
 +     /* KEY_DOCUMENTS      */  DIKI_UNKNOWN,
 +     /* KEY_BATTERY        */  DIKI_UNKNOWN,
-+     /* KEY_BLUETOOTH      */  DIKS_BLUETOOTH,
++     /* KEY_BLUETOOTH      */  DIKI_UNKNOWN,
 +     /* KEY_WLAN           */  DIKI_UNKNOWN,
 +     /* KEY_UWB            */  DIKI_UNKNOWN,
-+     /* KEY_UNKNOWN        */  DIKI_UNKNOWN,
++     /* KEY_UNKNOWN        */  DIKI_UNKNOWN,  /* 240 */
  };
  
  static const
-@@ -368,7 +382,18 @@ int ext_keycodes [] = {
-      DIKS_CALENDAR, DIKS_RED, DIKS_GREEN, DIKS_YELLOW, DIKS_BLUE,
-      DIKS_CHANNEL_UP, DIKS_CHANNEL_DOWN, DIKS_FIRST, DIKS_LAST, DIKS_AB,
-      DIKS_NEXT, DIKS_RESTART, DIKS_SLOW, DIKS_SHUFFLE, DIKS_FASTFORWARD,
+ int ext_keycodes [] = {
+-     DIKS_OK, DIKS_SELECT, DIKS_GOTO, DIKS_CLEAR, DIKS_POWER2, DIKS_OPTION,
+-     DIKS_INFO, DIKS_TIME, DIKS_VENDOR, DIKS_ARCHIVE, DIKS_PROGRAM,
+-     DIKS_CHANNEL, DIKS_FAVORITES, DIKS_EPG, DIKS_PVR, DIKS_MHP,
+-     DIKS_LANGUAGE, DIKS_TITLE, DIKS_SUBTITLE, DIKS_ANGLE, DIKS_ZOOM,
+-     DIKS_MODE, DIKS_KEYBOARD, DIKS_SCREEN, DIKS_PC, DIKS_TV, DIKS_TV2,
+-     DIKS_VCR, DIKS_VCR2, DIKS_SAT, DIKS_SAT2, DIKS_CD, DIKS_TAPE,
+-     DIKS_RADIO, DIKS_TUNER, DIKS_PLAYER, DIKS_TEXT, DIKS_DVD, DIKS_AUX,
+-     DIKS_MP3, DIKS_AUDIO, DIKS_VIDEO, DIKS_DIRECTORY, DIKS_LIST, DIKS_MEMO,
+-     DIKS_CALENDAR, DIKS_RED, DIKS_GREEN, DIKS_YELLOW, DIKS_BLUE,
+-     DIKS_CHANNEL_UP, DIKS_CHANNEL_DOWN, DIKS_FIRST, DIKS_LAST, DIKS_AB,
+-     DIKS_NEXT, DIKS_RESTART, DIKS_SLOW, DIKS_SHUFFLE, DIKS_FASTFORWARD,
 -     DIKS_PREVIOUS, DIKS_NEXT, DIKS_DIGITS, DIKS_TEEN, DIKS_TWEN, DIKS_BREAK
-+     DIKS_PREVIOUS, DIKS_NEXT, DIKS_DIGITS, DIKS_TEEN, DIKS_TWEN, DIKS_BREAK,
-+     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 70
++     DIKS_OK, DIKS_SELECT, DIKS_GOTO, DIKS_CLEAR, DIKS_POWER2, DIKS_OPTION, // 5
++     DIKS_INFO, DIKS_TIME, DIKS_VENDOR, DIKS_ARCHIVE, DIKS_PROGRAM, // 10
++     DIKS_CHANNEL, DIKS_FAVORITES, DIKS_EPG, DIKS_PVR, DIKS_MHP, // 15
++     DIKS_LANGUAGE, DIKS_TITLE, DIKS_SUBTITLE, DIKS_ANGLE, DIKS_ZOOM, // 20
++     DIKS_MODE, DIKS_KEYBOARD, DIKS_SCREEN, DIKS_PC, DIKS_TV, DIKS_TV2, // 26
++     DIKS_VCR, DIKS_VCR2, DIKS_SAT, DIKS_SAT2, DIKS_CD, DIKS_TAPE, // 32
++     DIKS_RADIO, DIKS_TUNER, DIKS_PLAYER, DIKS_TEXT, DIKS_DVD, DIKS_AUX, // 38
++     DIKS_MP3, DIKS_AUDIO, DIKS_VIDEO, DIKS_DIRECTORY, DIKS_LIST, DIKS_MEMO, // 44
++     DIKS_CALENDAR, DIKS_RED, DIKS_GREEN, DIKS_YELLOW, DIKS_BLUE, // 49
++     DIKS_CHANNEL_UP, DIKS_CHANNEL_DOWN, DIKS_FIRST, DIKS_LAST, DIKS_AB, // 54
++     DIKS_NEXT, DIKS_RESTART, DIKS_SLOW, DIKS_SHUFFLE, DIKS_BREAK, // 59
++     DIKS_PREVIOUS, DIKS_DIGITS, DIKS_TEEN, DIKS_TWEN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 65
++     DIKS_ZOOMIN, DIKS_ZOOMOUT, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 70
 +     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 75
 +     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 80
 +     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 85
-+     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 90
++     DIKI_UNKNOWN, DIKS_MEDIA_REPEAT, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 90
 +     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 95
 +     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 100
 +     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 105
 +     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 110
-+     DIKI_UNKNOWN, DIKS_FN, DIKS_FN_ESC, DIKS_FN_F1, DIKI_UNKNOWN, // 115
-+     DIKI_UNKNOWN, DIKS_FN_F4, DIKS_FN_F5, DIKS_FN_F6, DIKI_UNKNOWN // 120
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKS_FN_F1, DIKI_UNKNOWN, // 115
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 120
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 125
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 130
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 135
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 140
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 145
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 150
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 155
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 160
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 165
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 170
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 175
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 180
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 185
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 190
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 195
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 200
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 205
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 210
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 215
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 220
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 225
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 230
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 235
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 240
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 245
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 250
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 255
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 260
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 265
++     DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, // 270
++     DIKS_3D_MODE, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN, DIKI_UNKNOWN // 275
  };
  
  /*
-@@ -917,6 +942,7 @@ linux_input_EventThread( DirectThread *thread, void *driver_data )
+@@ -653,6 +709,7 @@ key_event( const struct input_event *levt,
+      }
+      else {
+           int key = translate_key( code );
++          D_DEBUG_AT( Debug_LinuxInput, "%s(), key: %d\n", __FUNCTION__, key );
+ 
+           if (key == DIKI_UNKNOWN)
+                return false;
+@@ -881,6 +938,7 @@ linux_input_EventThread( DirectThread *thread, void *driver_data )
+           for (i=0; i<=KEY_CNT; i++) {
+                if (test_bit( i, keybit )) {
+                     const int key = translate_key( i );
++                    D_DEBUG_AT( Debug_LinuxInput, "%s(), key: %d\n", __FUNCTION__, key );
+ 
+                     if (DFB_KEY_TYPE(key) == DIKT_IDENTIFIER) {
+                          DFBInputEvent devt;
+@@ -917,6 +975,7 @@ linux_input_EventThread( DirectThread *thread, void *driver_data )
                 }
            }
            else {
@@ -151,7 +222,7 @@ index 03deebc..7a09ebc 100644
                 status = select( fdmax + 1, &set, NULL, NULL, NULL );
            }
  
-@@ -941,6 +967,8 @@ linux_input_EventThread( DirectThread *thread, void *driver_data )
+@@ -941,6 +1000,8 @@ linux_input_EventThread( DirectThread *thread, void *driver_data )
  
            readlen = read( data->fd, levt, sizeof(levt) );
  
@@ -160,7 +231,7 @@ index 03deebc..7a09ebc 100644
            if (readlen < 0 && errno != EINTR)
                 break;
  
-@@ -1085,7 +1113,8 @@ get_device_info( int              fd,
+@@ -1085,7 +1146,8 @@ get_device_info( int              fd,
               on front panels - handle as remote control and make sure not to
               treat normal (full key) keyboards likewise */
            if (!num_keys)
