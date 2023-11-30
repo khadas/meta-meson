@@ -36,14 +36,6 @@ do_install() {
     fi
 }
 
-do_install:append:t5w() {
-    sed -i '/boot_root(/a\\tattach_unifykey' ${D}/init
-}
-
-do_install:append:t5d() {
-    sed -i '/boot_root(/a\\tattach_unifykey' ${D}/init
-}
-
 FILES:${PN} += " /init /dev "
 
 # Due to kernel dependency
