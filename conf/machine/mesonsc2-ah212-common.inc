@@ -96,9 +96,9 @@ DEVICE_PROPERTY_MODEL_YEAR = "2024"
 #DISTRO_FEATURES:append = " FBE "
 
 ## AVB2 with chained partition support
-#DISTRO_FEATURES:append = " AVB "
-#DEVICE_PROPERTY_BOOT_PARTITION_SIZE = "0x4000000"
-#DEVICE_PROPERTY_VBMETA_ROLLBACK_INDEX = "0"
+DISTRO_FEATURES:append = " AVB "
+DEVICE_PROPERTY_BOOT_PARTITION_SIZE = "0x4000000"
+DEVICE_PROPERTY_VBMETA_ROLLBACK_INDEX = "0"
 # For AVB2 chained partition,
 # The following informations are needed,
 # 1. The rollback index location assigned to each chained partition

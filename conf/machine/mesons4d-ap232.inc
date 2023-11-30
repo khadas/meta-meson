@@ -57,7 +57,7 @@ DISTRO_FEATURES:append = " gstreamer1"
 DISTRO_FEATURES:append = " miraclecast "
 DISTRO_FEATURES:append = " aml-dtv "
 DISTRO_FEATURES:append = " dtvkit "
-#DISTRO_FEATURES:append = " AVB "
+DISTRO_FEATURES:append = " AVB "
 DISTRO_FEATURES:append = " recovery "
 DISTRO_FEATURES:append = " swupdate "
 

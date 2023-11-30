@@ -56,6 +56,9 @@ DISTRO_FEATURES:append = " gstreamer1"
 DISTRO_FEATURES:append = " aml-dtv "
 DISTRO_FEATURES:append = " recovery "
 DISTRO_FEATURES:append = " swupdate "
+DISTRO_FEATURES:append = " AVB "
+DEVICE_PROPERTY_BOOT_PARTITION_SIZE = "0x4000000"
+DEVICE_PROPERTY_VBMETA_ROLLBACK_INDEX = "0"
 
 
 OVERRIDES .= ":at301:t5w:onepass"
