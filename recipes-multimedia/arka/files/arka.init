@@ -2,6 +2,10 @@
 export iptv_streamtype=0
 export LOW_MEM_PLATFORM=1
 export TSPLAYER_SUBTILTEFLAG=2
+export CAS_TYPE=nagra
+export NAGRA_CAS_EMI=0x4020
+export DTVKIT_EXT=/usr/lib/libdtvkit_ota_monitor.so
+export IRDETO_REGIONAL_FILTER_ENABLE=1
 
 # Starts arka service.
 start() {

@@ -18,7 +18,7 @@ INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
-DEPENDS = " dtvkit-release-prebuilt jsoncpp libbinder aml-audio-service meson-display udev aml-hdmicec aml-mp-sdk"
+DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service meson-display udev aml-hdmicec aml-mp-sdk"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
     bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'directfb', d)}"
 
