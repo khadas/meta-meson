@@ -108,13 +108,12 @@ DEPENDS:append = " android-tools-native"
 IMAGE_ROOTFS_SIZE = "983040"
 
 #UBI
-UBI_VOLNAME = "rootfs"
-#4k
-#MKUBIFS_ARGS = "-F -m 4096 -e 253952 -c 1120"
-#UBINIZE_ARGS = "-m 4096 -p 256KiB -s 4096 -O 4096"
-#2K
-#MKUBIFS_ARGS = "-v -m 2048 -e 126976 -c 2212"
-#UBINIZE_ARGS = "-m 2048 -p 128KiB -s 2048 -O 2048"
+# -e 126976: logical eraseblock size of the UBI volume
+# -c 396: specifies maximum file-system size in logical eraseblocks
+# the resulting FS may be put on volumes up to about 48MiB (126976 multiplied by 396)
+UBI_VOLNAME = "system"
+MKUBIFS_ARGS = "-F -m 2048 -e 126976 -c 396"
+UBINIZE_ARGS = "-m 2048 -p 128KiB -s 2048 -O 2048"
 
 IMAGE_ROOTFS_EXTRA_SPACE = "0"
 

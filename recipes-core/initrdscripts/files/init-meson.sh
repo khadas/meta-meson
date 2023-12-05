@@ -637,7 +637,11 @@ mount_and_boot() {
         else
             echo "mount overlay"
             if [ "${root_fstype}" = "ubifs" ]; then
-                data_ubi_handle ubi2 /data
+                if [ "$VENDOR_DEVICE" = "enabled" ]; then
+                    data_ubi_handle ubi2 /data
+                else
+                    data_ubi_handle ubi1 /data
+                fi
             elif [ "${root_fstype}" = "squashfs" ]; then
                 data_ubi_handle ubi0 /data
             else
@@ -683,7 +687,11 @@ mount_and_boot() {
         if [ "${root_fstype}" = "ext4" ]; then
             data_ext4_handle $ROOT_MOUNT/data
         elif [ "${root_fstype}" = "ubifs" ]; then
-            data_ubi_handle ubi2 $ROOT_MOUNT/data
+            if [ "$VENDOR_DEVICE" = "enabled" ]; then
+                data_ubi_handle ubi2 /data
+            else
+                data_ubi_handle ubi1 /data
+            fi
         elif [ "${root_fstype}" = "squashfs" ]; then
             # data_yaffs2_handle $ROOT_MOUNT/data
             data_ubi_handle ubi0 $ROOT_MOUNT/data
@@ -736,7 +744,11 @@ ubi_rootfs_mount()
 ubi_vendor_attach()
 {
     vendor_mtd_number=$(cat /proc/mtd | grep  -E "vendor" | awk -F : '{print $1}' | grep -o '[0-9]\+')
-    ubiattach /dev/ubi_ctrl -m ${vendor_mtd_number}
+
+    if [ -n "$vendor_mtd_number" ]; then
+        ubiattach /dev/ubi_ctrl -m ${vendor_mtd_number}
+        VENDOR_DEVICE="enabled"
+    fi
 }
 
 data_ubi_handle()
