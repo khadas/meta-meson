@@ -5,7 +5,8 @@ DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', ' android-rpcs
 DEPENDS += "libxml2 "
 RDEPENDS:${PN} = "aml-mp-sdk aml-mediahal-sdk  aml-subtitleserver aml-libdvr jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 libcurl freetype openssl "
 
-##inherit systemd update-rc.d
+inherit systemd
+##inherit update-rc.d
 
 ##INITSCRIPT_NAME = "dtvkit"
 ##INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
