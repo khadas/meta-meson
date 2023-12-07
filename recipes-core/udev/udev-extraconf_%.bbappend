@@ -7,7 +7,7 @@ SRC_URI:append = " \
 "
 SRC_URI:append = " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nand', '', \
-    bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'block.rules', '', d),  d)} \
+    bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'file://block.rules', '', d),  d)} \
 "
 
 do_install:append () {
