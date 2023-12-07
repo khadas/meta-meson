@@ -4,17 +4,9 @@ LIC_FILES_CHKSUM=""
 
 inherit useradd
 
-SRC_URI = "file://file1"
-
-S = "${WORKDIR}"
+do_install[noexec] = "1"
+ALLOW_EMPTY:${PN} = "1"
 
 USERADD_PACKAGES = "${PN}"
 USERADD_PARAM:${PN} = "--system -d / -M --shell /bin/nologin --user-group session;"
 USERADD_PARAM:${PN} += "--system -d / -M --shell /bin/nologin --groups video,audio,input,disk,session --user-group system"
-
-do_install () {
-    install -d -m 755 ${D}${datadir}/
-    install -p -m 644 file1 ${D}${datadir}/
-}
-
-FILES_${PN} = "${datadir}/*"
