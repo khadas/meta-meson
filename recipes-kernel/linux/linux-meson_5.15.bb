@@ -35,7 +35,7 @@ SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.c
 KDIR = "aml-5.15"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
-LINUX_VERSION ?= "5.15.119"
+LINUX_VERSION ?= "5.15.123"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
 KERNEL_FEATURES:remove = "cfg/fs/vfat.scc"
 
