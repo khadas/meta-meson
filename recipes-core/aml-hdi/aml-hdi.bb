@@ -12,7 +12,7 @@ SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 PR = "r0"
 
-DEPENDS = "aml-mediahal-sdk directfb libgpiod aml-libdvr aml-subtitleserver meson-display libdrm"
+DEPENDS = "aml-mediahal-sdk directfb libgpiod aml-libdvr aml-subtitleserver meson-display libdrm aml-cas-hal cjson"
 
 INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${includedir}/directfb/ \

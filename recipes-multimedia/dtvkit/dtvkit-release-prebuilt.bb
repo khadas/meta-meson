@@ -2,12 +2,14 @@ SUMMARY = "amlogic dtvkit prebuilt"
 LICENSE = "CLOSED"
 DEPENDS = "aml-mp-sdk "
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', ' android-rpcservice', '', d)} "
+DEPENDS += "libxml2 "
 RDEPENDS:${PN} = "aml-mp-sdk aml-mediahal-sdk  aml-subtitleserver aml-libdvr jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 libcurl freetype openssl "
 
-inherit systemd update-rc.d
+inherit systemd
+##inherit update-rc.d
 
-INITSCRIPT_NAME = "dtvkit"
-INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
+##INITSCRIPT_NAME = "dtvkit"
+##INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
 
 SYSTEMD_SERVICE:${PN} = "dtvkit.service"
 FILES:${PN} += "${systemd_unitdir}/system/dtvkit.service"
@@ -20,7 +22,7 @@ ARM_TARGET:aarch64 = "lib64"
 SRCREV ?= "${AUTOREV}"
 SRC_URI +="file://dtvkit.service"
 SRC_URI +="file://dtvkit_low_mem.service"
-SRC_URI +="file://dtvkit.init "
+###SRC_URI +="file://dtvkit.init "
 
 TDK_VERSION:t5w = "v3.8/dev/T962D4"
 
@@ -43,15 +45,15 @@ do_compile[noexec] = "1"
 do_populate_lic[noexec] = "1"
 do_package_qa[noexec] = "1"
 do_install () {
-	mkdir -p ${D}/usr/bin
-	mkdir -p ${D}/usr/lib
-	mkdir -p ${D}/usr/include/dtvkit/inc
-	mkdir -p ${D}/usr/include/dtvkit/dvb/inc
-	mkdir -p ${D}/usr/include/dtvkit/midware/stb/inc
-	mkdir -p ${D}/usr/include/dtvkit/platform/inc
-	mkdir -p ${D}/usr/include/dtvkit/hw/inc
-	mkdir -p ${D}/lib/optee_armtz
-	mkdir -p ${D}/etc/
+    mkdir -p ${D}/usr/bin
+    mkdir -p ${D}/usr/lib
+    mkdir -p ${D}/usr/include/dtvkit/inc
+    mkdir -p ${D}/usr/include/dtvkit/dvb/inc
+    mkdir -p ${D}/usr/include/dtvkit/midware/stb/inc
+    mkdir -p ${D}/usr/include/dtvkit/platform/inc
+    mkdir -p ${D}/usr/include/dtvkit/hw/inc
+    mkdir -p ${D}/lib/optee_armtz
+    mkdir -p ${D}/etc/
 
     install -D -m 0644 ${S}/inc/DVBCore/include/dvbcore/dvb/inc/*.h ${D}/usr/include/dtvkit/dvb/inc
     install -D -m 0644 ${S}/inc/DVBCore/include/dvbcore/platform/inc/*.h ${D}/usr/include/dtvkit/platform/inc
@@ -63,14 +65,13 @@ do_install () {
     if ${@bb.utils.contains("DISTRO_FEATURES", "dtvkit-src", "false", "true", d)}; then
         install -D -m 0644 ${S}/${ARM_TARGET}/libdtvkitserver.so ${D}/${libdir}
         install -D -m 0644 ${S}/${ARM_TARGET}/libdtvkitclient.so ${D}/${libdir}
-
-        install -D -m 0755 ${S}/${ARM_TARGET}/dtvkitserver ${D}/${bindir}
-        install -D -m 0755 ${S}/${ARM_TARGET}/CLIENT ${D}/${bindir}
+        if ${@bb.utils.contains("DISTRO_FEATURES", "zapper-2k", "false", "true", d)}; then
+            install -D -m 0755 ${S}/${ARM_TARGET}/dtvkitserver ${D}/${bindir}
+            install -D -m 0755 ${S}/${ARM_TARGET}/CLIENT ${D}/${bindir}
+        fi
     fi
     install -d ${D}/${systemd_unitdir}/system
-    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper-2k", "true", "false", d)}; then
-        install -m 0644 ${WORKDIR}/dtvkit_low_mem.service ${D}/${systemd_unitdir}/system/dtvkit.service
-    else
+    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper-2k", "false", "true", d)}; then
         install -m 0644 ${WORKDIR}/dtvkit.service ${D}/${systemd_unitdir}/system//dtvkit.service
     fi
 
@@ -82,8 +83,8 @@ do_install () {
        install -D -m 0755 ${S}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
     fi
 
-    install -d ${D}${sysconfdir}/init.d
-    install -m 0755 ${WORKDIR}/dtvkit.init ${D}${sysconfdir}/init.d/dtvkit
+    ##install -d ${D}${sysconfdir}/init.d
+    ##install -m 0755 ${WORKDIR}/dtvkit.init ${D}${sysconfdir}/init.d/dtvkit
 }
 
 FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}/* /lib/optee_armtz/* "

@@ -24,7 +24,7 @@ do_install() {
 
     #read_args need about 200ms on nand platform, so disable it on nand
     if ${@bb.utils.contains("DISTRO_FEATURES", "nand", "true", "false", d)}; then
-        sed -i -e 's/root_fstype=\"ext4\"/root_fstype=\"squashfs\"/' ${D}/init
+        sed -i -e 's/root_fstype=\"ext4\"/root_fstype=\"${ROOTFS_TYPE}\"/' ${D}/init
         sed -i '/read_args(/a\\treturn 0' ${D}/init
     fi
 
@@ -34,14 +34,6 @@ do_install() {
             sed -i "s/#upstream_emmc_mount/upstream_emmc_mount/g" ${D}/init
         fi
     fi
-}
-
-do_install:append:t5w() {
-    sed -i '/boot_root(/a\\tattach_unifykey' ${D}/init
-}
-
-do_install:append:t5d() {
-    sed -i '/boot_root(/a\\tattach_unifykey' ${D}/init
 }
 
 FILES:${PN} += " /init /dev "

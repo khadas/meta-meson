@@ -6,8 +6,8 @@ SRC_URI:append = " \
     'file://10-video.rules', '', d)} \
 "
 SRC_URI:append = " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', \
-    'file://block.rules', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'nand', '', \
+    bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'file://block.rules', '', d),  d)} \
 "
 
 do_install:append () {

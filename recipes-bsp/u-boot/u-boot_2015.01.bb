@@ -71,6 +71,9 @@ inherit python3native
 export BL30_ARG = ""
 export BL2_ARG = ""
 
+BL33_ARG = "${@bb.utils.contains('DISTRO_FEATURES','AVB','--avb2','',d)}"
+BL33_ARG += " ${@bb.utils.contains('DISTRO_FEATURES', 'AVB_recovery_partition', '--avb2-recovery', '', d)}"
+
 CFLAGS +=" -DCONFIG_YOCTO "
 KCFLAGS +=" -DCONFIG_YOCTO "
 BUILD_GPT_FLAG=""
@@ -94,17 +97,17 @@ do_compile () {
                 --in=${STAGING_DIR_TARGET}/usr/share/tdk/secureos/${BL32_SOC_FAMILY}/bl32.img \
                 --out=${S}/bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img
             if ${@bb.utils.contains('DISTRO_FEATURES','uboot-abmode','true','false',d)}; then
-                echo "process: mk ${UBOOT_TYPE%_config} --vab --ab-update ${BL30_ARG} ${BL2_ARG}"
-                LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --vab --ab-update ${BL30_ARG} ${BL2_ARG}
+                echo "process: mk ${UBOOT_TYPE%_config} --vab --ab-update ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}"
+                LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --vab --ab-update ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}
             else
-                echo "process: mk ${UBOOT_TYPE%_config} --bl32 bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}"
-                LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --bl32 bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
+                echo "process: mk ${UBOOT_TYPE%_config} --bl32 bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}"
+                LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --bl32 bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}
             fi
         else
-            LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --bl32 bl32/bl32_3.8/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
+            LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --bl32 bl32/bl32_3.8/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}
         fi
     else
-        LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG}
+        LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} ${BL33_ARG}
     fi
     cp -rf build/* fip/
 }

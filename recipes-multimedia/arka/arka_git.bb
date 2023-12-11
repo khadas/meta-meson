@@ -3,7 +3,6 @@ LICENSE = "CLOSED"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI = "git://${AML_GIT_ROOT}${AML_GIT_ROOT_YOCTO_SUFFIX}/zapper/arka;protocol=${AML_GIT_PROTOCOL};branch=master;nobranch=1"
 SRC_URI:append = " file://arka.service "
 SRC_URI:append = " file://arka.init "
 SRCREV = "${AUTOREV}"
@@ -19,7 +18,7 @@ INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
-DEPENDS = " dtvkit-release-prebuilt jsoncpp libbinder aml-audio-service meson-display udev aml-hdmicec aml-mp-sdk"
+DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service meson-display udev aml-hdmicec aml-mp-sdk"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
     bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'directfb', d)}"
 

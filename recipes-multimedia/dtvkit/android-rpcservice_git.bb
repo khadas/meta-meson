@@ -11,7 +11,7 @@ ARM_TARGET:aarch64 = "lib64"
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-DEPENDS = "dtvkit-dvbcore dtvkit-amlogic   jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 curl freetype openssl aml-mp-sdk aml-subtitleserver"
+DEPENDS = "dtvkit-dvbcore dtvkit-amlogic dtvkit-ciplus dtvkit-dsmcc  dtvkit-mheg5   jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 curl freetype openssl aml-mp-sdk aml-subtitleserver optee-userspace"
 RDEPENDS:${PN} = "aml-mediahal-sdk  aml-subtitleserver aml-libdvr  libbinder liblog "
 
 do_configure[noexec] = "1"

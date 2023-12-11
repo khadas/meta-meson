@@ -1,8 +1,8 @@
-diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
-index 7e6be7a..049b21a 100644
---- a/ext/hls/gsthlsdemux.c
-+++ b/ext/hls/gsthlsdemux.c
-@@ -61,9 +61,13 @@ GST_DEBUG_CATEGORY (gst_hls_demux_debug);
+Index: gst-plugins-bad-1.16.3/ext/hls/gsthlsdemux.c
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/ext/hls/gsthlsdemux.c
++++ gst-plugins-bad-1.16.3/ext/hls/gsthlsdemux.c
+@@ -61,9 +61,13 @@ GST_DEBUG_CATEGORY (gst_hls_demux_debug)
  #define GST_M3U8_CLIENT_LOCK(l) /* FIXME */
  #define GST_M3U8_CLIENT_UNLOCK(l)       /* FIXME */
  
@@ -16,7 +16,7 @@ index 7e6be7a..049b21a 100644
  /* GstElement */
  static GstStateChangeReturn
  gst_hls_demux_change_state (GstElement * element, GstStateChange transition);
-@@ -122,6 +126,12 @@ static gint gst_hls_demux_stream_get_discontinuity_num (GstAdaptiveDemuxStream *
+@@ -122,6 +126,12 @@ static gint gst_hls_demux_stream_get_dis
  #define gst_hls_demux_parent_class parent_class
  G_DEFINE_TYPE (GstHLSDemux, gst_hls_demux, GST_TYPE_ADAPTIVE_DEMUX);
  
@@ -29,7 +29,7 @@ index 7e6be7a..049b21a 100644
  static void
  gst_hls_demux_finalize (GObject * obj)
  {
-@@ -149,9 +159,14 @@ gst_hls_demux_class_init (GstHLSDemuxClass * klass)
+@@ -149,9 +159,14 @@ gst_hls_demux_class_init (GstHLSDemuxCla
    adaptivedemux_class = (GstAdaptiveDemuxClass *) klass;
  
    gobject_class->finalize = gst_hls_demux_finalize;
@@ -71,7 +71,7 @@ index 7e6be7a..049b21a 100644
  static GstStateChangeReturn
  gst_hls_demux_change_state (GstElement * element, GstStateChange transition)
  {
-@@ -766,7 +800,7 @@ gst_hls_demux_start_fragment (GstAdaptiveDemux * demux,
+@@ -766,7 +800,7 @@ gst_hls_demux_start_fragment (GstAdaptiv
        hls_stream->stream_type);
  
    /* If no decryption is needed, there's nothing to be done here */
@@ -80,7 +80,7 @@ index 7e6be7a..049b21a 100644
      return TRUE;
  
    m3u8 = gst_hls_demux_stream_get_m3u8 (hls_stream);
-@@ -855,6 +889,31 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
+@@ -855,6 +889,31 @@ gst_hls_demux_handle_buffer (GstAdaptive
        return GST_FLOW_OK;
      }
  
@@ -112,7 +112,7 @@ index 7e6be7a..049b21a 100644
      GST_DEBUG_OBJECT (hlsdemux, "Typefind result: %" GST_PTR_FORMAT " prob:%d",
          caps, prob);
  
-@@ -892,6 +951,31 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
+@@ -892,6 +951,31 @@ gst_hls_demux_handle_buffer (GstAdaptive
    }
  
    if (buffer) {
@@ -144,7 +144,7 @@ index 7e6be7a..049b21a 100644
      buffer = gst_buffer_make_writable (buffer);
      GST_BUFFER_OFFSET (buffer) = hls_stream->current_offset;
      hls_stream->current_offset += gst_buffer_get_size (buffer);
-@@ -906,9 +990,10 @@ gst_hls_demux_finish_fragment (GstAdaptiveDemux * demux,
+@@ -906,9 +990,10 @@ gst_hls_demux_finish_fragment (GstAdapti
      GstAdaptiveDemuxStream * stream)
  {
    GstHLSDemuxStream *hls_stream = GST_HLS_DEMUX_STREAM_CAST (stream);   // FIXME: pass HlsStream into function
@@ -156,7 +156,7 @@ index 7e6be7a..049b21a 100644
      gst_hls_demux_stream_decrypt_end (hls_stream);
  
    if (stream->last_ret == GST_FLOW_OK) {
-@@ -977,7 +1062,7 @@ gst_hls_demux_data_received (GstAdaptiveDemux * demux,
+@@ -977,7 +1062,7 @@ gst_hls_demux_data_received (GstAdaptive
      hls_stream->current_offset = 0;
  
    /* Is it encrypted? */
@@ -165,7 +165,7 @@ index 7e6be7a..049b21a 100644
      GError *err = NULL;
      gsize size;
      GstBuffer *tmp_buffer;
-@@ -1034,10 +1119,22 @@ gst_hls_demux_stream_free (GstAdaptiveDemuxStream * stream)
+@@ -1034,10 +1119,22 @@ gst_hls_demux_stream_free (GstAdaptiveDe
      g_free (hls_stream->current_key);
      hls_stream->current_key = NULL;
    }
@@ -188,7 +188,7 @@ index 7e6be7a..049b21a 100644
    gst_hls_demux_stream_decrypt_end (hls_stream);
  }
  
-@@ -1130,9 +1227,16 @@ gst_hls_demux_update_fragment_info (GstAdaptiveDemuxStream * stream)
+@@ -1130,9 +1227,16 @@ gst_hls_demux_update_fragment_info (GstA
  
    g_free (hlsdemux_stream->current_key);
    hlsdemux_stream->current_key = g_strdup (file->key);
@@ -206,10 +206,10 @@ index 7e6be7a..049b21a 100644
    g_free (stream->fragment.uri);
    stream->fragment.uri = g_strdup (file->uri);
  
-diff --git a/ext/hls/gsthlsdemux.h b/ext/hls/gsthlsdemux.h
-index 529cd19..c81944d 100644
---- a/ext/hls/gsthlsdemux.h
-+++ b/ext/hls/gsthlsdemux.h
+Index: gst-plugins-bad-1.16.3/ext/hls/gsthlsdemux.h
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/ext/hls/gsthlsdemux.h
++++ gst-plugins-bad-1.16.3/ext/hls/gsthlsdemux.h
 @@ -113,7 +113,12 @@ struct _GstHLSDemuxStream
  #endif
  
@@ -232,11 +232,11 @@ index 529cd19..c81944d 100644
  };
  
  struct _GstHLSDemuxClass
-diff --git a/ext/hls/m3u8.c b/ext/hls/m3u8.c
-index 0ab163c..7931c03 100644
---- a/ext/hls/m3u8.c
-+++ b/ext/hls/m3u8.c
-@@ -153,6 +153,8 @@ gst_m3u8_media_file_unref (GstM3U8MediaFile * self)
+Index: gst-plugins-bad-1.16.3/ext/hls/m3u8.c
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/ext/hls/m3u8.c
++++ gst-plugins-bad-1.16.3/ext/hls/m3u8.c
+@@ -153,6 +153,8 @@ gst_m3u8_media_file_unref (GstM3U8MediaF
      g_free (self->title);
      g_free (self->uri);
      g_free (self->key);
@@ -245,7 +245,7 @@ index 0ab163c..7931c03 100644
      g_free (self);
    }
  }
-@@ -490,13 +492,18 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+@@ -490,13 +492,18 @@ gst_m3u8_update (GstM3U8 * self, gchar *
    gchar *title, *end;
    gboolean discontinuity = FALSE;
    gchar *current_key = NULL;
@@ -264,7 +264,7 @@ index 0ab163c..7931c03 100644
  
    g_return_val_if_fail (self != NULL, FALSE);
    g_return_val_if_fail (data != NULL, FALSE);
-@@ -567,6 +574,10 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+@@ -567,6 +574,10 @@ gst_m3u8_update (GstM3U8 * self, gchar *
  
          /* set encryption params */
          file->key = current_key ? g_strdup (current_key) : NULL;
@@ -275,7 +275,7 @@ index 0ab163c..7931c03 100644
          if (file->key) {
            if (have_iv) {
              memcpy (file->iv, iv, sizeof (iv));
-@@ -574,6 +585,8 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+@@ -574,6 +585,8 @@ gst_m3u8_update (GstM3U8 * self, gchar *
              guint8 *iv = file->iv + 12;
              GST_WRITE_UINT32_BE (iv, file->sequence);
            }
@@ -284,7 +284,7 @@ index 0ab163c..7931c03 100644
          }
  
          if (size != -1) {
-@@ -667,10 +680,14 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+@@ -667,10 +680,14 @@ gst_m3u8_update (GstM3U8 * self, gchar *
        } else if (g_str_has_prefix (data_ext_x, "KEY:")) {
          gchar *v, *a;
  
@@ -299,7 +299,7 @@ index 0ab163c..7931c03 100644
          g_free (current_key);
          current_key = NULL;
          while (data && parse_attributes (&data, &a, &v)) {
-@@ -708,10 +725,54 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+@@ -708,10 +725,54 @@ gst_m3u8_update (GstM3U8 * self, gchar *
              }
              have_iv = TRUE;
            } else if (g_str_equal (a, "METHOD")) {
@@ -355,7 +355,7 @@ index 0ab163c..7931c03 100644
            }
          }
        } else if (g_str_has_prefix (data_ext_x, "BYTERANGE:")) {
-@@ -780,6 +841,12 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+@@ -780,6 +841,12 @@ gst_m3u8_update (GstM3U8 * self, gchar *
    g_free (current_key);
    current_key = NULL;
  
@@ -368,11 +368,11 @@ index 0ab163c..7931c03 100644
    self->files = g_list_reverse (self->files);
  
    if (last_init_file)
-diff --git a/ext/hls/m3u8.h b/ext/hls/m3u8.h
-index 6fd2d84..a07e894 100644
---- a/ext/hls/m3u8.h
-+++ b/ext/hls/m3u8.h
-@@ -91,6 +91,13 @@ GstM3U8 *          gst_m3u8_ref   (GstM3U8 * m3u8);
+Index: gst-plugins-bad-1.16.3/ext/hls/m3u8.h
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/ext/hls/m3u8.h
++++ gst-plugins-bad-1.16.3/ext/hls/m3u8.h
+@@ -91,6 +91,13 @@ GstM3U8 *          gst_m3u8_ref   (GstM3
  
  void               gst_m3u8_unref (GstM3U8 * m3u8);
  
@@ -402,11 +402,11 @@ index 6fd2d84..a07e894 100644
  };
  
  struct _GstM3U8InitFile
-diff --git a/gst-libs/gst/mpegts/gstmpegtsdescriptor.c b/gst-libs/gst/mpegts/gstmpegtsdescriptor.c
-index 64e1546..659f8bf 100644
---- a/gst-libs/gst/mpegts/gstmpegtsdescriptor.c
-+++ b/gst-libs/gst/mpegts/gstmpegtsdescriptor.c
-@@ -805,9 +805,11 @@ gst_mpegts_parse_descriptors (guint8 * buffer, gsize buf_len)
+Index: gst-plugins-bad-1.16.3/gst-libs/gst/mpegts/gstmpegtsdescriptor.c
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst-libs/gst/mpegts/gstmpegtsdescriptor.c
++++ gst-plugins-bad-1.16.3/gst-libs/gst/mpegts/gstmpegtsdescriptor.c
+@@ -805,9 +805,11 @@ gst_mpegts_parse_descriptors (guint8 * b
      desc->data = data;
      desc->tag = *data++;
      desc->length = *data++;
@@ -419,10 +419,10 @@ index 64e1546..659f8bf 100644
      GST_MEMDUMP ("descriptor", desc->data + 2, desc->length);
      /* extended descriptors */
      if (G_UNLIKELY (desc->tag == 0x7f))
-diff --git a/gst-libs/gst/mpegts/gstmpegtsdescriptor.h b/gst-libs/gst/mpegts/gstmpegtsdescriptor.h
-index 73f6c74..f45c7a9 100644
---- a/gst-libs/gst/mpegts/gstmpegtsdescriptor.h
-+++ b/gst-libs/gst/mpegts/gstmpegtsdescriptor.h
+Index: gst-plugins-bad-1.16.3/gst-libs/gst/mpegts/gstmpegtsdescriptor.h
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst-libs/gst/mpegts/gstmpegtsdescriptor.h
++++ gst-plugins-bad-1.16.3/gst-libs/gst/mpegts/gstmpegtsdescriptor.h
 @@ -258,6 +258,7 @@ struct _GstMpegtsDescriptor
    guint8 tag_extension;
    guint8 length;
@@ -431,10 +431,10 @@ index 73f6c74..f45c7a9 100644
  
    /*< private >*/
    /* Padding for future extension */
-diff --git a/gst-libs/gst/mpegts/gstmpegtssection.c b/gst-libs/gst/mpegts/gstmpegtssection.c
-index 41c970a..a6d0575 100644
---- a/gst-libs/gst/mpegts/gstmpegtssection.c
-+++ b/gst-libs/gst/mpegts/gstmpegtssection.c
+Index: gst-plugins-bad-1.16.3/gst-libs/gst/mpegts/gstmpegtssection.c
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst-libs/gst/mpegts/gstmpegtssection.c
++++ gst-plugins-bad-1.16.3/gst-libs/gst/mpegts/gstmpegtssection.c
 @@ -713,6 +713,19 @@ _parse_pmt (GstMpegtsSection * section)
          gst_mpegts_parse_descriptors (data, stream_info_length);
      if (stream->descriptors == NULL)
@@ -455,10 +455,10 @@ index 41c970a..a6d0575 100644
      data += stream_info_length;
  
      i += 1;
-diff --git a/gst-libs/gst/mpegts/gstmpegtssection.h b/gst-libs/gst/mpegts/gstmpegtssection.h
-index 6054edf..8321e4b 100644
---- a/gst-libs/gst/mpegts/gstmpegtssection.h
-+++ b/gst-libs/gst/mpegts/gstmpegtssection.h
+Index: gst-plugins-bad-1.16.3/gst-libs/gst/mpegts/gstmpegtssection.h
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst-libs/gst/mpegts/gstmpegtssection.h
++++ gst-plugins-bad-1.16.3/gst-libs/gst/mpegts/gstmpegtssection.h
 @@ -336,7 +336,12 @@ typedef enum {
    GST_MPEGTS_STREAM_TYPE_VIDEO_H264_STEREO_ADDITIONAL_VIEW  = 0x23,
    GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC                   = 0x24,
@@ -473,11 +473,11 @@ index 6054edf..8321e4b 100644
    /* 0x80 - 0xff : User Private (or defined in other specs) */
  } GstMpegtsStreamType;
  
-diff --git a/gst/mpegtsdemux/mpegtsbase.c b/gst/mpegtsdemux/mpegtsbase.c
-index ad75110..107cb92 100644
---- a/gst/mpegtsdemux/mpegtsbase.c
-+++ b/gst/mpegtsdemux/mpegtsbase.c
-@@ -1386,7 +1386,7 @@ mpegts_base_chain (GstPad * pad, GstObject * parent, GstBuffer * buf)
+Index: gst-plugins-bad-1.16.3/gst/mpegtsdemux/mpegtsbase.c
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst/mpegtsdemux/mpegtsbase.c
++++ gst-plugins-bad-1.16.3/gst/mpegtsdemux/mpegtsbase.c
+@@ -1386,7 +1386,7 @@ mpegts_base_chain (GstPad * pad, GstObje
    MpegTSBase *base;
    MpegTSPacketizerPacketReturn pret;
    MpegTSPacketizer2 *packetizer;
@@ -486,11 +486,11 @@ index ad75110..107cb92 100644
    MpegTSBaseClass *klass;
  
    base = GST_MPEGTS_BASE (parent);
-diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
-index 151717d..41297a9 100644
---- a/gst/mpegtsdemux/mpegtspacketizer.c
-+++ b/gst/mpegtsdemux/mpegtspacketizer.c
-@@ -828,6 +828,10 @@ mpegts_packetizer_next_packet (MpegTSPacketizer2 * packetizer,
+Index: gst-plugins-bad-1.16.3/gst/mpegtsdemux/mpegtspacketizer.c
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst/mpegtsdemux/mpegtspacketizer.c
++++ gst-plugins-bad-1.16.3/gst/mpegtsdemux/mpegtspacketizer.c
+@@ -828,6 +828,10 @@ mpegts_packetizer_next_packet (MpegTSPac
    gsize sync_offset;
  
    packet_size = packetizer->packet_size;
@@ -501,7 +501,7 @@ index 151717d..41297a9 100644
    if (G_UNLIKELY (!packet_size)) {
      if (!mpegts_try_discover_packet_size (packetizer))
        return PACKET_NEED_MORE;
-@@ -866,7 +870,15 @@ mpegts_packetizer_next_packet (MpegTSPacketizer2 * packetizer,
+@@ -866,7 +870,15 @@ mpegts_packetizer_next_packet (MpegTSPac
        GST_LOG ("offset %" G_GUINT64_FORMAT, packet->offset);
        packetizer->offset += packet_size;
        GST_MEMDUMP ("data_start", packet->data_start, 16);
@@ -518,7 +518,7 @@ index 151717d..41297a9 100644
        return mpegts_packetizer_parse_packet (packetizer, packet);
      }
    }
-@@ -878,6 +890,8 @@ mpegts_packetizer_process_next_packet (MpegTSPacketizer2 * packetizer)
+@@ -878,6 +890,8 @@ mpegts_packetizer_process_next_packet (M
    MpegTSPacketizerPacket packet;
    MpegTSPacketizerPacketReturn ret;
  
@@ -527,7 +527,7 @@ index 151717d..41297a9 100644
    ret = mpegts_packetizer_next_packet (packetizer, &packet);
    if (ret != PACKET_NEED_MORE)
      mpegts_packetizer_clear_packet (packetizer, &packet);
-@@ -896,6 +910,10 @@ mpegts_packetizer_clear_packet (MpegTSPacketizer2 * packetizer,
+@@ -896,6 +910,10 @@ mpegts_packetizer_clear_packet (MpegTSPa
      if (packetizer->map_size - packetizer->map_offset < packet_size)
        mpegts_packetizer_flush_bytes (packetizer, packetizer->map_offset);
    }
@@ -538,10 +538,10 @@ index 151717d..41297a9 100644
  }
  
  gboolean
-diff --git a/gst/mpegtsdemux/mpegtspacketizer.h b/gst/mpegtsdemux/mpegtspacketizer.h
-index 6444e81..0f7d4a7 100644
---- a/gst/mpegtsdemux/mpegtspacketizer.h
-+++ b/gst/mpegtsdemux/mpegtspacketizer.h
+Index: gst-plugins-bad-1.16.3/gst/mpegtsdemux/mpegtspacketizer.h
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst/mpegtsdemux/mpegtspacketizer.h
++++ gst-plugins-bad-1.16.3/gst/mpegtsdemux/mpegtspacketizer.h
 @@ -311,6 +311,7 @@ typedef struct
    guint8  afc_flags;
    guint64 pcr;
@@ -550,10 +550,10 @@ index 6444e81..0f7d4a7 100644
  } MpegTSPacketizerPacket;
  
  typedef struct
-diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index 53e94ac..9408c5d 100644
---- a/gst/mpegtsdemux/tsdemux.c
-+++ b/gst/mpegtsdemux/tsdemux.c
+Index: gst-plugins-bad-1.16.3/gst/mpegtsdemux/tsdemux.c
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst/mpegtsdemux/tsdemux.c
++++ gst-plugins-bad-1.16.3/gst/mpegtsdemux/tsdemux.c
 @@ -51,6 +51,7 @@
  #include <gst/video/video-color.h>
  
@@ -562,7 +562,7 @@ index 53e94ac..9408c5d 100644
  
  #define _gst_log2(x) (log(x)/log(2))
  
-@@ -121,6 +122,7 @@ typedef struct _TSDemuxStream TSDemuxStream;
+@@ -121,6 +122,7 @@ typedef struct _TSDemuxStream TSDemuxStr
  
  typedef struct _TSDemuxH264ParsingInfos TSDemuxH264ParsingInfos;
  typedef struct _TSDemuxJP2KParsingInfos TSDemuxJP2KParsingInfos;
@@ -693,7 +693,7 @@ index 53e94ac..9408c5d 100644
    if (demux->global_tags) {
      gst_tag_list_unref (demux->global_tags);
      demux->global_tags = NULL;
-@@ -1033,6 +1130,11 @@ push_event (MpegTSBase * base, GstEvent * event)
+@@ -1033,6 +1130,11 @@ push_event (MpegTSBase * base, GstEvent
      /* tags are stored to be used after if there are no streams yet,
       * so we should never reject */
      early_ret = TRUE;
@@ -705,7 +705,7 @@ index 53e94ac..9408c5d 100644
    }
  
    if (G_UNLIKELY (demux->program == NULL)) {
-@@ -1598,6 +1700,18 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+@@ -1598,6 +1700,18 @@ create_pad_for_stream (MpegTSBase * base
            "stream-format", G_TYPE_STRING, "adts", NULL);
        }
        break;
@@ -724,7 +724,7 @@ index 53e94ac..9408c5d 100644
      case GST_MPEGTS_STREAM_TYPE_AUDIO_AAC_LATM:
        is_audio = TRUE;
        if (program->registration_id == DRF_ID_HDCP) {
-@@ -1613,12 +1727,44 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+@@ -1613,12 +1727,44 @@ create_pad_for_stream (MpegTSBase * base
            "stream-format", G_TYPE_STRING, "loas", NULL);
        }
        break;
@@ -769,7 +769,7 @@ index 53e94ac..9408c5d 100644
      case GST_MPEGTS_STREAM_TYPE_VIDEO_H264:
      case GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC:
        is_video = TRUE;
-@@ -1986,7 +2132,8 @@ gst_ts_demux_stream_added (MpegTSBase * base, MpegTSBaseStream * bstream,
+@@ -1986,7 +2132,8 @@ gst_ts_demux_stream_added (MpegTSBase *
      }
  
      if (base->mode != BASE_MODE_PUSHING
@@ -779,7 +779,7 @@ index 53e94ac..9408c5d 100644
        stream->scan_function =
            (GstTsDemuxKeyFrameScanFunction) scan_keyframe_h264;
      } else {
-@@ -2269,8 +2416,13 @@ gst_ts_demux_program_started (MpegTSBase * base, MpegTSBaseProgram * program)
+@@ -2269,8 +2416,13 @@ gst_ts_demux_program_started (MpegTSBase
          GST_DEBUG_OBJECT (stream->pad, "sparse stream, pushing GAP event");
          gst_pad_push_event (stream->pad, gst_event_new_gap (0, 0));
        }
@@ -793,7 +793,7 @@ index 53e94ac..9408c5d 100644
      gst_element_no_more_pads ((GstElement *) demux);
    }
  }
-@@ -2642,6 +2794,9 @@ gst_ts_demux_queue_data (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -2642,6 +2794,9 @@ gst_ts_demux_queue_data (GstTSDemux * de
        GST_LOG ("HEADER: Parsing PES header");
  
        /* parse the header */
@@ -1131,7 +1131,7 @@ index 53e94ac..9408c5d 100644
  static GstFlowReturn
  gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
      MpegTSBaseProgram * target_program)
-@@ -3206,6 +3682,20 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -3206,6 +3682,20 @@ gst_ts_demux_push_pending_data (GstTSDem
          res = GST_FLOW_ERROR;
          goto beach;
        }
@@ -1152,7 +1152,7 @@ index 53e94ac..9408c5d 100644
      } else {
        buffer = gst_buffer_new_wrapped (stream->data, stream->current_size);
      }
-@@ -3349,6 +3839,17 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -3349,6 +3839,17 @@ gst_ts_demux_push_pending_data (GstTSDem
      demux->segment.position = stream->pts;
  
    if (buffer) {
@@ -1182,10 +1182,10 @@ index 53e94ac..9408c5d 100644
    return res;
  }
  
-diff --git a/gst/mpegtsdemux/tsdemux.h b/gst/mpegtsdemux/tsdemux.h
-index 2316518..122eb18 100644
---- a/gst/mpegtsdemux/tsdemux.h
-+++ b/gst/mpegtsdemux/tsdemux.h
+Index: gst-plugins-bad-1.16.3/gst/mpegtsdemux/tsdemux.h
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst/mpegtsdemux/tsdemux.h
++++ gst-plugins-bad-1.16.3/gst/mpegtsdemux/tsdemux.h
 @@ -105,6 +105,8 @@ struct _GstTSDemux
    /* Used when seeking for a keyframe to go backward in the stream */
    guint64 last_seek_offset;
@@ -1195,10 +1195,10 @@ index 2316518..122eb18 100644
  };
  
  struct _GstTSDemuxClass
-diff --git a/gst/videoparsers/gsth264parse.c b/gst/videoparsers/gsth264parse.c
-index aac388b..4017753 100644
---- a/gst/videoparsers/gsth264parse.c
-+++ b/gst/videoparsers/gsth264parse.c
+Index: gst-plugins-bad-1.16.3/gst/videoparsers/gsth264parse.c
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst/videoparsers/gsth264parse.c
++++ gst-plugins-bad-1.16.3/gst/videoparsers/gsth264parse.c
 @@ -72,20 +72,33 @@ enum
        GST_H264_PARSE_STATE_GOT_SLICE)
  };
@@ -1235,7 +1235,7 @@ index aac388b..4017753 100644
  
  #define parent_class gst_h264_parse_parent_class
  G_DEFINE_TYPE (GstH264Parse, gst_h264_parse, GST_TYPE_BASE_PARSE);
-@@ -167,6 +180,7 @@ gst_h264_parse_init (GstH264Parse * h264parse)
+@@ -167,6 +180,7 @@ gst_h264_parse_init (GstH264Parse * h264
  
    h264parse->aud_needed = TRUE;
    h264parse->aud_insert = TRUE;
@@ -1243,7 +1243,7 @@ index aac388b..4017753 100644
  }
  
  
-@@ -199,6 +213,10 @@ gst_h264_parse_reset_frame (GstH264Parse * h264parse)
+@@ -199,6 +213,10 @@ gst_h264_parse_reset_frame (GstH264Parse
    h264parse->have_sps_in_frame = FALSE;
    h264parse->have_pps_in_frame = FALSE;
    gst_adapter_clear (h264parse->frame_out);
@@ -1254,7 +1254,7 @@ index aac388b..4017753 100644
  }
  
  static void
-@@ -811,6 +829,54 @@ gst_h264_parse_process_sei (GstH264Parse * h264parse, GstH264NalUnit * nalu)
+@@ -811,6 +829,54 @@ gst_h264_parse_process_sei (GstH264Parse
    g_array_free (messages, TRUE);
  }
  
@@ -1309,7 +1309,7 @@ index aac388b..4017753 100644
  /* caller guarantees 2 bytes of nal payload */
  static gboolean
  gst_h264_parse_process_nal (GstH264Parse * h264parse, GstH264NalUnit * nalu)
-@@ -1002,6 +1068,33 @@ gst_h264_parse_process_nal (GstH264Parse * h264parse, GstH264NalUnit * nalu)
+@@ -1002,6 +1068,40 @@ gst_h264_parse_process_nal (GstH264Parse
        break;
    }
  
@@ -1325,8 +1325,15 @@ index aac388b..4017753 100644
 +        if (nalu->size > 48) {
 +          newSize = gst_h264_unescape_stream(nalu->data + nalu->offset, nalu->size);
 +          nalu->size = newSize;
-+          gst_byte_writer_put_uint16_be (h264parse->subsample_writer, 32 + 4);
-+          gst_byte_writer_put_uint32_be (h264parse->subsample_writer, nalu->size - 32);
++          if ((nalu->size - 32) % (10 * 16) == 16) {
++            gst_byte_writer_put_uint16_be (h264parse->subsample_writer, 32 + 4);
++            gst_byte_writer_put_uint32_be (h264parse->subsample_writer, nalu->size - 32 -16);
++            gst_byte_writer_put_uint16_be (h264parse->subsample_writer, 16);
++            gst_byte_writer_put_uint32_be (h264parse->subsample_writer, 0);
++          } else {
++            gst_byte_writer_put_uint16_be (h264parse->subsample_writer, 32 + 4);
++            gst_byte_writer_put_uint32_be (h264parse->subsample_writer, nalu->size - 32);
++          }
 +        } else {
 +          gst_byte_writer_put_uint16_be (h264parse->subsample_writer, nalu->size + 4);
 +          gst_byte_writer_put_uint32_be (h264parse->subsample_writer, 0);
@@ -1343,7 +1350,7 @@ index aac388b..4017753 100644
    /* if AVC output needed, collect properly prefixed nal in adapter,
     * and use that to replace outgoing buffer data later on */
    if (h264parse->transform) {
-@@ -1394,6 +1487,21 @@ end:
+@@ -1394,6 +1494,21 @@ end:
  
    gst_h264_parse_parse_frame (parse, frame);
  
@@ -1365,7 +1372,7 @@ index aac388b..4017753 100644
    return gst_base_parse_finish_frame (parse, frame, framesize);
  
  more:
-@@ -1534,7 +1642,7 @@ gst_h264_parse_get_par (GstH264Parse * h264parse, gint * num, gint * den)
+@@ -1534,7 +1649,7 @@ gst_h264_parse_get_par (GstH264Parse * h
  }
  
  static GstCaps *
@@ -1374,7 +1381,7 @@ index aac388b..4017753 100644
  {
    GstCaps *caps = NULL;
    const gchar **profiles = NULL;
-@@ -1653,7 +1761,10 @@ get_compatible_profile_caps (GstH264SPS * sps)
+@@ -1653,7 +1768,10 @@ get_compatible_profile_caps (GstH264SPS
  
    if (profiles) {
      GValue value = G_VALUE_INIT;
@@ -1386,7 +1393,7 @@ index aac388b..4017753 100644
      for (i = 0; profiles[i]; i++) {
        g_value_init (&value, G_TYPE_STRING);
        g_value_set_string (&value, profiles[i]);
-@@ -1676,7 +1787,11 @@ ensure_caps_profile (GstH264Parse * h264parse, GstCaps * caps, GstH264SPS * sps)
+@@ -1676,7 +1794,11 @@ ensure_caps_profile (GstH264Parse * h264
  
    peer_caps = gst_pad_get_current_caps (GST_BASE_PARSE_SRC_PAD (h264parse));
    if (!peer_caps || !gst_caps_can_intersect (caps, peer_caps)) {
@@ -1399,7 +1406,7 @@ index aac388b..4017753 100644
  
      if (peer_caps)
        gst_caps_unref (peer_caps);
-@@ -1690,7 +1805,7 @@ ensure_caps_profile (GstH264Parse * h264parse, GstCaps * caps, GstH264SPS * sps)
+@@ -1690,7 +1812,7 @@ ensure_caps_profile (GstH264Parse * h264
    if (peer_caps && !gst_caps_can_intersect (caps, peer_caps)) {
      GstStructure *structure;
  
@@ -1408,7 +1415,7 @@ index aac388b..4017753 100644
      if (compat_caps != NULL) {
        GstCaps *res_caps = NULL;
  
-@@ -2777,6 +2892,8 @@ gst_h264_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+@@ -2777,6 +2899,8 @@ gst_h264_parse_set_caps (GstBaseParse *
    }
  
    str = gst_caps_get_structure (caps, 0);
@@ -1417,7 +1424,7 @@ index aac388b..4017753 100644
  
    /* accept upstream info if provided */
    gst_structure_get_int (str, "width", &h264parse->width);
-@@ -2928,7 +3045,13 @@ gst_h264_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+@@ -2928,7 +3052,13 @@ gst_h264_parse_set_caps (GstBaseParse *
      GstCaps *in_caps;
  
      /* prefer input type determined above */
@@ -1432,10 +1439,10 @@ index aac388b..4017753 100644
          "parsed", G_TYPE_BOOLEAN, TRUE,
          "stream-format", G_TYPE_STRING,
          gst_h264_parse_get_string (h264parse, TRUE, format),
-diff --git a/gst/videoparsers/gsth264parse.h b/gst/videoparsers/gsth264parse.h
-index a8e0120..19fbeb7 100644
---- a/gst/videoparsers/gsth264parse.h
-+++ b/gst/videoparsers/gsth264parse.h
+Index: gst-plugins-bad-1.16.3/gst/videoparsers/gsth264parse.h
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst/videoparsers/gsth264parse.h
++++ gst-plugins-bad-1.16.3/gst/videoparsers/gsth264parse.h
 @@ -29,6 +29,7 @@
  #include <gst/base/gstbaseparse.h>
  #include <gst/codecparsers/gsth264parser.h>
@@ -1455,10 +1462,10 @@ index a8e0120..19fbeb7 100644
  };
  
  struct _GstH264ParseClass
-diff --git a/gst/videoparsers/gsth265parse.c b/gst/videoparsers/gsth265parse.c
-index 4113710..d38765b 100644
---- a/gst/videoparsers/gsth265parse.c
-+++ b/gst/videoparsers/gsth265parse.c
+Index: gst-plugins-bad-1.16.3/gst/videoparsers/gsth265parse.c
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst/videoparsers/gsth265parse.c
++++ gst-plugins-bad-1.16.3/gst/videoparsers/gsth265parse.c
 @@ -68,20 +68,31 @@ enum
        GST_H265_PARSE_STATE_GOT_SLICE)
  };
@@ -1493,7 +1500,7 @@ index 4113710..d38765b 100644
  
  #define parent_class gst_h265_parse_parent_class
  G_DEFINE_TYPE (GstH265Parse, gst_h265_parse, GST_TYPE_BASE_PARSE);
-@@ -157,6 +168,7 @@ gst_h265_parse_init (GstH265Parse * h265parse)
+@@ -157,6 +168,7 @@ gst_h265_parse_init (GstH265Parse * h265
    gst_base_parse_set_pts_interpolation (GST_BASE_PARSE (h265parse), FALSE);
    GST_PAD_SET_ACCEPT_INTERSECT (GST_BASE_PARSE_SINK_PAD (h265parse));
    GST_PAD_SET_ACCEPT_TEMPLATE (GST_BASE_PARSE_SINK_PAD (h265parse));
@@ -1501,7 +1508,7 @@ index 4113710..d38765b 100644
  }
  
  
-@@ -188,6 +200,10 @@ gst_h265_parse_reset_frame (GstH265Parse * h265parse)
+@@ -188,6 +200,10 @@ gst_h265_parse_reset_frame (GstH265Parse
    h265parse->have_sps_in_frame = FALSE;
    h265parse->have_pps_in_frame = FALSE;
    gst_adapter_clear (h265parse->frame_out);
@@ -1512,7 +1519,7 @@ index 4113710..d38765b 100644
  }
  
  static void
-@@ -559,6 +575,54 @@ gst_h265_parse_process_sei (GstH265Parse * h265parse, GstH265NalUnit * nalu)
+@@ -559,6 +575,54 @@ gst_h265_parse_process_sei (GstH265Parse
    g_array_free (messages, TRUE);
  }
  
@@ -1567,7 +1574,7 @@ index 4113710..d38765b 100644
  /* caller guarantees 2 bytes of nal payload */
  static gboolean
  gst_h265_parse_process_nal (GstH265Parse * h265parse, GstH265NalUnit * nalu)
-@@ -788,6 +852,33 @@ gst_h265_parse_process_nal (GstH265Parse * h265parse, GstH265NalUnit * nalu)
+@@ -788,6 +852,40 @@ gst_h265_parse_process_nal (GstH265Parse
        break;
    }
  
@@ -1585,8 +1592,15 @@ index 4113710..d38765b 100644
 +        if (nalu->size > 48) {
 +          newSize = gst_h265_unescape_stream(nalu->data + nalu->offset, nalu->size);
 +          nalu->size = newSize;
-+          gst_byte_writer_put_uint16_be (h265parse->subsample_writer, 32 + 4);
-+          gst_byte_writer_put_uint32_be (h265parse->subsample_writer, nalu->size - 32);
++          if ((nalu->size - 32) % (10 * 16) == 16) {
++            gst_byte_writer_put_uint16_be (h265parse->subsample_writer, 32 + 4);
++            gst_byte_writer_put_uint32_be (h265parse->subsample_writer, nalu->size - 32 -16);
++            gst_byte_writer_put_uint16_be (h265parse->subsample_writer, 16);
++            gst_byte_writer_put_uint32_be (h265parse->subsample_writer, 0);
++          } else {
++            gst_byte_writer_put_uint16_be (h265parse->subsample_writer, 32 + 4);
++            gst_byte_writer_put_uint32_be (h265parse->subsample_writer, nalu->size - 32);
++          }
 +        } else {
 +          gst_byte_writer_put_uint16_be (h265parse->subsample_writer, nalu->size + 4);
 +          gst_byte_writer_put_uint32_be (h265parse->subsample_writer, 0);
@@ -1601,7 +1615,7 @@ index 4113710..d38765b 100644
    /* if HEVC output needed, collect properly prefixed nal in adapter,
     * and use that to replace outgoing buffer data later on */
    if (h265parse->transform) {
-@@ -1131,6 +1222,21 @@ end:
+@@ -1131,6 +1229,21 @@ end:
  
    gst_h265_parse_parse_frame (parse, frame);
  
@@ -1623,7 +1637,7 @@ index 4113710..d38765b 100644
    return gst_base_parse_finish_frame (parse, frame, framesize);
  
  more:
-@@ -1465,7 +1571,7 @@ get_level_string (guint8 level_idc)
+@@ -1465,7 +1578,7 @@ get_level_string (guint8 level_idc)
  }
  
  static GstCaps *
@@ -1632,7 +1646,7 @@ index 4113710..d38765b 100644
  {
    GstCaps *caps = NULL;
    const gchar **profiles = NULL;
-@@ -1510,7 +1616,12 @@ get_compatible_profile_caps (GstH265SPS * sps)
+@@ -1510,7 +1623,12 @@ get_compatible_profile_caps (GstH265SPS
  
    if (profiles) {
      GValue value = G_VALUE_INIT;
@@ -1646,7 +1660,7 @@ index 4113710..d38765b 100644
      for (i = 0; profiles[i]; i++) {
        g_value_init (&value, G_TYPE_STRING);
        g_value_set_string (&value, profiles[i]);
-@@ -1533,7 +1644,11 @@ ensure_caps_profile (GstH265Parse * h265parse, GstCaps * caps, GstH265SPS * sps)
+@@ -1533,7 +1651,11 @@ ensure_caps_profile (GstH265Parse * h265
  
    peer_caps = gst_pad_get_current_caps (GST_BASE_PARSE_SRC_PAD (h265parse));
    if (!peer_caps || !gst_caps_can_intersect (caps, peer_caps)) {
@@ -1659,7 +1673,7 @@ index 4113710..d38765b 100644
  
      if (peer_caps)
        gst_caps_unref (peer_caps);
-@@ -1547,7 +1662,7 @@ ensure_caps_profile (GstH265Parse * h265parse, GstCaps * caps, GstH265SPS * sps)
+@@ -1547,7 +1669,7 @@ ensure_caps_profile (GstH265Parse * h265
    if (peer_caps && !gst_caps_can_intersect (caps, peer_caps)) {
      GstStructure *structure;
  
@@ -1668,7 +1682,7 @@ index 4113710..d38765b 100644
      if (compat_caps != NULL) {
        GstCaps *res_caps = NULL;
  
-@@ -2329,6 +2444,9 @@ gst_h265_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+@@ -2329,6 +2451,9 @@ gst_h265_parse_set_caps (GstBaseParse *
  
    str = gst_caps_get_structure (caps, 0);
  
@@ -1678,7 +1692,7 @@ index 4113710..d38765b 100644
    /* accept upstream info if provided */
    gst_structure_get_int (str, "width", &h265parse->width);
    gst_structure_get_int (str, "height", &h265parse->height);
-@@ -2421,7 +2539,13 @@ gst_h265_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+@@ -2421,7 +2546,13 @@ gst_h265_parse_set_caps (GstBaseParse *
      GstCaps *in_caps;
  
      /* prefer input type determined above */
@@ -1693,10 +1707,10 @@ index 4113710..d38765b 100644
          "parsed", G_TYPE_BOOLEAN, TRUE,
          "stream-format", G_TYPE_STRING,
          gst_h265_parse_get_string (h265parse, TRUE, format),
-diff --git a/gst/videoparsers/gsth265parse.h b/gst/videoparsers/gsth265parse.h
-index f523649..c529c81 100644
---- a/gst/videoparsers/gsth265parse.h
-+++ b/gst/videoparsers/gsth265parse.h
+Index: gst-plugins-bad-1.16.3/gst/videoparsers/gsth265parse.h
+===================================================================
+--- gst-plugins-bad-1.16.3.orig/gst/videoparsers/gsth265parse.h
++++ gst-plugins-bad-1.16.3/gst/videoparsers/gsth265parse.h
 @@ -24,6 +24,7 @@
  #include <gst/gst.h>
  #include <gst/base/gstbaseparse.h>

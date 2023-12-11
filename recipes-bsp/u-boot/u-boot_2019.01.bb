@@ -73,8 +73,17 @@ BL33_ARG += " ${@bb.utils.contains('DISTRO_FEATURES', 'AVB_recovery_partition', 
 VMX_UBOOT_PATH = "TBD"
 VMX_UBOOT_PATH:s4 = "s905y4"
 VMX_UBOOT_PATH:aq2432 = "s805c3"
+VMX_UBOOT_PATH:sc2 = "sc2"
+
+# Define BL32 version. Default is v1. Adjust accordingly.
+VMX_UBOOT_BL32_VER = "1"
+VMX_UBOOT_BL32_VER_s4 = "1"
+VMX_UBOOT_BL32_VER_sc2 = "2"
+# Decide BL32 directory based on version
+VMX_UBOOT_BL32_DIR = "${@'v2' if d.getVar('VMX_UBOOT_BL32_VER') == '2' else ''}"
+
 VMX_UBOOT_NAND_OPTION = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '.nand', '', d)}"
-VMX_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '--bl32 vmx-sdk/bootloader/${VMX_UBOOT_PATH}/bl32/blob-bl32${VMX_UBOOT_NAND_OPTION}.bin.signed', '', d)}"
+VMX_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '--bl32 vmx-sdk/bootloader/${VMX_UBOOT_PATH}/bl32/${VMX_UBOOT_BL32_DIR}/blob-bl32${VMX_UBOOT_NAND_OPTION}.bin.signed', '', d)}"
 
 #NAGRA UBOOT PATH depends on SoC
 NAGRA_UBOOT_PATH = "TBD"
@@ -99,6 +108,7 @@ KCFLAGS +=" -DCONFIG_YOCTO "
 SOC = "TBD"
 SOC_aq2432 = "s805c3"
 SOC_ap222 = "s905y4"
+SOC_ah212 = "s905x4"
 do_compile () {
     cd ${S}
     cp -f fip/mk .

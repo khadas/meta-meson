@@ -28,12 +28,6 @@ kernel_515_module_install() {
     fi
 }
 
-attach_unifykey() {
-    if [ -f /sys/class/unifykeys/attach ]; then
-        echo 1 > /sys/class/unifykeys/attach
-    fi
-}
-
 wait_for_emmc_partition () {
     i=1
     while [ "$i" -le 30 ]

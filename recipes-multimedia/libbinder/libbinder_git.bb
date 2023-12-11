@@ -13,7 +13,9 @@ PV = "${SRCPV}"
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_commonlib;protocol=${AML_GIT_PROTOCOL};branch=master;"
 SRC_URI += "file://LICENSE-2.0.txt"
 SRC_URI += "file://binder.service"
+SRC_URI += "file://dev-binderfs.mount"
 SRC_URI += "file://binder.sh"
+SRC_URI += "file://binder.sysv.sh"
 SRC_URI += "file://binder.init"
 
 #For common patches
@@ -46,14 +48,20 @@ do_install(){
     install -m 0644 ${S}/include/binder/* ${D}${includedir}/binder
     install -m 0644 ${S}/include/utils/* ${D}${includedir}/utils
     install -m 0644 ${WORKDIR}/binder.service ${D}/${systemd_unitdir}/system
+    install -m 0644 ${WORKDIR}/dev-binderfs.mount ${D}/${systemd_unitdir}/system
     install -m 0755 ${WORKDIR}/binder.sh ${D}/${bindir}
 }
 
 do_install:append(){
+    # system-user mode for systemd service
     if ${@bb.utils.contains("DISTRO_FEATURES", "system-user", "true", "false", d)}
     then
         sed -i '/ln -sf/a\chmod g+rw /dev/binder' ${D}/${bindir}/binder.sh
         sed -i '/ln -sf/a\chgrp system /dev/binder' ${D}/${bindir}/binder.sh
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES','sysvinit','true','false',d)}; then
+        install -m 0755 ${WORKDIR}/binder.sysv.sh ${D}/${bindir}/binder.sh
     fi
 
     install -d ${D}${sysconfdir}/init.d
@@ -64,7 +72,7 @@ SYSTEMD_SERVICE:${PN} = "binder.service"
 
 FILES:${PN} = "${libdir}/* ${bindir}/* ${sysconfdir}"
 FILES:${PN}-dev = "${includedir}/* "
-FILES:${PN} += "${systemd_unitdir}/system/binder.service"
+FILES:${PN} += "${systemd_unitdir}/system/*"
 
 INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
 INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"
