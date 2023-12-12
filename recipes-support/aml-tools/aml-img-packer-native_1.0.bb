@@ -16,6 +16,8 @@ SOC_FAMILY:t5d = "t5d"
 SOC_FAMILY:t5w = "t5w"
 SOC_FAMILY:t3 = "t3"
 SOC_FAMILY:s1a = "s1a"
+SOC_FAMILY:g12b = "g12b"
+SOC_FAMILY:sm1 = "sm1"
 
 SOC_BOARD = "default"
 SOC_BOARD:ah232 = "ah232"

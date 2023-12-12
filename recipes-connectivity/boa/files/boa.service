@@ -1,0 +1,13 @@
+[Unit]
+Description=Boa Webserver Service
+After=wifi.service
+
+[Service]
+Type=forking
+User=root
+ExecStart=/usr/sbin/boa
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+

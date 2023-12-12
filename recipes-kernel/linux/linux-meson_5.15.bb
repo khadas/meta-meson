@@ -22,6 +22,9 @@ SRC_URI:append:t5w = " file://t5w.cfg"
 SRC_URI:append:aq2432 = " file://defconfig"
 SRC_URI:append:bf201 = " file://defconfig"
 SRC_URI:append:bg201 = " file://defconfig"
+SRC_URI:append:t7 = " file://t7.cfg"
+SRC_URI:append:g12b = " file://g12b.cfg"
+SRC_URI:append:sm1 = " file://sm1.cfg"
 
 SRC_URI += "file://common.cfg"
 

@@ -9,7 +9,7 @@ do_populate_lic[noexec] = "1"
 # These libraries shouldn't get installed in world builds unless something
 # explicitly depends upon them.
 EXCLUDE_FROM_WORLD = "1"
-PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl virtual/libgbm virtual/mesa virtual/mesa-gl"
+PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/libgl virtual/egl virtual/libgbm virtual/mesa virtual/mesa-gl"
 RPROVIDES:${PN} += "libGLESv2.so libEGL.so libGLESv1_CM.so libMali.so"
 DEPENDS += "patchelf-native libdrm wayland"
 

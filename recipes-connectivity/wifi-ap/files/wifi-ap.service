@@ -1,0 +1,18 @@
+[Unit]
+Description=Wifi Ap interface
+Before=systemd-networkd.service
+
+#PathExists=!/sys/class/net/${WIFI_INTERFACE}
+
+[Service]
+Type=oneshot
+RemainAfterExit=yeS
+#EnvironmentFile=/etc/device.properties
+#because in modules.alias, sdio wifi power depends on wlan, so wifi_power on will
+#load wlan.ko automatically. If delete all the wlan related entries in modules.alias,
+#we need insmod wlan.ko explicitly here
+ExecStart=/bin/sh -c "if [ ! -f /etc/wifi/ap_name ]; then cat /sys/class/net/wlan0/address | sed 's/://g' > /etc/wifi/ap_name; fi"
+ExecStart=/etc/wifi/wifi_ap_init start
+ExecStop=/sbin/ifconfig wlan1 down
+[Install]
+WantedBy=multi-user.target

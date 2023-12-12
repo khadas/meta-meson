@@ -11,9 +11,12 @@ do_compile[noexec] = "1"
 SOC_FAMILY = "TBD"
 SOC_FAMILY:s4 = "s4"
 SOC_FAMILY:t5d = "t5d"
+SOC_FAMILY:sm1 = "sm1"
+SOC_FAMILY:g12b = "g12b"
 SOC_FAMILY:t5w = "t5w"
 SOC_FAMILY:sc2 = "sc2"
 SOC_FAMILY:s1a = "s1a"
+SOC_FAMILY:t7 = "t7"
 
 PR = "r1"
 

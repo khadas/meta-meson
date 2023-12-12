@@ -1,0 +1,10 @@
+[Unit]
+Description=ISP Service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/bin/sh -c "/etc/isp_prepare.sh"
+
+[Install]
+WantedBy=multi-user.target

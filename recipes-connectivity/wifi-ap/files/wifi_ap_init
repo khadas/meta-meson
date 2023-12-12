@@ -1,0 +1,102 @@
+#!/bin/sh
+#killall hostapd
+#killall dnsmasq
+
+NAME1=hostapd
+DAEMON1=/usr/sbin/$NAME1
+PIDFILE1=/var/run/$NAME1.pid
+
+NAME2=dnsmasq
+DAEMON2=/usr/bin/$NAME2
+PIDFILE2=/var/run/$NAME2.pid
+
+
+ap_name_file=/etc/wifi/ap_name
+function hostapd_conf(){
+	while true
+	do
+		cat /sys/class/net/$1/address | sed 's/\://g' > /etc/wifi/ap_name
+		if [ -f $ap_name_file ];then
+			break
+		fi
+	done
+	ap_name=`cat /etc/wifi/ap_name`
+	ssid=amlogic-audio-$ap_name
+	password=12345678
+
+	echo 0 > /etc/hostapd_temp.conf
+	echo "interface=$1" > /etc/hostapd_temp.conf
+	echo "driver=nl80211" >> /etc/hostapd_temp.conf
+	echo "ctrl_interface=/var/run/hostapd" >> /etc/hostapd_temp.conf
+	echo "ssid=${ssid}" >> /etc/hostapd_temp.conf
+	echo "channel=36" >> /etc/hostapd_temp.conf
+#	echo "op_class=119" >> /etc/hostapd_temp.conf
+	echo "ieee80211n=1" >> /etc/hostapd_temp.conf
+	echo "ieee80211ac=1" >> /etc/hostapd_temp.conf
+	echo "hw_mode=a" >> /etc/hostapd_temp.conf
+#	echo "ht_capab=[HT40+][SHORT-GI-40][RX-STBC123][LDPC]" >> /etc/hostapd_temp.conf
+	echo "ignore_broadcast_ssid=0"  >> /etc/hostapd_temp.conf
+#	echo "vht_capab=[SHORT-GI-80][RXLDPC]"  >> /etc/hostapd_temp.conf
+	echo "wowlan_triggers=any"  >> /etc/hostapd_temp.conf
+	echo "wpa=2" >> /etc/hostapd_temp.conf
+	echo "wpa_passphrase=${password}" >> /etc/hostapd_temp.conf
+	echo "wpa_key_mgmt=WPA-PSK" >> /etc/hostapd_temp.conf
+	echo "rsn_pairwise=CCMP" >> /etc/hostapd_temp.conf
+}
+
+
+function hostapd_conf_pre()
+{
+	hostapd_conf $1
+	hostapd /etc/hostapd_temp.conf -e /etc/entropy.bin &
+	ifconfig $1 192.168.2.1
+}
+
+function wifi_init(){
+
+DONE=`ifconfig wlan1 up > /dev/null`
+ifconfig wlan1 &> /dev/null
+ifconfig wlan1 0.0.0.0
+
+if [ $? -eq 0 ]; then
+  hostapd_conf_pre wlan1
+fi
+
+}
+
+
+function wifi_ap_start()
+{
+
+    killall hostapd
+    killall dnsmasq
+
+    echo "start wifi ap init......"
+
+    wifi_init
+
+}
+
+case "$1" in
+	start)
+		wifi_ap_start &
+		;;
+	stop)
+		killall hostapd
+		killall dnsmasq
+		echo -n "Stopping wifi ap..."
+		rm -f $PIDFILE1
+		rm -f $PIDFILE2
+		ifconfig wlan1 down
+		;;
+	restart)
+		$0 stop
+		$0 start
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+		exit 1
+esac
+
+exit $?
+

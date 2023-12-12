@@ -18,6 +18,8 @@ do_configure[noexec] = "1"
 
 MEDIA_MODULES_UCODE_BIN = "${S}/firmware/${CHIPSET_NAME}/video_ucode.bin"
 MEDIA_MODULES_UCODE_BIN:t5d = "${S}/firmware/video_ucode.bin"
+MEDIA_MODULES_UCODE_BIN:sm1 = "${S}/firmware/video_ucode.bin"
+MEDIA_MODULES_UCODE_BIN:g12b = "${S}/firmware/video_ucode.bin"
 
 do_install() {
     MEDIADIR=${D}/lib/modules/${KERNEL_VERSION}/kernel/media
@@ -90,6 +92,12 @@ MEDIA_CONFIGS:bg201 = " \
                  CONFIG_AMLOGIC_MEDIA_VDEC_H265=m \
                  CONFIG_AMLOGIC_MEDIA_GE2D=y \
                  "
+MEDIA_CONFIGS:append_g12b = "\
+                 CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
+                 "
+MEDIA_CONFIGS:append_sm1 = "\
+                 CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
+                 "
 
 S = "${WORKDIR}/git"
 EXTRA_OEMAKE='-C ${STAGING_KERNEL_DIR} M="${S}/drivers" EXTRA_CFLAGS=${MEDIA_CONFIGS} modules'
@@ -128,8 +136,10 @@ KERNEL_MODULE_AUTOLOAD += "amvdec_ports"
 #KERNEL_MODULE_AUTOLOAD += "vpu"
 
 KERNEL_MODULE_AUTOLOAD:append:t3 = " encoder jpegenc amvenc_multi"
-KERNEL_MODULE_AUTOLOAD:append:t7 = " encoder jpegenc amvenc_multi"
-KERNEL_MODULE_AUTOLOAD:append:sc2 = " encoder jpegenc vpu"
+KERNEL_MODULE_AUTOLOAD:append:t7 = " encoder amlogic-jpegenc amlogic-multienc"
+KERNEL_MODULE_AUTOLOAD:append:sc2 = " amlogic-encoder amlogic-jpegenc amlogic-vpu"
+KERNEL_MODULE_AUTOLOAD:append:g12b = " amlogic-encoder amlogic-jpegenc amlogic-vpu"
+KERNEL_MODULE_AUTOLOAD:append:sm1 = " amlogic-encoder amlogic-jpegenc amlogic-vpu"
 
 # Skip auto loading for Zapper project
 MODULE_AUTOLOAD_ZAPPER_SKIP = "\
