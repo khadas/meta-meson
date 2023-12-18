@@ -45,7 +45,7 @@ PV = "v2023.01+git${SRCPV}"
 
 PATH:append = ":${STAGING_DIR_NATIVE}/gcc-linaro-aarch64-elf/bin"
 PATH:append = ":${STAGING_DIR_NATIVE}/riscv-none-gcc/bin"
-#DEPENDS:append = "optee-scripts-native optee-userspace-securebl32"
+#DEPENDS:append = "optee-userspace-securebl32"
 DEPENDS:append = "gcc-linaro-aarch64-elf-native "
 DEPENDS:append = "vim-native zip-native cmake-native"
 DEPENDS:append = " riscv-none-gcc-native "
