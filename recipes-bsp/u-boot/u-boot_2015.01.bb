@@ -60,7 +60,7 @@ BL32_SOC_FAMILY:t3 = "t3"
 PATH:append = ":${STAGING_DIR_NATIVE}/gcc-linaro-aarch64-elf/bin"
 PATH:append = ":${STAGING_DIR_NATIVE}/riscv-none-gcc/bin"
 DEPENDS:append = "gcc-linaro-aarch64-elf-native "
-DEPENDS:append = "optee-scripts-native optee-userspace-securebl32"
+DEPENDS:append = "optee-userspace-securebl32"
 DEPENDS:append = " riscv-none-gcc-native "
 
 DEPENDS:append = " coreutils-native python3-native python3-pycryptodomex-native zip-native xxd-native zip-native "
@@ -91,11 +91,8 @@ do_compile () {
     if ${@bb.utils.contains('DISTRO_FEATURES','secure-u-boot','true','false',d)}; then
         if [ "${BL32_SOC_FAMILY}" = "t5d" ];then
             mkdir -p ${S}/bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/
-            ${STAGING_DIR_NATIVE}/tdk/scripts/pack_kpub.py \
-                --rsk=${STAGING_DIR_NATIVE}/tdk/keys/root_rsa_pub_key.pem \
-                --rek=${STAGING_DIR_NATIVE}/tdk/keys/root_aes_key.bin \
-                --in=${STAGING_DIR_TARGET}/usr/share/tdk/secureos/${BL32_SOC_FAMILY}/bl32.img \
-                --out=${S}/bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img
+            cp ${STAGING_DIR_TARGET}/usr/share/tdk/secureos/${BL32_SOC_FAMILY}/bl32.img \
+                ${S}/bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img
             if ${@bb.utils.contains('DISTRO_FEATURES','uboot-abmode','true','false',d)}; then
                 echo "process: mk ${UBOOT_TYPE%_config} --vab --ab-update ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}"
                 LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --vab --ab-update ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}
