@@ -93,7 +93,7 @@ IMAGE_INSTALL += " \
 "
 
 IMAGE_INSTALL:remove = "\
-    ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'system-config libarchive gnutls libnl neon tinyalsa tinyalsa-tools alsa-utils jansson libfastjson faad2 libopus yajl popt libgcrypt libgpg-error ', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'tzdata glib-2.0 shared-mime-info libxml2 system-config libarchive gnutls libnl neon tinyalsa tinyalsa-tools alsa-utils jansson libfastjson faad2 libopus yajl popt libgcrypt libgpg-error ', '', d)} \
 "
 
 PACKAGE_INSTALL += "base-files base-passwd initramfs-meson-boot udev-extraconf "
