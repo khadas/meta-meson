@@ -2,6 +2,9 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 FILES:${PN}-staticdev += "ubi-utils/libubi.a ${libdir}/*.a"
 
+ALTERNATIVE_${PN}-ubifs = "ubiattach ubidetach ubimkvol"
+FILES_mtd-utils-ubifs = "${sbindir}/ubiattach ${sbindir}/ubidetach ${sbindir}/ubiformat ${sbindir}/ubimkvol ${sbindir}/ubiblock"
+
 do_install:append () {
 	install -d ${D}${includedir}/mtd/
 	install -d ${D}${libdir}/
