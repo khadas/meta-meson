@@ -191,6 +191,11 @@ create_extra_folder(){
     fi
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "remove_alternative_files; "
+remove_alternative_files () {
+    rm -rf ${IMAGE_ROOTFS}/usr/lib/opkg
+}
+
 process_for_read_only_rootfs(){
     if [ ! -f ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22 ];then
         touch ${IMAGE_ROOTFS}/usr/bin/hdcp_tx22

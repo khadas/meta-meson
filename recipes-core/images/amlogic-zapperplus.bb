@@ -202,6 +202,11 @@ do_rootfs[depends] += "android-tools-native:do_populate_sysroot"
 #        #rm -f ${IMAGE_ROOTFS}${sysconfdir}/etc/default/volatiles/99_wpa_supplicant
 #}
 
+ROOTFS_POSTPROCESS_COMMAND += "remove_alternative_files; "
+remove_alternative_files () {
+    rm -rf ${IMAGE_ROOTFS}/usr/lib/opkg
+}
+
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'remove-test-files', 'remove_test_files; ', '', d)}"
 remove_test_files() {
     rm -f ${IMAGE_ROOTFS}/usr/bin/audio_client_test_ac3

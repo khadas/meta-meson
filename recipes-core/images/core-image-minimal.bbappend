@@ -100,6 +100,11 @@ do_install_kernel_modules() {
    fi
 }
 
+ROOTFS_POSTPROCESS_COMMAND += "remove_alternative_files; "
+remove_alternative_files () {
+    rm -rf ${IMAGE_ROOTFS}/usr/lib/opkg
+}
+
 addtask install_kernel_modules before do_image_cpio after do_rootfs
 
 addtask bundle_initramfs_dtb before do_image_complete after do_image_cpio do_unpack
