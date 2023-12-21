@@ -18,7 +18,7 @@ INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
-DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service meson-display udev aml-hdmicec aml-mp-sdk"
+DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service meson-display udev aml-hdmicec aml-mp-sdk jpeg"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
     bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'directfb', d)}"
 
@@ -59,6 +59,6 @@ do_install:append() {
 }
 SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'arka-launcher', 'arka.service', '', d)}"
 
-FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/Arka/png ${systemd_unitdir}/system/"
+FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/Arka/png /usr/share/Arka/jpg ${systemd_unitdir}/system/"
 FILES_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '${libdir}', '', d)}"
 FILES_${PN}-dev = ""
