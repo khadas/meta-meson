@@ -1,0 +1,16 @@
+Index: bluez-5.55/src/adapter.c
+===================================================================
+--- bluez-5.55.orig/src/adapter.c
++++ bluez-5.55/src/adapter.c
+@@ -8892,9 +8892,11 @@ static void connect_failed_callback(uint
+ 
+ 	/* In the case the bonding was canceled or did exists, remove the device
+ 	 * when it is temporary. */
++/*
+ 	if (device && !device_is_bonding(device, NULL)
+ 						&& device_is_temporary(device))
+ 		btd_adapter_remove_device(adapter, device);
++*/
+ }
+ 
+ static void remove_keys(struct btd_adapter *adapter,
