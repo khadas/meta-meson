@@ -28,6 +28,9 @@ IMAGE_INSTALL:remove:k5.15 = "\
                     kernel-modules \
                     "
 
+IMAGE_INSTALL:remove = "\
+    ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'system-config', '', d)} \
+"
 
 IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
             "aml-bootloader-message \

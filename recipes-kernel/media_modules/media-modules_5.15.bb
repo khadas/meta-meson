@@ -153,6 +153,10 @@ MODULE_AUTOLOAD_ZAPPER_SKIP = "\
   amvdec_real \
   amvdec_vc1 \
   amvdec_vp9 \
+  decoder_common \
+  firmware \
+  media_clock \
+  stream_input \
   amvdec_ports \
 "
 
