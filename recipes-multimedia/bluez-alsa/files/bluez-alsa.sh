@@ -1,6 +1,7 @@
 #!/bin/sh
 
 configure_file="/etc/bluetooth/main.conf"
+BLUEALSA="bluealsa -S"
 
 WAIT_BLUETOOTHD()
 {
@@ -27,7 +28,7 @@ A2DP_BOTH_SERVICE()
 {
 	echo "|--bluez a2dp-sink/a2dp-source service--|"
 
-	bluealsa -p a2dp-sink -p a2dp-source &
+	${BLUEALSA} -p a2dp-sink -p a2dp-source &
 	usleep 200000
 	bt-halplay &
 
@@ -56,7 +57,7 @@ A2DP_SINK_SERVICE()
 {
 	echo "|--bluez a2dp-sink service--|"
 
-	bluealsa -p a2dp-sink &
+	${BLUEALSA} -p a2dp-sink &
 	usleep 200000
 	bt-halplay &
 
@@ -83,7 +84,7 @@ A2DP_SINK_SERVICE()
 A2DP_SOURCE_SERVICE()
 {
 	echo "|--bluez a2dp-source service--|"
-	bluealsa -p a2dp-source &
+	${BLUEALSA} -p a2dp-source &
 }
 
 Blue_start()

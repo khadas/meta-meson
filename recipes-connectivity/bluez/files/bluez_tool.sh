@@ -80,29 +80,29 @@ aml_bt_init()
 service_down()
 {
 	echo "|--stop bluez service--|"
-	killall bluetoothd
+	#killall bluetoothd
 	sh bluez-alsa.sh stop
 }
 
 service_up()
 {
 	echo "|--start bluez service--|"
-	grep "Debug=1" $configure_file > /dev/null
-	if [ $? -eq 0 ]; then
-		echo "|--bluetoothd debug log on--|"
-		/usr/libexec/bluetooth/bluetoothd -n -d &
-	else
-		/usr/libexec/bluetooth/bluetoothd -n &
-	fi
+#	grep "Debug=1" $configure_file > /dev/null
+#	if [ $? -eq 0 ]; then
+#		echo "|--bluetoothd debug log on--|"
+#		/usr/libexec/bluetooth/bluetoothd -n -d &
+#	else
+#		/usr/libexec/bluetooth/bluetoothd -n &
+#	fi
 	sh bluez-alsa.sh start
 }
 
 Blue_start()
 {
 	echo "|--bluez: device = $device mode = $mode--|"
-	echo 0 > /sys/class/rfkill/rfkill0/state
-	usleep 500000
-	echo 1 > /sys/class/rfkill/rfkill0/state
+#	echo 0 > /sys/class/rfkill/rfkill0/state
+#	usleep 500000
+#	echo 1 > /sys/class/rfkill/rfkill0/state
 
 	echo
 	echo "|-----start bluez----|"
@@ -136,7 +136,7 @@ Blue_start()
 		exit 0
 	fi
 
-	hci0_rfkill
+	#hci0_rfkill
 
 	grep -iq "Debug=1" $configure_file > /dev/null
 	if [ $? -eq 0 ]; then
@@ -194,21 +194,11 @@ fi
 
 case "$1" in
 	start)
-		Blue_start &
+		Blue_start
 		;;
 	restart)
 		Blue_stop
-		Blue_start &
-		;;
-	up)
-		service_up
-		;;
-	down)
-		service_down
-		;;
-	reset)
-		service_down
-		service_up
+		Blue_start
 		;;
 	stop)
 		Blue_stop

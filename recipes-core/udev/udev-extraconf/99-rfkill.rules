@@ -1,0 +1,10 @@
+# Bluetooth
+ACTION=="add", SUBSYSTEM=="rfkill", ENV{RFKILL_NAME}=="bt-dev", RUN+="/etc/udev/scripts/bt-rfkill.sh"
+ACTION=="change", SUBSYSTEM=="rfkill", ENV{RFKILL_NAME}=="bt-dev", RUN+="/etc/udev/scripts/bt-rfkill.sh"
+ACTION=="remove", SUBSYSTEM=="rfkill", ENV{RFKILL_NAME}=="bt-dev", RUN+="/etc/udev/scripts/bt-rfkill.sh"
+
+# WLAN
+ACTION=="add", SUBSYSTEM=="rfkill", ENV{RFKILL_TYPE}=="wlan", RUN+="/etc/udev/scripts/wlan-rfkill.sh"
+ACTION=="change", SUBSYSTEM=="rfkill", ENV{RFKILL_TYPE}=="wlan", RUN+="/etc/udev/scripts/wlan-rfkill.sh"
+ACTION=="remove", SUBSYSTEM=="rfkill", ENV{RFKILL_TYPE}=="wlan", RUN+="/etc/udev/scripts/wlan-rfkill.sh"
+

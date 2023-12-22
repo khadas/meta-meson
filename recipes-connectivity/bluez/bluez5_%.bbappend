@@ -29,7 +29,6 @@ do_install:append(){
     fi
 
     sed -i "/Debug/a TTY=/dev/${TTY}" ${D}${sysconfdir}/bluetooth/main.conf
-    sed -i '/^ExecStart=.*/d' ${D}/${systemd_unitdir}/system/bluetooth.service
 }
 
 FILES:${PN} += "${bindir}/*"
@@ -37,5 +36,8 @@ FILES:${PN} += "${systemd_unitdir}/system/*"
 FILES:${PN}-obex += "${bindir}/obexctl"
 
 SYSTEMD_SERVICE:${PN} += "bluez.service"
+
+# triggered by udev rule
+SYSTEMD_AUTO_ENABLE:${PN} = "disable"
 
 RDEPENDS:${PN}-obex:append:libc-glibc = " glibc-gconv-utf-16"

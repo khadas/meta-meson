@@ -30,7 +30,7 @@ Type=oneshot
 #load wlan.ko automatically. If delete all the wlan related entries in modules.alias,
 #we need insmod wlan.ko explicitly here
 ExecStart=/bin/sh -c 'if [ ! -e /etc/wifi/rtk_station_mode ]; then /bin/touch /etc/wifi/rtk_station_mode; fi'
-ExecStart=/usr/bin/wifi_power 1
+#ExecStart=/usr/bin/wifi_power 1
 ExecStop=/sbin/ifconfig wlan0 down
 
 RemainAfterExit=yes

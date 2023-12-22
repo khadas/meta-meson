@@ -1,0 +1,32 @@
+From 68985a5b4e3a05f3323006d1a3c81ab498156626 Mon Sep 17 00:00:00 2001
+From: Jun Zhang <jun.zhang@amlogic.com>
+Date: Thu, 4 Jan 2024 19:10:40 +0800
+Subject: [PATCH] apply the state to rfkill dev even when the state file not
+ created.
+
+avoid the driver not power on the wireless device, apply the state on
+the very first system start up.
+
+Change-Id: I5f2ef40af116a74e125024d486308ebdc3f9f52e
+Signed-off-by: Jun Zhang <jun.zhang@amlogic.com>
+---
+ src/rfkill/rfkill.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/rfkill/rfkill.c b/src/rfkill/rfkill.c
+index 501982819a..25b6b0e727 100644
+--- a/src/rfkill/rfkill.c
++++ b/src/rfkill/rfkill.c
+@@ -159,7 +159,8 @@ static int load_state(Context *c, const struct rfkill_event *event) {
+                         return log_error_errno(r, "Failed to write state file %s: %m", state_file);
+ 
+                 log_debug("Saved state '%s' to %s.", one_zero(event->soft), state_file);
+-                return 0;
++                //return 0;
++                value = strdup(event->soft ? "true" : "false");
+         }
+         if (r < 0)
+                 return log_error_errno(r, "Failed to read state file %s: %m", state_file);
+-- 
+2.25.1
+
