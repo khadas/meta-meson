@@ -686,6 +686,16 @@ mount_and_boot() {
         OverlayFS="disabled"
         if [ "${root_fstype}" = "ext4" ]; then
             data_ext4_handle $ROOT_MOUNT/data
+            data_fbe_bind $ROOT_MOUNT/data
+            if [[ $? -eq 0 ]]; then
+                if [[ -d $OVERLAY_DIR ]]; then
+                    data_fbe_add_unencrypted_folders $OVERLAY_DIR
+                fi
+                data_fbe_add_unencrypted_folders $UNENCRYPTED_DIR
+                data_fbe_add_unencrypted_folders $SWUPDATE_DIR
+                [[ "$DATA_FBE_STATUS" = "bound" ]] && DATA_FBE_STATUS="enabled"
+            fi
+            echo "DATA FBE is: $DATA_FBE_STATUS!"
         elif [ "${root_fstype}" = "ubifs" ]; then
             if [ "$VENDOR_DEVICE" = "enabled" ]; then
                 data_ubi_handle ubi2 /data
