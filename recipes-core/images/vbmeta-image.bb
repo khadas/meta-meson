@@ -13,7 +13,7 @@ AVB_DM_VERITY_SYSTEM_PARTITION_NAME = "system"
 AVB_DM_VERITY_VENDOR_PARTITION_NAME = "vendor"
 AVB_DM_VERITY_SYSTEM_PARTITION_PUBKEY = "system_rsa2048.avbpubkey"
 AVB_DM_VERITY_VENDOR_PARTITION_PUBKEY = "vendor_rsa2048.avbpubkey"
-AVB_RECOVERY_PARTITION_PUBKEY = "recovery_rsa2048.avbpubkey"
+AVB_RECOVERY_PARTITION_PUBKEY = "vbmeta_rsa2048.avbpubkey"
 
 AVB_VBMETA_RSA_KEY = "vbmeta_rsa2048.pem"
 AVB_VBMETA_ALGORITHM = "SHA256_RSA2048"
@@ -43,7 +43,7 @@ CHAIN_RECOVERY = "${@bb.utils.contains('DISTRO_FEATURES', 'AVB_recovery_partitio
 CHAIN_RECOVERY_CMD = " --chain_partition recovery:${DEVICE_PROPERTY_RECOVERY_ROLLBACK_LOCATION}:${STAGING_DIR_NATIVE}/${sysconfdir_native}/${AVB_RECOVERY_PARTITION_PUBKEY}"
 
 SIGN_RECOVERY = "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.utils.contains('DISTRO_FEATURES', 'AVB_recovery_partition','true' , 'false' ,d), '', d)}"
-AVB_RECOVERY_SIGNINING_KEY = "recovery_rsa2048.pem"
+AVB_RECOVERY_SIGNINING_KEY = "vbmeta_rsa2048.pem"
 SIGN_RECOVERY_CMD = "avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/recovery.img --partition_size ${DEVICE_PROPERTY_RECOVERY_PARTITION_SIZE}  --partition_name "recovery" --algorithm SHA256_RSA2048 --key ${STAGING_DIR_NATIVE}/${sysconfdir_native}/${AVB_RECOVERY_SIGNINING_KEY} --rollback_index ${DEVICE_PROPERTY_RECOVERY_ROLLBACK_INDEX}"
 
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', ' recovery-image', '', d)}"
