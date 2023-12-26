@@ -39,5 +39,6 @@ DEVICE_PROPERTY_LAUNCHER_APPS += "${@bb.utils.contains_any('DISTRO_FEATURES', ['
 DEVICE_PROPERTY_LAUNCHER_APPS += "${@bb.utils.contains_any('DISTRO_FEATURES', ['netflix', 'netflix-prebuilt-pkg', 'netflix64b'], 'netflix,', '', d)}"
 DEVICE_PROPERTY_LAUNCHER_APPS += "${@bb.utils.contains_any('DISTRO_FEATURES', ['amazon', 'amazon-prebuilt-pkg'], 'amazon,', '', d)}"
 DEVICE_PROPERTY_LAUNCHER_APPS += "${@bb.utils.contains_any('DISTRO_FEATURES', ['disney', 'disney-prebuilt-pkg'], 'disney,', '', d)}"
+DEVICE_PROPERTY_LAUNCHER_APPS += "${@bb.utils.contains('DISTRO_FEATURES', 'arka', 'arka,', '', d)}"
 DEVICE_PROPERTY_STARTUP_APP ?= ""
 DEVICE_PROPERTY_LAUNCH_IN_BACKGROUND ?= "${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', '', 'amazon, netflix', d)}"
