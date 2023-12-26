@@ -9,12 +9,13 @@ do_compile[noexec] = "1"
 
 S = "${WORKDIR}/git"
 DTV_DEMOD_BIN = "${S}/firmware/dtvdemod_t2.bin"
+DTV_DEMOD_BIN:t5d = "${S}/firmware/t5d/dtvdemod_t2.bin"
 
 do_install() {
 	FIRMWAREDIR=${D}/lib/firmware/dtvdemod/
 	mkdir -p ${FIRMWAREDIR}
 
-	install -m 0666 ${DTV_DEMOD_BIN} ${FIRMWAREDIR}
+	install -m 0644 ${DTV_DEMOD_BIN} ${FIRMWAREDIR}
 }
 
 FILES:${PN} = " /lib/firmware/dtvdemod/dtvdemod_t2.bin "
