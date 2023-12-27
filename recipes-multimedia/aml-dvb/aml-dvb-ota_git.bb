@@ -8,7 +8,9 @@ PV = "${SRCPV}"
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/dvb_ota')}"
 DEPENDS = " aml-dvb"
-RDEPENDS:${PN} += "aml-dvb"
+
+# aml-dvb-ota use static lib in aml-dvb. and only depends on functions in static lib. don't need RDEPENDS
+##RDEPENDS:${PN} += "aml-dvb"
 
 do_configure[noexec] = "1"
 inherit autotools pkgconfig
