@@ -72,7 +72,6 @@ export BL30_ARG = ""
 export BL2_ARG = ""
 
 BL33_ARG = "${@bb.utils.contains('DISTRO_FEATURES','AVB','--avb2','',d)}"
-BL33_ARG += " ${@bb.utils.contains('DISTRO_FEATURES', 'AVB_recovery_partition', '--avb2-recovery', '', d)}"
 
 CFLAGS +=" -DCONFIG_YOCTO "
 KCFLAGS +=" -DCONFIG_YOCTO "

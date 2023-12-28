@@ -67,7 +67,6 @@ BL32_ARG = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '--bl32 bl32/bl32_3.
 BL32_ARG:s1a = ""
 
 BL33_ARG = "${@bb.utils.contains('DISTRO_FEATURES','AVB','--avb2','',d)}"
-BL33_ARG += " ${@bb.utils.contains('DISTRO_FEATURES', 'AVB_recovery_partition', '--avb2-recovery', '', d)}"
 
 #VMX UBOOT PATH depends on SoC
 VMX_UBOOT_PATH = "TBD"

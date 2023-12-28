@@ -14,7 +14,7 @@ inherit image
 SDKEXTCLASS ?= "${@['populate_sdk', 'populate_sdk_ext']['linux' in d.getVar("SDK_OS", True)]}"
 inherit ${SDKEXTCLASS}
 
-DEPENDS:append = " android-tools-native"
+DEPENDS:append = " android-tools-native avb-native python3-native avbkey-native"
 
 IMAGE_INSTALL = "udev busybox"
 IMAGE_INSTALL:append = "\
@@ -55,6 +55,18 @@ IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate-dvb-ota
             aml-dvb-ota", "", d)}"
 
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
+
+AVB_RECOVERY_RSA_KEY = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'bl33-level-3-rsa-priv.pem', 'vbmeta_rsa2048.pem', d), \
+    'vbmeta_rsa2048.pem', d)}"
+AVB_RECOVERY_RSA_KEY_PATH = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '${DEPLOY_DIR_IMAGE}', '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d), \
+    '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d)}"
+AVB_RECOVERY_ALGORITHM = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'SHA256_RSA4096', 'SHA256_RSA2048', d), \
+    'SHA256_RSA2048', d)}"
+SIGN_RECOVERY = " --key ${AVB_RECOVERY_RSA_KEY_PATH}/${AVB_RECOVERY_RSA_KEY} --algorithm ${AVB_RECOVERY_ALGORITHM} "
+RECOVERY_ROLLBACK_INDEX = " --rollback_index ${DEVICE_PROPERTY_RECOVERY_ROLLBACK_INDEX}"
 
 python __anonymous () {
     import re
@@ -158,3 +170,7 @@ install_kernel_modules() {
    rm -rf ${IMAGE_ROOTFS}//usr/lib/locale/locale-archive
 }
 
+IMAGE_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'sign_recovery; ', '', d)}"
+sign_recovery() {
+    avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/recovery.img --partition_size ${DEVICE_PROPERTY_RECOVERY_PARTITION_SIZE}  --partition_name "recovery" ${SIGN_RECOVERY} ${RECOVERY_ROLLBACK_INDEX}
+}
