@@ -79,7 +79,7 @@ index 6fb4bed..bc702e8 100644
 +			}
 +			move_resources(&keyboard->resource_list, focus_resource_list);
 +			}
-+			if ( surface == NULL ) {
++			if ( surface == NULL && keyboard && keyboard->focus) {
 +				surface = keyboard->focus->compositor->last_keyboard_focus;
 +				weston_log("\n %s %d, need	back to  surface:%p\n", __FUNCTION__,__LINE__, surface);
  		}
