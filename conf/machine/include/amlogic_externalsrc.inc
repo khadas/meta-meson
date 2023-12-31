@@ -182,3 +182,6 @@ EXTERNALSRC_pn-disney-shield-agent = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty
 EXTERNALSRC_pn-disney-shield-extensions = "${@'${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/thirdparty/disney-plus')) else ''}"
 EXTERNALSRC_pn-meson-mode-policy = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/mode_policy/libs/modepolicy' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/mode_policy/libs/modepolicy')) else ''}"
 EXTERNALSRC_pn-partition-enc-native = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/partition_enc' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/partition_enc')) else ''}"
+EXTERNALSRC_pn-aml-appmanager = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml-appmanager' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml-appmanager')) else ''}"
+EXTERNALSRC:pn-aml-system-app = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/yocto-launcher/system-app' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/yocto-launcher/system-app')) else ''}"
+EXTERNALSRC_pn-aml-system-server = "${@['', '${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml-system-server'][os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml-system-server')]}"

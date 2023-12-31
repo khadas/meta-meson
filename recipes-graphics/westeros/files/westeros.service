@@ -1,0 +1,12 @@
+[Unit]
+Description=westeros
+After=basic.target aml_platformserver.service
+
+[Service]
+Environment="XDG_RUNTIME_DIR=/run"
+ExecStart=/usr/bin/westeros-init
+ExecStop=/bin/kill $MAINPID
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target

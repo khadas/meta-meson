@@ -39,6 +39,7 @@ DEPENDS += "linux-uapi-headers"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'screencapture', 'libjpeg-turbo', '', d)}"
 DEPENDS += "linux-uapi-headers"
 DEPENDS += "aml-dbus"
+DEPENDS += "glib-2.0"
 
 RDEPENDS:${PN} += "wpa-supplicant"
 RDEPENDS:${PN} += "aml-audio-service"

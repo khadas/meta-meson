@@ -1,0 +1,13 @@
+[Unit]
+Description=Application Manager
+After=basic.target aml_platformserver.service westeros.service
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/appmgr.env
+ExecStart=/usr/bin/appmgr
+Restart=always
+RestartSec=500ms
+
+[Install]
+WantedBy=multi-user.target
