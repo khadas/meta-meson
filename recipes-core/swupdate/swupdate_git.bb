@@ -41,6 +41,8 @@ SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "nand", \
 
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-download', 'file://download.cfg', '', d)}"
 
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-enc', 'file://encrypt.cfg file://image-enc-aes.key', '', d)}"
+
 LTOEXTRA += "-flto-partition=none"
 
 SWUPDATE_WITH_WEBUI ?= "n"
@@ -239,6 +241,9 @@ do_install () {
     install -m 0644 ${WORKDIR}/hwrevision ${D}/etc
     install -m 0644 ${WORKDIR}/sw-versions ${D}/etc
     install -m 0644 ${WORKDIR}/swupdate-public.pem ${D}/etc
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-enc', 'true', 'false', d)}; then
+        install -m 0644 ${WORKDIR}/image-enc-aes.key ${D}/etc
+    fi
 
     mkdir -p ${D}${bindir}
     install -m 0755 ${WORKDIR}/swupdate.sh ${D}/${bindir}

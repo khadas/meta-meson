@@ -137,7 +137,12 @@ do_aml_pack() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'true', 'false', d)}; then
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/swupdate-priv.pem ${DEPLOY_DIR_IMAGE}/
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/update.sh ${DEPLOY_DIR_IMAGE}/
-        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/sw_package_create.sh ${DEPLOY_DIR_IMAGE}/
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-enc', 'true', 'false', d)}; then
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/sw_enc_package_create.sh ${DEPLOY_DIR_IMAGE}/
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/encryption_key ${DEPLOY_DIR_IMAGE}/
+        else
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/sw_package_create.sh ${DEPLOY_DIR_IMAGE}/
+        fi
         if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
             cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/rootfs.${ROOTFS_TYPE}
             if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ];then
@@ -186,7 +191,11 @@ do_aml_pack() {
                 sed 's@value = "1";@value = "2";@' -i ${DEPLOY_DIR_IMAGE}/sw-description
             fi
         fi
-        ${DEPLOY_DIR_IMAGE}/sw_package_create.sh ${DEPLOY_DIR_IMAGE}
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-enc', 'true', 'false', d)}; then
+            ${DEPLOY_DIR_IMAGE}/sw_enc_package_create.sh ${DEPLOY_DIR_IMAGE}
+        else
+            ${DEPLOY_DIR_IMAGE}/sw_package_create.sh ${DEPLOY_DIR_IMAGE}
+        fi
     fi
 
     #sign image

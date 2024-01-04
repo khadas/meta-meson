@@ -1,4 +1,4 @@
-From ded631c8a289b877de8369b44ea63fec18bf9126 Mon Sep 17 00:00:00 2001
+From 216ba6eabd3bb06920131e08f4e788c663d2f05e Mon Sep 17 00:00:00 2001
 From: Blance Tang <guofeng.tang@amlogic.com>
 Date: Thu, 11 Jan 2024 17:05:27 +0800
 Subject: [PATCH] amlogic update based on 2021.04
@@ -16,7 +16,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  bootloader/none.c         |  82 ++++
  core/cpio_utils.c         |   2 +-
  core/pctl.c               |  10 +
- core/stream_interface.c   |  84 +++++
+ core/stream_interface.c   |  86 ++++-
  core/swupdate.c           |  35 +-
  core/util.c               |   2 +-
  corelib/mtd-interface.c   | 104 +++++
@@ -45,7 +45,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  libsparse/sparse_file.h   |  32 ++
  libsparse/sparse_format.h |  55 +++
  libsparse/sparse_read.c   | 510 +++++++++++++++++++++++++
- 33 files changed, 3833 insertions(+), 10 deletions(-)
+ 33 files changed, 3834 insertions(+), 11 deletions(-)
  create mode 100644 handlers/ext4_handler.c
  create mode 100644 libsparse/Config.in
  create mode 100644 libsparse/Makefile
@@ -216,7 +216,7 @@ index 9c2d534..b8a259b 100644
  	}
  
 diff --git a/core/stream_interface.c b/core/stream_interface.c
-index 1c9853d..0f13baa 100644
+index 31d0de8..6395acd 100644
 --- a/core/stream_interface.c
 +++ b/core/stream_interface.c
 @@ -73,6 +73,50 @@ pthread_cond_t stream_wkup = PTHREAD_COND_INITIALIZER;
@@ -270,6 +270,15 @@ index 1c9853d..0f13baa 100644
  static int extract_file_to_tmp(int fd, const char *fname, unsigned long *poffs, bool encrypted)
  {
  	char output_file[MAX_IMAGE_FNAME];
+@@ -226,7 +270,7 @@ static int extract_files(int fd, struct swupdate_cfg *software)
+ 					close(fdout);
+ 					return -1;
+ 				}
+-				if (copyfile(fd, &fdout, fdh.size, &offset, 0, 0, 0, &checksum, img->sha256, false, NULL, NULL) < 0) {
++				if (copyfile(fd, &fdout, fdh.size, &offset, 0, 0, 0, &checksum, img->sha256, img->is_encrypted, img->ivt_ascii, NULL) < 0) {
+ 					close(fdout);
+ 					return -1;
+ 				}
 @@ -246,6 +290,8 @@ static int extract_files(int fd, struct swupdate_cfg *software)
  				}
  				break;
@@ -4356,5 +4365,5 @@ index 0000000..7d5cbbf
 +	return s;
 +}
 -- 
-2.25.1
+2.29.0
 
