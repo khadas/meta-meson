@@ -57,7 +57,7 @@ SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '', 'file://dis
 KDIR = "aml-5.4"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
-LINUX_VERSION ?= "5.4.242"
+LINUX_VERSION ?= "5.4.259"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
 
 PR = "r2"
