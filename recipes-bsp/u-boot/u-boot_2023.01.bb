@@ -13,7 +13,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files_2023/fip:"
 
 LICENSE = "GPL-2.0-or-later"
 
-LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0;md5=801f80980d171dd6425610833a22dbe6"
+LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;md5=801f80980d171dd6425610833a22dbe6"
 
 EXTRA_OEMAKE = ''
 PACKAGE_ARCH = "${MACHINE_ARCH}"
@@ -50,7 +50,7 @@ DEPENDS:append = "gcc-linaro-aarch64-elf-native "
 DEPENDS:append = "vim-native zip-native cmake-native"
 DEPENDS:append = " riscv-none-gcc-native "
 
-DEPENDS:append = " coreutils-native python-native python-pycrypto-native "
+DEPENDS:append = " coreutils-native python-native python-pycrypto-native ninja-native"
 #override this in customer layer bbappend for customer specific bootloader binaries
 export BL30_ARG = ""
 export BL2_ARG = ""

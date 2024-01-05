@@ -1,2 +1,0 @@
-
-unset DEFAULT_PREFERENCE

@@ -31,4 +31,4 @@ do_install() {
       fi
     done
 }
-
+INSANE_SKIP:${PN} = "installed-vs-shipped"

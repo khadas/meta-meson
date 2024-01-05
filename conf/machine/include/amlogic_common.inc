@@ -51,6 +51,7 @@ AML_GIT_ROOT_PROTOCOL ?= "git"
 #CONNECTIVITY_CHECK_URIS = "https://www.bing.com/"
 
 PREFERRED_VERSION_libdrm = "2.4.100"
+PREFERRED_VERSION_libdrm-native = "2.4.110"
 PREFERRED_VERSION_tinyalsa = "1.1.1"
 
 #Only support amlogic widevine

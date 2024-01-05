@@ -47,7 +47,7 @@ KERNEL_IMAGETYPE = "Image"
 KCONFIG_MODE = "alldefconfig"
 
 S = "${WORKDIR}/git"
-KBUILD_DEFCONFIG = "final_defconfig"
+KBUILD_DEFCONFIG = "${@bb.utils.contains('SRC_URI', 'file://defconfig', '', 'final_defconfig', d)}"
 DEPENDS += "elfutils-native lzop-native "
 
 GKI_DEFCONFIG = "gki_defconfig"
@@ -99,12 +99,14 @@ do_kernel_configme:prepend () {
 
 do_kernel_metadata:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
-
-    rm -f ${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}
-    if [ "${ARCH}" = "arm" ]; then
-        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
-    else
-        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI10_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKIDEBUG_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
+    if [ ! -f ${WORKDIR}/defconfig ];then
+        export KBUILD_DEFCONFIG="final_defconfig"
+        rm -f ${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}
+        if [ "${ARCH}" = "arm" ]; then
+            KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
+        else
+            KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI10_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKIDEBUG_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
+        fi
     fi
 }
 
@@ -169,3 +171,4 @@ KERNEL_MODULE_AUTOLOAD += "cfg80211"
 KERNEL_MODULE_AUTOLOAD += "mac80211"
 
 FILES:${PN} += "modules/*"
+INSANE_SKIP:${PN} = " installed-vs-shipped"

@@ -250,7 +250,7 @@ EOF
 #Added for A6432 support
 require conf/multilib.conf
 MULTTILIBS = "multilib:lib32"
-DEFAULTTUNE_virtclass-multilib-lib32 = "armv7athf-neon"
+DEFAULTTUNE:virtclass-multilib-lib32 = "armv7athf-neon"
 EOF
     fi
 

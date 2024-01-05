@@ -16,11 +16,13 @@ inherit autotools pkgconfig
 #For common patches
 #SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/meson_display')}"
 
+COMPOSITOR_TYPE = "${@bb.utils.contains('DISTRO_FEATURES', 'westeros','westeros', bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston', 'meson', d), d)}"
+
 S = "${WORKDIR}/git/meson-display"
 
 #do_package_qa[noexec] = "1"
 
-EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
+EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D} COMPOSITOR_TYPE=${COMPOSITOR_TYPE}"
 FILES:${PN} = "${libdir}/* ${bindir}/*"
 FILES:${PN} += "/usr/lib/gstreamer-1.0/*"
 FILES:${PN}-dev = "${includedir}/* "
