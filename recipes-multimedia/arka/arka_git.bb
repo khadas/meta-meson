@@ -21,6 +21,7 @@ SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service udev aml-mp-sdk"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
     bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'directfb meson-display aml-hdmicec jpeg', d)}"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi',   'aml-hdi freetype', ' ', d)}"
 
 RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service"
 
@@ -31,12 +32,19 @@ EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-project-sun', '-
     bb.utils.contains('DISTRO_FEATURES', 'arka-project-aml', '-DARKA_PROJECT=amlepg', '-DARKA_PROJECT=aslepg', d), d)}"
 EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
     bb.utils.contains('DISTRO_FEATURES', 'weston', '-DUSE_EGL=ON -DUSE_WESTON=ON', '-DUSE_EGL=ON', d), '', d)}"
+EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi',  '-DUSE_AML_HDI=ON',  ' ', d)}"
 
 INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${libdir}/include/ \
     -I${STAGING_DIR_TARGET}${includedir}/libdrm_meson/ \
     -I${STAGING_DIR_TARGET}${includedir}/libdrm/ \
     -I${STAGING_DIR_TARGET}${includedir}/display_settings/ \
+    "
+
+INCLUDE_DIRS += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi', ' \
+     -I${STAGING_DIR_TARGET}${includedir}/ \
+     -I${STAGING_DIR_TARGET}${includedir}/freetype2/', \
+    '-I${STAGING_DIR_TARGET}${includedir}/directfb/', d)} \
     "
 
 INCLUDE_DIRS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', ' \

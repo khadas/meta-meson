@@ -28,6 +28,8 @@ SRC_URI = "file://${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi"
 S = "${WORKDIR}"
 do_install() {
     rm -rf ${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi/oe-*
+    mkdir -p ${D}${includedir}
+    install -D -m 0644 ${S}/include/*.h  ${D}${includedir}/
     install -d ${D}${bindir}
     install -d ${D}${libdir}
     install -m 0644 source/libaml_hdi.so ${D}${libdir}
