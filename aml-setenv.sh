@@ -237,7 +237,7 @@ EOF
       cat >> conf/local.conf <<EOF
 #Added for A6432 support
 require conf/multilib.conf
-MULTTILIBS = "multilib:lib32"
+MULTILIBS = "multilib:lib32"
 DEFAULTTUNE_virtclass-multilib-lib32 = "armv7athf-neon"
 EOF
     fi

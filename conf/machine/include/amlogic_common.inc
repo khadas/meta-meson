@@ -93,7 +93,7 @@ AML_TOOLS_SITE ?= "http://10.18.11.120:8000/Tools"
 IMAGE_CLASSES += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'image_types aml-dm-verity-img', '', d)}"
 
 # Sytem partition
-DM_VERITY_IMAGE = "${@bb.utils.contains('MULTTILIBS', 'multilib:lib32', 'lib32-amlogic-yocto', 'amlogic-yocto', d)}"
+DM_VERITY_IMAGE = "${@bb.utils.contains('MULTILIBS', 'multilib:lib32', 'lib32-amlogic-yocto', 'amlogic-yocto', d)}"
 # vendor partition
 VENDOR_DM_VERITY_IMAGE = "vendor-image"
 

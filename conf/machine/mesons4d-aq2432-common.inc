@@ -31,7 +31,7 @@ DISTRO_FEATURES:append = " webkitbrowser"
 DISTRO_FEATURES:append = " fota-upgrade swupdate-download"
 DISTRO_FEATURES:append = " remove-test-files"
 
-DM_VERITY_IMAGE = "${@bb.utils.contains('MULTTILIBS', 'multilib:lib32', 'lib32-amlogic-zapperplus', 'amlogic-zapperplus', d)}"
+DM_VERITY_IMAGE = "${@bb.utils.contains('MULTILIBS', 'multilib:lib32', 'lib32-amlogic-zapperplus', 'amlogic-zapperplus', d)}"
 
 OVERRIDES .= ":aq2432"
 TDK_VERSION:s4 = "v3.8/dev/S805C3"

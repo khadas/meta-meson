@@ -74,7 +74,7 @@ do_rootfs:append () {
 KERNEL_BOOTARGS = ""
 
 do_bundle_initramfs_dtb() {
-    if ${@bb.utils.contains('MULTTILIBS', 'multilib:lib32', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('MULTILIBS', 'multilib:lib32', 'true', 'false', d)}; then
         mkbootimg --kernel ${DEPLOY_DIR_IMAGE}/Image.gz --base 0x0 --kernel_offset 0x1080000 --cmdline "${KERNEL_BOOTARGS}" --ramdisk  ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.cpio.gz --second ${DEPLOY_DIR_IMAGE}/dtb.img --output ${DEPLOY_DIR_IMAGE}/recovery.img
     else
         mkbootimg --kernel ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} --base 0x0 --kernel_offset 0x1080000 --cmdline "${KERNEL_BOOTARGS}" --ramdisk  ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.cpio.gz --second ${DEPLOY_DIR_IMAGE}/dtb.img --output ${DEPLOY_DIR_IMAGE}/recovery.img
