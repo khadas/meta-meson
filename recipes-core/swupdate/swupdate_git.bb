@@ -27,7 +27,6 @@ SRC_URI = "git://github.com/sbabic/swupdate.git;protocol=https \
         file://0001-amlogic-update-based-on-2021.04.patch \
         file://0002-fix-compile-warnings.patch \
         file://0003-add-uboot-update-backup-write-for-nand.patch \
-        file://0003-add-emmc-kernel5.15-support.patch \
         file://defconfig \
         file://hwrevision \
         file://sw-versions \
