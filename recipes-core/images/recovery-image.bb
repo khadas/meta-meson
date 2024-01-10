@@ -122,5 +122,32 @@ install_kernel_modules() {
    if [ -f ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz ]; then
      tar -zxvf ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz -C ${IMAGE_ROOTFS}/
    fi
+   rm -rf ${IMAGE_ROOTFS}/modules/vendor/*
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/aml_smmu.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-adc.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-aoclk-g12a.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-camera.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-clk-soc-sc2.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-cpufreq.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-hwspinlock.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-i2c.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-inphy.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-input.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-irblaster.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-mailbox.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-phy-debug.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-pinctrl-soc-sc2.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-rng.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-thermal.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-watchdog.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/gpio-regulator.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/optee.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/pwm-regulator.ko
+   rm -rf ${IMAGE_ROOTFS}/usr/bin/*kbd*
+   find  ${IMAGE_ROOTFS}/ -name "*gz" | xargs rm -rf
+   rm -rf ${IMAGE_ROOTFS}/lib/udev/hwdb.bin
+   rm -rf ${IMAGE_ROOTFS}/usr/bin/loadkeys
+   rm -rf ${IMAGE_ROOTFS}/usr/libexec/lib32-udevadm
+   rm -rf ${IMAGE_ROOTFS}//usr/lib/locale/locale-archive
 }
 
