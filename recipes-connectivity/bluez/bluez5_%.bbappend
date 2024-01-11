@@ -24,6 +24,8 @@ do_install:append(){
         sed -i '/Debug/a Device=aml' ${D}${sysconfdir}/bluetooth/main.conf
     elif ${@bb.utils.contains("DISTRO_FEATURES", "bt-qca", "true", "false", d)}; then
         sed -i '/Debug/a Device=qca' ${D}${sysconfdir}/bluetooth/main.conf
+    elif ${@bb.utils.contains("DISTRO_FEATURES", "bt-bcm", "true", "false", d)}; then
+        sed -i '/Debug/a Device=bcm' ${D}${sysconfdir}/bluetooth/main.conf
     else
         sed -i '/Debug/a Device=rtk' ${D}${sysconfdir}/bluetooth/main.conf
     fi

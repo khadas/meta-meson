@@ -77,6 +77,11 @@ aml_bt_init()
 	usleep 100000
 }
 
+brcm_bt_init()
+{
+	brcm_patchram_plus --enable_hci --baudrate 2000000 --use_baudrate_for_download --patchram /etc/bluetooth/BCM4359C0SR2.hcd /dev/ttyS1 --no2bytes &
+}
+
 service_down()
 {
 	echo "|--stop bluez service--|"
@@ -113,6 +118,8 @@ Blue_start()
 		qca_bt_init
 	elif [ $device = "aml" ];then
 		aml_bt_init
+	elif [ $device = "bcm" ];then
+		brcm_bt_init
 	else
 		modprobe hci_uart
 		usleep 300000
@@ -165,6 +172,7 @@ Blue_stop()
 	service_down
 	killall rtk_hciattach
 	killall hciattach
+        killall brcm_patchram_plus
 	#rmmod sdio_bt
 	#rmmod hci_uart
 	#rmmod rtk_btusb
