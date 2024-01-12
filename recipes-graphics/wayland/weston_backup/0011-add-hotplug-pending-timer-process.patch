@@ -9,7 +9,7 @@ hdmi hot plug out,auto switch to cvbs fail sometimes.
 reason:
 hdmitx and cvbs bind with the same crtc,
 when hdmitx plug out,the atomic may not complete right now.
-The auto swith to cvbs get avalible crtc will fail.
+The auto swith to cvbs get available crtc will fail.
 
 solution:
 add hotplug pending flag for auto switch output.

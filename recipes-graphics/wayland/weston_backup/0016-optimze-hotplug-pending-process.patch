@@ -1,7 +1,7 @@
 From 0ad1a1e25acf545503a19d47400cd0f491fe7da2 Mon Sep 17 00:00:00 2001
 From: Dezhi Kong <dezhi.kong@amlogic.com>
 Date: Mon, 8 Jun 2020 19:56:33 +0800
-Subject: [PATCH] optimze hotplug pending process and avoid hotplug crash.
+Subject: [PATCH] optimize hotplug pending process and avoid hotplug crash.
 
 ---
  libweston/compositor-drm.c | 54 +++++++++++++++++++++++++++++---------

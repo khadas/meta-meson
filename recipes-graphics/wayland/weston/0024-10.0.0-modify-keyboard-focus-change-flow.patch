@@ -14,18 +14,6 @@ diff --git a/libweston/compositor.c b/libweston/compositor.c
 index 260d1f8..5292921 100755
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
-@@ -7751,9 +7751,9 @@ debug_scene_view_print(FILE *fp, struct weston_view *view, int view_idx)
- 	    view->surface->get_label(view->surface, desc, sizeof(desc)) < 0) {
- 		strcpy(desc, "[no description available]");
- 	}
--	fprintf(fp, "\tView %d (role %s, PID %d, surface ID %u, %s, %p):\n",
-+	fprintf(fp, "\tView %d (role %s, PID %d, surface ID %u, %s, %p %p):\n",
- 		view_idx, view->surface->role_name, pid, surface_id,
--		desc, view);
-+		desc, view, view->surface);
- 
- 	box = pixman_region32_extents(&view->transform.boundingbox);
- 	fprintf(fp, "\t\tposition: (%d, %d) -> (%d, %d)\n",
 @@ -8097,6 +8097,7 @@ weston_compositor_create(struct wl_display *display,
  						weston_timeline_create_subscription,
  						weston_timeline_destroy_subscription,

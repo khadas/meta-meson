@@ -1,7 +1,7 @@
 From 44f347785340c26fb44b541ac8dc40f75e63d740 Mon Sep 17 00:00:00 2001
 From: lingjie li <lingjie.li@amlogic.com>
 Date: Thu, 20 Jun 2019 14:25:22 +0800
-Subject: [PATCH 6/7] Add the drm-help funcitons for dynamic mode set/get
+Subject: [PATCH 6/7] Add the drm-help functions for dynamic mode set/get
  through IPC
 
 ---

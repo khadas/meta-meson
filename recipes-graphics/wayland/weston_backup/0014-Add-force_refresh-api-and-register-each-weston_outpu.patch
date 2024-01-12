@@ -24,7 +24,7 @@ index a84f72f..d461c86 100644
 +	struct weston_compositor *compositor = ((struct weston_output *)ctx)->compositor;
  	weston_compositor_damage_all(compositor);
  	if (drm_helper_timer == NULL) {
- 		weston_log("drm helper timer create failed, can't update ouput immediate.\n");
+ 		weston_log("drm helper timer create failed, can't update output immediate.\n");
 @@ -6315,6 +6316,7 @@ static void drm_output_refresh_force(struct weston_compositor *compositor) {
  	//trigger a wl_event_loop_dispatch_idle
  	wl_event_source_timer_update(drm_helper_timer, 16);

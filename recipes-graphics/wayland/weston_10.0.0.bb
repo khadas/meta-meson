@@ -9,29 +9,17 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
            file://weston.png \
            file://weston.desktop \
            file://xwayland.weston-start \
-           file://0001-10.0.0-weston-launch-Provide-a-default-version-that-doesn-t.patch \
-           file://0002-8.0.0-Enable-Connector-by-priority.patch \
-           file://0003-10.0.0-punch-video-hole-for-meson-dri-video-dmabuff-on-vide.patch \
-           file://0004-8.0.0-don-t-touch-the-occluded-region-when-glrenderer.patch \
-           file://0005-10.0.0-Fix-the-UI-size-for-enable-1080p-on-4k-display.patch \
-           file://0006-10.0.0-video-plane-src-axis-should-match-the-real.patch \
-           file://0007-cursor-hide-cursor-be-for-have-point-motion-after-we.patch \
-           file://0017-10.0.0-add-video-fence-check-dpk.patch \
-           file://0019-9.0.0-read_display_mode_from_drm_output.patch \
-           file://0020-10.0.0-define_EGL_DRM_RENDER_NODE_FILE_EXT.patch \
-           file://0021-10.0.0-MOD_INVALID-to-MOD_LINEAR-for-low-dmabuf-version.patch \
-           file://0022-10.0.0-revert_gl-renderer_Dont_require_buffer_age_when_using_partial_update.patch \
-           file://0023-10.0.0-add-z-order-force-and-background-transparent-options.patch \
-           file://0024-10.0.0-modify-keyboard-focus-change-flow.patch \
-           file://0025-10.0.0-play-video-in-video-layer.patch \
-           file://0026-10.0.0-add-drm-help-functions.patch \
-           file://0027-10.0.0-add-debug-tool.patch \
-           file://0028-10.0.0-add-pts-check-flow.patch \
-           file://0029-10.0.0-optimize-video-frame-drop-issue.patch \
-           file://0030-10.0.0-modify-connector-change-flow.patch \
            "
+python() {
+    src_uri = d.getVar("SRC_URI", False)
+    patchdir = os.path.join(d.getVar("THISDIR"), "weston")
+    for patch in sorted(os.listdir(patchdir)):
+        if patch.endswith('.patch'):
+            src_uri += " file://" + patch
+    d.setVar("SRC_URI", src_uri)
+}
 
-SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'arka', 'file://0031-10.0.0-add-arka-dvb-client.patch', '', d)}"
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'arka', 'file://optional/0031-10.0.0-add-arka-dvb-client.patch', '', d)}"
 
 SRC_URI[md5sum] = "bc4abe2ee6904a4890a0c641c6257f91"
 SRC_URI[sha256sum] = "5c23964112b90238bed39e5dd1e41cd71a79398813cdc3bbb15a9fdc94e547ae"

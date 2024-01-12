@@ -206,10 +206,10 @@ index 0a242af..0d80fec 100755
  	    view->surface->get_label(view->surface, desc, sizeof(desc)) < 0) {
  		strcpy(desc, "[no description available]");
  	}
--	fprintf(fp, "\tView %d (role %s, PID %d, surface ID %u, %s, %p %p):\n",
+-	fprintf(fp, "\tView %d (role %s, PID %d, surface ID %u, %s, %p):\n",
 +	fprintf(fp, "\tView %d (role %s, PID %d, surface ID %u, %s, %p is video surface:%d, video plane:%d):\n",
  		view_idx, view->surface->role_name, pid, surface_id,
--		desc, view, view->surface);
+-		desc, view);
 +		desc, view, view->surface->is_video_surface, view->surface->is_video_surface ? view->surface->video_plane : 0);
 
  	box = pixman_region32_extents(&view->transform.boundingbox);

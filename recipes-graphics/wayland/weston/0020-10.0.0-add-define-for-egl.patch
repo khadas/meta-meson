@@ -1,0 +1,51 @@
+diff --git a/libweston/renderer-gl/egl-glue.c b/libweston/renderer-gl/egl-glue.c
+index 013172a..a15f235 100644
+--- a/libweston/renderer-gl/egl-glue.c
++++ b/libweston/renderer-gl/egl-glue.c
+@@ -39,6 +39,11 @@
+ 
+ #include <assert.h>
+ 
++/* may not define, see https://www.khronos.org/registry/EGL/api/EGL/eglext.h */
++#ifndef EGL_DRM_RENDER_NODE_FILE_EXT
++#define EGL_DRM_RENDER_NODE_FILE_EXT      0x3377
++#endif
++
+ struct egl_config_print_info {
+ 	const EGLint *attrs;
+ 	unsigned attrs_count;
+diff --git a/libweston/linux-dmabuf.c b/libweston/linux-dmabuf.c
+index 66702a4..e2f975b 100644
+--- a/libweston/linux-dmabuf.c
++++ b/libweston/linux-dmabuf.c
+@@ -118,7 +118,7 @@ params_add(struct wl_client *client,
+ 	buffer->attributes.stride[plane_idx] = stride;
+ 
+ 	if (wl_resource_get_version(params_resource) < ZWP_LINUX_DMABUF_V1_MODIFIER_SINCE_VERSION)
+-		buffer->attributes.modifier[plane_idx] = DRM_FORMAT_MOD_INVALID;
++		buffer->attributes.modifier[plane_idx] = DRM_FORMAT_MOD_LINEAR;
+ 	else
+ 		buffer->attributes.modifier[plane_idx] = ((uint64_t)modifier_hi << 32) |
+ 							 modifier_lo;
+diff --git a/libweston/renderer-gl/gl-renderer.c b/libweston/renderer-gl/gl-renderer.c
+index a5f5eae..7231f73 100644
+--- a/libweston/renderer-gl/gl-renderer.c
++++ b/libweston/renderer-gl/gl-renderer.c
+@@ -1404,7 +1404,7 @@ output_get_damage(struct weston_output *output,
+ 	EGLBoolean ret;
+ 	int i;
+ 
+-	if (gr->has_egl_buffer_age || gr->has_egl_partial_update) {
++	if (gr->has_egl_buffer_age) {
+ 		ret = eglQuerySurface(gr->egl_display, go->egl_surface,
+ 				      EGL_BUFFER_AGE_EXT, &buffer_age);
+ 		if (ret == EGL_FALSE) {
+@@ -1444,7 +1444,7 @@ output_rotate_damage(struct weston_output *output,
+ 	struct gl_output_state *go = get_output_state(output);
+ 	struct gl_renderer *gr = get_renderer(output->compositor);
+ 
+-	if (!gr->has_egl_buffer_age && !gr->has_egl_partial_update)
++	if (!gr->has_egl_buffer_age)
+ 		return;
+ 
+ 	go->buffer_damage_index += BUFFER_DAMAGE_COUNT - 1;
