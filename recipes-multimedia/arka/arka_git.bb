@@ -20,8 +20,8 @@ SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
 DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service udev aml-mp-sdk"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
-    bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'directfb meson-display aml-hdmicec jpeg', d)}"
-DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi',   'aml-hdi freetype', ' ', d)}"
+    bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'meson-display aml-hdmicec jpeg', d)}"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi', 'aml-hdi freetype', ' directfb ', d)}"
 
 RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service"
 
@@ -50,7 +50,7 @@ INCLUDE_DIRS += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi', ' \
 INCLUDE_DIRS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', ' \
      -I${STAGING_DIR_TARGET}${includedir}/ \
      -I${STAGING_DIR_TARGET}${includedir}/freetype2/', \
-    '-I${STAGING_DIR_TARGET}${includedir}/directfb/', d)} \
+    ' ', d)} \
     "
 
 TARGET_CFLAGS += "-fPIC -D_REENTRANT ${INCLUDE_DIRS}"
