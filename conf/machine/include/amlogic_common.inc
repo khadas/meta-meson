@@ -31,6 +31,7 @@ TDK_VERSION:t5d = "v2.4"
 TDK_VERSION:sc2 = "v3.8/dev/S905X4"
 TDK_VERSION:t7 = "v3.8/dev/A311D2"
 TDK_VERSION:s4 = "v3.8/dev/S905Y4"
+TDK_VERSION:s7 = "v3.8/dev/S905Y5"
 TDK_VERSION:t3 = "v3.8/dev/T965D4"
 TDK_VERSION:t5w = "v3.8/dev/T962D4"
 
@@ -74,7 +75,7 @@ DEBUG_PREFIX_MAP = "-fdebug-prefix-map=${WORKDIR}=/usr/src/debug/${PN}/${EXTENDP
                     -fdebug-prefix-map=${STAGING_DIR_NATIVE}= \
                     "
 
-HOSTTOOLS_NONFATAL += "bc cc c++ bison repo python"
+HOSTTOOLS_NONFATAL += "bc cc c++ bison repo python crc32"
 
 DISABLE_STATIC:pn-libevent = ""
 

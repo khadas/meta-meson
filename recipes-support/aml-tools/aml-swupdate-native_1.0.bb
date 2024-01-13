@@ -9,6 +9,7 @@ do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
 SOC_FAMILY = "TBD"
+SOC_FAMILY:s7 = "s7"
 SOC_FAMILY:s4 = "s4"
 SOC_FAMILY:t5d = "t5d"
 SOC_FAMILY:t5w = "t5w"

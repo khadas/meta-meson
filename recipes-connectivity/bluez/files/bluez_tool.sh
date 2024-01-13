@@ -71,7 +71,16 @@ qca_bt_init()
 
 aml_bt_init()
 {
-	modprobe sdio_bt
+	if [ -f /sys/bus/mmc/devices/mmc1:0000/mmc1:0000:1/device ]; then
+		bt_chip_id=`cat /sys/bus/mmc/devices/mmc1:0000/mmc1:0000:1/device`
+	else
+		bt_chip_id=`cat /sys/bus/mmc/devices/mmc0:0000/mmc0:0000:1/device`
+	fi
+	case "${bt_chip_id}" in
+	0x8888)  #w1 need insmod ko
+		modprobe sdio_bt
+		;;
+	esac
 	usleep 200000
 	hciattach -s 115200 "$tty" aml
 	usleep 100000

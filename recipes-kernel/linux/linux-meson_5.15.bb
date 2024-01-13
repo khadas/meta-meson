@@ -16,6 +16,7 @@ SRC_URI:append = " file://modules_install.sh"
 SRC_URI:append = " file://extra_modules_install.sh"
 SRC_URI:append:sc2 = " file://sc2.cfg"
 SRC_URI:append:s4 = " file://s4.cfg"
+SRC_URI:append:s7 = " file://s7.cfg"
 SRC_URI:append:s1a = " file://s1a.cfg"
 SRC_URI:append:t5d = " file://t5d.cfg"
 SRC_URI:append:t5w = " file://t5w.cfg"
@@ -42,6 +43,7 @@ KDIR = "aml-5.15"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
 LINUX_VERSION ?= "5.15.123"
+LINUX_VERSION:s7 = "5.15.131"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
 
 PR = "r2"
@@ -72,6 +74,7 @@ GKI_AML_CONFIG_PATH = "${S}/common_drivers/arch/${ARCH}/configs"
 SOC = ""
 SOC:sc2 = "sc2"
 SOC:s4 = "s4"
+SOC:s7 = "s7"
 SOC:t3 = "t3"
 SOC:t7 = "t7"
 SOC:s1a = "s1a"
@@ -102,9 +105,15 @@ do_kernel_configme:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
 }
 
+do_kernel_metadata:prepend:k5.15-u () {
+    export COMMON_DRIVERS_DIR=./common_drivers
+    cd ${S}
+    KERNEL_DIR=${S} ./common_drivers/auto_patch/auto_patch.sh "common14-5.15"
+    cd -
+}
+
 do_kernel_metadata:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
-
     rm -f ${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}
     if [ "${ARCH}" = "arm" ]; then
         KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}

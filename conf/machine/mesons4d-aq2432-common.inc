@@ -20,7 +20,7 @@ KERNEL_MODULE_PROBECONF:remove = "hci_uart"
 MACHINE_EXTRA_RRECOMMENDS:append = " aml-wifi-w1"
 
 DISTRO_FEATURES:remove = " bt-qca "
-DISTRO_FEATURES:append = " aml-w1 "
+DISTRO_FEATURES:append = " aml-w1 aml-wifi "
 DISTRO_FEATURES:remove = " netflix amazon tts mediaplayer playready "
 DISTRO_FEATURES:remove = " bluetooth bluez5 "
 
