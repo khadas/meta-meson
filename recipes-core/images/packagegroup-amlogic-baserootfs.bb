@@ -172,6 +172,7 @@ RDEPENDS:packagegroup-amlogic-baserootfs += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'youtube-prebuilt-pkg', 'youtube-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'netflix-prebuilt-pkg', 'netflix-prebuilt-pkg', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dab-adapter-prebuilt-pkg', 'dab-adapter-prebuilt-pkg', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'miraclecast-prebuilt-pkg', 'miraclecast-prebuilt-pkg', '', d)} \
     "
 
 #For Nagra CAS
