@@ -5,6 +5,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI:append = " file://arka.service "
 SRC_URI:append = " file://arka.init "
+SRC_URI:append = " file://Kolkata "
 SRCREV = "${AUTOREV}"
 
 PV = "git${SRCPV}"
@@ -64,9 +65,16 @@ do_install:append() {
       install -d ${D}${sysconfdir}/init.d
       install -m 0755 ${WORKDIR}/arka.init ${D}${sysconfdir}/init.d/arka
     fi
+
+   if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}; then
+    install -d ${D}/usr/share/zoneinfo/Asia/
+    install -m 0755 ${WORKDIR}/Kolkata ${D}/usr/share/zoneinfo/Asia
+   fi
 }
+
 SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'arka-launcher', 'arka.service', '', d)}"
 
 FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/Arka/png /usr/share/Arka/jpg ${systemd_unitdir}/system/"
 FILES_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '${libdir}', '', d)}"
+FILES_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '/usr/share/zoneinfo/Asia', '', d)}"
 FILES_${PN}-dev = ""
