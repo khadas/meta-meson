@@ -56,8 +56,6 @@ DISTRO_FEATURES:remove = " sysvinit"
 #DISTRO_FEATURES:append = " opengl"
 DISTRO_FEATURES:append = " gstreamer1"
 DISTRO_FEATURES:append = " aml-dtv "
-DISTRO_FEATURES:append = " recovery "
-DISTRO_FEATURES:append = " swupdate "
 
 OVERRIDES .= ":ah212:ah232:sc2:onepass"
 MACHINEOVERRIDES .= ":client"

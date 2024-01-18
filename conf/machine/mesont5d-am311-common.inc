@@ -50,8 +50,6 @@ DISTRO_FEATURES:remove = " sysvinit"
 #DISTRO_FEATURES:append = " opengl"
 DISTRO_FEATURES:append = " gstreamer1"
 DISTRO_FEATURES:append = " aml-dtv "
-DISTRO_FEATURES:append = " recovery "
-DISTRO_FEATURES:append = " swupdate "
 
 
 OVERRIDES .= ":am311:t5d:onepass"
