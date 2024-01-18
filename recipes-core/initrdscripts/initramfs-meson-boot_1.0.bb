@@ -24,6 +24,9 @@ do_install() {
 
     #read_args need about 200ms on nand platform, so disable it on nand
     if ${@bb.utils.contains("DISTRO_FEATURES", "nand", "true", "false", d)}; then
+        if ${@bb.utils.contains("DISTRO_FEATURES", "use-mdev", "true", "false", d)}; then
+            sed -i '/\/var\/run/a\\n\tmdev -s' ${D}/init
+        fi
         sed -i -e 's/root_fstype=\"ext4\"/root_fstype=\"${ROOTFS_TYPE}\"/' ${D}/init
         sed -i '/read_args(/a\\treturn 0' ${D}/init
     fi
