@@ -1,0 +1,33 @@
+diff --git a/src/wayland-server.c b/src/wayland-server.c
+index d83bdec..1b690f5 100644
+--- a/src/wayland-server.c
++++ b/src/wayland-server.c
+@@ -50,6 +50,7 @@
+ #include "wayland-server.h"
+ #include "wayland-os.h"
+ 
++#include <pthread.h>
+ /* This is the size of the char array in struct sock_addr_un.
+  * No Wayland socket can be created with a path longer than this,
+  * including the null terminator.
+@@ -1344,8 +1345,19 @@ wl_display_terminate(struct wl_display *display)
+ WL_EXPORT void
+ wl_display_run(struct wl_display *display)
+ {
+-	display->run = 1;
++	struct sched_param schedParam;
++	int policy= SCHED_FIFO;
++	int priority= 80;
++	schedParam.sched_priority= priority;
++	int rc;
++	rc = pthread_setschedparam( pthread_self(), policy, &schedParam );
++	if ( rc )
++	{
++		wl_log("failed to set refresh thread policy and priority: %d errno %d", rc, errno);
++	}
++	wl_log("set refresh thread policy and priority: %d policy %d", priority, policy);
+ 
++	display->run = 1;
+ 	while (display->run) {
+ 		wl_display_flush_clients(display);
+ 		wl_event_loop_dispatch(display->loop, -1);

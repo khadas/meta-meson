@@ -1,0 +1,66 @@
+diff --git a/protocol/wayland.xml b/protocol/wayland.xml
+index bc229a3..6936d45 100644
+--- a/protocol/wayland.xml
++++ b/protocol/wayland.xml
+@@ -462,6 +462,11 @@
+ 	optimization for GL(ES) compositors with wl_shm clients.
+       </description>
+     </event>
++    <event name="drop">
++      <description summary="compositor drop buffer">
++	Sent when this wl_buffer is dropped by the compositor.
++      </description>
++    </event>
+   </interface>
+ 
+   <interface name="wl_data_offer" version="3">
+@@ -1733,20 +1738,35 @@
+       <arg name="y" type="int" summary="buffer-local y coordinate"/>
+       <arg name="width" type="int" summary="width of damage rectangle"/>
+       <arg name="height" type="int" summary="height of damage rectangle"/>
+-	  </request>
+- 	<request name="set_video_plane">
+- 	<description summary="set current video plane id">
+-	   This request sets an video plane id value for current video surface.
+- 	   The value is the display time of current frame.
+- 	   The is double-buffered state, see wl_surface.commit.
+-	   wl_surface.set_video_plane changes the pending value.
+-	   wl_surface.commit copies the pending buffer scale to the current one.
+- 	   Otherwise, the pending and current values are never changed.
+- 	   The purpose of this request is to allow clients to set video plane id to server.
+-	</description>
+-	<arg name="video_plane" type="int" summary="video plane id"/>	  
+-    </request>
+-   </interface>
++    </request>
++    <request name="set_video_plane">
++      <description summary="set current video plane id">
++	This request sets an video plane id value for current video surface.
++	The value is the display time of current frame.
++	The is double-buffered state, see wl_surface.commit.
++	wl_surface.set_video_plane changes the pending value.
++	wl_surface.commit copies the pending buffer scale to the current one.
++	Otherwise, the pending and current values are never changed.
++	The purpose of this request is to allow clients to set video plane id to server.
++      </description>
++      <arg name="video_plane" type="int" summary="video plane id"/>	  
++    </request>
++    <request name="set_pts">
++      <description summary="set pts value for av sync">
++	This request sets an pts value for current surface.
++	The value is the display time of current frame.
++	Pts is double-buffered state, see wl_surface.commit.
++	wl_surface.set_pts changes the pending pts value.
++	wl_surface.commit copies the pending buffer scale to the current one.
++	Otherwise, the pending and current values are never changed.
++	The purpose of this request is to allow clients to set pts value to server.
++	Server will use pts for AV sync process.
++	The 64-bit value pts combines from pts_hi and pts_lo
++      </description>
++      <arg name="pts_hi" type="uint" summary="high 32 bits of frame pts"/>
++      <arg name="pts_lo" type="uint" summary="low 32 bits of frame pts"/>
++    </request>
++  </interface>
+ 
+   <interface name="wl_seat" version="7">
+     <description summary="group of input devices">
