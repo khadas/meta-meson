@@ -146,7 +146,6 @@ install_kernel_modules() {
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-adc.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-aoclk-g12a.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-camera.ko
-   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-clk-soc-sc2.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-cpufreq.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-hwspinlock.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-i2c.ko
@@ -155,9 +154,7 @@ install_kernel_modules() {
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-irblaster.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-mailbox.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-phy-debug.ko
-   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-pinctrl-soc-sc2.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-rng.ko
-   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-thermal.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-watchdog.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/gpio-regulator.ko
    rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/optee.ko
