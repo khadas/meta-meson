@@ -27,6 +27,7 @@ INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
 
 S="${WORKDIR}/git"
 
+EXTRA_OEMAKE = "AML_BUILD_DIR=${B}"
 ENABLE_APLUGIN = "no"
 EXTRA_OEMAKE:append = "${@bb.utils.contains('ENABLE_APLUGIN', 'yes', ' aplugin=y', '', d)}"
 DEPENDS += " aml-amaudioutils liblog aml-audio-hal"
@@ -50,27 +51,27 @@ do_install() {
         install -d ${D}${libdir}
         install -d ${D}/usr/bin
         install -d ${D}/usr/include
-        install -m 755 -D ${S}/halplay ${D}/usr/bin/
-        install -m 755 -D ${S}/hal_dump ${D}/usr/bin/
-        install -m 755 -D ${S}/hal_capture ${D}/usr/bin/
-        install -m 755 -D ${S}/hal_param ${D}/usr/bin/
-        install -m 755 -D ${S}/master_vol ${D}/usr/bin/
-        install -m 755 -D ${S}/dap_setting ${D}/usr/bin/
-        install -m 755 -D ${S}/digital_mode ${D}/usr/bin/
-        install -m 755 -D ${S}/speaker_delay ${D}/usr/bin/
-        install -m 755 -D ${S}/start_arc ${D}/usr/bin/
-        install -m 755 -D ${S}/test_arc ${D}/usr/bin/
-        install -m 644 -D ${S}/libaudio_client.so -t ${D}${libdir}
+        install -m 755 -D ${B}/halplay ${D}/usr/bin/
+        install -m 755 -D ${B}/hal_dump ${D}/usr/bin/
+        install -m 755 -D ${B}/hal_capture ${D}/usr/bin/
+        install -m 755 -D ${B}/hal_param ${D}/usr/bin/
+        install -m 755 -D ${B}/master_vol ${D}/usr/bin/
+        install -m 755 -D ${B}/dap_setting ${D}/usr/bin/
+        install -m 755 -D ${B}/digital_mode ${D}/usr/bin/
+        install -m 755 -D ${B}/speaker_delay ${D}/usr/bin/
+        install -m 755 -D ${B}/start_arc ${D}/usr/bin/
+        install -m 755 -D ${B}/test_arc ${D}/usr/bin/
+        install -m 644 -D ${B}/libaudio_client.so -t ${D}${libdir}
         install -m 644 -D ${S}/include/audio_if.h -t ${D}/usr/include
 
         if ${@bb.utils.contains("ENABLE_APLUGIN", "yes", "true", "false", d)}; then
-            install -m 644 -D ${S}/libasound_module_pcm_ahal.so -t ${D}${libdir}/alsa-lib/
+            install -m 644 -D ${B}/libasound_module_pcm_ahal.so -t ${D}${libdir}/alsa-lib/
         fi
 
         if ${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server', 'false', 'true', d)}; then
-            install -m 755 -D ${S}/audio_server -t ${D}/usr/bin/
-            install -m 755 -D ${S}/audio_client_test -t ${D}/usr/bin/
-            install -m 755 -D ${S}/audio_client_test_ac3 ${D}/usr/bin/
+            install -m 755 -D ${B}/audio_server -t ${D}/usr/bin/
+            install -m 755 -D ${B}/audio_client_test -t ${D}/usr/bin/
+            install -m 755 -D ${B}/audio_client_test_ac3 ${D}/usr/bin/
             install -m 644 -D ${S}/include/audio_if_client.h -t ${D}/usr/include
             install -m 644 -D ${S}/include/audio_effect_if.h -t ${D}/usr/include
             install -m 644 -D ${S}/include/audio_effect_params.h -t ${D}/usr/include
@@ -90,7 +91,7 @@ EOF
             install -d ${D}${sysconfdir}/init.d
             install -m 0755 ${WORKDIR}/audioserver.init ${D}${sysconfdir}/init.d/audioserver
         else
-            install -m 644 -D ${S}/libamlaudiosetting.so -t ${D}${libdir}
+            install -m 644 -D ${B}/libamlaudiosetting.so -t ${D}${libdir}
             install -m 644 -D ${S}/include/AML_Audio_Setting.h -t ${D}/usr/include
         fi
 }

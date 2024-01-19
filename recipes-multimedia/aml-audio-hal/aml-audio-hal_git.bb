@@ -16,6 +16,7 @@ RDEPENDS:${PN} += "liblog aml-amaudioutils aml-dvbaudioutils aml-dvb libfaad-aml
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-msync', '', 'aml-avsync', d)}"
 RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-msync', '', 'aml-avsync', d)}"
 
+EXTRA_OECMAKE = "-DAML_BUILD_DIR=${B}"
 inherit cmake pkgconfig
 
 S="${WORKDIR}/git"
