@@ -1,4 +1,4 @@
-From 216ba6eabd3bb06920131e08f4e788c663d2f05e Mon Sep 17 00:00:00 2001
+From 088cae64d37055d102fa381d5c210cfca9ad51f6 Mon Sep 17 00:00:00 2001
 From: Blance Tang <guofeng.tang@amlogic.com>
 Date: Thu, 11 Jan 2024 17:05:27 +0800
 Subject: [PATCH] amlogic update based on 2021.04
@@ -14,21 +14,23 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
 ---
  Makefile                  |   2 +-
  bootloader/none.c         |  82 ++++
- core/cpio_utils.c         |   2 +-
+ core/cpio_utils.c         |  11 +-
+ core/parser.c             |   5 +-
  core/pctl.c               |  10 +
- core/stream_interface.c   |  86 ++++-
+ core/stream_interface.c   | 105 +++++-
  core/swupdate.c           |  35 +-
  core/util.c               |   2 +-
  corelib/mtd-interface.c   | 104 +++++
  handlers/Config.in        |   8 +
  handlers/Makefile         |   1 +
  handlers/ext4_handler.c   | 318 ++++++++++++++++
- handlers/flash_handler.c  |  69 +++-
- handlers/raw_handler.c    | 239 +++++++++++-
+ handlers/flash_handler.c  |  71 +++-
+ handlers/raw_handler.c    | 246 +++++++++++-
  handlers/ubivol_handler.c |  14 +-
  include/bootloader.h      |   2 +
  include/flash.h           |   1 +
  include/swupdate.h        |   1 +
+ include/swupdate_status.h |   5 +
  libsparse/Config.in       |  18 +
  libsparse/Makefile        |  10 +
  libsparse/backed_block.c  | 404 ++++++++++++++++++++
@@ -45,7 +47,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  libsparse/sparse_file.h   |  32 ++
  libsparse/sparse_format.h |  55 +++
  libsparse/sparse_read.c   | 510 +++++++++++++++++++++++++
- 33 files changed, 3834 insertions(+), 11 deletions(-)
+ 35 files changed, 3880 insertions(+), 12 deletions(-)
  create mode 100644 handlers/ext4_handler.c
  create mode 100644 libsparse/Config.in
  create mode 100644 libsparse/Makefile
@@ -65,7 +67,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  create mode 100644 libsparse/sparse_read.c
 
 diff --git a/Makefile b/Makefile
-index aa7d556..b436722 100644
+index aa7d5564..b4367223 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -363,7 +363,7 @@ include $(srctree)/Makefile.flags
@@ -78,7 +80,7 @@ index aa7d556..b436722 100644
  tools-y		:= tools
  
 diff --git a/bootloader/none.c b/bootloader/none.c
-index 67d01e0..d3bd71a 100644
+index 67d01e03..d3bd71a4 100644
 --- a/bootloader/none.c
 +++ b/bootloader/none.c
 @@ -5,6 +5,8 @@
@@ -175,7 +177,7 @@ index 67d01e0..d3bd71a 100644
 +}
 +#endif
 diff --git a/core/cpio_utils.c b/core/cpio_utils.c
-index 2e4aca3..fb1b050 100644
+index 2e4aca32..91778d04 100644
 --- a/core/cpio_utils.c
 +++ b/core/cpio_utils.c
 @@ -25,7 +25,7 @@
@@ -187,8 +189,55 @@ index 2e4aca3..fb1b050 100644
  
  #define NPAD_BYTES(o) ((4 - (o % 4)) % 4)
  
+@@ -257,6 +257,8 @@ static int decrypt_step(void *state, void *buffer, size_t size)
+ 			s->eof = true;
+ 		}
+ 		if (ret < 0) {
++			notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "decrypt fail");
++			swupdate_progress_end(FAIL_LOAD);
+ 			return ret;
+ 		}
+ 	}
+@@ -599,6 +601,10 @@ int copyfile(int fdin, void *out, unsigned int nbytes, unsigned long *offs, unsi
+ 
+ 			ERROR("HASH mismatch : %s <--> %s",
+ 				hashstring, newhashstring);
++
++			notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "HASH mismatch");
++			swupdate_progress_end(FAIL_LOAD);
++
+ 			ret = -EFAULT;
+ 			goto copyfile_exit;
+ 		}
+@@ -803,6 +809,9 @@ bool swupdate_verify_chksum(const uint32_t chk1, struct filehdr *fhdr) {
+ 	if (!ret) {
+ 		ERROR("Checksum WRONG ! Computed 0x%ux, it should be 0x%ux",
+ 			chk1, (uint32_t)fhdr->chksum);
++
++		notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "Checksum WRONG");
++		swupdate_progress_end(FAIL_LOAD);
+ 	}
+ 	return ret;
+ }
+diff --git a/core/parser.c b/core/parser.c
+index 1855d989..ce0912a4 100644
+--- a/core/parser.c
++++ b/core/parser.c
+@@ -147,8 +147,11 @@ int parse(struct swupdate_cfg *sw, const char *descfile)
+ 				   sw->forced_signer_name);
+ 	free(sigfile);
+ 
+-	if (ret)
++	if (ret) {
++		notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "Verify signed image fail. Not installing ...");
++		swupdate_progress_end(FAIL_SIGN);
+ 		return ret;
++	}
+ 
+ #endif
+ 	for (unsigned int i = 0; i < ARRAY_SIZE(parsers); i++) {
 diff --git a/core/pctl.c b/core/pctl.c
-index 9c2d534..b8a259b 100644
+index 9c2d5344..b8a259b6 100644
 --- a/core/pctl.c
 +++ b/core/pctl.c
 @@ -29,6 +29,8 @@
@@ -216,7 +265,7 @@ index 9c2d534..b8a259b 100644
  	}
  
 diff --git a/core/stream_interface.c b/core/stream_interface.c
-index 31d0de8..6395acd 100644
+index 1c9853d7..049e52e8 100644
 --- a/core/stream_interface.c
 +++ b/core/stream_interface.c
 @@ -73,6 +73,50 @@ pthread_cond_t stream_wkup = PTHREAD_COND_INITIALIZER;
@@ -270,7 +319,39 @@ index 31d0de8..6395acd 100644
  static int extract_file_to_tmp(int fd, const char *fname, unsigned long *poffs, bool encrypted)
  {
  	char output_file[MAX_IMAGE_FNAME];
-@@ -226,7 +270,7 @@ static int extract_files(int fd, struct swupdate_cfg *software)
+@@ -82,6 +126,8 @@ static int extract_file_to_tmp(int fd, const char *fname, unsigned long *poffs,
+ 	const char* TMPDIR = get_tmpdir();
+ 
+ 	if (extract_cpio_header(fd, &fdh, poffs)) {
++		notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "extract_cpio_header fail");
++		swupdate_progress_end(FAIL_LOAD);
+ 		return -1;
+ 	}
+ 	if (strcmp(fdh.filename, fname)) {
+@@ -166,6 +212,22 @@ static int extract_files(int fd, struct swupdate_cfg *software)
+ 				return -1;
+ 			}
+ 
++			char *current_version = bootloader_env_get("sw_version");
++			TRACE("current_version:%s", current_version);
++			if (current_version) {
++				int ret = compare_versions(software->version, current_version);
++				if (ret <= 0) {
++					if (ret == 0) {
++						notify(FAILURE, RECOVERY_ERROR, INFOLEVEL, "same version image has installed, skipping...");
++						swupdate_progress_end(VER_SAME);
++					} else {
++						notify(FAILURE, RECOVERY_ERROR, INFOLEVEL, "higher version image has installed, skipping...");
++						swupdate_progress_end(VER_OLER);
++					}
++					return -1;
++				}
++			}
++
+ 			if (check_hw_compatibility(software)) {
+ 				ERROR("SW not compatible with hardware");
+ 				return -1;
+@@ -226,7 +288,7 @@ static int extract_files(int fd, struct swupdate_cfg *software)
  					close(fdout);
  					return -1;
  				}
@@ -279,7 +360,7 @@ index 31d0de8..6395acd 100644
  					close(fdout);
  					return -1;
  				}
-@@ -246,6 +290,8 @@ static int extract_files(int fd, struct swupdate_cfg *software)
+@@ -246,6 +308,8 @@ static int extract_files(int fd, struct swupdate_cfg *software)
  				}
  				break;
  			case INSTALL_FROM_STREAM:
@@ -288,7 +369,7 @@ index 31d0de8..6395acd 100644
  				TRACE("Installing STREAM %s, %lld bytes", img->fname, img->size);
  
  				/*
-@@ -587,6 +633,31 @@ void *network_initializer(void *data)
+@@ -587,6 +651,31 @@ void *network_initializer(void *data)
  			mtd_cleanup();
  			scan_mtd_devices();
  #endif
@@ -320,7 +401,15 @@ index 31d0de8..6395acd 100644
  			/*
  		 	 * extract the meta data and relevant parts
  		 	 * (flash images) from the install image
-@@ -639,6 +710,18 @@ void *network_initializer(void *data)
+@@ -628,6 +717,7 @@ void *network_initializer(void *data)
+ 				 * that it is not required to start recovery again
+ 				 */
+ 				if (!software->parms.dry_run && software->bootloader_transaction_marker) {
++					bootloader_env_set("sw_version", software->version);
+ 					bootloader_env_unset(BOOTVAR_TRANSACTION);
+ 				}
+ 				if (!software->parms.dry_run
+@@ -639,6 +729,18 @@ void *network_initializer(void *data)
  				} else {
  					notify(SUCCESS, RECOVERY_NO_ERROR, INFOLEVEL, "SWUPDATE successful !");
  					inst.last_install = SUCCESS;
@@ -339,7 +428,7 @@ index 31d0de8..6395acd 100644
  				}
  			}
  		} else {
-@@ -646,6 +729,7 @@ void *network_initializer(void *data)
+@@ -646,6 +748,7 @@ void *network_initializer(void *data)
  			notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "Image invalid or corrupted. Not installing ...");
  		}
  
@@ -348,7 +437,7 @@ index 31d0de8..6395acd 100644
  
  		/*
 diff --git a/core/swupdate.c b/core/swupdate.c
-index d651f8e..0ff3ed6 100644
+index d651f8ee..0ff3ed63 100644
 --- a/core/swupdate.c
 +++ b/core/swupdate.c
 @@ -54,6 +54,8 @@
@@ -457,7 +546,7 @@ index d651f8e..0ff3ed6 100644
  	if (swcfg.syslog_enabled) {
  		if (syslog_init()) {
 diff --git a/core/util.c b/core/util.c
-index 7e96652..1b501bc 100644
+index 7e966524..1b501bcb 100644
 --- a/core/util.c
 +++ b/core/util.c
 @@ -1156,7 +1156,7 @@ static bool check_free_space(int fd, long long size, char *fname)
@@ -470,7 +559,7 @@ index 7e96652..1b501bc 100644
  		       fname, size, (unsigned long long)statvfs.f_bfree * statvfs.f_bsize);
  		return false;
 diff --git a/corelib/mtd-interface.c b/corelib/mtd-interface.c
-index 586a9ba..3c0043a 100644
+index 586a9ba9..3c0043aa 100644
 --- a/corelib/mtd-interface.c
 +++ b/corelib/mtd-interface.c
 @@ -148,6 +148,110 @@ int flash_erase(int mtdnum)
@@ -585,7 +674,7 @@ index 586a9ba..3c0043a 100644
  {
  	struct flash_description *flash = get_flash_info();
 diff --git a/handlers/Config.in b/handlers/Config.in
-index 14f8af9..9126d34 100644
+index 14f8af9c..9126d347 100644
 --- a/handlers/Config.in
 +++ b/handlers/Config.in
 @@ -171,6 +171,14 @@ config READBACKHANDLER
@@ -604,7 +693,7 @@ index 14f8af9..9126d34 100644
  	bool "Lua Script"
  	depends on LUA
 diff --git a/handlers/Makefile b/handlers/Makefile
-index 534259c..75257a4 100644
+index 534259c3..75257a49 100644
 --- a/handlers/Makefile
 +++ b/handlers/Makefile
 @@ -17,6 +17,7 @@ obj-$(CONFIG_UNIQUEUUID)	+= uniqueuuid_handler.o
@@ -617,7 +706,7 @@ index 534259c..75257a4 100644
  obj-$(CONFIG_REMOTE_HANDLER) += remote_handler.o
 diff --git a/handlers/ext4_handler.c b/handlers/ext4_handler.c
 new file mode 100644
-index 0000000..5f566a0
+index 00000000..5f566a06
 --- /dev/null
 +++ b/handlers/ext4_handler.c
 @@ -0,0 +1,318 @@
@@ -940,7 +1029,7 @@ index 0000000..5f566a0
 +    register_handler("ext4", install_ext4_image, IMAGE_HANDLER, NULL);
 +}
 diff --git a/handlers/flash_handler.c b/handlers/flash_handler.c
-index 5c11ff6..9585abf 100644
+index 5c11ff6a..1ea1f2bf 100644
 --- a/handlers/flash_handler.c
 +++ b/handlers/flash_handler.c
 @@ -34,6 +34,9 @@
@@ -962,7 +1051,16 @@ index 5c11ff6..9585abf 100644
  	int ifd = img->fdin;
  	int fd = -1;
  	bool failed = true;
-@@ -334,11 +337,55 @@ static int flash_write_image(int mtdnum, struct img_type *img)
+@@ -237,6 +240,8 @@ static int flash_write_nand(int mtdnum, struct img_type *img)
+ 		if (ret) {
+ 			long long i;
+ 			if (errno != EIO) {
++				notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "Flash write fail");
++				swupdate_progress_end(FAIL_FLASH_WRITE);
+ 				ERROR("mtd%d: MTD write failure", mtdnum);
+ 				goto closeall;
+ 			}
+@@ -334,11 +339,55 @@ static int flash_write_image(int mtdnum, struct img_type *img)
  		return flash_write_nand(mtdnum, img);
  }
  
@@ -1018,7 +1116,7 @@ index 5c11ff6..9585abf 100644
  	if (strlen(img->mtdname))
  		mtdnum = get_mtd_from_name(img->mtdname);
  	else
-@@ -349,6 +396,26 @@ static int install_flash_image(struct img_type *img,
+@@ -349,6 +398,26 @@ static int install_flash_image(struct img_type *img,
  		return -1;
  	}
  
@@ -1046,10 +1144,10 @@ index 5c11ff6..9585abf 100644
  	if (flash_write_image(mtdnum, img)) {
  		ERROR("I cannot copy %s into %s partition",
 diff --git a/handlers/raw_handler.c b/handlers/raw_handler.c
-index 619a2f4..3d07a7c 100644
+index 619a2f47..edb5b5f0 100644
 --- a/handlers/raw_handler.c
 +++ b/handlers/raw_handler.c
-@@ -29,10 +29,189 @@
+@@ -29,10 +29,191 @@
  #include "handler.h"
  #include "util.h"
  
@@ -1220,6 +1318,8 @@ index 619a2f4..3d07a7c 100644
 +	  ret = copyimage(&fdout, img, NULL);
 +	  close(fdout);
 +	  if (ret != 0) {
++		notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "Flash write fail");
++		swupdate_progress_end(FAIL_FLASH_WRITE);
 +		TRACE("install %s failed!\n", "/dev/bootloader");
 +		return -1;
 +	  }
@@ -1239,7 +1339,7 @@ index 619a2f4..3d07a7c 100644
  /**
   * Handle write protection for block devices
   *
-@@ -55,11 +234,35 @@ static int blkprotect(struct img_type *img, bool on)
+@@ -55,11 +236,35 @@ static int blkprotect(struct img_type *img, bool on)
  	int fd_force_ro;
  	struct stat sb;
  	char current_prot;
@@ -1275,7 +1375,7 @@ index 619a2f4..3d07a7c 100644
  	if (stat(img->device, &sb) == -1) {
  		TRACE("stat for device %s failed: %s", img->device, strerror(errno));
  		return ret;
-@@ -73,6 +276,7 @@ static int blkprotect(struct img_type *img, bool on)
+@@ -73,6 +278,7 @@ static int blkprotect(struct img_type *img, bool on)
  		ret = -errno;
  		goto blkprotect_out;
  	}
@@ -1283,7 +1383,7 @@ index 619a2f4..3d07a7c 100644
  
  	ret_int = asprintf(&sysfs_path, c_sys_path, abs_path + 5);  /* remove "/dev/" from device path */
  	if(ret_int < 0) {
-@@ -128,11 +332,40 @@ static int install_raw_image(struct img_type *img,
+@@ -128,11 +334,40 @@ static int install_raw_image(struct img_type *img,
  	if (prot_stat < 0)
  		return prot_stat;
  
@@ -1327,8 +1427,20 @@ index 619a2f4..3d07a7c 100644
  	}
  #if defined(__FreeBSD__)
  	ret = copyimage(&fdout, img, copy_write_padded);
+@@ -140,6 +375,11 @@ static int install_raw_image(struct img_type *img,
+ 	ret = copyimage(&fdout, img, NULL);
+ #endif
+ 
++	if(ret != 0) {
++		notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "Flash write fail");
++		swupdate_progress_end(FAIL_FLASH_WRITE);
++	}
++
+ 	if (prot_stat == 1) {
+ 		fsync(fdout);  // At least with Linux 4.14 data are not automatically flushed before ro mode is enabled
+ 		blkprotect(img, true);  // no error handling, keep ret from copyimage
 diff --git a/handlers/ubivol_handler.c b/handlers/ubivol_handler.c
-index 8bf4f30..12054bf 100644
+index 8bf4f30f..12054bfe 100644
 --- a/handlers/ubivol_handler.c
 +++ b/handlers/ubivol_handler.c
 @@ -41,12 +41,18 @@ static struct ubi_part *search_volume_global(const char *str)
@@ -1365,7 +1477,7 @@ index 8bf4f30..12054bf 100644
  		/* Allow device to be specified by name OR number */
  		mtdnum = get_mtd_from_name(cfg->device);
 diff --git a/include/bootloader.h b/include/bootloader.h
-index 7bf5fa3..e96dff5 100644
+index 7bf5fa35..e96dff58 100644
 --- a/include/bootloader.h
 +++ b/include/bootloader.h
 @@ -53,4 +53,6 @@ char *bootloader_env_get(const char *name);
@@ -1376,7 +1488,7 @@ index 7bf5fa3..e96dff5 100644
 +
  #endif
 diff --git a/include/flash.h b/include/flash.h
-index 3f73079..b8e0008 100644
+index 3f730799..b8e00086 100644
 --- a/include/flash.h
 +++ b/include/flash.h
 @@ -53,6 +53,7 @@ int get_mtd_from_device(char *s);
@@ -1388,7 +1500,7 @@ index 3f73079..b8e0008 100644
  struct flash_description *get_flash_info(void);
  #define isNand(flash, index) \
 diff --git a/include/swupdate.h b/include/swupdate.h
-index 4cce892..93672b8 100644
+index 4cce8920..93672b8d 100644
 --- a/include/swupdate.h
 +++ b/include/swupdate.h
 @@ -164,6 +164,7 @@ struct swupdate_cfg {
@@ -1399,9 +1511,25 @@ index 4cce892..93672b8 100644
  	const char *embscript;
  };
  
+diff --git a/include/swupdate_status.h b/include/swupdate_status.h
+index 8ac9af1b..e6bd0ecc 100644
+--- a/include/swupdate_status.h
++++ b/include/swupdate_status.h
+@@ -28,6 +28,11 @@ typedef enum {
+ 	DONE,
+ 	SUBPROCESS,
+ 	PROGRESS,
++	FAIL_LOAD,
++	FAIL_SIGN,
++	FAIL_FLASH_WRITE,
++	VER_OLER,
++	VER_SAME,
+ } RECOVERY_STATUS;
+ 
+ typedef enum {
 diff --git a/libsparse/Config.in b/libsparse/Config.in
 new file mode 100644
-index 0000000..0c5d266
+index 00000000..0c5d2667
 --- /dev/null
 +++ b/libsparse/Config.in
 @@ -0,0 +1,18 @@
@@ -1425,7 +1553,7 @@ index 0000000..0c5d266
 +endmenu
 diff --git a/libsparse/Makefile b/libsparse/Makefile
 new file mode 100644
-index 0000000..bdd8047
+index 00000000..bdd8047d
 --- /dev/null
 +++ b/libsparse/Makefile
 @@ -0,0 +1,10 @@
@@ -1441,7 +1569,7 @@ index 0000000..bdd8047
 +lib-$(CONFIG_EXT4)	+= sparse_read.o
 diff --git a/libsparse/backed_block.c b/libsparse/backed_block.c
 new file mode 100644
-index 0000000..794cd6b
+index 00000000..794cd6b1
 --- /dev/null
 +++ b/libsparse/backed_block.c
 @@ -0,0 +1,404 @@
@@ -1851,7 +1979,7 @@ index 0000000..794cd6b
 +}
 diff --git a/libsparse/backed_block.h b/libsparse/backed_block.h
 new file mode 100644
-index 0000000..1a159be
+index 00000000..1a159be1
 --- /dev/null
 +++ b/libsparse/backed_block.h
 @@ -0,0 +1,64 @@
@@ -1921,7 +2049,7 @@ index 0000000..1a159be
 +#endif
 diff --git a/libsparse/defs.h b/libsparse/defs.h
 new file mode 100644
-index 0000000..34e63c5
+index 00000000..34e63c57
 --- /dev/null
 +++ b/libsparse/defs.h
 @@ -0,0 +1,23 @@
@@ -1950,7 +2078,7 @@ index 0000000..34e63c5
 +#endif /* _LIBSPARSE_DEFS_H_ */
 diff --git a/libsparse/output_file.c b/libsparse/output_file.c
 new file mode 100644
-index 0000000..2115998
+index 00000000..21159987
 --- /dev/null
 +++ b/libsparse/output_file.c
 @@ -0,0 +1,775 @@
@@ -2731,7 +2859,7 @@ index 0000000..2115998
 +}
 diff --git a/libsparse/output_file.h b/libsparse/output_file.h
 new file mode 100644
-index 0000000..67d48cc
+index 00000000..67d48cce
 --- /dev/null
 +++ b/libsparse/output_file.h
 @@ -0,0 +1,42 @@
@@ -2779,7 +2907,7 @@ index 0000000..67d48cc
 +#endif
 diff --git a/libsparse/sparse.c b/libsparse/sparse.c
 new file mode 100644
-index 0000000..8304e3b
+index 00000000..8304e3bb
 --- /dev/null
 +++ b/libsparse/sparse.c
 @@ -0,0 +1,402 @@
@@ -3187,7 +3315,7 @@ index 0000000..8304e3b
 +}
 diff --git a/libsparse/sparse.h b/libsparse/sparse.h
 new file mode 100644
-index 0000000..356f65f
+index 00000000..356f65fd
 --- /dev/null
 +++ b/libsparse/sparse.h
 @@ -0,0 +1,310 @@
@@ -3503,7 +3631,7 @@ index 0000000..356f65f
 +#endif
 diff --git a/libsparse/sparse_crc32.c b/libsparse/sparse_crc32.c
 new file mode 100644
-index 0000000..ef3360f
+index 00000000..ef3360f2
 --- /dev/null
 +++ b/libsparse/sparse_crc32.c
 @@ -0,0 +1,110 @@
@@ -3619,7 +3747,7 @@ index 0000000..ef3360f
 +}
 diff --git a/libsparse/sparse_crc32.h b/libsparse/sparse_crc32.h
 new file mode 100644
-index 0000000..50cd9e9
+index 00000000..50cd9e98
 --- /dev/null
 +++ b/libsparse/sparse_crc32.h
 @@ -0,0 +1,32 @@
@@ -3657,7 +3785,7 @@ index 0000000..50cd9e9
 +#endif
 diff --git a/libsparse/sparse_defs.h b/libsparse/sparse_defs.h
 new file mode 100644
-index 0000000..b99cfd5
+index 00000000..b99cfd58
 --- /dev/null
 +++ b/libsparse/sparse_defs.h
 @@ -0,0 +1,49 @@
@@ -3712,7 +3840,7 @@ index 0000000..b99cfd5
 +#endif
 diff --git a/libsparse/sparse_err.c b/libsparse/sparse_err.c
 new file mode 100644
-index 0000000..d9f8c24
+index 00000000..d9f8c24d
 --- /dev/null
 +++ b/libsparse/sparse_err.c
 @@ -0,0 +1,33 @@
@@ -3751,7 +3879,7 @@ index 0000000..d9f8c24
 +void (*sparse_print_verbose)(const char *fmt, ...) = sparse_default_print;
 diff --git a/libsparse/sparse_file.h b/libsparse/sparse_file.h
 new file mode 100644
-index 0000000..72a1530
+index 00000000..72a15301
 --- /dev/null
 +++ b/libsparse/sparse_file.h
 @@ -0,0 +1,32 @@
@@ -3789,7 +3917,7 @@ index 0000000..72a1530
 +#endif /* _LIBSPARSE_SPARSE_FILE_H_ */
 diff --git a/libsparse/sparse_format.h b/libsparse/sparse_format.h
 new file mode 100644
-index 0000000..c41f12a
+index 00000000..c41f12a5
 --- /dev/null
 +++ b/libsparse/sparse_format.h
 @@ -0,0 +1,55 @@
@@ -3850,7 +3978,7 @@ index 0000000..c41f12a
 +#endif
 diff --git a/libsparse/sparse_read.c b/libsparse/sparse_read.c
 new file mode 100644
-index 0000000..7d5cbbf
+index 00000000..7d5cbbff
 --- /dev/null
 +++ b/libsparse/sparse_read.c
 @@ -0,0 +1,510 @@
