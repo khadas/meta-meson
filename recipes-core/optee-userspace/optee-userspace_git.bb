@@ -23,13 +23,33 @@ do_install() {
     install -m 0755 ${S}/${ARM_TARGET}/bin/tee_stest ${D}${bindir}
 
     mkdir -p ${D}${libdir}
-    install -m 0755 ${S}/${ARM_TARGET}/lib/libteec.so ${D}${libdir}/libteec.so.1.0
+
+    echo "PLATFORM_TDK_VERSION is ${PLATFORM_TDK_VERSION}"
+    case "${PLATFORM_TDK_VERSION}" in
+    "v3.8.0")
+        install -m 0755 ${S}/${ARM_TARGET}/lib/libteec.so ${D}${libdir}/libteec.so.1.0
+        ln -s libteec.so.1.0 ${D}${libdir}/libteec.so.1
+        ln -s libteec.so.1 ${D}${libdir}/libteec.so
+    ;;
+    "v3.18.0")
+        install -m 0755 ${S}/${ARM_TARGET}/lib/libckteec.so.0.1.0 ${D}${libdir}
+        ln -s libckteec.so.0.1.0 ${D}${libdir}/libckteec.so.0.1
+        ln -s libckteec.so.0.1 ${D}${libdir}/libckteec.so.0
+        ln -s libckteec.so.0 ${D}${libdir}/libckteec.so
+        install -m 0755 ${S}/${ARM_TARGET}/lib/libseteec.so.0.1.0 ${D}${libdir}
+        ln -s libseteec.so.0.1.0 ${D}${libdir}/libseteec.so.0.1
+        ln -s libseteec.so.0.1 ${D}${libdir}/libseteec.so.0
+        ln -s libseteec.so.0 ${D}${libdir}/libseteec.so
+        install -m 0755 ${S}/${ARM_TARGET}/lib/libteec.so.1.0.0 ${D}${libdir}
+        ln -s libteec.so.1.0.0 ${D}${libdir}/libteec.so.1.0
+        ln -s libteec.so.1.0 ${D}${libdir}/libteec.so.1
+        ln -s libteec.so.1 ${D}${libdir}/libteec.so
+    ;;
+    esac
 
     mkdir -p ${D}${includedir}
     install -m 0755 ${S}/${ARM_TARGET}/include/*.h ${D}${includedir}/
 
-    ln -s libteec.so.1 ${D}${libdir}/libteec.so
-    ln -s libteec.so.1.0 ${D}${libdir}/libteec.so.1
     echo "TDK_VERSION is ${TDK_VERSION}"
     case "${TDK_VERSION}" in
     "v2.4")
