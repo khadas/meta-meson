@@ -35,9 +35,9 @@ FILES:${PN} += "${bindir}/*"
 FILES:${PN} += "${systemd_unitdir}/system/*"
 FILES:${PN}-obex += "${bindir}/obexctl"
 
-SYSTEMD_SERVICE:${PN} += "bluez.service"
+SYSTEMD_SERVICE:${PN}-bluez = "bluez.service"
 
 # triggered by udev rule
-SYSTEMD_AUTO_ENABLE:${PN} = "disable"
+SYSTEMD_AUTO_ENABLE:${PN}-bluez = "disable"
 
 RDEPENDS:${PN}-obex:append:libc-glibc = " glibc-gconv-utf-16"
