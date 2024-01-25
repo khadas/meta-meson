@@ -11,6 +11,7 @@ PV = "4.0.0+git${SRCPV}"
 
 SRC_URI += "file://bluez-alsa.sh"
 SRC_URI += "file://0001-bluealsa-add-client-interface.patch"
+SRC_URI += "file://0002-bluealsa-add-support-system-user.patch"
 
 S  = "${WORKDIR}/git"
 

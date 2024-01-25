@@ -3,7 +3,9 @@ Description=TV Server Startup
 After=binder.service
 
 [Service]
-User=root
+User=system
+AmbientCapabilities=CAP_DAC_OVERRIDE
+CapabilityBoundingSet=CAP_DAC_OVERRIDE
 ExecStart=/usr/bin/tvservice
 
 [Install]

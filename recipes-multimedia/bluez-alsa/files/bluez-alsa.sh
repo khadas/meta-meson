@@ -126,7 +126,8 @@ Blue_stop()
 
 set_mode()
 {
-   sed -i '/A2DP=/c\A2DP='$mode $configure_file
+   #sed -i '/A2DP=/c\A2DP='$mode $configure_file
+   sed '/A2DP=/c\A2DP='$mode $configure_file > /tmp/foo && cat /tmp/foo > $configure_file
 }
 
 get_mode()

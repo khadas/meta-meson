@@ -1,0 +1,29 @@
+From ec5fbe25f6976a6d5b01649490f7a6175a7e3bf2 Mon Sep 17 00:00:00 2001
+From: Bing Jiang <bing.jiang@amlogic.com>
+Date: Mon, 5 Feb 2024 14:37:14 +0800
+Subject: [PATCH] bluealsa add support system user
+
+Change-Id: I1ab8c2b496ada372cc4e6218d53cb2bdea9453f2
+---
+ src/bluealsa.conf | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/bluealsa.conf b/src/bluealsa.conf
+index e8a639d..c83adb6 100644
+--- a/src/bluealsa.conf
++++ b/src/bluealsa.conf
+@@ -12,6 +12,11 @@
+     <allow send_destination="org.bluealsa"/>
+   </policy>
+ 
++  <policy user="system">
++    <allow own_prefix="org.bluealsa"/>
++    <allow send_destination="org.bluealsa"/>
++  </policy>
++
+   <policy group="audio">
+     <allow send_destination="org.bluealsa"/>
+   </policy>
+-- 
+2.29.0
+
