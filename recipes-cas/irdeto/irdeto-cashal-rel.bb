@@ -21,7 +21,7 @@ USE_DYNAMIC_CCA_LIBRARY:bf201 = "1"
 USE_DYNAMIC_CCA_LIBRARY:bg201 = "1"
 
 CCA_HARDWARE_NO = "HW05"
-CCA_HARDWARE_NO:bf201 = "HW08"
+CCA_HARDWARE_NO:bf201 = "HW07"
 CCA_HARDWARE_NO:bg201 = "HW08"
 
 PN = 'irdeto-cashal-rel'
@@ -56,6 +56,10 @@ do_install() {
             install -D -m 0644 ${S}/cca/data/${file} ${D}/etc/cas/irdeto/cadata
         fi
     done
+
+    if [ -e ${S}/cca/config/device_info.json ] ; then
+        install -D -m 0644 ${S}/cca/config/device_info.json ${D}/etc/cas/irdeto
+    fi
 
 }
 
