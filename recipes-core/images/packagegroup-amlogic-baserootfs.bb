@@ -159,7 +159,7 @@ RDEPENDS:packagegroup-amlogic-baserootfs = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'disney', \
         'disney-src disney-plugin', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'disney-test-suite', \
-        'disney-basic-tests disney-shield-agent disney-shield-extensions', '', d)} \
+        'disney-basic-tests disney-shield-agent', '', d)} \
     tzdata \
     tzcode \
     format-partitions \
