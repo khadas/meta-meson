@@ -18,6 +18,7 @@ SRC_URI = "https://wayland.freedesktop.org/releases/${BPN}-${PV}.tar.xz \
         file://0003-10.0-add-video-plane-id-request.patch \
         file://0004-10.0-add-pts-setting-request.patch \
         file://0005-10.0.0-improve-priority-of-main-thread.patch \
+        file://0006-add-crtc-index-event.patch \
         "
 
 SRC_URI[sha256sum] = "baccd902300d354581cd5ad3cc49daa4921d55fb416a5883e218750fef166d15"

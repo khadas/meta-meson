@@ -1,0 +1,15 @@
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index febd7b9..78e59da 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -5820,6 +5820,10 @@ bind_output(struct wl_client *client,
+ 				    mode->height,
+ 				    mode->refresh);
+ 	}
++	struct drm_output *drm_output = to_drm_output(output);
++	int crtc_index = drm_output->crtc->pipe;
++	if (version >= WL_OUTPUT_CRTC_INDEX_SINCE_VERSION)
++	    wl_output_send_crtc_index(resource, crtc_index);
+ 
+ 	if (version >= WL_OUTPUT_DONE_SINCE_VERSION)
+ 		wl_output_send_done(resource);

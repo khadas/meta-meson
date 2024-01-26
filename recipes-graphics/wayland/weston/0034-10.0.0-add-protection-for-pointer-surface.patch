@@ -1,0 +1,23 @@
+diff --git a/clients/window.c b/clients/window.c
+index 56344bf..3a09804 100644
+--- a/clients/window.c
++++ b/clients/window.c
+@@ -2751,11 +2751,13 @@ input_remove_pointer_focus(struct input *input)
+ 	input->pointer_focus = NULL;
+ 	input->current_cursor = CURSOR_UNSET;
+ 	cancel_pointer_image_update(input);
+-	wl_surface_destroy(input->pointer_surface);
+-	input->pointer_surface = NULL;
+-	if (input->cursor_frame_cb) {
+-		wl_callback_destroy(input->cursor_frame_cb);
+-		input->cursor_frame_cb = NULL;
++	if (input->pointer_surface) {
++		wl_surface_destroy(input->pointer_surface);
++		input->pointer_surface = NULL;
++		if (input->cursor_frame_cb) {
++			wl_callback_destroy(input->cursor_frame_cb);
++			input->cursor_frame_cb = NULL;
++		}
+ 	}
+ }
+ 
