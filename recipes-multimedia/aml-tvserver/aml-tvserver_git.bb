@@ -11,7 +11,8 @@ SRC_URI +="file://tvserver.service"
 
 DEPENDS = " libbinder sqlite3 aml-audio-service"
 DEPENDS += "linux-uapi-headers"
-RDEPENDS:${PN} = " liblog libbinder aml-audio-service"
+DEPENDS += "aml-ubootenv"
+RDEPENDS:${PN} = " liblog libbinder aml-audio-service aml-ubootenv"
 do_configure[noexec] = "1"
 inherit autotools pkgconfig systemd
 S="${WORKDIR}/git"
