@@ -1,0 +1,37 @@
+diff --git a/libweston/linux-dmabuf.c b/libweston/linux-dmabuf.c
+index e2f975b..11ec8ff 100644
+--- a/libweston/linux-dmabuf.c
++++ b/libweston/linux-dmabuf.c
+@@ -232,6 +232,11 @@ params_create_common(struct wl_client *client,
+ 
+ 		/* Don't report an error as it might be caused
+ 		 * by the kernel not supporting seeking on dmabuf */
++		if (buffer->direct_display) {
++			weston_log("\n direct_display. remove parameter check and gpu import \n");
++			goto avoid_gpu_import;
++		}
++
+ 		size = lseek(buffer->attributes.fd[i], 0, SEEK_END);
+ 		if (size == -1)
+ 			continue;
+@@ -251,7 +256,8 @@ params_create_common(struct wl_client *client,
+ 				buffer->attributes.stride[i], i);
+ 			goto err_out;
+ 		}
+-
++		weston_log("\n %s %d offset:%d, stride:%d height:%d,size:%d\n", __FUNCTION__, __LINE__, 
++			buffer->attributes.offset[i], buffer->attributes.stride[i], height, size);
+ 		/* Only valid for first plane as other planes might be
+ 		 * sub-sampled according to fourcc format */
+ 		if (i == 0 &&
+@@ -995,6 +1001,10 @@ bind_linux_dmabuf(struct wl_client *client,
+ 
+ 	wl_array_for_each(fmt, &supported_formats->arr) {
+ 		modifiers = weston_drm_format_get_modifiers(fmt, &num_modifiers);
++		if (fmt->format == DRM_FORMAT_NV12 || fmt->format == DRM_FORMAT_NV21) {
++			zwp_linux_dmabuf_v1_send_modifier(resource, fmt->format, 0, 0);
++			continue;
++		}
+ 		for (i = 0; i < num_modifiers; i++) {
+ 			if (version >= ZWP_LINUX_DMABUF_V1_MODIFIER_SINCE_VERSION) {
+ 				uint32_t modifier_lo = modifiers[i] & 0xFFFFFFFF;
