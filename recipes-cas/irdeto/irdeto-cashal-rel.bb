@@ -44,6 +44,8 @@ do_install() {
 
     if [ -e ${S}/libird_dvb.so ] ; then
         install -D -m 0644 ${S}/libird_dvb.so ${D}/${libdir}
+        install -D -m 0644 ${S}/libird_glue_impl.a ${D}/${libdir}
+        install -D -m 0644 ${S}/libird_spi_impl.a ${D}/${libdir}
     fi
 
     if [ -e ${S}/libird_cca.so ] ; then
