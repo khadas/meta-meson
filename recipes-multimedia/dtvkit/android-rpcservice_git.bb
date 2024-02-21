@@ -11,7 +11,7 @@ ARM_TARGET:aarch64 = "lib64"
 SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-DEPENDS = "dtvkit-dvbcore dtvkit-amlogic dtvkit-ciplus dtvkit-dsmcc  dtvkit-mheg5   jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 curl freetype openssl aml-mp-sdk aml-subtitleserver optee-userspace"
+DEPENDS = "dtvkit-amlogic dtvkit-ciplus dtvkit-dsmcc  dtvkit-mheg5  dtvkit-dvbcore dtvkit-atv dtvkit-atsc  jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 curl freetype openssl aml-mp-sdk aml-subtitleserver optee-userspace"
 RDEPENDS:${PN} = "aml-mediahal-sdk  aml-subtitleserver aml-libdvr  libbinder liblog "
 
 do_configure[noexec] = "1"
@@ -30,6 +30,8 @@ EXTRA_OEMAKE="_DTVKIT_ROOT=${S}\
         DTVKIT_OUTPUT_DIR=${B} \
         DTVKIT_INSTALL_DIR=${D}/usr \
         DTVKIT_RUNENV=linux \
+        TARGET_CFLAGS+='-fstack-protector-strong -pie -fPIE -Wformat -Wformat-security -Werror=format-security -D_FORTIFY_SOURCE=2' \
+        TARGET_LDFLAGS+='-fstack-protector-strong -Wl,-z,relro,-z,now' \
         "
 
 

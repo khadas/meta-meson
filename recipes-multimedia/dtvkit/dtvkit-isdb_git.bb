@@ -1,16 +1,16 @@
-SUMMARY = "dtvkit dvbcore"
+SUMMARY = "dtvkit isdb"
 
 LICENSE = "CLOSED"
 #LIC_FILES_CHKSUM = "file://${COREBASE}/../${AML_META_LAYER}/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 
-#SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/DVBCore;protocol=${AML_GIT_PROTOCOL};branch=p-amlogic"
+#SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/ISDB;protocol=${AML_GIT_PROTOCOL};branch=p-amlogic"
 
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-DEPENDS = "libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 libtinyxml2 curl freetype openssl aml-mp-sdk jsoncpp"
+DEPENDS = "libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 curl freetype openssl aml-mp-sdk"
 
 
 do_configure[noexec] = "1"

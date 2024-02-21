@@ -33,6 +33,8 @@ EXTRA_OEMAKE="_DTVKIT_ROOT=${S}\
         DTVKIT_ADDITIONAL_COMPILER_OPTIONS='-Wall -Wextra -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=hard ${TOOLCHAIN_OPTIONS}' \
         DTVKIT_OUTPUT_DIR=${B} \
         DTVKIT_INSTALL_DIR=${D}/usr \
+        TARGET_CFLAGS+='-fstack-protector-strong -pie -fPIE -Wformat -Wformat-security -Werror=format-security -D_FORTIFY_SOURCE=2' \
+        TARGET_LDFLAGS+='-fstack-protector-strong -Wl,-z,relro,-z,now' \
         "
 
 

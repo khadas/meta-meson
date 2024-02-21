@@ -1,16 +1,16 @@
-SUMMARY = "dtvkit dvbcore"
+SUMMARY = "dtvkit atsc"
 
 LICENSE = "CLOSED"
 #LIC_FILES_CHKSUM = "file://${COREBASE}/../${AML_META_LAYER}/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 
-#SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/DVBCore;protocol=${AML_GIT_PROTOCOL};branch=p-amlogic"
+#SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/ATSC;protocol=${AML_GIT_PROTOCOL};branch=p-amlogic"
 
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
-DEPENDS = "libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 libtinyxml2 curl freetype openssl aml-mp-sdk jsoncpp"
+DEPENDS = "dtvkit-amlogic dtvkit-atv libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 curl freetype openssl jsoncpp aml-mp-sdk"
 
 
 do_configure[noexec] = "1"
@@ -20,15 +20,17 @@ S="${WORKDIR}/git"
 
 EXTRA_OEMAKE="_DTVKIT_ROOT=${S}\
         DTVKIT_CC=${TARGET_PREFIX}gcc \
+        DTVKIT_CXX=${TARGET_PREFIX}g++ \
         DTVKIT_AR=${TARGET_PREFIX}ar \
         DTVKIT_JPEG_INCLUDE_PATH=${STAGING_DIR_TARGET}/usr/include   \
         DTVKIT_PNG_INCLUDE_PATH=${STAGING_DIR_TARGET}/usr/include/   \
         DTVKIT_ZLIB_INCLUDE_PATH=${STAGING_DIR_TARGET}/usr/include   \
-        DTVKIT_LIBXML2_INCLUDE_PATH=${STAGING_DIR_TARGET}/usr/include   \
+        DTVKIT_LIBXML2_INCLUDE_PATH=${STAGING_DIR_TARGET}/usr/include/libxml2   \
         DTVKIT_CURL_INCLUDE_PATH=${STAGING_DIR_TARGET}/usr/include   \
         DTVKIT_OSSL_INCLUDE_PATH=${STAGING_DIR_TARGET}/usr/include/openssl   \
         DTVKIT_FREETYPE_INCLUDE_PATH=${STAGING_DIR_TARGET}/usr/include/freetype2 \
         DTVKIT_SDK_INCLUDE_PATH=${STAGING_DIR_TARGET}   \
+        RDK_LDPATH='${STAGING_DIR_TARGET}/usr/lib/'   \
         RDK_INCLUDES='${STAGING_DIR_TARGET}/usr/include ${STAGING_DIR_TARGET}/usr/include/libdvr  ${STAGING_DIR_TARGET}/usr/include/Aml_MP  ${STAGING_DIR_TARGET}/usr/include/libamcas '   \
         DTVKIT_ADDITIONAL_COMPILER_OPTIONS='-Wall -Wextra -march=armv7-a -mthumb -mfpu=neon -mfloat-abi=hard ${TOOLCHAIN_OPTIONS}' \
         DTVKIT_OUTPUT_DIR=${B} \
