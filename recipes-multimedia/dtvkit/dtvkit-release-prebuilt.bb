@@ -65,9 +65,8 @@ do_install () {
     install -D -m 0644 ${S}/inc/dtvkit-amlogic/include/dtvkit_platform/hw/inc/*.h ${D}/usr/include/dtvkit/hw/inc
 
     if ${@bb.utils.contains("DISTRO_FEATURES", "dtvkit-src", "false", "true", d)}; then
-        install -D -m 0644 ${S}/${ARM_TARGET}/libdtvkitserver.so ${D}/${libdir}
-        install -D -m 0644 ${S}/${ARM_TARGET}/libdtvkitclient.so ${D}/${libdir}
-        if ${@bb.utils.contains("DISTRO_FEATURES", "zapper-2k", "false", "true", d)}; then
+        install -D -m 0644 ${S}/${ARM_TARGET}/*.so ${D}/${libdir}
+        if ${@bb.utils.contains("DISTRO_FEATURES", "disable-binderfs", "false", "true", d)}; then
             install -D -m 0755 ${S}/${ARM_TARGET}/dtvkitserver ${D}/${bindir}
             install -D -m 0755 ${S}/${ARM_TARGET}/CLIENT ${D}/${bindir}
         fi

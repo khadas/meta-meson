@@ -1,10 +1,10 @@
-SUMMARY = "dtvkit amlogic"
+SUMMARY = "dtvkit isdb"
 
 LICENSE = "CLOSED"
 #LIC_FILES_CHKSUM = "file://${COREBASE}/../${AML_META_LAYER}/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 
-#SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/dtvkit-amlogic;protocol=${AML_GIT_PROTOCOL};branch=p-amlogic"
+#SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/ISDB;protocol=${AML_GIT_PROTOCOL};branch=p-amlogic"
 
 
 #SRCREV ?= "${AUTOREV}"
