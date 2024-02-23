@@ -111,6 +111,73 @@ fi
 FILES:${PN}:append:s4 = " /vendor/* /factory/* "
 dirs755:append:s4 = " /vendor /factory "
 
+#/*-----------------------S7 STB--------------------------------------*/
+do_install:append:s7 () {
+    mkdir -p ${D}/vendor
+    mkdir -p ${D}/factory
+
+if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
+    vendor_dev="ubi1_0"
+    if [ "${ROOTFS_TYPE}" = "squashfs" ]; then
+        vendor_dev="mtdblock12"
+    fi
+    # if dm-verity is enabled, mount /dev/mapper/vendor(/dev/dm-1) as ro
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'true', 'false', d)}; then
+        vendor_dev="dm-1"
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'true', 'false', d)}; then
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/${vendor_dev}     /vendor                    auto       defaults              0  0
+EOF
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}; then
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/mtdblock6         /factory                   yaffs2     defaults              0  0
+ /dev/mtdblock7         /tee                       yaffs2     defaults              0  0
+EOF
+    else
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/mtdblock5         /factory                   yaffs2     defaults              0  0
+ /dev/mtdblock6         /tee                       yaffs2     defaults              0  0
+EOF
+    fi
+else
+    vendor_dev="vendor"
+    # if dm-verity is enabled, mount /dev/mapper/vendor(/dev/dm-1) as ro
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'true', 'false', d)}; then
+        vendor_dev="dm-1"
+    elif ${@bb.utils.contains('DISTRO_FEATURES', 'absystem', 'true', 'false', d)}; then
+        vendor_dev="vendor_a"
+    fi
+
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/${vendor_dev}     /vendor                    auto       defaults              0  0
+ /dev/factory           /factory                   auto       defaults              0  0
+EOF
+fi
+
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', 'false', 'true', d)}; then
+        cat >> ${D}${sysconfdir}/fstab <<EOF
+            tmpfs                /var/cache        tmpfs      defaults,nosuid,nodev,noexec              0  0
+EOF
+        sed -i '/^ *\/dev\/root/ d' ${D}${sysconfdir}/fstab
+    fi
+
+if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'false', 'true', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'true', 'false', d)}; then
+        sed -i '$a \  /dev/tee          /tee/         ext4        defcontext=system_u:object_r:usr_t,defaults,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
+    else
+        sed -i '$a \  /dev/tee          /tee/         ext4        defaults,x-systemd.automount,x-systemd.mount-timeout=10s,x-systemd.requires=ext4format@tee.service        0        0' ${D}${sysconfdir}/fstab
+    fi
+fi
+}
+FILES:${PN}:append:s7 = " /vendor/* /factory/* "
+dirs755:append:s7 = " /vendor /factory "
+
+
 #/*-----------------------S1A STB--------------------------------------*/
 do_install:append:s1a () {
     mkdir -p ${D}/factory

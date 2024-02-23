@@ -109,7 +109,7 @@ index 7351531..d748fa0 100755
 -weston_output_create_heads_string(struct weston_output *output);
 +static char *weston_output_create_heads_string(struct weston_output *output);
 +static void weston_surface_commit(struct weston_surface *surface);
-+static void push_surface_to_queue( struct weston_surface* surafce);
++static void push_surface_to_queue( struct weston_surface* surface);
 +static struct weston_surface* pop_surface_from_queue(struct weston_compositor *compositor);
 +static int commit_timer_handler(void *data);
 +static uint64_t getCuerrntTimeMillis();
@@ -214,12 +214,12 @@ index 7351531..d748fa0 100755
 +static int commit_timer_handler_sub(void *data)
 +{
 +	struct weston_compositor *compositor = data;
-+	struct weston_subsurface* commit_surafce_sub = NULL;
-+	commit_surafce_sub = pop_sub_surface_from_queue(compositor);
-+	if ( commit_surafce_sub) {
-+		weston_subsurface_commit(commit_surafce_sub);
-+		free(commit_surafce_sub);
-+		commit_surafce_sub = NULL;
++	struct weston_subsurface* commit_surface_sub = NULL;
++	commit_surface_sub = pop_sub_surface_from_queue(compositor);
++	if ( commit_surface_sub) {
++		weston_subsurface_commit(commit_surface_sub);
++		free(commit_surface_sub);
++		commit_surface_sub = NULL;
 +	}
 +	return 1;
 +}
@@ -313,7 +313,7 @@ index 7351531..d748fa0 100755
 +		weston_log("\n no surface in surface queue, return!!!\n");
 +		return NULL;
 +	}
-+	struct weston_subsurface* surafce_queue_sub = compositor->commit_queue_sub;
++	struct weston_subsurface* surface_queue_sub = compositor->commit_queue_sub;
 +	struct weston_surface_state* surface_state_queue = compositor->commit_state_queue;
 +
 +	uint64_t next_repaint_time = 0;
@@ -343,11 +343,11 @@ index 7351531..d748fa0 100755
 +	if (expired_count > 1) {
 +		for (int k=0; k<expired_count-1; k++ ) {
 +			buffer_drop = surface_state_queue[k].buffer;
-+			//to do:send event to clinet
++			//to do:send event to client
 +		}
 +		compositor->queueSizeSub = compositor->queueSizeSub - (expired_count-1);
 +		for (int j=0; j<compositor->queueSizeSub; j++ ) {
-+			surafce_queue_sub[j] = surafce_queue_sub[j+expired_count-1];
++			surface_queue_sub[j] = surface_queue_sub[j+expired_count-1];
 +			surface_state_queue[j] = surface_state_queue[j+expired_count-1];
 +		}
 +	}*/
@@ -372,7 +372,7 @@ index 7351531..d748fa0 100755
 +
 +	if (compositor->queueSizeSub > 1) {
 +		for (int j=0; j<compositor->queueSizeSub-1; j++ ) {
-+			surafce_queue_sub[j] = surafce_queue_sub[j+1];
++			surface_queue_sub[j] = surface_queue_sub[j+1];
 +			surface_state_queue[j] = surface_state_queue[j+1];
 +		}
 +	}

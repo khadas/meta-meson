@@ -12,10 +12,9 @@ SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 PR = "r0"
 
-DEPENDS = "aml-mediahal-sdk directfb libgpiod aml-libdvr aml-subtitleserver meson-display libdrm aml-cas-hal cjson"
+DEPENDS = "aml-mediahal-sdk libgpiod aml-libdvr aml-subtitleserver meson-display libdrm aml-cas-hal cjson"
 
 INCLUDE_DIRS = " \
-    -I${STAGING_DIR_TARGET}${includedir}/directfb/ \
     -I${STAGING_DIR_TARGET}${libdir}/include/ \
     -I${STAGING_DIR_TARGET}${includedir}/libdrm_meson \
     -I${STAGING_DIR_TARGET}${includedir}/libdrm \
@@ -29,6 +28,8 @@ SRC_URI = "file://${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi"
 S = "${WORKDIR}"
 do_install() {
     rm -rf ${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi/oe-*
+    mkdir -p ${D}${includedir}
+    install -D -m 0644 ${S}/include/*.h  ${D}${includedir}/
     install -d ${D}${bindir}
     install -d ${D}${libdir}
     install -m 0644 source/libaml_hdi.so ${D}${libdir}

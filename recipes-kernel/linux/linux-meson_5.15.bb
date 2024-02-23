@@ -16,6 +16,7 @@ SRC_URI:append = " file://modules_install.sh"
 SRC_URI:append = " file://extra_modules_install.sh"
 SRC_URI:append:sc2 = " file://sc2.cfg"
 SRC_URI:append:s4 = " file://s4.cfg"
+SRC_URI:append:s7 = " file://s7.cfg"
 SRC_URI:append:s1a = " file://s1a.cfg"
 SRC_URI:append:t5d = " file://t5d.cfg"
 SRC_URI:append:t5w = " file://t5w.cfg"
@@ -28,17 +29,24 @@ SRC_URI:append:sm1 = " file://sm1.cfg"
 
 SRC_URI += "file://common.cfg"
 
+# add support partition encryption
+SRC_URI += "${@bb.utils.contains_any('DISTRO_FEATURES', 'partition-enc partition-enc-local', 'file://partition-enc.cfg', '', d)}"
+
 # add support nand
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'file://nand.cfg', '', d)}"
 
 # Enable selinux support in the kernel if the feature is enabled
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.cfg', '', d)}"
 
+# add support dm-verity
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'file://dm-verity.cfg', '', d)}"
+
 #For common patches
 KDIR = "aml-5.15"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
 LINUX_VERSION ?= "5.15.123"
+LINUX_VERSION:s7 = "5.15.131"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
 KERNEL_FEATURES:remove = "cfg/fs/vfat.scc"
 
@@ -70,6 +78,7 @@ GKI_AML_CONFIG_PATH = "${S}/common_drivers/arch/${ARCH}/configs"
 SOC = ""
 SOC:sc2 = "sc2"
 SOC:s4 = "s4"
+SOC:s7 = "s7"
 SOC:t3 = "t3"
 SOC:t7 = "t7"
 SOC:s1a = "s1a"
@@ -100,16 +109,20 @@ do_kernel_configme:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
 }
 
+do_kernel_metadata:prepend:k5.15-u () {
+    export COMMON_DRIVERS_DIR=./common_drivers
+    cd ${S}
+    KERNEL_DIR=${S} ./common_drivers/auto_patch/auto_patch.sh "common14-5.15"
+    cd -
+}
+
 do_kernel_metadata:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
-    if [ ! -f ${WORKDIR}/defconfig ];then
-        export KBUILD_DEFCONFIG="final_defconfig"
-        rm -f ${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}
-        if [ "${ARCH}" = "arm" ]; then
-            KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
-        else
-            KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI10_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKIDEBUG_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
-        fi
+    rm -f ${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}
+    if [ "${ARCH}" = "arm" ]; then
+        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
+    else
+        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI10_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKIDEBUG_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
     fi
 }
 

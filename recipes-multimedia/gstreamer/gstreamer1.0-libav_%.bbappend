@@ -19,7 +19,7 @@ SRC_URI:append = "file://0019-CF1-do-not-use-avdemux-when-container-is-wav.patch
 SRC_URI:append = "file://0020-use-libav-probe-mpegps-and-mp3.patch "
 SRC_URI:append = "file://0021-SWPL-125538-Only_pts_of_I-frame_are_modified_for_avi.patch "
 SRC_URI:append = "file://0022-yocto-drop-acc-raw-audio-data-according-to-clip-meta-data.patch "
-
+SRC_URI:append = "file://0023-remove-vc1-decoder.patch "
 
 
 

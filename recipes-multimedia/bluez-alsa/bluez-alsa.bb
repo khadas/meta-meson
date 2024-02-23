@@ -53,8 +53,6 @@ PACKAGE_BEFORE_PN = "${PN}-aplay"
 RRECOMMENDS:${PN} = "${PN}-aplay"
 
 do_install:append () {
-    sed -i '110 i\default_agent > /dev/null &' ${WORKDIR}/bluez-alsa.sh
-
     install -d ${D}${base_libdir}/systemd/system
     install -m 0755 ${WORKDIR}/bluez-alsa.sh ${D}${bindir}
     install -m 0755 ${B}/utils/aplay/bt-halplay ${D}${bindir}

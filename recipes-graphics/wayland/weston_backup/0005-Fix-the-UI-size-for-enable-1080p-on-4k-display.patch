@@ -5,7 +5,7 @@ Subject: [PATCH 5/7] Fix the UI size for enable 1080p on 4k display
 
 PD#SWPL-6435
 Fix the UI size for enable 1080p on 4k display when drm atomic enabled.
-Use weston config section "ui-size" can set the ui output(defaule is 1920x1080).
+Use weston config section "ui-size" can set the ui output(default is 1920x1080).
 Use atomic mode set for support 1080p gbm buffer object post on 4k display
 ---
  Makefile.am                |  4 +++

@@ -11,6 +11,7 @@ SOC_FAMILY:t7 = "t7"
 SOC_FAMILY:s4 = "s4"
 SOC_FAMILY:sm1 = "sm1"
 SOC_FAMILY:g12b = "g12b"
+SOC_FAMILY:s7 = "s7"
 SOC_FAMILY:t5d = "t5d"
 SOC_FAMILY:t5w = "t5w"
 SOC_FAMILY:t3 = "t3"
@@ -139,7 +140,12 @@ do_aml_pack() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'true', 'false', d)}; then
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/swupdate-priv.pem ${DEPLOY_DIR_IMAGE}/
         cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/update.sh ${DEPLOY_DIR_IMAGE}/
-        cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/sw_package_create.sh ${DEPLOY_DIR_IMAGE}/
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-enc', 'true', 'false', d)}; then
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/sw_enc_package_create.sh ${DEPLOY_DIR_IMAGE}/
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/encryption_key ${DEPLOY_DIR_IMAGE}/
+        else
+            cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/sw_package_create.sh ${DEPLOY_DIR_IMAGE}/
+        fi
         if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
             cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/rootfs.${ROOTFS_TYPE}
             if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ];then
@@ -188,7 +194,11 @@ do_aml_pack() {
                 sed 's@value = "1";@value = "2";@' -i ${DEPLOY_DIR_IMAGE}/sw-description
             fi
         fi
-        ${DEPLOY_DIR_IMAGE}/sw_package_create.sh ${DEPLOY_DIR_IMAGE}
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-enc', 'true', 'false', d)}; then
+            ${DEPLOY_DIR_IMAGE}/sw_enc_package_create.sh ${DEPLOY_DIR_IMAGE}
+        else
+            ${DEPLOY_DIR_IMAGE}/sw_package_create.sh ${DEPLOY_DIR_IMAGE}
+        fi
     fi
 
     #sign image
@@ -225,7 +235,7 @@ do_aml_pack() {
 
 do_aml_pack[depends] += "core-image-minimal:do_image_complete "
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', ' vendor-image:do_image_complete', '', d)}"
-do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.utils.contains('MULTTILIBS', 'multilib:lib32', ' lib32-recovery-image:do_image_complete', ' recovery-image:do_image_complete', d), '', d)}"
+do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.utils.contains('MULTILIBS', 'multilib:lib32', ' lib32-recovery-image:do_image_complete', ' recovery-image:do_image_complete', d), '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', ' vbmeta-image:do_compile', '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', ' aml-gpt-make:do_install', '', d)}"
 addtask aml_pack after do_image_complete before do_build

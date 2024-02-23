@@ -372,21 +372,61 @@ index 98e59b6..5a3eda5
  
  	pixman_region32_fini(&surface_blend);
  	pixman_region32_fini(&surface_opaque);
-@@ -1157,8 +1157,12 @@ repaint_views(struct weston_output *output, pixman_region32_t *damage)
+diff --git a/libweston/renderer-gl/gl-renderer.c b/libweston/renderer-gl/gl-renderer.c
+index ddfbaa3..390aea4 100755
+--- a/libweston/renderer-gl/gl-renderer.c
++++ b/libweston/renderer-gl/gl-renderer.c
+@@ -1148,17 +1148,47 @@ draw_paint_node(struct weston_paint_node *pnode,
+ out:
+ 	pixman_region32_fini(&repaint);
+ }
++static bool repaint_area_Empty(struct weston_paint_node *pnode,
++		pixman_region32_t *damage /* in global coordinates */)
++{
++	bool empty = false;
++	pixman_region32_t repaint;
++	pixman_region32_init(&repaint);
++	pixman_region32_intersect(&repaint,
++				  &pnode->view->transform.boundingbox, damage);
++	pixman_region32_subtract(&repaint, &repaint, &pnode->view->clip);
++	if (!pixman_region32_not_empty(&repaint))
++		empty = true;
++	return empty;
++}
+ 
+ static void
+ repaint_views(struct weston_output *output, pixman_region32_t *damage)
+ {
+ 	struct weston_compositor *compositor = output->compositor;
+ 	struct weston_paint_node *pnode;
++	bool haveOpaqueSurface = false;
  
  	wl_list_for_each_reverse(pnode, &output->paint_node_z_order_list,
  				 z_order_link) {
 -		if (pnode->view->plane == &compositor->primary_plane)
+-			draw_paint_node(pnode, damage);
 +		if (pnode->view->plane == &compositor->primary_plane) {
-+			if (pnode->view->alpha != 0.0) 
++			if (pnode->view->alpha != 0.0 && !repaint_area_Empty(pnode, damage)) 
 +			{
- 			draw_paint_node(pnode, damage);
++				draw_paint_node(pnode, damage);
++				haveOpaqueSurface = true;
++			}
++		}
++	}
++	if (haveOpaqueSurface == false)
++	{
++		wl_list_for_each_reverse(pnode, &output->paint_node_z_order_list,
++				 z_order_link) {
++			if (pnode->view->plane == &compositor->primary_plane) {
++				weston_log("\n %s %d %s view %p haveOpaqueSurface:%d alpha:%f~~~~~~~~~\n", __FUNCTION__,__LINE__,
++			output->name, pnode->view, haveOpaqueSurface, pnode->view->alpha);
++				draw_paint_node(pnode, damage);
 +			}
 +		}
  	}
  }
  
-@@ -1623,6 +1627,14 @@ blit_shadow_to_output(struct weston_output *output,
+@@ -1623,6 +1653,14 @@ blit_shadow_to_output(struct weston_output *output,
   * Depending on the underlying hardware, violating that assumption could
   * result in seeing through to another display plane.
   */
@@ -401,7 +441,7 @@ index 98e59b6..5a3eda5
  static void
  gl_renderer_repaint_output(struct weston_output *output,
  			   pixman_region32_t *output_damage)
-@@ -1639,6 +1651,8 @@ gl_renderer_repaint_output(struct weston_output *output,
+@@ -1639,6 +1677,8 @@ gl_renderer_repaint_output(struct weston_output *output,
  	enum gl_border_status border_status = BORDER_STATUS_CLEAN;
  	struct weston_paint_node *pnode;
  
@@ -410,7 +450,7 @@ index 98e59b6..5a3eda5
  	assert(output->from_blend_to_output_by_backend ||
  	       output->from_blend_to_output == NULL || shadow_exists(go));
  
-@@ -1795,6 +1809,10 @@ gl_renderer_repaint_output(struct weston_output *output,
+@@ -1795,6 +1835,10 @@ gl_renderer_repaint_output(struct weston_output *output,
  	update_buffer_release_fences(compositor, output);
  
  	gl_renderer_garbage_collect_programs(gr);

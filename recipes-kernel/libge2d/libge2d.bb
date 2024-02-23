@@ -8,7 +8,7 @@ SRCREV ?="${AUTOREV}"
 
 do_configure[noexec] = "1"
 
-EXTRA_OEMAKE = "LIBGE2D_STAGING_DIR=${D} CROSS=${TARGET_PREFIX} TARGET_DIR=${D} STAGING_DIR=${D} DESTDIR=${D} INSTALL_DIR=${D}/usr/lib"
+EXTRA_OEMAKE = "OUT_DIR=${B} LIBGE2D_STAGING_DIR=${D} CROSS=${TARGET_PREFIX} TARGET_DIR=${D} STAGING_DIR=${D} DESTDIR=${D} INSTALL_DIR=${D}/usr/lib"
 
 do_compile () {
     cd ${S}
@@ -21,8 +21,8 @@ do_install () {
     install -d ${D}${bindir}
     install -m 0644 -D ${S}/libge2d/include/aml_ge2d.h ${D}${includedir}
     install -m 0644 -D ${S}/libge2d/include/ge2d_port.h ${D}${includedir}
-    install -m 0644 -D ${S}/libge2d/libge2d.so ${D}${libdir}
-    install -m 0644 -D ${S}/ge2d_feature_test ${D}${bindir}
+    install -m 0644 -D ${B}/libge2d.so ${D}${libdir}
+    install -m 0644 -D ${B}/ge2d_feature_test ${D}${bindir}
 }
 
 FILES:${PN} = " ${libdir}/* ${bindir}/*"

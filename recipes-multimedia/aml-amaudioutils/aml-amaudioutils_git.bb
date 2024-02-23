@@ -26,7 +26,7 @@ EXTRA_FLAGS:aarch64="TOOLCHAIN_NEON_SUPPORT=n"
 
 EXTRA_OEMAKE="${EXTRA_FLAGS} STAGING_DIR=${D} \
                   TARGET_DIR=${D} \
-                                "
+                  AML_BUILD_DIR=${B}"
 
 do_compile() {
     cd ${B}
@@ -34,12 +34,11 @@ do_compile() {
 }
 
 do_install() {
-    install -d ${D}${libdir}
-    install -d ${D}/usr/include/audio_utils
-    install -d ${D}/usr/include/IpcBuffer
-
-  	install -m 644 -D ${S}/libamaudioutils.so ${D}${libdir}
-    install -m 644 -D ${S}/libcutils.so ${D}${libdir}
+	install -d ${D}${libdir}
+	install -d ${D}/usr/include/audio_utils
+	install -d ${D}/usr/include/IpcBuffer
+	install -m 644 -D ${B}/libamaudioutils.so ${D}${libdir}
+	install -m 644 -D ${B}/libcutils.so ${D}${libdir}
 	install -m 644 ${S}/include/audio_utils/*.h ${D}/usr/include/audio_utils
 	install -m 644 ${S}/include/IpcBuffer/*.h ${D}/usr/include/IpcBuffer/
 }

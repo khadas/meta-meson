@@ -34,7 +34,7 @@ EXTRA_FFCONF = " \
     --disable-encoder=flac \
     --disable-encoders \
     --disable-decoders \
-    --enable-decoder='aac' \
+    --enable-decoder='aac,aac_latm' \
     --disable-muxer='ac3,eac3,dts,dtshd,spdif,dv' \
     --disable-demuxer='dv' \
     --disable-parser='mlp' \

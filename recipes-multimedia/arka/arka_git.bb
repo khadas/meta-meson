@@ -5,6 +5,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI:append = " file://arka.service "
 SRC_URI:append = " file://arka.init "
+SRC_URI:append = " file://Kolkata "
 SRCREV = "${AUTOREV}"
 
 PV = "git${SRCPV}"
@@ -18,9 +19,10 @@ INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
-DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service meson-display udev aml-hdmicec aml-mp-sdk"
+DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service udev aml-mp-sdk"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
-    bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'directfb', d)}"
+    bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'meson-display aml-hdmicec jpeg', d)}"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi', 'aml-hdi freetype', ' directfb ', d)}"
 
 RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service"
 
@@ -31,6 +33,7 @@ EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-project-sun', '-
     bb.utils.contains('DISTRO_FEATURES', 'arka-project-aml', '-DARKA_PROJECT=amlepg', '-DARKA_PROJECT=aslepg', d), d)}"
 EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
     bb.utils.contains('DISTRO_FEATURES', 'weston', '-DUSE_EGL=ON -DUSE_WESTON=ON', '-DUSE_EGL=ON', d), '', d)}"
+EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi',  '-DUSE_AML_HDI=ON',  ' ', d)}"
 
 INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${libdir}/include/ \
@@ -39,10 +42,16 @@ INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${includedir}/display_settings/ \
     "
 
-INCLUDE_DIRS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', ' \
+INCLUDE_DIRS += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi', ' \
      -I${STAGING_DIR_TARGET}${includedir}/ \
      -I${STAGING_DIR_TARGET}${includedir}/freetype2/', \
     '-I${STAGING_DIR_TARGET}${includedir}/directfb/', d)} \
+    "
+
+INCLUDE_DIRS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', ' \
+     -I${STAGING_DIR_TARGET}${includedir}/ \
+     -I${STAGING_DIR_TARGET}${includedir}/freetype2/', \
+    ' ', d)} \
     "
 
 TARGET_CFLAGS += "-fPIC -D_REENTRANT ${INCLUDE_DIRS}"
@@ -56,9 +65,16 @@ do_install:append() {
       install -d ${D}${sysconfdir}/init.d
       install -m 0755 ${WORKDIR}/arka.init ${D}${sysconfdir}/init.d/arka
     fi
+
+   if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}; then
+    install -d ${D}/usr/share/zoneinfo/Asia/
+    install -m 0755 ${WORKDIR}/Kolkata ${D}/usr/share/zoneinfo/Asia
+   fi
 }
+
 SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'arka-launcher', 'arka.service', '', d)}"
 
-FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/Arka/png ${systemd_unitdir}/system/"
+FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/Arka/png /usr/share/Arka/jpg ${systemd_unitdir}/system/"
 FILES_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '${libdir}', '', d)}"
+FILES_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '/usr/share/zoneinfo/Asia', '', d)}"
 FILES_${PN}-dev = ""

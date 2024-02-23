@@ -71,7 +71,16 @@ qca_bt_init()
 
 aml_bt_init()
 {
-	modprobe sdio_bt
+	if [ -f /sys/bus/mmc/devices/mmc1:0000/mmc1:0000:1/device ]; then
+		bt_chip_id=`cat /sys/bus/mmc/devices/mmc1:0000/mmc1:0000:1/device`
+	else
+		bt_chip_id=`cat /sys/bus/mmc/devices/mmc0:0000/mmc0:0000:1/device`
+	fi
+	case "${bt_chip_id}" in
+	0x8888)  #w1 need insmod ko
+		modprobe sdio_bt
+		;;
+	esac
 	usleep 200000
 	hciattach -s 115200 "$tty" aml
 	usleep 100000
@@ -85,29 +94,29 @@ brcm_bt_init()
 service_down()
 {
 	echo "|--stop bluez service--|"
-	killall bluetoothd
+	#killall bluetoothd
 	sh bluez-alsa.sh stop
 }
 
 service_up()
 {
 	echo "|--start bluez service--|"
-	grep "Debug=1" $configure_file > /dev/null
-	if [ $? -eq 0 ]; then
-		echo "|--bluetoothd debug log on--|"
-		/usr/libexec/bluetooth/bluetoothd -n -d &
-	else
-		/usr/libexec/bluetooth/bluetoothd -n &
-	fi
+#	grep "Debug=1" $configure_file > /dev/null
+#	if [ $? -eq 0 ]; then
+#		echo "|--bluetoothd debug log on--|"
+#		/usr/libexec/bluetooth/bluetoothd -n -d &
+#	else
+#		/usr/libexec/bluetooth/bluetoothd -n &
+#	fi
 	sh bluez-alsa.sh start
 }
 
 Blue_start()
 {
 	echo "|--bluez: device = $device mode = $mode--|"
-	echo 0 > /sys/class/rfkill/rfkill0/state
-	usleep 500000
-	echo 1 > /sys/class/rfkill/rfkill0/state
+#	echo 0 > /sys/class/rfkill/rfkill0/state
+#	usleep 500000
+#	echo 1 > /sys/class/rfkill/rfkill0/state
 
 	echo
 	echo "|-----start bluez----|"
@@ -143,7 +152,7 @@ Blue_start()
 		exit 0
 	fi
 
-	hci0_rfkill
+	#hci0_rfkill
 
 	grep -iq "Debug=1" $configure_file > /dev/null
 	if [ $? -eq 0 ]; then
@@ -202,21 +211,11 @@ fi
 
 case "$1" in
 	start)
-		Blue_start &
+		Blue_start
 		;;
 	restart)
 		Blue_stop
-		Blue_start &
-		;;
-	up)
-		service_up
-		;;
-	down)
-		service_down
-		;;
-	reset)
-		service_down
-		service_up
+		Blue_start
 		;;
 	stop)
 		Blue_stop

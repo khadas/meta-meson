@@ -2,12 +2,19 @@ SUMMARY = "create recovery image"
 LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
+# Variables should be set before including aml-security.inc
+ENABLE_DM_VERITY = "false"
+ENABLE_PARTITION_ENCRYPTION = "false"
+PARTITION_NAME = "recovery"
+PARTITION_ENCRYPTION_KEY = "${PARTITION_NAME}.bin"
+require aml-security.inc
+
 inherit core-image
 inherit image
 SDKEXTCLASS ?= "${@['populate_sdk', 'populate_sdk_ext']['linux' in d.getVar("SDK_OS", True)]}"
 inherit ${SDKEXTCLASS}
 
-DEPENDS:append = " android-tools-native"
+DEPENDS:append = " android-tools-native avb-native python3-native avbkey-native"
 
 IMAGE_INSTALL = "udev busybox"
 IMAGE_INSTALL:append = "\
@@ -28,6 +35,9 @@ IMAGE_INSTALL:remove:k5.15 = "\
                     kernel-modules \
                     "
 
+IMAGE_INSTALL:remove = "\
+    ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'system-config', '', d)} \
+"
 
 IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
             "aml-bootloader-message \
@@ -45,6 +55,18 @@ IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate-dvb-ota
             aml-dvb-ota", "", d)}"
 
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
+
+AVB_RECOVERY_RSA_KEY = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'bl33-level-3-rsa-priv.pem', 'vbmeta_rsa2048.pem', d), \
+    'vbmeta_rsa2048.pem', d)}"
+AVB_RECOVERY_RSA_KEY_PATH = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '${DEPLOY_DIR_IMAGE}', '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d), \
+    '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d)}"
+AVB_RECOVERY_ALGORITHM = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'SHA256_RSA4096', 'SHA256_RSA2048', d), \
+    'SHA256_RSA2048', d)}"
+SIGN_RECOVERY = " --key ${AVB_RECOVERY_RSA_KEY_PATH}/${AVB_RECOVERY_RSA_KEY} --algorithm ${AVB_RECOVERY_ALGORITHM} "
+RECOVERY_ROLLBACK_INDEX = " --rollback_index ${DEVICE_PROPERTY_RECOVERY_ROLLBACK_INDEX}"
 
 python __anonymous () {
     import re
@@ -74,7 +96,7 @@ do_rootfs:append () {
 KERNEL_BOOTARGS = ""
 
 do_bundle_initramfs_dtb() {
-    if ${@bb.utils.contains('MULTTILIBS', 'multilib:lib32', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('MULTILIBS', 'multilib:lib32', 'true', 'false', d)}; then
         mkbootimg --kernel ${DEPLOY_DIR_IMAGE}/Image.gz --base 0x0 --kernel_offset 0x1080000 --cmdline "${KERNEL_BOOTARGS}" --ramdisk  ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.cpio.gz --second ${DEPLOY_DIR_IMAGE}/dtb.img --output ${DEPLOY_DIR_IMAGE}/recovery.img
     else
         mkbootimg --kernel ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} --base 0x0 --kernel_offset 0x1080000 --cmdline "${KERNEL_BOOTARGS}" --ramdisk  ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.cpio.gz --second ${DEPLOY_DIR_IMAGE}/dtb.img --output ${DEPLOY_DIR_IMAGE}/recovery.img
@@ -87,6 +109,11 @@ do_bundle_initramfs_dtb[nostamp] = "1"
 
 do_rootfs[depends] += "android-tools-native:do_populate_sysroot"
 IMAGE_ROOTFS_EXTRA_SPACE:append = "${@bb.utils.contains("DISTRO_FEATURES", "systemd", " + 4096", "" ,d)}"
+
+ROOTFS_POSTPROCESS_COMMAND += "remove_alternative_files; "
+remove_alternative_files () {
+    rm -rf ${IMAGE_ROOTFS}/usr/lib/opkg
+}
 
 ROOTFS_POSTPROCESS_COMMAND += "delete_unused_items_from_fstab; "
 
@@ -114,5 +141,33 @@ install_kernel_modules() {
    if [ -f ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz ]; then
      tar -zxvf ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz -C ${IMAGE_ROOTFS}/
    fi
+   rm -rf ${IMAGE_ROOTFS}/modules/vendor/*
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/aml_smmu.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-adc.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-aoclk-g12a.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-camera.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-cpufreq.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-hwspinlock.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-i2c.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-inphy.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-input.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-irblaster.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-mailbox.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-phy-debug.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-rng.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/amlogic-watchdog.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/gpio-regulator.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/optee.ko
+   rm -rf ${IMAGE_ROOTFS}/modules/ramdisk/pwm-regulator.ko
+   rm -rf ${IMAGE_ROOTFS}/usr/bin/*kbd*
+   find  ${IMAGE_ROOTFS}/ -name "*gz" | xargs rm -rf
+   rm -rf ${IMAGE_ROOTFS}/lib/udev/hwdb.bin
+   rm -rf ${IMAGE_ROOTFS}/usr/bin/loadkeys
+   rm -rf ${IMAGE_ROOTFS}/usr/libexec/lib32-udevadm
+   rm -rf ${IMAGE_ROOTFS}//usr/lib/locale/locale-archive
 }
 
+IMAGE_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'sign_recovery; ', '', d)}"
+sign_recovery() {
+    avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/recovery.img --partition_size ${DEVICE_PROPERTY_RECOVERY_PARTITION_SIZE}  --partition_name "recovery" ${SIGN_RECOVERY} ${RECOVERY_ROLLBACK_INDEX}
+}

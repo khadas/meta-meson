@@ -83,7 +83,7 @@ index 72e4db9..8cdd97f 100644
  	pixman_region32_t occluded_region;
  
  	bool renderer_ok = (mode != DRM_OUTPUT_PROPOSE_STATE_PLANES_ONLY);
-@@ -896,6 +904,7 @@ drm_output_propose_state(struct weston_output *output_base,
+@@ -896,6 +912,7 @@ drm_output_propose_state(struct weston_output *output_base,
  	 */
  	pixman_region32_init(&renderer_region);
  	pixman_region32_init(&occluded_region);
@@ -91,7 +91,29 @@ index 72e4db9..8cdd97f 100644
  
  	wl_list_for_each(pnode, &output->base.paint_node_z_order_list,
  			 z_order_link) {
-@@ -975,10 +984,39 @@ drm_output_propose_state(struct weston_output *output_base,
+@@ -906,6 +915,9 @@ drm_output_propose_state(struct weston_output *output_base,
+ 		pixman_region32_t surface_overlap;
+ 		bool totally_occluded = false;
+ 
++#if MESON_VIDEO_PLAN_SUPPORT
++		pixman_region32_init(&ev->clip);
++#endif
+ 		drm_debug(b, "\t\t\t[view] evaluating view %p for "
+ 		             "output %s (%lu)\n",
+ 		          ev, output->base.name,
+@@ -941,6 +953,11 @@ drm_output_propose_state(struct weston_output *output_base,
+ 		 * the entire output */
+ 		totally_occluded = !pixman_region32_not_empty(&surface_overlap);
+ 		if (totally_occluded) {
++#if MESON_VIDEO_PLAN_SUPPORT
++			// if occluded , we need set the clip, to make sure it will not draw when glrenderer.
++			// to avoid the video plane coverd by this  view.
++			pixman_region32_union(&ev->clip, &ev->clip, &clipped_view);
++#endif
+ 			drm_debug(b, "\t\t\t\t[view] ignoring view %p "
+ 			             "(occluded on our output)\n", ev);
+ 			pixman_region32_fini(&surface_overlap);
+@@ -975,10 +992,39 @@ drm_output_propose_state(struct weston_output *output_base,
  		pixman_region32_intersect(&surface_overlap, &renderer_region,
  					  &clipped_view);
  		if (pixman_region32_not_empty(&surface_overlap)) {
@@ -131,7 +153,7 @@ index 72e4db9..8cdd97f 100644
  		pixman_region32_fini(&surface_overlap);
  
  		/* In case of enforced mode of content-protection do not
-@@ -1011,6 +1049,13 @@ drm_output_propose_state(struct weston_output *output_base,
+@@ -1011,6 +1057,13 @@ drm_output_propose_state(struct weston_output *output_base,
  				FAILURE_REASONS_FORCE_RENDERER;
  		}
  
@@ -145,7 +167,7 @@ index 72e4db9..8cdd97f 100644
  		if (ps) {
  			current_lowest_zpos = ps->zpos;
  			drm_debug(b, "\t\t\t[plane] next zpos to use %"PRIu64"\n",
-@@ -1037,7 +1082,12 @@ drm_output_propose_state(struct weston_output *output_base,
+@@ -1037,7 +1090,12 @@ drm_output_propose_state(struct weston_output *output_base,
  		 * entire clipped area if the whole view is known to be
  		 * opaque) does not necessarily occlude what's behind it, as
  		 * it could be alpha-blended. */
@@ -158,7 +180,7 @@ index 72e4db9..8cdd97f 100644
  			pixman_region32_intersect(&clipped_view,
  						  &clipped_view,
  						  &ev->transform.opaque);
-@@ -1050,6 +1100,7 @@ drm_output_propose_state(struct weston_output *output_base,
+@@ -1050,6 +1108,7 @@ drm_output_propose_state(struct weston_output *output_base,
  
  	pixman_region32_fini(&renderer_region);
  	pixman_region32_fini(&occluded_region);
@@ -247,7 +269,19 @@ index 1670c50..788ee63 100644
  
  	surface->compositor->renderer->attach(surface, buffer);
  
-@@ -2611,6 +2653,13 @@ output_accumulate_damage(struct weston_output *output)
+@@ -2526,7 +2526,11 @@ view_accumulate_damage(struct weston_view *view,
+ 	pixman_region32_union(&view->plane->damage,
+ 			      &view->plane->damage, &damage);
+ 	pixman_region32_fini(&damage);
++#if MESON_VIDEO_PLAN_SUPPORT
++	pixman_region32_union(&view->clip, &view->clip, opaque);
++#else
+ 	pixman_region32_copy(&view->clip, opaque);
++#endif
+ 	pixman_region32_union(opaque, opaque, &view->transform.opaque);
+ }
+ 
+@@ -2615,6 +2657,13 @@ output_accumulate_damage(struct weston_output *output)
  				 z_order_link) {
  			if (pnode->view->plane != plane)
  				continue;
@@ -261,6 +295,7 @@ index 1670c50..788ee63 100644
  
  			view_accumulate_damage(pnode->view, &opaque);
  		}
+ 
 diff --git a/libweston/renderer-gl/gl-renderer.c b/libweston/renderer-gl/gl-renderer.c
 index a5f5eae..0ba7443 100644
 --- a/libweston/renderer-gl/gl-renderer.c
@@ -288,3 +323,47 @@ index a5f5eae..0ba7443 100644
  	pixman_region32_fini(&surface_blend);
  	pixman_region32_fini(&surface_opaque);
  
+diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
+index 55e9414..10ccb52 100644
+--- a/libweston/backend-drm/drm-internal.h
++++ b/libweston/backend-drm/drm-internal.h
+@@ -478,6 +478,8 @@ struct drm_plane {
+ 
+ 	struct wl_list link;
+ 
++	bool is_video_plane;
++
+ 	struct weston_drm_format_array formats;
+ };
+ 
+diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
+index 780d007..cd1a3e6 100644
+--- a/libweston/backend-drm/kms.c
++++ b/libweston/backend-drm/kms.c
+@@ -484,6 +484,10 @@ drm_plane_populate_formats(struct drm_plane *plane, const drmModePlane *kplane,
+ 
+ 		if (fmt->modifiers.size == 0)
+ 			weston_drm_format_array_remove_latest_format(&plane->formats);
++
++		if (fmt->format == DRM_FORMAT_NV12 ||
++			fmt->format == DRM_FORMAT_NV21)
++			plane->is_video_plane = true;
+ 	}
+ 
+ out:
+diff --git a/libweston/backend-drm/state-helpers.c b/libweston/backend-drm/state-helpers.c
+index 75a2a18..bc44398 100644
+--- a/libweston/backend-drm/state-helpers.c
++++ b/libweston/backend-drm/state-helpers.c
+@@ -228,7 +228,10 @@ drm_plane_state_coords_for_view(struct drm_plane_state *state,
+ 	/* Now calculate the source rectangle, by finding the extents of the
+ 	 * view, and working backwards to source co-ordinates. */
+ 	pixman_region32_init(&src_rect);
+-	pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
++	if (state->plane->is_video_plane)
++		src_rect = ev->transform.boundingbox;
++	else
++		pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
+ 				  &output->base.region);
+ 	box = pixman_region32_extents(&src_rect);
+ 	weston_view_from_global_float(ev, box->x1, box->y1, &sxf1, &syf1);

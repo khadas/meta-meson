@@ -78,6 +78,16 @@ else
     mount -t ubifs /dev/ubi0_0 /mnt
 fi
 
+if [ "${1}" = "ubifs" ]; then
+    SWUPDATE_CMD="swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem"
+else
+    SWUPDATE_CMD="swupdate -l 6 -k /etc/swupdate-public.pem"
+fi
+
+if [ -f "/etc/image-enc-aes.key" ]; then
+    SWUPDATE_CMD="$SWUPDATE_CMD -K /etc/image-enc-aes.key"
+fi
+
 if [[ -f "/mnt/software.swu" ]]; then
     SWUPDATE_FILE_PATH=/mnt/software.swu
 elif [[ -f "/mnt/unencrypted/software.swu" ]]; then
@@ -88,11 +98,7 @@ if [[ ! -z "$SWUPDATE_FILE_PATH" ]]; then
     echo "find software.swu in data($(dirname $SWUPDATE_FILE_PATH)), now start update......"
     export TMPDIR=/mnt
     show_swupdateui
-    if [ "${1}" = "ubifs" ]; then
-        swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem -i $SWUPDATE_FILE_PATH
-    else
-        swupdate -l 6 -k /etc/swupdate-public.pem -i $SWUPDATE_FILE_PATH
-    fi
+    $SWUPDATE_CMD -i $SWUPDATE_FILE_PATH
     if [ $? != 0 ]; then
         echo "swupdate software.swu from data failed!"
         urlmisc clean
@@ -104,9 +110,6 @@ if [[ ! -z "$SWUPDATE_FILE_PATH" ]]; then
         urlmisc clean
         sync
         sleep 2
-        if [ -b /dev/bootloader_up ]; then
-            uenv set write_boot 1
-        fi
         reboot
         echo "swupdate reboot now!"
     fi
@@ -147,11 +150,7 @@ elif [ -f "$OTA_FILE_FLAG" ]; then
     #Here we detect if the OTA package exist or not
     if [ -n "$NETWORK_READY" ] && [ -n "$OTA_PACKAGE_READY" ]; then
         show_swupdateui
-        if [ "${1}" = "ubifs" ]; then
-            swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem -D "-t 60"
-        else
-            swupdate -l 6 -k /etc/swupdate-public.pem -D "-t 60"
-        fi
+        $SWUPDATE_CMD -D "-t 60"
         swupdate_result=$?
         echo "swupdate return result: $swupdate_result"
         case $swupdate_result in
@@ -221,11 +220,7 @@ elif [ -f "$DVB_OTA_FILE_FLAG" ]; then
             dvbota_result=$?
             echo "dvbota result: $dvbota_result"
             if [ $dvbota_result ]; then
-                if [ "${1}" = "ubifs" ]; then
-                    swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem -i /tmp/software.swu
-                else
-                    swupdate -l 6 -k /etc/swupdate-public.pem -i /tmp/software.swu
-                fi
+                $SWUPDATE_CMD -i /tmp/software.swu
                 if [ $? != 0 ]; then
                     echo "dvbota swupdate software.swu from data failed!"
                 else
@@ -259,11 +254,7 @@ else
     if [ -f "/run/media/$name/software.swu" ]; then
         export TMPDIR=/run/media/$name
         show_swupdateui
-        if [ "${1}" = "ubifs" ]; then
-            swupdate -l 6 -b "$str" -k /etc/swupdate-public.pem -i /run/media/$name/software.swu
-        else
-            swupdate -l 6 -k /etc/swupdate-public.pem -i /run/media/$name/software.swu
-        fi
+        $SWUPDATE_CMD -i /run/media/$name/software.swu
         if [ $? != 0 ]; then
             echo "swupdate software.swu from usb failed!"
             umount /run/media/$name
@@ -274,9 +265,6 @@ else
             urlmisc clean
             sync
             sleep 2
-            if [ -b /dev/bootloader_up ]; then
-                uenv set write_boot 1
-            fi
             reboot
             echo "swupdate reboot now!"
         fi

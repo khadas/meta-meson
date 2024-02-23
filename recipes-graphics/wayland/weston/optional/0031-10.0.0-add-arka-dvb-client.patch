@@ -1,21 +1,21 @@
-From 06a221b2bc136a1a6611d6c4ff3957ffb02c4284 Mon Sep 17 00:00:00 2001
+From 66a2d6d16e6a4f01e61498678bae28bc7b4ca37e Mon Sep 17 00:00:00 2001
 From: HenryLee <henry_1_lee@163.com>
-Date: Tue, 7 Nov 2023 10:05:12 +0800
+Date: Wed, 3 Jan 2024 11:54:56 +0800
 Subject: [PATCH] add arka dvb client
 
 Signed-off-by: HenryLee <henry_1_lee@163.com>
 ---
- clients/arkadvb.c   | 607 ++++++++++++++++++++++++++++++++++++++++++++
+ clients/arkadvb.c   | 598 ++++++++++++++++++++++++++++++++++++++++++++
  clients/meson.build |   8 +-
- 2 files changed, 614 insertions(+), 1 deletion(-)
+ 2 files changed, 605 insertions(+), 1 deletion(-)
  create mode 100644 clients/arkadvb.c
 
 diff --git a/clients/arkadvb.c b/clients/arkadvb.c
 new file mode 100644
-index 0000000..b033978
+index 0000000..13579b1
 --- /dev/null
 +++ b/clients/arkadvb.c
-@@ -0,0 +1,607 @@
+@@ -0,0 +1,598 @@
 +/*
 + * Copyright © 2011 Tim Wiederhake
 + *
@@ -40,7 +40,7 @@ index 0000000..b033978
 + */
 +
 +/**
-+ * \file eventdemo.c
++ * \file arkadvb.c
 + * \brief Demonstrate the use of Wayland's toytoolkit.
 + *
 + * Heavily commented demo program that can report all events that are
@@ -67,10 +67,8 @@ index 0000000..b033978
 +#include <dlfcn.h>
 +typedef void (*OnArkaRun) (void);
 +typedef void (*OnArkaStop) (void);
-+typedef void (*OnArkaUpdateKey) (int key, int type);
 +OnArkaRun p_arka_run;
 +OnArkaStop p_arka_stop;
-+OnArkaUpdateKey p_arka_update_key;
 +void *handle = NULL;
 +pthread_t arka_thread_tid;
 +
@@ -80,8 +78,7 @@ index 0000000..b033978
 +  if (handle) {
 +    p_arka_run = (OnArkaRun)dlsym(handle, "arka_run");
 +    p_arka_stop = (OnArkaRun)dlsym(handle, "arka_stop");
-+    p_arka_update_key = (OnArkaUpdateKey)dlsym(handle, "arka_update_key");
-+    if (!p_arka_run || !p_arka_stop || !p_arka_update_key) {
++    if (!p_arka_run || !p_arka_stop) {
 +      printf("arka dvb init failed\n");
 +      return;
 +    }
@@ -106,7 +103,7 @@ index 0000000..b033978
 +
 +/** window title */
 +static char *title = "EventDemo";
-+static char *appid = "org.freedesktop.weston.eventdemo";
++static char *appid = "org.freedesktop.weston.arkadvb";
 +
 +/** window width */
 +static int width = 1920;
@@ -145,13 +142,13 @@ index 0000000..b033978
 +static bool log_motion = false;
 +
 +/**
-+ * \struct eventdemo
++ * \struct arkadvb
 + * \brief Holds all data the program needs per window
 + *
 + * In this demo the struct holds the position of a
 + * red rectangle that is drawn in the window's area.
 + */
-+struct eventdemo {
++struct arkadvb {
 +	struct window *window;
 +	struct widget *widget;
 +	struct display *display;
@@ -171,7 +168,7 @@ index 0000000..b033978
 +static void
 +redraw_handler(struct widget *widget, void *data)
 +{
-+	struct eventdemo *e = data;
++	struct arkadvb *e = data;
 +	cairo_surface_t *surface;
 +	cairo_t *cr;
 +	struct rectangle rect;
@@ -209,7 +206,7 @@ index 0000000..b033978
 +resize_handler(struct widget *widget,
 +	       int32_t width, int32_t height, void *data)
 +{
-+	struct eventdemo *e = data;
++	struct arkadvb *e = data;
 +	if (log_resize)
 +		printf("resize width: %d, height: %d\n", width, height);
 +
@@ -236,7 +233,7 @@ index 0000000..b033978
 +		       struct input *device, void *data)
 +{
 +	int32_t x, y;
-+	struct eventdemo *e = data;
++	struct arkadvb *e = data;
 +
 +	if (log_focus) {
 +		if (device) {
@@ -275,10 +272,6 @@ index 0000000..b033978
 +	       (state == WL_KEYBOARD_KEY_STATE_PRESSED) ? "pressed" :
 +							  "released",
 +	       modifiers);
-+
-+	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-+		p_arka_update_key(key, 1);
-+	}
 +}
 +
 +/**
@@ -294,7 +287,7 @@ index 0000000..b033978
 +button_handler(struct widget *widget, struct input *input, uint32_t time,
 +	       uint32_t button, enum wl_pointer_button_state state, void *data)
 +{
-+	struct eventdemo *e = data;
++	struct arkadvb *e = data;
 +	int32_t x, y;
 +
 +	if (!log_button)
@@ -323,7 +316,7 @@ index 0000000..b033978
 +axis_handler(struct widget *widget, struct input *input, uint32_t time,
 +	     uint32_t axis, wl_fixed_t value, void *data)
 +{
-+	struct eventdemo *e = data;
++	struct arkadvb *e = data;
 +
 +	if (!log_axis)
 +		return;
@@ -340,7 +333,7 @@ index 0000000..b033978
 +static void
 +pointer_frame_handler(struct widget *widget, struct input *input, void *data)
 +{
-+	struct eventdemo *e = data;
++	struct arkadvb *e = data;
 +
 +	if (!e->print_pointer_frame)
 +		return;
@@ -354,7 +347,7 @@ index 0000000..b033978
 +		    uint32_t source, void *data)
 +{
 +	const char *axis_source;
-+	struct eventdemo *e = data;
++	struct arkadvb *e = data;
 +
 +	if (!log_axis)
 +		return;
@@ -384,7 +377,7 @@ index 0000000..b033978
 +		  uint32_t time, uint32_t axis,
 +		  void *data)
 +{
-+	struct eventdemo *e = data;
++	struct arkadvb *e = data;
 +
 +	if (!log_axis)
 +		return;
@@ -400,7 +393,7 @@ index 0000000..b033978
 +axis_discrete_handler(struct widget *widget, struct input *input,
 +		      uint32_t axis, int32_t discrete, void *data)
 +{
-+	struct eventdemo *e = data;
++	struct arkadvb *e = data;
 +
 +	if (!log_axis)
 +		return;
@@ -426,7 +419,7 @@ index 0000000..b033978
 +motion_handler(struct widget *widget, struct input *input, uint32_t time,
 +	       float x, float y, void *data)
 +{
-+	struct eventdemo *e = data;
++	struct arkadvb *e = data;
 +
 +	if (log_motion) {
 +		printf("motion time: %u, x: %f, y: %f\n", time, x, y);
@@ -441,16 +434,16 @@ index 0000000..b033978
 +}
 +
 +/**
-+ * \brief Create and initialise a new eventdemo window.
-+ * The returned eventdemo instance should be destroyed using \c eventdemo_destroy().
++ * \brief Create and initialise a new arkadvb window.
++ * The returned arkadvb instance should be destroyed using \c arkadvb_destroy().
 + * \param d associated display
 + */
-+static struct eventdemo *
-+eventdemo_create(struct display *d)
++static struct arkadvb *
++arkadvb_create(struct display *d)
 +{
-+	struct eventdemo *e;
++	struct arkadvb *e;
 +
-+	e = zalloc(sizeof (struct eventdemo));
++	e = zalloc(sizeof (struct arkadvb));
 +	if (e == NULL)
 +		return NULL;
 +
@@ -468,7 +461,7 @@ index 0000000..b033978
 +	}
 +	e->display = d;
 +
-+	/* The eventdemo window draws a red rectangle as a demonstration
++	/* The arkadvb window draws a red rectangle as a demonstration
 +	 * of per-window data. The dimensions of that rectangle are set
 +	 * here.
 +	 */
@@ -490,12 +483,10 @@ index 0000000..b033978
 +	/* Set the callback focus handler for the window */
 +	window_set_keyboard_focus_handler(e->window,
 +					  keyboard_focus_handler);
-+#endif
 +
 +	/* Set the callback key handler for the window */
 +	window_set_key_handler(e->window, key_handler);
 +
-+#if 0
 +	/* Set the callback button handler for the window */
 +	widget_set_button_handler(e->widget, button_handler);
 +
@@ -519,19 +510,19 @@ index 0000000..b033978
 +	return e;
 +}
 +/**
-+ * \brief Destroy eventdemo instance previously created by \c eventdemo_create().
-+ * \param eventdemo eventdemo instance to destroy
++ * \brief Destroy arkadvb instance previously created by \c arkadvb_create().
++ * \param arkadvb arkadvb instance to destroy
 + */
-+static void eventdemo_destroy(struct eventdemo * eventdemo)
++static void arkadvb_destroy(struct arkadvb * arkadvb)
 +{
-+	widget_destroy(eventdemo->widget);
-+	window_destroy(eventdemo->window);
-+	free(eventdemo);
++	widget_destroy(arkadvb->widget);
++	window_destroy(arkadvb->window);
++	free(arkadvb);
 +}
 +/**
-+ * \brief command line options for eventdemo
++ * \brief command line options for arkadvb
 + */
-+static const struct weston_option eventdemo_options[] = {
++static const struct weston_option arkadvb_options[] = {
 +	{ WESTON_OPTION_STRING, "title", 0, &title },
 +	{ WESTON_OPTION_INTEGER, "width", 'w', &width },
 +	{ WESTON_OPTION_INTEGER, "height", 'h', &height },
@@ -556,14 +547,14 @@ index 0000000..b033978
 +main(int argc, char *argv[])
 +{
 +	struct display *d;
-+	struct eventdemo *e;
++	struct arkadvb *e;
 +
-+	if (parse_options(eventdemo_options,
-+			  ARRAY_LENGTH(eventdemo_options), &argc, argv) > 1) {
++	if (parse_options(arkadvb_options,
++			  ARRAY_LENGTH(arkadvb_options), &argc, argv) > 1) {
 +		unsigned k;
 +		printf("Usage: %s [OPTIONS]\n\n", argv[0]);
-+		for (k = 0; k < ARRAY_LENGTH(eventdemo_options); k++) {
-+			const struct weston_option* p = &eventdemo_options[k];
++		for (k = 0; k < ARRAY_LENGTH(arkadvb_options); k++) {
++			const struct weston_option* p = &arkadvb_options[k];
 +			if (p->name) {
 +				printf("  --%s", p->name);
 +				if (p->type != WESTON_OPTION_BOOLEAN)
@@ -597,6 +588,7 @@ index 0000000..b033978
 +	}
 +
 +	/* Connect to the display and have the arguments parsed */
++
 +	d = display_create(&argc, argv);
 +	if (d == NULL) {
 +		fprintf(stderr, "failed to create display: %s\n",
@@ -604,19 +596,18 @@ index 0000000..b033978
 +		return -1;
 +	}
 +
-+	/* Create new eventdemo window */
-+	e = eventdemo_create(d);
++	/* Create new arkadvb window */
++	e = arkadvb_create(d);
 +	if (e == NULL) {
-+		fprintf(stderr, "failed to create eventdemo: %s\n",
++		fprintf(stderr, "failed to create arkadvb: %s\n",
 +			strerror(errno));
 +		return -1;
 +	}
 +
 +	display_run(d);
-+	//display_run_dummy(d);
 +
 +	/* Release resources */
-+	eventdemo_destroy(e);
++	arkadvb_destroy(e);
 +	display_destroy(d);
 +
 +	pthread_join(arka_thread_tid, NULL);

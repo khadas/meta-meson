@@ -7,7 +7,8 @@ ROOT_ROMOUNT="/rom"
 #ROOT_RWMOUNT="/data/overlay"
 INIT="/sbin/init"
 ROOT_DEVICE="/dev/system"
-ROOT_RWDEVICE="/dev/data"
+DATA_DEVICE="/dev/data"
+DATA_MOUNT="/data" # mount point of /dev/data in ramdisk
 MOUNT="/bin/mount"
 UMOUNT="/bin/umount"
 FIRMWARE=""
@@ -17,9 +18,9 @@ DM_VERITY_STATUS_VENDOR="disabled"
 DM_DEV_COUNT=0
 ACTIVE_SLOT=""
 root_fstype="ext4"
-OVERLAY_DIR="/data/overlay"
-UNENCRYPTED_DIR="/data/unencrypted"
-SWUPDATE_DIR="/data/swupdate"
+OVERLAY_DIR="$DATA_MOUNT/overlay"
+UNENCRYPTED_DIR="$DATA_MOUNT/unencrypted"
+SWUPDATE_DIR="$DATA_MOUNT/swupdate"
 VBMETA_DEVICE=""
 OverlayFS="enabled"
 
@@ -383,15 +384,14 @@ fbe_fscrypt_setup() {
 }
 
 data_fbe_bind() {
-    # param 1: data partition mount point
-    DATA_MNT_LOC=$1
+    # param 1: mount point of /dev/data
     if [ "$DATA_FBE_STATUS" = "setup" ]; then
         # When DATA_FBE_STATUS = setup, it means FBE has been setup on <data mount point>/fbe_root
         # We need to bind it to <root mount point>/data
         mkdir -p $ROOT_MOUNT/data
-        mount --bind $DATA_MNT_LOC/$data_fbe_root_dir $ROOT_MOUNT/data
+        mount --bind $1/$data_fbe_root_dir $ROOT_MOUNT/data
         if [ $? != 0 ]; then
-            echo "FBE: Failed to bind $DATA_MNT_LOC/$data_fbe_root_dir to $ROOT_MOUNT/data"
+            echo "FBE: Failed to bind $1/$data_fbe_root_dir to $ROOT_MOUNT/data"
             DATA_FBE_STATUS="disabled"
             return 1
         fi
@@ -461,30 +461,31 @@ data_fbe_setup() {
 }
 
 data_ext4_handle() {
-    echo -e "Partition formater on $ROOT_RWDEVICE"
-    FsType=$(blkid $ROOT_RWDEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
+    # param 1: mount point of /dev/data
+    echo -e "Partition formater on $DATA_DEVICE"
+    FsType=$(blkid $DATA_DEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
     newly_formatted=0
     if [ "${FsType}" != "ext4" ]; then
-        echo -e "Formating $ROOT_RWDEVICE to ext4 ..."
-        yes 2>/dev/null | mkfs.ext4 -q -m 0 -O encrypt $ROOT_RWDEVICE
+        echo -e "Formating $DATA_DEVICE to ext4 ..."
+        yes 2>/dev/null | mkfs.ext4 -q -m 0 -O encrypt $DATA_DEVICE
         sync
-        FsType=$(blkid $ROOT_RWDEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
-        echo -e "After formating FSTYPE of $ROOT_RWDEVICE = ${FsType} ..."
+        FsType=$(blkid $DATA_DEVICE | sed -n 's/.*TYPE=\"\([^\"]*\)\".*/\1/p')
+        echo -e "After formating FSTYPE of $DATA_DEVICE = ${FsType} ..."
         newly_formatted=1
     else
-        echo -e "FSTYPE of $ROOT_RWDEVICE is already ext4 ..."
+        echo -e "FSTYPE of $DATA_DEVICE is already ext4 ..."
         FactoryReset=$(uenv get factory-reset | grep value | cut -d '[' -f2|cut -d ']' -f1)
         if [ ${FactoryReset} == 1 ]; then
-           echo -e "factory reset, Formating $ROOT_RWDEVICE to ext4 ..."
-           yes 2>/dev/null | mkfs.ext4 -q -m 0 -O encrypt $ROOT_RWDEVICE
+           echo -e "factory reset, Formating $DATA_DEVICE to ext4 ..."
+           yes 2>/dev/null | mkfs.ext4 -q -m 0 -O encrypt $DATA_DEVICE
            sync
            uenv set factory-reset 0
         fi
     fi
 
     [ ! -d $1 ] && mkdir -p $1
-    if ! mount -t ext4 -o rw,noatime,nodiratime $ROOT_RWDEVICE $1 ; then
-        fatal "Could not mount $ROOT_RWDEVICE"
+    if ! mount -t ext4 -o rw,noatime,nodiratime $DATA_DEVICE $1 ; then
+        fatal "Could not mount $DATA_DEVICE"
     fi
 
     data_fbe_setup $1 $newly_formatted
@@ -600,10 +601,11 @@ mount_and_boot() {
     fi
 
     if touch $ROOT_MOUNT/bin 2>/dev/null; then
+        echo "Root mount is RW"
         # The root image is read-write, directly boot it up.
         if [ "${root_fstype}" = "ext4" ]; then
-            data_ext4_handle $ROOT_MOUNT/data
-            data_fbe_bind $ROOT_MOUNT/data
+            data_ext4_handle $DATA_MOUNT
+            data_fbe_bind $DATA_MOUNT
             if [[ $? -eq 0 ]]; then
                 if [[ -d $OVERLAY_DIR ]]; then
                     data_fbe_add_unencrypted_folders $OVERLAY_DIR
@@ -611,6 +613,10 @@ mount_and_boot() {
                 data_fbe_add_unencrypted_folders $UNENCRYPTED_DIR
                 data_fbe_add_unencrypted_folders $SWUPDATE_DIR
                 [[ "$DATA_FBE_STATUS" = "bound" ]] && DATA_FBE_STATUS="enabled"
+            fi
+            if [[ "$DATA_FBE_STATUS" = "disabled" ]]; then
+                mkdir -p $ROOT_MOUNT/data
+                mount --move $DATA_MOUNT $ROOT_MOUNT/data
             fi
             echo "DATA FBE is: $DATA_FBE_STATUS!"
         else
@@ -645,14 +651,14 @@ mount_and_boot() {
             elif [ "${root_fstype}" = "squashfs" ]; then
                 data_ubi_handle ubi0 /data
             else
-                data_ext4_handle /data
+                data_ext4_handle $DATA_MOUNT
             fi
             mkdir -p $OVERLAY_DIR/upperdir $OVERLAY_DIR/work
             mount -t overlay overlay -o "lowerdir=$ROOT_ROMOUNT,upperdir=$OVERLAY_DIR/upperdir,workdir=$OVERLAY_DIR/work" $ROOT_MOUNT
 
             mkdir -p ${ROOT_MOUNT}/$ROOT_ROMOUNT
             mount --move $ROOT_ROMOUNT ${ROOT_MOUNT}/$ROOT_ROMOUNT
-            data_fbe_bind /data
+            data_fbe_bind $DATA_MOUNT
             if [[ $? -eq 0 ]]; then
                 if [[ -d $OVERLAY_DIR ]]; then
                     data_fbe_add_unencrypted_folders $OVERLAY_DIR
@@ -663,7 +669,7 @@ mount_and_boot() {
             fi
             if [[ "$DATA_FBE_STATUS" = "disabled" ]]; then
                 mkdir -p $ROOT_MOUNT/data
-                mount --move /data $ROOT_MOUNT/data
+                mount --move $DATA_MOUNT $ROOT_MOUNT/data
             fi
             echo "DATA FBE is: $DATA_FBE_STATUS!"
         fi
@@ -685,7 +691,21 @@ mount_and_boot() {
         echo "OverlayFS is disabled"
         OverlayFS="disabled"
         if [ "${root_fstype}" = "ext4" ]; then
-            data_ext4_handle $ROOT_MOUNT/data
+            data_ext4_handle $DATA_MOUNT
+            data_fbe_bind $DATA_MOUNT
+            if [[ $? -eq 0 ]]; then
+                if [[ -d $OVERLAY_DIR ]]; then
+                    data_fbe_add_unencrypted_folders $OVERLAY_DIR
+                fi
+                data_fbe_add_unencrypted_folders $UNENCRYPTED_DIR
+                data_fbe_add_unencrypted_folders $SWUPDATE_DIR
+                [[ "$DATA_FBE_STATUS" = "bound" ]] && DATA_FBE_STATUS="enabled"
+            fi
+            if [[ "$DATA_FBE_STATUS" = "disabled" ]]; then
+                mkdir -p $ROOT_MOUNT/data
+                mount --move $DATA_MOUNT $ROOT_MOUNT/data
+            fi
+            echo "DATA FBE is: $DATA_FBE_STATUS!"
         elif [ "${root_fstype}" = "ubifs" ]; then
             if [ "$VENDOR_DEVICE" = "enabled" ]; then
                 data_ubi_handle ubi2 /data

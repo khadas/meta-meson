@@ -163,6 +163,10 @@ MODULE_AUTOLOAD_ZAPPER_SKIP = "\
   amvdec_real \
   amvdec_vc1 \
   amvdec_vp9 \
+  decoder_common \
+  firmware \
+  media_clock \
+  stream_input \
   amvdec_ports \
 "
 
@@ -170,5 +174,5 @@ KERNEL_MODULE_AUTOLOAD:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper
 
 KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
 module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"
-module_conf_amvdec_mh264 = "options amvdec_mh264 error_proc_policy=8376246"
+module_conf_amvdec_mh264 = "options amvdec_mh264 error_proc_policy=8376310"
 INSANE_SKIP:${PN} = "installed-vs-shipped"

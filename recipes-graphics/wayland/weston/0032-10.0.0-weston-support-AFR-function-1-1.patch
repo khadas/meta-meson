@@ -1,0 +1,463 @@
+From b57478ce8e6c094543a5ba4606b4fb9a2852ee98 Mon Sep 17 00:00:00 2001
+From: "leng.fang" <leng.fang@amlogic.com>
+Date: Fri, 19 Jan 2024 03:46:32 +0000
+Subject: [PATCH] weston: support AFR function [1/1]
+
+PD#SWPL-111366
+
+Problem:
+support AFR function
+
+Solution:
+porting AFR function from westeros
+
+Verify:
+at301
+---
+ libweston/backend-drm/drm-internal.h |   9 +-
+ libweston/backend-drm/drm.c          | 310 +++++++++++++++++++++++++++
+ libweston/backend-drm/meson.build    |   4 +
+ libweston/backend-drm/modes.c        |  18 ++
+ meson_options.txt                    |   8 +-
+ 5 files changed, 347 insertions(+), 2 deletions(-)
+
+diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
+index 8298fe6..093f0a3 100644
+--- a/libweston/backend-drm/drm-internal.h
++++ b/libweston/backend-drm/drm-internal.h
+@@ -317,7 +317,9 @@ struct drm_backend {
+ 	 * after enable fixed ui size.	*/
+ 	struct weston_size	fixed_ui_size;
+ #endif
+-
++#ifdef BUILD_AML_TV
++	int vdin_detect_fd;
++#endif
+ };
+ 
+ struct drm_mode {
+@@ -668,6 +670,11 @@ drm_mode_ensure_blob(struct drm_backend *backend, struct drm_mode *mode);
+ struct drm_mode *
+ drm_output_choose_mode(struct drm_output *output,
+ 		       struct weston_mode *target_mode);
++#ifdef BUILD_AML_TV
++struct drm_mode *
++drm_output_choose_mode_by_name(struct drm_output *output,
++		       const char *name);
++#endif
+ void
+ update_head_from_connector(struct drm_head *head);
+ 
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index e9b36e3..9229b50 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -80,6 +80,38 @@ static const char *const aspect_ratio_as_string[] = {
+ };
+ #endif
+ 
++#ifdef BUILD_AML_TV
++#include <linux/amlogic/tvin.h>
++
++#define FRAME_RATE_DURATION_2397                4004
++#define FRAME_RATE_DURATION_2398                4003
++#define FRAME_RATE_DURATION_24                  4000
++#define FRAME_RATE_DURATION_25                  3840
++#define FRAME_RATE_DURATION_2997                3203
++#define FRAME_RATE_DURATION_30                  3200
++#define FRAME_RATE_DURATION_50                  1920
++#define FRAME_RATE_DURATION_5994                1601
++#define FRAME_RATE_DURATION_5992                1602
++#define FRAME_RATE_DURATION_60                  1600
++#define FRAME_RATE_HDMI_OFF                     "0"
++#define FRAME_RATE_HDMI_CLK_PULLDOWN            "1"
++#define FRAME_RATE_HDMI_SWITCH_FORCE            "2"
++
++#define VDIN_DEV_PATH "/dev/vdin0"
++
++enum REFRESH_RATE {
++	FPS_24 = 24,
++	FPS_47 = 47,
++	FPS_48 = 48,
++	FPS_50 = 50,
++	FPS_59 = 59,
++	FPS_60 = 60,
++	FPS_100 = 100,
++	FPS_119 = 119,
++	FPS_120 = 120,
++};
++#endif
++
+ static void
+ drm_backend_create_faked_zpos(struct drm_backend *b)
+ {
+@@ -2751,6 +2783,268 @@ udev_event_is_hotplug(struct drm_backend *b, struct udev_device *device)
+ 	return strcmp(val, "1") == 0;
+ }
+ 
++#ifdef BUILD_AML_TV
++static int
++udev_event_frame_rate_hint(struct udev_device *device)
++{
++	const char *val;
++
++	val = udev_device_get_property_value(device, "FRAME_RATE_HINT");
++	if (!val)
++		return -1;
++
++	return atoi(val);
++}
++
++static int
++udev_event_is_vdin_event(struct udev_device *device)
++{
++	const char *dev_type_val;
++	const char *dev_name_val;
++
++	dev_type_val = udev_device_get_property_value(device, "DEVTYPE");
++	dev_name_val = udev_device_get_property_value(device, "DEVNAME");
++
++	if (dev_type_val &&
++		(strstr(dev_type_val, "vdin0event") || strstr(dev_type_val, "vdin1event")))
++		return 1;
++
++	if (dev_name_val &&
++		(strstr(dev_name_val, "vdin0event") || strstr(dev_name_val, "vdin1event")))
++		return 1;
++
++	return 0;
++}
++
++static int
++drm_get_frame_rate_value(struct drm_backend *b, int vdin_event)
++{
++	struct vdin_event_info v_info;
++	struct tvin_info_s t_info;
++	int frame_rate_value = 0;
++	int ret = 0;
++
++	if (b->vdin_detect_fd < 0)
++		b->vdin_detect_fd = open(VDIN_DEV_PATH, O_RDWR);
++
++	if (b->vdin_detect_fd < 0 || vdin_event <= 0)
++		return 0;
++
++	v_info.event_sts = 0;
++	ret = ioctl(b->vdin_detect_fd, TVIN_IOC_G_EVENT_INFO, &v_info);
++	if (((v_info.event_sts & TVIN_SIG_CHG_STS) != 0) ||
++		((v_info.event_sts & TVIN_SIG_CHG_VS_FRQ) != 0)) {
++		ret = ioctl(b->vdin_detect_fd, TVIN_IOC_G_SIG_INFO, &t_info);
++		if (t_info.status == TVIN_SIG_STATUS_STABLE) {
++			drm_debug(b, "AFR, get input fps: %d\n", t_info.fps);
++			frame_rate_value = t_info.fps;
++			if (frame_rate_value == 48) {
++				frame_rate_value = 24;
++			} else if (frame_rate_value >= 100) {
++				frame_rate_value /= 2;
++			} else if (frame_rate_value < 0) {
++				frame_rate_value = 0;
++			}
++		}
++	}
++	return frame_rate_value;
++}
++
++static bool drm_exit_play_need_reset_mode()
++{
++	const char *env= getenv("WESTON_GL_NEED_RESET_MODE");
++	if (env) {
++		int value= atoi(env);
++		return ( value != 0 );
++	}
++	return false;
++}
++
++static void
++drm_get_match_dur_output_mode(struct weston_output *output_base,
++		char *frameRateMode,
++		struct weston_mode *mode,
++		int rate_hint,
++		int rate_value)
++{
++	struct drm_output *output = to_drm_output(output_base);
++	struct weston_mode *cur_mode = output_base->current_mode;
++	struct drm_mode *drm_mode = NULL;
++	struct drm_mode *cur_drm_mode = NULL;
++	int dur = rate_hint;
++	char resolution[20] = { 0 };
++	char firstMode[32] = { 0 };
++	char secondMode[32] = { 0 };
++
++	cur_mode = cur_mode ? cur_mode : output_base->original_mode;
++	if (!cur_mode) {
++		drm_debug(output->backend, "cur_mode is null\n");
++		return;
++	}
++
++	cur_drm_mode = drm_output_choose_mode(output, cur_mode);
++	if (strstr(cur_drm_mode->mode_info.name, "smpte"))
++		return;
++
++	if (!strcmp(frameRateMode, FRAME_RATE_HDMI_CLK_PULLDOWN)) {
++		if ((dur == FRAME_RATE_DURATION_2397) ||
++			(dur == FRAME_RATE_DURATION_2398) ||
++			(dur == FRAME_RATE_DURATION_2997) ||
++			(dur == FRAME_RATE_DURATION_5992) ||
++			(dur == FRAME_RATE_DURATION_5994)) {
++
++			if (strstr(cur_drm_mode->mode_info.name, "24hz") ||
++				strstr(cur_drm_mode->mode_info.name, "30hz") ||
++				strstr(cur_drm_mode->mode_info.name, "60hz")) {
++				return;
++			}
++		}
++	} else if (!strcmp(frameRateMode, FRAME_RATE_HDMI_SWITCH_FORCE)) {
++		char *pos = strstr(cur_drm_mode->mode_info.name, "hz");
++		if (!pos)
++			return;
++		pos -= 2; // filter 24,30,50,60...
++		pos--;
++		if (*pos < '0' || *pos > '9') // filter 120
++			pos++;
++		strncpy(resolution, cur_drm_mode->mode_info.name, (int)(pos - cur_drm_mode->mode_info.name));
++		drm_debug(output->backend, "resolution: %s\n", resolution);
++
++		if (rate_value > 0) {
++			enum REFRESH_RATE timingMode;
++			if (rate_value <= 24) {
++				timingMode = FPS_24;
++			} else if (rate_value <= 25) {
++				timingMode = FPS_50;
++			} else if (rate_value <= 30) {
++				timingMode = FPS_60;
++			} else if (rate_value <= 50) {
++				timingMode = FPS_50;
++			} else if (rate_value <= 60) {
++				timingMode = FPS_60;
++			} else if (rate_value <= 100) {
++				timingMode = FPS_100;
++			} else if (rate_value <= 119) {
++				timingMode = FPS_119;
++			} else {
++				timingMode = FPS_120;
++			}
++			int height = 0;
++			char flag;
++			sscanf(resolution, "%d%c", &height, &flag);
++			switch (height) {
++			case 768:
++			case 1080:
++				break;
++			case 2160:
++				if (timingMode >= 100 && timingMode <= 120) {
++					height = 1080;
++				}
++				if (timingMode >= 47 && timingMode <= 60) {
++					height = 2160;
++				}
++				break;
++			default:
++				return;
++			}
++
++			snprintf(firstMode, sizeof(firstMode), "%d%c%dhz", height, flag,
++					(int)timingMode);
++			drm_debug(output->backend, "AFR set mode: %s\n", firstMode);
++			if (strcmp(firstMode, cur_drm_mode->mode_info.name)) {
++				drm_mode = drm_output_choose_mode_by_name(output, firstMode);
++				if (drm_mode) {
++					*mode = drm_mode->base;
++					drm_debug(output->backend, "mode: %s, %dx%d\n",
++							drm_mode->mode_info.name, mode->width, mode->height);
++				}
++			}
++		} else {
++			switch (dur) {
++			case 0:
++				if (drm_exit_play_need_reset_mode())
++					sprintf(firstMode, "%s%s", resolution, "60hz");
++				break;
++			case FRAME_RATE_DURATION_2397:
++			case FRAME_RATE_DURATION_2398:
++			case FRAME_RATE_DURATION_24:
++				sprintf(firstMode, "%s%s", resolution, "24hz");
++				sprintf(secondMode, "%s%s", resolution, "60hz");
++				break;
++			case FRAME_RATE_DURATION_2997:
++			case FRAME_RATE_DURATION_30:
++				sprintf(firstMode, "%s%s", resolution, "30hz");
++				sprintf(secondMode, "%s%s", resolution, "60hz");
++				break;
++			case FRAME_RATE_DURATION_5992:
++			case FRAME_RATE_DURATION_5994:
++			case FRAME_RATE_DURATION_60:
++				sprintf(firstMode, "%s%s", resolution, "60hz");
++				sprintf(secondMode, "%s%s", resolution, "30hz");
++				break;
++			case FRAME_RATE_DURATION_25:
++				sprintf(firstMode, "%s%s", resolution, "25hz");
++				sprintf(secondMode, "%s%s", resolution, "50hz");
++				break;
++			case FRAME_RATE_DURATION_50:
++				sprintf(firstMode, "%s%s", resolution, "50hz");
++				sprintf(secondMode, "%s%s", resolution, "25hz");
++				break;
++			default:
++				break;
++			}
++
++			drm_mode = drm_output_choose_mode_by_name(output, firstMode);
++			if (drm_mode && strcmp(firstMode, cur_drm_mode->mode_info.name)) {
++				*mode = drm_mode->base;
++				drm_debug(output->backend, "mode: %s, %dx%d\n",
++						drm_mode->mode_info.name, mode->width, mode->height);
++				return;
++			}
++
++			drm_mode = drm_output_choose_mode_by_name(output, secondMode);
++			if (drm_mode && strcmp(secondMode, cur_drm_mode->mode_info.name)) {
++				*mode = drm_mode->base;
++				drm_debug(output->backend, "mode: %s, %dx%d\n",
++						drm_mode->mode_info.name, mode->width, mode->height);
++				return;
++			}
++		}
++	}
++}
++
++static void
++drm_backend_afr_update(struct drm_backend *b,
++		int rate_hint,
++		int vdin_event)
++{
++	struct weston_mode mode = { 0 };
++	struct weston_compositor *compositor = b->compositor;
++	struct weston_output *output;
++	int frame_value = 0;
++
++	if (rate_hint == -1 && !vdin_event)
++		return;
++
++	frame_value = drm_get_frame_rate_value(b, vdin_event);
++	if (rate_hint != -1 || frame_value != 0) {
++		wl_list_for_each(output, &compositor->output_list, link) {
++			if (!strstr(output->name, "LVDS"))
++				continue;
++			drm_get_match_dur_output_mode(output,
++					FRAME_RATE_HDMI_SWITCH_FORCE,
++					&mode,
++					rate_hint,
++					frame_value);
++			if (mode.width > 0 && mode.height > 0) {
++				drm_output_switch_mode(output, &mode);
++				weston_output_damage(output);
++			}
++		}
++	}
++}
++#endif
++
+ static int
+ udev_event_is_conn_prop_change(struct drm_backend *b,
+ 			       struct udev_device *device,
+@@ -2792,6 +3086,11 @@ udev_drm_event(int fd, uint32_t mask, void *data)
+ 			drm_backend_update_connectors(b, event);
+ 	}
+ 
++#ifdef BUILD_AML_TV
++	drm_backend_afr_update(b, udev_event_frame_rate_hint(event),
++			udev_event_is_vdin_event(event));
++#endif
++
+ 	udev_device_unref(event);
+ 
+ 	return 1;
+@@ -3264,6 +3563,10 @@ drm_backend_create(struct weston_compositor *compositor,
+ 	b->state_invalid = true;
+ 	b->drm.fd = -1;
+ 
++#ifdef BUILD_AML_TV
++	b->vdin_detect_fd = -1;
++#endif
++
+ 	b->compositor = compositor;
+ 	b->use_pixman = config->use_pixman;
+ 	b->pageflip_timeout = config->pageflip_timeout;
+@@ -3400,6 +3703,13 @@ drm_backend_create(struct weston_compositor *compositor,
+ 	}
+ 	udev_monitor_filter_add_match_subsystem_devtype(b->udev_monitor,
+ 							"drm", NULL);
++#ifdef BUILD_AML_TV
++	udev_monitor_filter_add_match_subsystem_devtype(b->udev_monitor,
++							"vdin", NULL);
++	udev_monitor_filter_add_match_subsystem_devtype(b->udev_monitor,
++							"framerate_adapter", NULL);
++#endif
++
+ 	b->udev_drm_source =
+ 		wl_event_loop_add_fd(loop,
+ 				     udev_monitor_get_fd(b->udev_monitor),
+diff --git a/libweston/backend-drm/meson.build b/libweston/backend-drm/meson.build
+index 2043005..fa63eb6 100644
+--- a/libweston/backend-drm/meson.build
++++ b/libweston/backend-drm/meson.build
+@@ -21,6 +21,10 @@ dep_meson_display = dependency('libweston-drm-helper')
+ config_h.set('ENABLE_DRM_HELP', '1')
+ config_h.set('BUILD_DRM_COMPOSITOR', '1')
+ 
++if get_option('BUILD_AML_TV')
++        config_h.set('BUILD_AML_TV', '1')
++endif
++
+ srcs_drm = [
+ 	'drm.c',
+ 	'fb.c',
+diff --git a/libweston/backend-drm/modes.c b/libweston/backend-drm/modes.c
+index 224cb7c..088db00 100644
+--- a/libweston/backend-drm/modes.c
++++ b/libweston/backend-drm/modes.c
+@@ -531,6 +531,24 @@ drm_output_choose_mode(struct drm_output *output,
+ 	return tmp_mode;
+ }
+ 
++#ifdef BUILD_AML_TV
++struct drm_mode *
++drm_output_choose_mode_by_name(struct drm_output *output,
++		       const char *name)
++{
++	struct drm_mode *tmp_mode = NULL, *mode;
++
++	if (strlen(name) == 0)
++		return tmp_mode;
++
++	wl_list_for_each(mode, &output->base.mode_list, base.link) {
++		if (!strcmp(mode->mode_info.name, name))
++			tmp_mode = mode;
++	}
++	return tmp_mode;
++}
++#endif
++
+ void
+ update_head_from_connector(struct drm_head *head)
+ {
+diff --git a/meson_options.txt b/meson_options.txt
+index 12ce0b8..2e57cca 100644
+--- a/meson_options.txt
++++ b/meson_options.txt
+@@ -267,4 +267,10 @@ option(
+ 	type: 'boolean',
+ 	value: false,
+ 	description: 'weston force background view transparent'
+-)
+\ No newline at end of file
++)
++option(
++        'BUILD_AML_TV',
++        type: 'boolean',
++        value: false,
++        description: 'support in TV'
++)
+-- 
+2.25.1
+

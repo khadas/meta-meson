@@ -3,8 +3,8 @@ inherit dm-verity-img
 CONVERSION_DEPENDS_verity += "e2fsprogs-native"
 
 process_verity() {
-    local ENV="${STAGING_VERITY_DIR}/${IMAGE_BASENAME}.$TYPE.verity.env"
-    install -d ${STAGING_VERITY_DIR}
+    local ENV="${DEPLOY_DIR_IMAGE}/${DM_VERITY_IMAGE}.$TYPE.verity.env"
+    install -d ${DEPLOY_DIR_IMAGE}
     rm -f $ENV
 
     # Each line contains a key and a value string delimited by ':'. Read the
@@ -31,14 +31,17 @@ verity_setup() {
     local TYPE=$1
     local INPUT=${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.$TYPE
     local SIZE=$(stat --printf="%s" $INPUT)
-    #local OUTPUT=$INPUT.verity
-    VERITYSETUP_LOG=${STAGING_VERITY_DIR}/${INPUT}.veritysetup.log
-    local DUMPE2FS_LOG=${STAGING_VERITY_DIR}/${INPUT}.dumpe2fs.log
+    local OUTPUT=$INPUT.verity
+    VERITYSETUP_LOG=${DEPLOY_DIR_IMAGE}/${INPUT}.veritysetup.log
+    local DUMPE2FS_LOG=${DEPLOY_DIR_IMAGE}/${INPUT}.dumpe2fs.log
     local BLOCK_SIZE=0
 
     # Let's drop the first line of output (doesn't contain any useful info)
     # and feed the rest to another function.
     if [ -f $INPUT ]; then
+        # clean first
+        rm -f ${DEPLOY_DIR_IMAGE}/*.veritysetup.log
+        rm -f ${DEPLOY_DIR_IMAGE}/*.dumpe2fs.log
         # Read block size for types "ext2/3/4"
         if [ "$TYPE" = "ext4" -o "$TYPE" = "ext3" -o "$TYPE" = "ext2" ]; then
             bbnote "`dumpe2fs $INPUT | grep -i "block size"  | tee $DUMPE2FS_LOG`"
@@ -51,6 +54,7 @@ verity_setup() {
             # Otherwise, default block size will be 4096
             bbnote "`veritysetup --debug --hash-offset=$SIZE format $INPUT $INPUT | tee $VERITYSETUP_LOG`"
         fi
+        ln -s $INPUT $OUTPUT
     else
         bberror "Cannot find $INPUT"
         exit 1

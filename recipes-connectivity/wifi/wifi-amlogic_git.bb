@@ -21,5 +21,10 @@ do_install() {
     if ${@bb.utils.contains("DISTRO_FEATURES", "aml-w1", "true", "false", d)}; then
         sed -i '/\/usr\/bin\/wifi_power/a ExecStart=\/sbin\/modprobe vlsicomm conf_path=\/etc\/wifi\/w1' ${D}${systemd_unitdir}/system/wifi.service
     fi
+    if ${@bb.utils.contains("DISTRO_FEATURES", "aml-w2", "true", "false", d)}; then
+        sed -i '/\/usr\/bin\/wifi_power/a ExecStart=\/sbin\/modprobe w2 ' ${D}${systemd_unitdir}/system/wifi.service
+        sed -i '/\/usr\/bin\/wifi_power/a ExecStart=\/sbin\/modprobe w2_comm bus_type=sdio ' ${D}${systemd_unitdir}/system/wifi.service
+        sed -i 's@#ExecStart=/usr/bin/wifi_power@ExecStart=/usr/bin/wifi_power@' ${D}${systemd_unitdir}/system/wifi.service
+    fi
 
 }

@@ -9,7 +9,7 @@ PV = "${SRCPV}"
 
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_audio_hal')}"
-EXTRA_OEMAKE = "TARGET_DIR=${D} STAGING_DIR=${D}"
+EXTRA_OEMAKE = "AML_BUILD_DIR=${B} TARGET_DIR=${D} STAGING_DIR=${D}"
 
 DEPENDS += "liblog aml-amaudioutils"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-amadec', '', ' alsa-lib', d)}"
@@ -27,12 +27,12 @@ do_compile () {
 do_install () {
     install -d ${D}${libdir}
     install -d ${D}/usr/include/
-    install -m 0644 -D ${S}/dtv_audio_utils/libdvbaudioutils.so ${D}${libdir}
+    install -m 0644 -D ${B}/libdvbaudioutils.so ${D}${libdir}
     install -m 0644 ${S}/dtv_audio_utils/sync/*.h ${D}/usr/include
     install -m 0644 ${S}/dtv_audio_utils/audio_read_api/*.h ${D}/usr/include
     install -m 0644 ${S}/dtv_audio_utils/audio_read_api/audio_es.h ${D}/usr/include
     if ${@bb.utils.contains('DISTRO_FEATURES', 'disable-amadec', 'false', 'true', d)}; then
-        install -m 0644 -D ${S}/amadec/libaudamadec.so ${D}${libdir}
+        install -m 0644 -D ${B}/libaudamadec.so ${D}${libdir}
     fi
 }
 

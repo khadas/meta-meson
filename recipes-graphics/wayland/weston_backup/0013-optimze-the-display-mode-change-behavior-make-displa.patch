@@ -1,7 +1,7 @@
 From 20d631ea4e743bb7576246990c0c922f3102369a Mon Sep 17 00:00:00 2001
 From: lingjie li <lingjie.li@amlogic.com>
 Date: Sat, 9 May 2020 20:01:28 +0800
-Subject: [PATCH] optimze the display mode change behavior, make display
+Subject: [PATCH] optimize the display mode change behavior, make display
  refrash immediately
 
 ---
@@ -58,7 +58,7 @@ index 38b1e13..03a47f8 100644
 +static void drm_output_refresh_force(struct weston_compositor *compositor) {
 +	weston_compositor_damage_all(compositor);
 +	if (drm_helper_timer == NULL) {
-+		weston_log("drm helper timer create failed, can't update ouput immediate.\n");
++		weston_log("drm helper timer create failed, can't update output immediate.\n");
 +		return;
 +	}
 +	//trigger a wl_event_loop_dispatch_idle

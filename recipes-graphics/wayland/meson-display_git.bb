@@ -5,9 +5,9 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 SRCREV ?= "${AUTOREV}"
 #PV = "${SRCPV}"
 
-DEPENDS += " libdrm libdrm-meson json-c"
+DEPENDS += " libdrm libdrm-meson"
 DEPENDS += "linux-uapi-headers"
-RDEPENDS:${PN} += " libdrm-meson"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '',  'json-c', d)}"
 #do_configure[noexec] = "1"
 inherit autotools pkgconfig
 
@@ -19,6 +19,8 @@ inherit autotools pkgconfig
 COMPOSITOR_TYPE = "${@bb.utils.contains('DISTRO_FEATURES', 'westeros','westeros', bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston', 'meson', d), d)}"
 
 S = "${WORKDIR}/git/meson-display"
+
+COMPOSITOR_TYPE = "${@bb.utils.contains('DISTRO_FEATURES', 'westeros','westeros', bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston', 'meson', d), d)}"
 
 #do_package_qa[noexec] = "1"
 

@@ -33,6 +33,7 @@ TDK_VERSION:t5d = "v2.4"
 TDK_VERSION:sc2 = "v3.8/dev/S905X4"
 TDK_VERSION:t7 = "v3.8/dev/A311D2"
 TDK_VERSION:s4 = "v3.8/dev/S905Y4"
+TDK_VERSION:s7 = "v3.8/dev/S905Y5"
 TDK_VERSION:t3 = "v3.8/dev/T965D4"
 TDK_VERSION:t5w = "v3.8/dev/T962D4"
 
@@ -77,7 +78,7 @@ DEBUG_PREFIX_MAP = "-fdebug-prefix-map=${WORKDIR}=/usr/src/debug/${PN}/${EXTENDP
                     -fdebug-prefix-map=${STAGING_DIR_NATIVE}= \
                     "
 
-HOSTTOOLS_NONFATAL += "bc cc c++ bison repo python"
+HOSTTOOLS_NONFATAL += "bc cc c++ bison repo python crc32"
 
 DISABLE_STATIC:pn-libevent = ""
 
@@ -93,15 +94,14 @@ AML_TOOLS_SITE ?= "http://10.18.11.120:8000/Tools"
 #AML_SB_SIGN_CONFIG_PATH = "${COREBASE}/../aml-comp/prebuilt/hosttools/aml-linux-sb"
 
 # For dm-verity
-IMAGE_CLASSES += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'image_types aml-dm-verity-img', '', d)}"
-
-# Sytem partition
-DM_VERITY_IMAGE = "${@bb.utils.contains('MULTTILIBS', 'multilib:lib32', 'lib32-amlogic-yocto', 'amlogic-yocto', d)}"
+# System partition ( This should be overwrited by platform conf if the target is not amlogic-yocto )
+SYSTEM_DM_VERITY_IMAGE ??= "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', \
+                             bb.utils.contains('MULTILIBS', 'multilib:lib32', 'lib32-amlogic-yocto', 'amlogic-yocto', d), '', d)}"
+SYSTEM_DM_VERITY_IMAGE_TYPE ??= "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', '${ROOTFS_TYPE}', '', d)}"
 # vendor partition
-VENDOR_DM_VERITY_IMAGE = "vendor-image"
-
-DM_VERITY_IMAGE_TYPE = "ext4"
-STAGING_VERITY_DIR = "${DEPLOY_DIR_IMAGE}"
+VENDOR_DM_VERITY_IMAGE ??= "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', \
+                             bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'vendor-image', '' ,d), '', d)}"
+VENDOR_DM_VERITY_IMAGE_TYPE ??= "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', '${ROOTFS_TYPE}', '', d)}"
 
 XZ_COMPRESSION_LEVEL ?= "-e -M 50% -9"
 
@@ -113,6 +113,10 @@ KERNEL_MODULE_AUTOLOAD += " ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', '
 
 # set bootup splash
 SPLASH ?= "psplash"
+
+# default has recovery and swupdate
+DISTRO_FEATURES:append = " recovery"
+DISTRO_FEATURES:append = " swupdate swupdate-enc"
 
 # default has vendor partition
 DISTRO_FEATURES:append = " vendor-partition"

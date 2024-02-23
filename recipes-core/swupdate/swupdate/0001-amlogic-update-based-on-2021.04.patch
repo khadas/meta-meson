@@ -1,6 +1,6 @@
-From de01caab8851eaa425a3cd739a4954162bc9e9b2 Mon Sep 17 00:00:00 2001
+From 216ba6eabd3bb06920131e08f4e788c663d2f05e Mon Sep 17 00:00:00 2001
 From: Blance Tang <guofeng.tang@amlogic.com>
-Date: Wed, 20 Oct 2021 16:05:47 +0800
+Date: Thu, 11 Jan 2024 17:05:27 +0800
 Subject: [PATCH] amlogic update based on 2021.04
 
 1, Support AML Uboot env
@@ -8,6 +8,7 @@ Subject: [PATCH] amlogic update based on 2021.04
 3, Support EXT4
 4, Support Recovery download
 5, Support bootloader offset
+6, Support aml kernel 5.15 swupdate
 
 Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
 ---
@@ -15,7 +16,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  bootloader/none.c         |  82 ++++
  core/cpio_utils.c         |   2 +-
  core/pctl.c               |  10 +
- core/stream_interface.c   |  79 ++++
+ core/stream_interface.c   |  86 ++++-
  core/swupdate.c           |  35 +-
  core/util.c               |   2 +-
  corelib/mtd-interface.c   | 104 +++++
@@ -23,7 +24,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  handlers/Makefile         |   1 +
  handlers/ext4_handler.c   | 318 ++++++++++++++++
  handlers/flash_handler.c  |  69 +++-
- handlers/raw_handler.c    | 225 ++++++++++-
+ handlers/raw_handler.c    | 239 +++++++++++-
  handlers/ubivol_handler.c |  14 +-
  include/bootloader.h      |   2 +
  include/flash.h           |   1 +
@@ -44,7 +45,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  libsparse/sparse_file.h   |  32 ++
  libsparse/sparse_format.h |  55 +++
  libsparse/sparse_read.c   | 510 +++++++++++++++++++++++++
- 33 files changed, 3814 insertions(+), 10 deletions(-)
+ 33 files changed, 3834 insertions(+), 11 deletions(-)
  create mode 100644 handlers/ext4_handler.c
  create mode 100644 libsparse/Config.in
  create mode 100644 libsparse/Makefile
@@ -215,7 +216,7 @@ index 9c2d534..b8a259b 100644
  	}
  
 diff --git a/core/stream_interface.c b/core/stream_interface.c
-index 31d0de8..0898b6b 100644
+index 31d0de8..6395acd 100644
 --- a/core/stream_interface.c
 +++ b/core/stream_interface.c
 @@ -73,6 +73,50 @@ pthread_cond_t stream_wkup = PTHREAD_COND_INITIALIZER;
@@ -269,6 +270,15 @@ index 31d0de8..0898b6b 100644
  static int extract_file_to_tmp(int fd, const char *fname, unsigned long *poffs, bool encrypted)
  {
  	char output_file[MAX_IMAGE_FNAME];
+@@ -226,7 +270,7 @@ static int extract_files(int fd, struct swupdate_cfg *software)
+ 					close(fdout);
+ 					return -1;
+ 				}
+-				if (copyfile(fd, &fdout, fdh.size, &offset, 0, 0, 0, &checksum, img->sha256, false, NULL, NULL) < 0) {
++				if (copyfile(fd, &fdout, fdh.size, &offset, 0, 0, 0, &checksum, img->sha256, img->is_encrypted, img->ivt_ascii, NULL) < 0) {
+ 					close(fdout);
+ 					return -1;
+ 				}
 @@ -246,6 +290,8 @@ static int extract_files(int fd, struct swupdate_cfg *software)
  				}
  				break;
@@ -310,10 +320,15 @@ index 31d0de8..0898b6b 100644
  			/*
  		 	 * extract the meta data and relevant parts
  		 	 * (flash images) from the install image
-@@ -639,6 +710,13 @@ void *network_initializer(void *data)
+@@ -639,6 +710,18 @@ void *network_initializer(void *data)
  				} else {
  					notify(SUCCESS, RECOVERY_NO_ERROR, INFOLEVEL, "SWUPDATE successful !");
  					inst.last_install = SUCCESS;
++
++					//for amlogic kernel 5.15, need set write_boot 1, next boot will load new bootloader form /dev/bootloader_up
++					if ( !access("/dev/bootloader_up",0)){
++						bootloader_env_set("write_boot", "1");
++					}
 +
 +					if (get_system_type() == 0) {
 +						int slot = 0;
@@ -324,7 +339,7 @@ index 31d0de8..0898b6b 100644
  				}
  			}
  		} else {
-@@ -646,6 +724,7 @@ void *network_initializer(void *data)
+@@ -646,6 +729,7 @@ void *network_initializer(void *data)
  			notify(FAILURE, RECOVERY_ERROR, ERRORLEVEL, "Image invalid or corrupted. Not installing ...");
  		}
  
@@ -925,7 +940,7 @@ index 0000000..5f566a0
 +    register_handler("ext4", install_ext4_image, IMAGE_HANDLER, NULL);
 +}
 diff --git a/handlers/flash_handler.c b/handlers/flash_handler.c
-index 5c11ff6..1f42e8b 100644
+index 5c11ff6..9585abf 100644
 --- a/handlers/flash_handler.c
 +++ b/handlers/flash_handler.c
 @@ -34,6 +34,9 @@
@@ -1031,10 +1046,10 @@ index 5c11ff6..1f42e8b 100644
  	if (flash_write_image(mtdnum, img)) {
  		ERROR("I cannot copy %s into %s partition",
 diff --git a/handlers/raw_handler.c b/handlers/raw_handler.c
-index 619a2f4..c0b61a9 100644
+index 619a2f4..3d07a7c 100644
 --- a/handlers/raw_handler.c
 +++ b/handlers/raw_handler.c
-@@ -29,10 +29,175 @@
+@@ -29,10 +29,189 @@
  #include "handler.h"
  #include "util.h"
  
@@ -1164,6 +1179,20 @@ index 619a2f4..c0b61a9 100644
 +  int fdout = 0;
 +  int offset = 0;
 +
++  if ( !access("/dev/bootloader_up",0)){
++    fdout = open("/dev/bootloader_up", O_RDWR);
++    if (fdout < 0) {
++      TRACE("open /dev/bootloader_up failed!\n");
++      return -1;
++    }
++    ret = copyimage(&fdout, img, NULL);
++    close(fdout);
++    if (ret != 0) {
++      TRACE("install %s failed!\n", "/dev/bootloader_up");
++      return -1;
++    }
++    return 0;
++  }
 +  getBootloaderOffset(&offset);
 +
 +  unsigned int i = 0;
@@ -1210,7 +1239,7 @@ index 619a2f4..c0b61a9 100644
  /**
   * Handle write protection for block devices
   *
-@@ -55,11 +220,35 @@ static int blkprotect(struct img_type *img, bool on)
+@@ -55,11 +234,35 @@ static int blkprotect(struct img_type *img, bool on)
  	int fd_force_ro;
  	struct stat sb;
  	char current_prot;
@@ -1246,7 +1275,7 @@ index 619a2f4..c0b61a9 100644
  	if (stat(img->device, &sb) == -1) {
  		TRACE("stat for device %s failed: %s", img->device, strerror(errno));
  		return ret;
-@@ -73,6 +262,7 @@ static int blkprotect(struct img_type *img, bool on)
+@@ -73,6 +276,7 @@ static int blkprotect(struct img_type *img, bool on)
  		ret = -errno;
  		goto blkprotect_out;
  	}
@@ -1254,7 +1283,7 @@ index 619a2f4..c0b61a9 100644
  
  	ret_int = asprintf(&sysfs_path, c_sys_path, abs_path + 5);  /* remove "/dev/" from device path */
  	if(ret_int < 0) {
-@@ -128,11 +318,40 @@ static int install_raw_image(struct img_type *img,
+@@ -128,11 +332,40 @@ static int install_raw_image(struct img_type *img,
  	if (prot_stat < 0)
  		return prot_stat;
  

@@ -20,7 +20,7 @@ do_install:append(){
     install -m 0644 ${WORKDIR}/bluez.service ${D}/${systemd_unitdir}/system
     install -m 0644 ${WORKDIR}/main.conf ${D}/${sysconfdir}/bluetooth
 
-    if ${@bb.utils.contains("DISTRO_FEATURES", "aml-w1", "true", "false", d)}; then
+    if ${@bb.utils.contains("DISTRO_FEATURES", "aml-wifi", "true", "false", d)}; then
         sed -i '/Debug/a Device=aml' ${D}${sysconfdir}/bluetooth/main.conf
     elif ${@bb.utils.contains("DISTRO_FEATURES", "bt-qca", "true", "false", d)}; then
         sed -i '/Debug/a Device=qca' ${D}${sysconfdir}/bluetooth/main.conf
@@ -31,13 +31,15 @@ do_install:append(){
     fi
 
     sed -i "/Debug/a TTY=/dev/${TTY}" ${D}${sysconfdir}/bluetooth/main.conf
-    sed -i '/^ExecStart=.*/d' ${D}/${systemd_unitdir}/system/bluetooth.service
 }
 
 FILES:${PN} += "${bindir}/*"
 FILES:${PN} += "${systemd_unitdir}/system/*"
 FILES:${PN}-obex += "${bindir}/obexctl"
 
-SYSTEMD_SERVICE:${PN} += "bluez.service"
+SYSTEMD_SERVICE:${PN}-bluez = "bluez.service"
+
+# triggered by udev rule
+SYSTEMD_AUTO_ENABLE:${PN}-bluez = "disable"
 
 RDEPENDS:${PN}-obex:append:libc-glibc = " glibc-gconv-utf-16"

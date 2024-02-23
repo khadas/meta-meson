@@ -15,6 +15,11 @@ UBI_VOLNAME = "vendor"
 MKUBIFS_ARGS = "-F -m 4096 -e 253952 -c 60"
 UBINIZE_ARGS = "-m 4096 -p 256KiB -s 4096 -O 4096"
 
+# Variables should be set before including aml-security.inc
+PARTITION_NAME = "vendor"
+PARTITION_ENCRYPTION_KEY = "${PARTITION_NAME}.bin"
+require aml-security.inc
+
 inherit core-image
 
 IMAGE_ROOTFS_SIZE = "327680"
@@ -52,12 +57,6 @@ selinux_set_labels () {
     fi
 }
 
-# For dm-verity
-IMAGE_CLASSES += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'image_types aml-dm-verity-img', '', d)}"
-DM_VERITY_IMAGE = "vendor-image"
-STAGING_VERITY_DIR = "${DEPLOY_DIR_IMAGE}"
-
-inherit avb-dm-verity
 # The following is needed only if chained
 AVB_DMVERITY_SIGNINING_KEY = "vendor_rsa2048.pem"
 AVB_DMVERITY_SIGNINING_ALGORITHM = "SHA256_RSA2048"

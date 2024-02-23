@@ -13,8 +13,8 @@ PV = "${SRCPV}"
 
 DEPENDS = " gstreamer1.0 gstreamer1.0-plugins-base glib-2.0 zlib aml-secmem "
 DEPENDS += "gstreamer1.0-plugins-bad"
-DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'miraclecast', 'wfd-hdcp', '', d)}"
-RDEPENDS:${PN} += " aml-secmem wfd-hdcp"
+DEPENDS += "${@bb.utils.contains_any('DISTRO_FEATURES', ['miraclecast', 'miraclecast-prebuilt-pkg'], 'wfd-hdcp', '', d)}"
+RDEPENDS:${PN} += "aml-secmem"
 
 S = "${WORKDIR}/git/gst-aml-drm-plugins-1.0"
 

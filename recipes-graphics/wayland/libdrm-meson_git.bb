@@ -17,7 +17,7 @@ inherit autotools pkgconfig
 do_configure[noexec] = "1"
 #do_package_qa[noexec] = "1"
 
-EXTRA_OEMAKE = "STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D}"
+EXTRA_OEMAKE = "OUT_DIR=${B} STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D}"
 
 do_compile() {
   cd ${S}
@@ -32,10 +32,10 @@ do_install() {
   install -d ${D}${libdir}
   install -d ${D}${bindir}
   install -d ${D}${includedir}/libdrm_meson
-  install -m 0644 ${S}/libdrm_meson.so ${D}${libdir}
-  install -m 755  ${S}/meson_drm_test ${D}${bindir}
-  install -m 755  ${S}/meson_drm_display_test ${D}${bindir}
-  install -m 755  ${S}/../drm-setcrtc/drm_setcrtc ${D}${bindir}
+  install -m 0644 ${B}/libdrm_meson.so ${D}${libdir}
+  install -m 755  ${B}/meson_drm_test ${D}${bindir}
+  install -m 755  ${B}/meson_drm_display_test ${D}${bindir}
+  install -m 755  ${B}/drm_setcrtc ${D}${bindir}
   install -m 0644 ${S}/meson_drmif.h ${D}${includedir}
   install -m 0644 ${S}/meson_drm_util.h ${D}${includedir}
   install -m 0644 ${S}/../meson_drm.h ${D}${includedir}/libdrm_meson
