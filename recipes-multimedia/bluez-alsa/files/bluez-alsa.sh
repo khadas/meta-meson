@@ -7,18 +7,19 @@ WAIT_BLUETOOTHD()
 {
 	for i in `seq 1 10`
 	do
-		sleep 1
+##		sleep 1
 		ps -A | grep bluetoothd 2> /dev/null
 		if [ $? -eq 0 ]
 		then
 			echo $0 bluetoothd already running
 			break;
 		else
-			if [ $i -eq 2 ]
+			if [ $i -eq 10 ]
 			then
 				echo "bluetoothd no running"
 				return -1
 			fi
+			usleep 200000
 		fi
 	done
 	return 0
@@ -34,7 +35,7 @@ A2DP_BOTH_SERVICE()
 
 	for i in `seq 1 10`
 	do
-		sleep 2
+		sleep 1
 		hciconfig hci0 piscan
 		echo $(hciconfig) | grep PSCAN
 		if [ $? -eq 0 ]
@@ -63,7 +64,7 @@ A2DP_SINK_SERVICE()
 
 	for i in `seq 1 10`
 	do
-		sleep 2
+		sleep 1
 		hciconfig hci0 piscan
 		echo $(hciconfig) | grep PSCAN
 		if [ $? -eq 0 ]
@@ -145,15 +146,23 @@ get_mode()
 	echo "get a2dp mode: $mode"
 }
 
+pre_mode="disable"
 if [ $2 ];then
-	mode=$2
-	set_mode
+	get_mode
+        pre_mode=$mode
+        mode=$2
+        set_mode
 else
 	get_mode
 fi
 
 case "$1" in
 	start)
+                if [ $pre_mode != $mode ]; then
+                        if [ $pre_mode != "disable" ]; then
+                                Blue_stop
+                        fi
+                fi
 		Blue_start &
 	;;
 	stop)
