@@ -1,7 +1,7 @@
 SUMMARY="Image updater for Yocto projects"
 DESCRIPTION = "Application for automatic software update"
 SECTION="swupdate"
-DEPENDS += "aml-ubootenv aml-bootloader-message libconfig"
+DEPENDS += "aml-ubootenv aml-bootloader-message libconfig openssl"
 
 # SWUpdate licensing is described in the following pages:
 # https://sbabic.github.io/swupdate/licensing.html

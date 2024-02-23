@@ -7,6 +7,7 @@ SRCREV ?= "${AUTOREV}"
 
 DEPENDS += " libdrm libdrm-meson"
 DEPENDS += "linux-uapi-headers"
+RDEPENDS:${PN} += " libdrm-meson"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '',  'json-c', d)}"
 #do_configure[noexec] = "1"
 inherit autotools pkgconfig

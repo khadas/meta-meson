@@ -50,7 +50,7 @@ DEPENDS:append = "gcc-linaro-aarch64-elf-native "
 DEPENDS:append = "vim-native zip-native cmake-native"
 DEPENDS:append = " riscv-none-gcc-native "
 
-DEPENDS:append = " coreutils-native python-native python-pycrypto-native "
+DEPENDS:append = " coreutils-native python-native python-pycrypto-native ninja-native "
 DEPENDS:append = "${@bb.utils.contains_any('DISTRO_FEATURES', 'partition-enc partition-enc-local', ' partition-keys ', '', d)}"
 
 #override this in customer layer bbappend for customer specific bootloader binaries
