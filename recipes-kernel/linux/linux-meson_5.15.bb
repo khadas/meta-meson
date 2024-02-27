@@ -42,7 +42,7 @@ SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'file://dm-veri
 KDIR = "aml-5.15"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
-LINUX_VERSION ?= "5.15.123"
+LINUX_VERSION ?= "5.15.137"
 LINUX_VERSION:s7 = "5.15.131"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
 
