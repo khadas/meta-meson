@@ -3,8 +3,8 @@ DESCRIPTION = "Amlogic face detect with NPU"
 LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
-DEPENDS += " npu-common zlib aml-log"
-RDEPENDS:${PN} += " npu-common zlib aml-log"
+DEPENDS += " npu-common zlib liblog"
+RDEPENDS:${PN} += " npu-common zlib liblog"
 
 inherit autotools pkgconfig
 
@@ -24,7 +24,6 @@ do_install() {
     install -d -m 0755 ${D}${libdir}
 
     #install -D -m 0644 ${S}/include/common/*.h ${D}${includedir}/
-    install -D -m 0644 ${S}/include/common/sdk_log.h  ${D}${includedir}/
     #install -D -m 0644 ${S}/include/demo/*.h ${D}${includedir}/
     install -D -m 0644 ${S}/include/demo/cv_postprocess.h ${D}${includedir}/
     install -D -m 0644 ${S}/include/demo/imagelabel.h ${D}${includedir}/
