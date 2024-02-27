@@ -2,6 +2,8 @@
 SRCTREECOVEREDTASKS ?= "do_unpack do_fetch"
 INHERIT += "externalsrc"
 
+EXTERNALSRC:pn-irdeto-dvtapp = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-bootloader/dvtapp' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-bootloader/dvtapp')) else ''}"
+EXTERNALSRC:pn-irdeto-downloader = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-bootloader/downloader' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-bootloader/downloader')) else ''}"
 EXTERNALSRC:pn-irdeto-sdk = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-sdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-sdk')) else ''}"
 EXTERNALSRC:pn-irdeto-hal = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/hal' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/hal')) else ''}"
 EXTERNALSRC:pn-irdeto-cashal-rel = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-cashal-rel' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/irdeto/irdeto-cashal-rel')) else ''}"
