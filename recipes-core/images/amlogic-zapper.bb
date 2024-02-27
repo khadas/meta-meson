@@ -83,7 +83,7 @@ IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', bb.utils.contains('DISTRO_FEATURES', 'tee-no-videofirmware', '', 'optee-video-firmware', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dfb', 'directfb', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'nagra-sdk', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', 'irdeto-sdk irdeto-cashal-rel', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', bb.utils.contains('DISTRO_FEATURES', 'irdeto-dvtapp', 'irdeto-sdk irdeto-dvtapp', 'irdeto-sdk irdeto-cashal-rel', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'dolby-ms12', 'dolby-ms12', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-dvb-ota', bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', 'aml-dvb-ota-dtvkit', 'aml-dvb-ota-dtvkit-prebuilt', d), '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'aml-pqserver', 'aml-pqserver', '', d)} \
@@ -99,6 +99,7 @@ IMAGE_INSTALL += " \
 "
 
 IMAGE_INSTALL:remove = "\
+    ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-dvtapp', 'arka arka-prebuilt-pkg aml-hdi irdeto-cashal-rel ', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'dbus tzdata glib-2.0 shared-mime-info libxml2 system-config libarchive gnutls libnl neon tinyalsa tinyalsa-tools alsa-utils jansson libfastjson faad2 libopus yajl popt libgcrypt libgpg-error ', '', d)} \
 "
 
