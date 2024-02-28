@@ -31,9 +31,9 @@ do_install () {
 	mkdir -p ${D}/usr/include/wfd_hdcp
 
     install -m 0644 ${S}/prebuilt/noarch/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz
-    install -m 0644 ${S}/prebuilt/${ARM_TARGET}/libwfd_hdcp.so ${D}${libdir}
-    install -m 0755 ${S}/prebuilt/${ARM_TARGET}/hdcp_rx_test ${D}/usr/bin
-    install -m 0755 ${S}/prebuilt/${ARM_TARGET}/hdcp_tx_test ${D}/usr/bin
+    install -m 0644 ${S}/prebuilt/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/libwfd_hdcp.so ${D}${libdir}
+    install -m 0755 ${S}/prebuilt/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/hdcp_rx_test ${D}/usr/bin
+    install -m 0755 ${S}/prebuilt/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/hdcp_tx_test ${D}/usr/bin
     cp -rf ${S}/prebuilt/noarch/include/* ${D}/usr/include/wfd_hdcp/
 }
 

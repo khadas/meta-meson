@@ -44,9 +44,9 @@ do_install() {
     install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${TA_TARGET}/include/*.h ${D}${includedir}/
     install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${TA_TARGET}/pkgconfig/widevine.pc ${D}${libdir}/pkgconfig
 
-    install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${ARM_TARGET}/libwidevine_ce_cdm_shared.so ${D}${libdir}
-    install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${ARM_TARGET}/liboemcrypto.so ${D}${libdir}
-    install -D -m 0755 ${S}/widevine-bin/${WIDEVINE_VER}/${ARM_TARGET}/widevine_ce_cdm_unittest ${D}/usr/bin
+    install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/libwidevine_ce_cdm_shared.so ${D}${libdir}
+    install -D -m 0644 ${S}/widevine-bin/${WIDEVINE_VER}/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/liboemcrypto.so ${D}${libdir}
+    install -D -m 0755 ${S}/widevine-bin/${WIDEVINE_VER}/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/widevine_ce_cdm_unittest ${D}/usr/bin
 }
 FILES:${PN} += "${libdir}/*.so /lib/optee_armtz/* ${bindir}/*"
 FILES:${PN}-dev = "${includedir}/* "

@@ -24,7 +24,7 @@ do_install:append() {
     install -d -m 0755 ${D}/usr/include
     install -d -m 0755 ${D}/lib/optee_armtz
     install -D -m 0755 ${S}/youtubesign-bin/prebuilt/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
-    install -D -m 0644 ${S}/youtubesign-bin/prebuilt/${ARM_TARGET}/*.so ${D}${libdir}
+    install -D -m 0644 ${S}/youtubesign-bin/prebuilt/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/*.so ${D}${libdir}
     install -D -m 0644 ${S}/youtubesign-bin/prebuilt/noarch/include/* ${D}/usr/include/
 }
 

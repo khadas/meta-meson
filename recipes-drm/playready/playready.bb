@@ -45,9 +45,9 @@ do_install () {
 
     install -m 0644 ${S}/prebuilt-v${PLAYREADY_VER}/noarch/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz
     install -m 0644 ${S}/prebuilt-v${PLAYREADY_VER}/noarch/pkgconfig/playready.pc ${D}${libdir}/pkgconfig
-    install -m 0644 ${S}/prebuilt-v${PLAYREADY_VER}/${ARM_TARGET}/libplayready-${PLAYREADY_VER}.so ${D}${libdir}
-    install -m 0755 ${S}/prebuilt-v${PLAYREADY_VER}/${ARM_TARGET}/prtest ${D}/usr/bin
-    install -m 0755 ${S}/prebuilt-v${PLAYREADY_VER}/${ARM_TARGET}/pritee_test ${D}/usr/bin
+    install -m 0644 ${S}/prebuilt-v${PLAYREADY_VER}/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/libplayready-${PLAYREADY_VER}.so ${D}${libdir}
+    install -m 0755 ${S}/prebuilt-v${PLAYREADY_VER}/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/prtest ${D}/usr/bin
+    install -m 0755 ${S}/prebuilt-v${PLAYREADY_VER}/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/pritee_test ${D}/usr/bin
     ln -s libplayready-${PLAYREADY_VER}.so ${D}${libdir}/libplayready.so
     ln -s libplayready.so ${D}${libdir}/libplayready${PLAYREADY_SHORT_VER}pk.so
     ln -s libplayready.so ${D}${libdir}/libplayready${PLAYREADY_SHORT_VER}pritee.so
