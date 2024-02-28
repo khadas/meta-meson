@@ -22,3 +22,6 @@ BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', bb.utils.contai
 BBMASK .= "|meta-thunder/recipes-support/curl/curl_7.69%.bbappend"
 BBMASK .= "|meta-thunder/recipes-devtools/breakpad/"
 BBMASK .= "|poky/meta/recipes-graphics/wayland/weston-init.bb"
+BBMASK .= "|meta-meson/recipes-graphics/wayland/weston_6.0.1.bb"
+BBMASK .= "|meta-meson/recipes-graphics/wayland/weston_8.0.0.bb"
+BBMASK .= "|poky/meta/recipes-connectivity/wpa-supplicant/wpa-supplicant_2.10.bb"

@@ -4,8 +4,6 @@ LICENSE = "CLOSED"
 
 # The current directory is expected to the location where ace yocto package is untarred
 FILESEXTRAPATHS:prepend := "${THISDIR}:"
-SRC_URI = "file://vmx-lib/ \
-          "
 PV = "1.0"
 PR = "r0"
 S = "${WORKDIR}"

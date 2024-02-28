@@ -13,7 +13,7 @@ PV = "git${SRCPV}"
 S = "${WORKDIR}/git"
 
 inherit cmake pkgconfig systemd update-rc.d
-
+FILES_SOLIBSDEV = ""
 INITSCRIPT_NAME = "arka"
 INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 
@@ -78,3 +78,4 @@ FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/Arka/png /u
 FILES_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '${libdir}', '', d)}"
 FILES_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '/usr/share/zoneinfo/Asia', '', d)}"
 FILES_${PN}-dev = ""
+INSANE_SKIP:${PN} = "installed-vs-shipped"

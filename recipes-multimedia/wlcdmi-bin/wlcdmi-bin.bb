@@ -59,7 +59,7 @@ do_install() {
     fi
 }
 
-INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
+INSANE_SKIP:${PN} = "dev-so ldflags dev-elf installed-vs-shipped already-stripped"
 INSANE_SKIP:${PN}-dev = "dev-so ldflags dev-elf"
 
 SYSTEMD_SERVICE:${PN} = "wlcdmi.service"

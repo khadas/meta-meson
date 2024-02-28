@@ -13,7 +13,7 @@ SRCREV ?= "${AUTOREV}"
 S = "${WORKDIR}/git"
 DEPENDS = "aml-mediahal-sdk"
 DEPENDS += " optee-userspace "
-#RDEPENDS:${PN} = "aml-mediahal-sdk"
+RDEPENDS:${PN} = "aml-mediahal-sdk"
 
 ARM_TARGET = "arm.aapcs-linux.hard"
 ARM_TARGET:aarch64 = "aarch64.lp64."

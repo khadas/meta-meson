@@ -1,0 +1,38 @@
+From 6dc6e1176e3d594124bd7a4d56826e61531a0901 Mon Sep 17 00:00:00 2001
+From: "Jiacai.Liu" <jiacai.liu@amlogic.com>
+Date: Fri, 1 Dec 2023 10:50:40 +0800
+Subject: fix wayland compatible issue   [1/1]
+
+PD#SWPL-
+
+Problem:
+wayland not compatible with wayland_protocols
+
+Solution:
+fix the wayland compatible issue
+
+Verify:
+local
+---
+ protocol/wayland.xml | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/protocol/wayland.xml b/protocol/wayland.xml
+index 784d971..b874f16 100644
+--- a/protocol/wayland.xml
++++ b/protocol/wayland.xml
+@@ -474,6 +474,11 @@
+ 	optimization for GL(ES) compositors with wl_shm clients.
+       </description>
+     </event>
++    <event name="drop">
++      <description summary="compositor drop buffer">
++    Sent when this wl_buffer is dropped by the compositor.
++      </description>
++    </event>
+   </interface>
+ 
+   <interface name="wl_data_offer" version="3">
+-- 
+2.25.1
+

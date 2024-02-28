@@ -11,3 +11,4 @@ EXTRA_OECMAKE += "-DLIB_DIR=${libdir} -DBIN_DIR=${bindir} -DINCLUDE_DIR=${includ
 inherit cmake
 
 FILES:${PN}-dev = ""
+INSANE_SKIP:${PN} = "installed-vs-shipped"
