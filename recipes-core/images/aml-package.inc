@@ -86,6 +86,10 @@ do_aml_pack() {
         sed -i '/_aml_dtb/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
     fi
 
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', 'true', 'false', d)}; then
+        sed -i '/rootfs/a\file="caverify.img"            main_type="PARTITION"       sub_type="caverify"' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
+    fi
+
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
@@ -237,5 +241,6 @@ do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partiti
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.utils.contains('MULTILIBS', 'multilib:lib32', ' lib32-recovery-image:do_image_complete', ' recovery-image:do_image_complete', d), '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', ' vbmeta-image:do_compile', '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', ' aml-gpt-make:do_install', '', d)}"
+do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', ' caverify-image:do_install ', '', d)}"
 addtask aml_pack after do_image_complete before do_build
 do_aml_pack[nostamp] = "1"

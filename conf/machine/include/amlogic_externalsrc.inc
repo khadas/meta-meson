@@ -115,6 +115,7 @@ EXTERNALSRC:pn-aml-hosttools-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/
 EXTERNALSRC:pn-aml-swupdate-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-swupdate' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-swupdate')) else ''}"
 EXTERNALSRC:pn-aml-linux-scs-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-linux-scs' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-linux-scs')) else ''}"
 EXTERNALSRC:pn-aml-gpt-make = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-gpt-make' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-gpt-make')) else ''}"
+EXTERNALSRC:pn-caverify-image = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/ird-caverify-make' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/ird-caverify-make')) else ''}"
 EXTERNALSRC:pn-aml-swupdate-ui = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_swupdate_ui' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_swupdate_ui')) else ''}"
 EXTERNALSRC:pn-test-tools = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/test_tools' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/test_tools')) else ''}"
 EXTERNALSRC:pn-aml-linux-sb-native = "${@'${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-linux-sb' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/prebuilt/hosttools/aml-linux-sb')) else ''}"
