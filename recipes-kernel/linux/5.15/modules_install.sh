@@ -49,7 +49,11 @@ function regenerate_modules_sequence_list()
 }
 
 adjust_sequence_modules_loading() {
-    chips=${MACHINE}
+    chips=$(echo ${MACHINE} | cut -d'-' -f1 | cut -c6-)
+    if [ $chips = "g12b" ] || [ $chips = "sm1" ];then
+        chips=g12a
+    fi
+
     echo " chips list: ${chips}"
 
     source ${COMMON_DRIVERS_DIR}/scripts/amlogic/modules_sequence_list

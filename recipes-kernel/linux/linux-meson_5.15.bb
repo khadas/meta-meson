@@ -41,6 +41,12 @@ SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.c
 # add support dm-verity
 SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'file://dm-verity.cfg', '', d)}"
 
+# Enable debian support in the kernel if the feature is enabled
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://amlbian.cfg', '', d)}"
+
+# support booting from nfs if the feature is enabled
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'nfs-boot', ' file://nfs-boot.cfg', '', d)}"
+
 #For common patches
 KDIR = "aml-5.15"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
@@ -185,6 +191,8 @@ KERNEL_MODULE_AUTOLOAD += "amlogic-snd-codec-tl1"
 KERNEL_MODULE_AUTOLOAD += "amlogic-snd-codec-tas5707"
 KERNEL_MODULE_AUTOLOAD += "cfg80211"
 KERNEL_MODULE_AUTOLOAD += "mac80211"
+KERNEL_MODULE_AUTOLOAD += "v4l2-async"
+KERNEL_MODULE_AUTOLOAD += "v4l2-fwnode"
 
 FILES:${PN} += "modules/*"
 INSANE_SKIP:${PN} = " installed-vs-shipped"
