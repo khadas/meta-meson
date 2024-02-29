@@ -1,3 +1,5 @@
+#!/bin/sh -x
+
 PATH="/lib/modules/isp"
 /sbin/modprobe v4l2-async
 /sbin/insmod $PATH/iv009_isp_iq.ko
