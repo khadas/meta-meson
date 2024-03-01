@@ -1,0 +1,14 @@
+diff --git a/handlers/raw_handler.c b/handlers/raw_handler.c
+index 52f2500..f72d68d 100644
+--- a/handlers/raw_handler.c
++++ b/handlers/raw_handler.c
+@@ -230,7 +230,8 @@ static int blkprotect(struct img_type *img, bool on)
+ 
+ //try a/b system
+ if (get_active_slot(&slot)==0 && ((strcmp(img->fname, "boot.img")==0) ||
+- (strcmp(img->fname, "recovery.img")==0) || (strcmp(img->fname, "vbmeta.img")==0))) {
++ (strcmp(img->fname, "recovery.img")==0) || (strcmp(img->fname, "vbmeta.img")==0) ||
++ (strncmp(img->fname, "rootfs", 6)==0) || (strncmp(img->fname, "vendor", 6)==0))) {
+ 	if (slot == 0) {
+ 		sprintf(device_name, "%s%s", img->device, "_b");
+ 	} else {

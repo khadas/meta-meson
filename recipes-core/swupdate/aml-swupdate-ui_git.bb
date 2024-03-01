@@ -15,7 +15,7 @@ PV = "${SRCPV}"
 S = "${WORKDIR}/git"
 
 # configurate lvgl app needs below two conditions
-EXTRA_OEMAKE = "${@bb.utils.contains("SWUPDATE_UI_LIB", "lvgl", "CONFIG_LVGL_APP=y", "" ,d)}"
+EXTRA_OEMAKE += "${@bb.utils.contains("SWUPDATE_UI_LIB", "lvgl", "CONFIG_LVGL_APP=y", "" ,d)} OUT_DIR=${B} "
 PACKAGECONFIG:append = "${@bb.utils.contains("SWUPDATE_UI_LIB", "lvgl", " lvgl", " directfb" ,d)}"
 PACKAGECONFIG[lvgl] = "-lvgl,-no-lvgl,lvgl lv-drivers"
 PACKAGECONFIG[directfb] = "-directfb,-no-directfb,directfb"
@@ -26,7 +26,7 @@ do_compile(){
 
 do_install() {
     install -d ${D}${bindir}
-    install -m 0755 ${S}/swupdateui ${D}${bindir}
+    install -m 0755 ${B}/swupdateui ${D}${bindir}
 
     install -d ${D}${sysconfdir}
     case ${PACKAGECONFIG} in

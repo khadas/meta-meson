@@ -27,6 +27,7 @@ SRC_URI = "git://github.com/sbabic/swupdate.git;branch=master;protocol=https \
         file://0001-amlogic-update-based-on-2021.04.patch \
         file://0002-fix-compile-warnings.patch \
         file://0003-add-uboot-update-backup-write-for-nand.patch \
+        file://0004-amlogic-fix-resource-leak.patch \
         file://defconfig \
         file://hwrevision \
         file://sw-versions \
@@ -36,6 +37,9 @@ SRC_URI = "git://github.com/sbabic/swupdate.git;branch=master;protocol=https \
         file://swupdate.init \
 "
 
+SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "absystem", \
+        "file://0005-amlogic-add-rootfs_vendor-absystem.patch \
+         file://0006-amlogic-fix-absystem-update-error.patch", "", d)}"
 SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "nand", \
             bb.utils.contains("ROOTFS_TYPE", "ubifs", "file://ubifs.cfg", "file://squashfs.cfg", d), "", d)}"
 

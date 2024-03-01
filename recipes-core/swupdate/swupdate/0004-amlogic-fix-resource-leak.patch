@@ -1,0 +1,24 @@
+diff --git a/core/network_thread.c b/core/network_thread.c
+index 27e8fd8..e955c81 100644
+--- a/core/network_thread.c
++++ b/core/network_thread.c
+@@ -104,6 +104,7 @@ static bool is_selection_allowed(const char *software_set, char *running_mode,
+ 			}
+ 		}
+ 		free(swset);
++		swset = NULL;
+ 	}
+ 
+ 	if (allowed) {
+@@ -111,6 +112,11 @@ static bool is_selection_allowed(const char *software_set, char *running_mode,
+ 	}else
+ 		ERROR("Selection %s,%s is not allowed, rejected !",
+ 		      software_set, running_mode);
++
++	if (NULL != swset) {
++		free(swset);
++		swset = NULL;
++	}
+ 	return allowed;
+ }
+ 
