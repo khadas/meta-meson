@@ -5,7 +5,6 @@ LIC_FILES_CHKSUM = "file://share/doc/binutils.html/GNU-Free-Documentation-Licens
 inherit native
 export GCC_LINARO_AARCH64_TOOLCHAIN      = "/gcc-linaro-aarch64-elf"
 COMPATIBLE_HOST = "(x86_64).*-linux"
-INHIBIT_SYSROOT_STRIP = "1"
 
 SRC_URI="https://releases.linaro.org/components/toolchain/binaries/7.3-2018.05/aarch64-elf/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-elf.tar.xz;name=gcc-linaro-7.3.1-2018.05-x86_64_aarch64-elf"
 

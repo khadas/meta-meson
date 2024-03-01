@@ -11,9 +11,6 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/lib
 
 do_compile[noexec] = "1"
 
-INHIBIT_PACKAGE_STRIP = "1"
-INHIBIT_SYSROOT_STRIP = "1"
-
 DEPENDS += " aml-mediahal-sdk optee-userspace aml-secmem liblog "
 
 EXTRA_OEMAKE=" STAGING_DIR=${STAGING_DIR_TARGET} \

@@ -6,8 +6,6 @@ LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
 INSANE_SKIP_${PN} += " ldflags"
-INHIBIT_PACKAGE_STRIP = "1"
-INHIBIT_SYSROOT_STRIP = "1"
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 PR = "r0"

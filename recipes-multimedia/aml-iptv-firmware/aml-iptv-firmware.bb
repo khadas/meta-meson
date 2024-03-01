@@ -19,8 +19,6 @@ TA_TARGET="noarch"
 
 
 do_compile[noexec] = "1"
-INHIBIT_PACKAGE_STRIP = "1"
-INHIBIT_SYSROOT_STRIP = "1"
 
 do_install() {
     install -d -m 0755 ${D}${libdir}

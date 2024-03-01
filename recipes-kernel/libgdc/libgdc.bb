@@ -9,8 +9,6 @@ do_configure[noexec] = "1"
 DEPENDS = "libion"
 RDEPENDS:${PN} += "libion"
 
-
-
 do_compile() {
     if [ "${TARGET_ARCH}" = "aarch64" ]; then
         export ARM_TARGET=64
@@ -41,8 +39,6 @@ do_install() {
     install -m 0644 ${S}/dewarp/dewarp_api.h ${D}${includedir}
 }
 
-INHIBIT_SYSROOT_STRIP = "1"
-INHIBIT_PACKAGE_STRIP = "1"
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 
 FILES:${PN}-dev = "${includedir} ${libdir}/pkgconfig"
