@@ -11,6 +11,8 @@ SRC_URI = "http://www.boa.org/boa-0.94.14rc21.tar.gz \
 SRC_URI[sha256sum] = "02c51bf25f29d56e641b662f0767759654c28d88ec31f55c5a73d57edfe13cf6"
 
 SRCREV ?="${AUTOREV}"
+PV = "0.94.14rc21"
+PN = "boa"
 
 inherit autotools pkgconfig systemd
 
