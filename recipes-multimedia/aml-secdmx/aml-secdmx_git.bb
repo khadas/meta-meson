@@ -8,9 +8,6 @@ S = "${WORKDIR}/git"
 
 do_compile[noexec] = "1"
 
-INHIBIT_PACKAGE_STRIP = "1"
-INHIBIT_SYSROOT_STRIP = "1"
-
 DEPENDS += "optee-userspace liblog"
 
 EXTRA_OEMAKE=" STAGING_DIR=${STAGING_DIR_TARGET} \

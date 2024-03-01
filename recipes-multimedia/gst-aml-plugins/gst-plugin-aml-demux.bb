@@ -18,6 +18,4 @@ inherit autotools pkgconfig features_check
 
 FILES_${PN} += "/usr/lib/gstreamer-1.0/*"
 INSANE_SKIP_${PN} = "ldflags dev-so "
-INHIBIT_PACKAGE_STRIP = "1"
-INHIBIT_SYSROOT_STRIP = "1"
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
