@@ -17,6 +17,9 @@ PREBUILT_TARGET:aq2432 = "aq2432"
 PREBUILT_TARGET:bf201 = "bf201"
 PREBUILT_TARGET:bg201 = "bg201"
 
+IS_KERNEL5.15_U = ""
+IS_KERNEL5.15_U:k5.15-u = "-u"
+
 S = "${WORKDIR}/git"
 do_install() {
     TUNER_KO_VERSION=$(echo ${KERNEL_VERSION} | cut -d'-' -f1 | cut -d'.' -f1,2)
@@ -26,7 +29,7 @@ do_install() {
 
     for item in ${KERNEL_MODULE_AUTOLOAD}
     do
-      module=${S}/kernel-module/tuner/${TUNER_KO_VERSION}/${ARM_TARGET}/${PREBUILT_TARGET}/${item}.ko
+      module=${S}/kernel-module/tuner/${TUNER_KO_VERSION}${IS_KERNEL5.15_U}/${ARM_TARGET}/${PREBUILT_TARGET}/${item}.ko
       if [ -f ${module} ];then
         install -m 0644 ${module} ${KO_DIR}
       fi

@@ -14,6 +14,8 @@ PREFERRED_PROVIDER_virtual/libgles1 = "libgles-eabihf-dvalin-wayland-drm"
 PREFERRED_PROVIDER_virtual/libgles2 = "libgles-eabihf-dvalin-wayland-drm"
 
 MACHINE_EXTRA_RRECOMMENDS += " \
+        pq-prebuilt \
+        tuner-prebuilt \
         aucpu-fw \
         gpu \
         "
@@ -25,14 +27,13 @@ KERNEL_DEVICETREE = "s7_s905y5_bh201_linux.dtb"
 UBOOT_MACHINE = "s7_bh201_config"
 KERNEL_MODULE_AUTOLOAD += " rfkill amlogic-wireless "
 #KERNEL_MODULE_AUTOLOAD += " w2 w2-common "
-KERNEL_MODULE_AUTOLOAD += " cxd2856_fe_64"
-KERNEL_MODULE_AUTOLOAD += " hdr10_tmo_alg_64"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-dummy_codec"
 KERNEL_MODULE_AUTOLOAD += " snd-soc-aml_t9015"
 KERNEL_MODULE_AUTOLOAD += " meson_ir"
 KERNEL_MODULE_AUTOLOAD += "aml_aucpu"
 KERNEL_MODULE_AUTOLOAD += "dolby_fw"
 KERNEL_MODULE_AUTOLOAD += "meson-cpufreq"
+KERNEL_MODULE_AUTOLOAD += "amlogic-dvb-ci"
 
 DISTRO_FEATURES:append = " drm"
 #DISTRO_FEATURES:append = " onepass"
@@ -74,7 +75,7 @@ DEVICE_PROPERTY_FIRMWARE_VERSION = "1.0.0"
 DEVICE_PROPERTY_MODEL_NAME = "OTT-4K-Ref"
 DEVICE_PROPERTY_OPERATOR_NAME = "SDKRelease"
 DEVICE_PROPERTY_YOUTUBE_CERT_SCOPE = "amlogic-2024-amlogicott4kref2024v2"
-DEVICE_PROPERTY_PERSIST_DIALSERVER_NAME="AmlogicOTT-AH212"
+DEVICE_PROPERTY_PERSIST_DIALSERVER_NAME="AmlogicOTT-BH201"
 # YouTube define device type
 # BDP:   Blu-Ray Player
 # GAME:  Game Console
