@@ -1,0 +1,12 @@
+[Unit]
+Description=qt rxpreview start, env setting
+After=weston.service
+
+[Service]
+Type=forking
+User=root
+ExecStart=/bin/sh -c "/usr/bin/aml-qt-rxpreview.sh start"
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

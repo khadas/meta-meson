@@ -210,4 +210,4 @@ EXTERNALSRC:pn-gst-aml-dma-allocator = "${@'${MESON_ROOT_PATH}/aml-comp/multimed
 EXTERNALSRC:pn-mediactrlsrc = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/mediactrlsrc' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/mediactrlsrc')) else ''}"
 EXTERNALSRC:pn-aml-qt-rxpreview= "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-qt-rxpreview' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-qt-rxpreview')) else ''}"
 EXTERNALSRC:pn-aml-screencapture= "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-screencapture' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-screencapture')) else ''}"
-EXTERNALSRC:pn-aml-qt-camera= "${@'${MESON_ROOT_PATH}/meta-meson/recipes-graphics/aml-qt-camera/src' if (os.path.isdir('${MESON_ROOT_PATH}/meta-meson/recipes-graphics/aml-qt-camera/src')) else ''}"
+EXTERNALSRC:pn-aml-qt-camera= "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-qt-camera' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-qt-camera')) else ''}"

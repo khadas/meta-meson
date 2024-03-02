@@ -16,6 +16,7 @@ PACKAGECONFIG = " \
     ${PACKAGECONFIG_OPENSSL} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'qt5', \
         'xkb xkbcommon \
+        linuxfb \
         eglfs \
         gles2 \
         icu \
@@ -33,3 +34,7 @@ PACKAGECONFIG += " \
         tests \
         ', '', d)} \
     "
+
+SELECTED_OPTIMIZATION += "-Os"
+
+PARALLEL_MAKE = ""

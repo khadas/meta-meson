@@ -1,0 +1,26 @@
+#!/bin/bash
+
+
+# SRC_SIZE_ARRAY=("1920 1080" "1280 720" "640 480")
+SRC_SIZE_ARRAY=("1920 1080")
+
+
+# SRC_FRAMERATE_ARRAY=("30000/1001")
+SRC_FRAMERATE_ARRAY=("30/1")
+
+
+# For dmabuf, it needn't copy, High performance! 
+# For mmap, it need copy, Low performance! 
+# TODO : need support dmabuf
+# IO_MODE_ARRAY=("dmabuf" "mmap")
+IO_MODE_ARRAY=("mmap")
+
+
+#  tvin-port=0x11000000  //vpp0 video only;
+#  tvin-port=0x11000001  //vpp0(osd+video);
+#  tvin-port=0x11000002  //vpp1 video only; 副屏video only
+#  tvin-port=0x11000003  // vpp1(osd+video); 副屏osd+video
+# TVIN_PORT_ARRAY=("0x11000000" "0x11000001" "0x11000002" "0x11000003")
+# TODO : need support 00, 02, 03
+TVIN_PORT_ARRAY=("0x11000001")
+
