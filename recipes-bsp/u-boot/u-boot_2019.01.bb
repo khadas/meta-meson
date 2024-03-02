@@ -8,6 +8,8 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files_2019/bl31/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2019/bl31_1.3/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2019/bl32_3.8/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2019/fip:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files/:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/2019/:"
 
 LICENSE = "GPL-2.0-or-later"
 
@@ -15,6 +17,12 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;m
 
 EXTRA_OEMAKE = ''
 PACKAGE_ARCH = "${MACHINE_ARCH}"
+
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', 'file://absystem.cfg', '', d)}"
+CFG_FILE = "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', '${WORKDIR}/absystem.cfg ', '', d)}"
+
+SRC_URI += "file://merge_config.sh \
+"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/firmware/bin/bl2.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-dev;destsuffix=uboot-repo/bl2/bin;name=bl2"
 #SRC_URI:append = " git://${AML_GIT_ROOT}/firmware/bin/bl30.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-dev;destsuffix=uboot-repo/bl30/bin;name=bl30"
@@ -61,6 +69,7 @@ export BL30_ARG = ""
 export BL2_ARG = ""
 
 BL32_SOC_FAMILY = "TBD"
+BL32_SOC_FAMILY:s4 = "s4/s905y4"
 BL32_SOC_FAMILY:ap222 = "s4/s905y4"
 BL32_SOC_FAMILY:aq222 = "s4/s805x2"
 BL32_ARG = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', '--bl32 bl32/bl32_3.8/bin/${BL32_SOC_FAMILY}/blob-bl32.nand.bin.signed', '', d)}"
@@ -108,6 +117,21 @@ SOC = "TBD"
 SOC_aq2432 = "s805c3"
 SOC_ap222 = "s905y4"
 SOC_ah212 = "s905x4"
+
+FINAL_DEFCONFIG_PATH = "${S}/bl33/v2019/board/amlogic/defconfigs"
+DEFCONFIG = "${UBOOT_TYPE%_config}_defconfig"
+
+do_compile:prepend () {
+    if [ -f "${WORKDIR}/*.cfg" ]; then
+        UBOOT_TYPE="${UBOOT_MACHINE}"
+        if [ -f "${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp" ]; then
+            mv -f ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp  ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}
+        fi
+        mv ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG} ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp
+        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${DEFCONFIG} ${WORKDIR}/merge_config.sh -m -r ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ${CFG_FILE}
+    fi
+}
+
 do_compile () {
     cd ${S}
     cp -f fip/mk .
@@ -124,6 +148,10 @@ do_compile () {
            [ "${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'true', 'false', d)}" = "true" ] ; then
         mkdir -p ${DEPLOY_DIR_IMAGE}
         cp ${S}/bl33/v2019/board/amlogic/${UBOOT_TYPE%_config}/device-keys/fip/rsa/${SOC}/rootrsa-0/key/bl33-level-3-rsa-priv.pem ${DEPLOY_DIR_IMAGE}
+    fi
+
+    if [ -f "${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp" ]; then
+        mv -f ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}
     fi
 }
 

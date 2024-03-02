@@ -1,4 +1,5 @@
 require u-boot-meson.inc
+
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2015:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2015/bl33/v2015:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2015/bl2/bin:"
@@ -6,6 +7,8 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files_2015/bl30/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2015/bl31/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2015/bl31_1.3/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2015/fip:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files/:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/2015/:"
 
 LICENSE = "GPL-2.0-or-later"
 
@@ -13,6 +16,12 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;m
 
 EXTRA_OEMAKE = ''
 PACKAGE_ARCH = "${MACHINE_ARCH}"
+
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', 'file://absystem.cfg', '', d)}"
+CFG_FILE = "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', '${WORKDIR}/absystem.cfg ', '', d)}"
+
+SRC_URI += "file://merge_config.sh \
+"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/firmware/bin/bl2.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-dev;destsuffix=uboot-repo/bl2/bin;name=bl2"
 #SRC_URI:append = " git://${AML_GIT_ROOT}/firmware/bin/bl30.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-dev;destsuffix=uboot-repo/bl30/bin;name=bl30"
@@ -81,6 +90,21 @@ CFLAGS +=" -DCONFIG_YOCTO "
 KCFLAGS +=" -DCONFIG_YOCTO "
 BUILD_GPT_FLAG=""
 BUILD_GPT_FLAG:k5.15="--gpt"
+
+FINAL_DEFCONFIG_PATH = "${S}/bl33/v2015/board/amlogic/defconfigs"
+DEFCONFIG = "${UBOOT_TYPE%_config}_defconfig"
+
+do_compile:prepend () {
+    if [ -f "${WORKDIR}/*.cfg" ]; then
+        UBOOT_TYPE="${UBOOT_MACHINE}"
+        if [ -f ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ]; then
+            mv -f ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp  ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}
+        fi
+        mv ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG} ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp
+        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${DEFCONFIG} ${WORKDIR}/merge_config.sh -m -r ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ${CFG_FILE}
+    fi
+}
+
 do_compile () {
     cd ${S}
     cp -f fip/mk .
@@ -103,6 +127,8 @@ do_compile () {
                 echo "process: mk ${UBOOT_TYPE%_config} --bl32 bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}"
                 LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --bl32 bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}
             fi
+        elif [ "${BL32_SOC_FAMILY}" = "g12a" ];then
+            LDFLAGS= ./mk ${UBOOT_TYPE%_config} --gpt --bl32 bl32/bl32_3.8/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
         else
             LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --bl32 bl32/bl32_3.8/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}
         fi
@@ -110,5 +136,9 @@ do_compile () {
         LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} ${BL33_ARG}
     fi
     cp -rf build/* fip/
+
+    if [ -f "${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp" ]; then
+        mv -f ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}
+    fi
 }
 
