@@ -23,7 +23,7 @@ do_install:append() {
     install -d -m 0755 ${D}/usr/bin
     install -d -m 0755 ${D}/lib/optee_armtz
     install -D -m 0755 ${S}/netflix_ta-bin/prebuilt/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
-    install -D -m 0755 ${S}/netflix_ta-bin/prebuilt/${ARM_TARGET}/esn_provision ${D}/usr/bin/
+    install -D -m 0755 ${S}/netflix_ta-bin/prebuilt/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/esn_provision ${D}/usr/bin/
 }
 
 FILES:${PN} += "${bindir}/* /lib/optee_armtz/* ${includedir}/*"
