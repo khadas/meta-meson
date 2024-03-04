@@ -21,6 +21,12 @@ do_install() {
     if ${@bb.utils.contains("DISTRO_FEATURES", "aml-w1", "true", "false", d)}; then
         sed -i '/\/usr\/bin\/wifi_power/a ExecStart=\/sbin\/modprobe vlsicomm conf_path=\/etc\/wifi\/w1' ${D}${systemd_unitdir}/system/wifi.service
     fi
+
+    if ${@bb.utils.contains("DISTRO_FEATURES", "softap aml-w1", "true", "false", d)}; then
+        sed -i '/modprobe/d' ${D}${systemd_unitdir}/system/wifi.service
+        sed -i '/\/usr\/bin\/wifi_power/a ExecStart=\/sbin\/modprobe vlsicomm country_code=WW conf_path=\/etc\/wifi\/w1 vmac1=wlan1 vif1opmode=2 con_mode=0x06 plt_ver=gva' ${D}${systemd_unitdir}/system/wifi.service
+    fi
+
     if ${@bb.utils.contains("DISTRO_FEATURES", "aml-w2", "true", "false", d)}; then
         sed -i '/\/usr\/bin\/wifi_power/a ExecStart=\/sbin\/modprobe w2 ' ${D}${systemd_unitdir}/system/wifi.service
         sed -i '/\/usr\/bin\/wifi_power/a ExecStart=\/sbin\/modprobe w2_comm bus_type=sdio ' ${D}${systemd_unitdir}/system/wifi.service
