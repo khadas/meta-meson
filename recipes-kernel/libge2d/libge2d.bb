@@ -22,7 +22,7 @@ do_install () {
     install -m 0644 -D ${S}/libge2d/include/aml_ge2d.h ${D}${includedir}
     install -m 0644 -D ${S}/libge2d/include/ge2d_port.h ${D}${includedir}
     install -m 0644 -D ${B}/libge2d.so ${D}${libdir}
-    install -m 0644 -D ${B}/ge2d_feature_test ${D}${bindir}
+    install -m 0755 -D ${B}/ge2d_feature_test ${D}${bindir}
 }
 
 FILES:${PN} = " ${libdir}/* ${bindir}/*"
