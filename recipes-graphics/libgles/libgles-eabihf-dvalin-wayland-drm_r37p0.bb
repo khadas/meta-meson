@@ -64,8 +64,19 @@ do_install() {
     if ${@bb.utils.contains("DISTRO_FEATURES", "low-memory", "true", "false", d)}; then
         install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali_lm.so ${D}${libdir}/libMali.so
     else
-        install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali.so ${D}${libdir}/libMali.so
+        case ${LINUXLIBCVERSION} in
+        5.15%*)
+            install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali_dmaheap.so ${D}${libdir}/libMali.so
+        ;;
+        *)
+            install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali.so ${D}${libdir}/libMali.so
+        ;;
+        esac
     fi
+
+    # add a link for Debian
+    ln -s libMali.so ${D}${libdir}/libEGL.so.1.1.0
+    ln -s libMali.so ${D}${libdir}/libwayland-egl.so.1.20.0
 
     ln -s libMali.so ${D}${libdir}/libEGL.so.1.4.0
     ln -s libEGL.so.1.4.0 ${D}${libdir}/libEGL.so.1

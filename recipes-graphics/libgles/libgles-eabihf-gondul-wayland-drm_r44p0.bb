@@ -52,8 +52,34 @@ do_install() {
 
     #patchelf --set-soname libMali.so ${S}/lib/eabihf/${GPU_MODEL}/${PV}/wayland/drm/libMali.so
     # wayland lib
-    install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali_r1p0.so ${D}${libdir}/libMali.so
+    case ${LINUXLIBCVERSION} in
+    5.15%*)
+        case ${MACHINE_ARCH} in
+        mesong12b*)
+            install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali_dmaheap.so ${D}${libdir}/libMali.so
+        ;;
+        *)
+            install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali_r1p0_dmaheap.so ${D}${libdir}/libMali.so
+        ;;
+        esac
+    ;;
+    *)
+        case ${MACHINE_ARCH} in
+        mesong12b*)
+            install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali.so ${D}${libdir}/libMali.so
+        ;;
+        *)
+            install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali_r1p0.so ${D}${libdir}/libMali.so
+        ;;
+        esac
+    ;;
+    esac
 
+    # add a link for Debian11
+    ln -s libMali.so ${D}${libdir}/libEGL.so.1.1.0
+    ln -s libMali.so ${D}${libdir}/libwayland-egl.so.1.20.0
+
+    # add links for yocto linux
     ln -s libMali.so ${D}${libdir}/libEGL.so.1.4.0
     ln -s libEGL.so.1.4.0 ${D}${libdir}/libEGL.so.1
     ln -s libEGL.so.1 ${D}${libdir}/libEGL.so

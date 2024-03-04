@@ -10,7 +10,7 @@ do_populate_lic[noexec] = "1"
 # These libraries shouldn't get installed in world builds unless something
 # explicitly depends upon them.
 EXCLUDE_FROM_WORLD = "1"
-PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl virtual/libgbm virtual/mesa virtual/mesa-gl"
+PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl virtual/libgbm virtual/mesa virtual/mesa-gl virtual/nativesdk-libgl virtual/nativesdk-egl virtual/libgl-native virtual/egl-native virtual/nativesdk-libgbm virtual/libgbm-native"
 RPROVIDES:${PN} += "libGLESv2.so libEGL.so libGLESv1_CM.so libMali.so"
 DEPENDS += "patchelf-native libdrm wayland"
 
@@ -64,9 +64,20 @@ do_install() {
     if ${@bb.utils.contains("DISTRO_FEATURES", "low-memory", "true", "false", d)}; then
         install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali_lm.so ${D}${libdir}/libMali.so
     else
-        install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali.so ${D}${libdir}/libMali.so
+        case ${LINUXLIBCVERSION} in
+        5.15%*)
+            install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali_dmaheap.so ${D}${libdir}/libMali.so
+        ;;
+        *)
+            install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/wayland/drm/libMali.so ${D}${libdir}/libMali.so
+        ;;
+        esac
     fi
+    # add a link for Debian11
+    ln -s libMali.so ${D}${libdir}/libEGL.so.1.1.0
+    ln -s libMali.so ${D}${libdir}/libwayland-egl.so.1.20.0
 
+    # add links for yocto linux
     ln -s libMali.so ${D}${libdir}/libEGL.so.1.4.0
     ln -s libEGL.so.1.4.0 ${D}${libdir}/libEGL.so.1
     ln -s libEGL.so.1 ${D}${libdir}/libEGL.so
@@ -95,4 +106,4 @@ do_install() {
 
 FILES:${PN} += "${libdir}/*.so ${datadir}"
 FILES:${PN}-dev = "${includedir} ${libdir}/pkgconfig/*"
-INSANE_SKIP:${PN} = "ldflags dev-so already-stripped"
+INSANE_SKIP:${PN} = "ldflags dev-so already-stripped libdir"
