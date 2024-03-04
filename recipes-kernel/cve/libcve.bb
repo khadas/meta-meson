@@ -36,8 +36,8 @@ do_clean () {
     oe_runmake -C ${S} clean
 }
 
-FILES_${PN} = " ${libdir}/* ${bindir}/*"
-INSANE_SKIP_${PN} = "dev-so"
+FILES:${PN} = " ${libdir}/* ${bindir}/*"
+INSANE_SKIP:${PN} = "dev-so"
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 

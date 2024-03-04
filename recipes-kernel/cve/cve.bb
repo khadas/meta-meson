@@ -5,6 +5,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 DEPENDS += "linux-meson"
 
 SRCREV ?="${AUTOREV}"
+PV = "1.0"
+PN = "cve"
 
 do_populate_lic[noexec] = "1"
 do_configure[noexec] = "1"
