@@ -16,12 +16,12 @@ PV ?= "git${SRCPV}"
 
 do_configure[noexec] = "1"
 
-MEDIA_MODULES_UCODE_BIN = "${S}/firmware/${CHIPSET_NAME}/video_ucode.bin"
-MEDIA_MODULES_UCODE_BIN:t5d = "${S}/firmware/video_ucode.bin"
-MEDIA_MODULES_UCODE_BIN:sm1 = "${S}/firmware/video_ucode.bin"
-MEDIA_MODULES_UCODE_BIN:g12b = "${S}/firmware/video_ucode.bin"
-
 do_install() {
+    if [ -f "${S}/firmware/${CHIPSET_NAME}/video_ucode.bin" ];then
+        MEDIA_MODULES_UCODE_BIN="${S}/firmware/${CHIPSET_NAME}/video_ucode.bin"
+    else
+        MEDIA_MODULES_UCODE_BIN="${S}/firmware/video_ucode.bin"
+    fi
     MEDIADIR=${D}/lib/modules/${KERNEL_VERSION}/kernel/media
     FIRMWAREDIR=${D}/lib/firmware/video/
     unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS
@@ -54,7 +54,7 @@ MEDIA_CONFIGS = " \
                  CONFIG_AMLOGIC_MEDIA_VDEC_MJPEG=m \
                  CONFIG_AMLOGIC_MEDIA_VDEC_MJPEG_MULTI=m \
                  CONFIG_AMLOGIC_MEDIA_VDEC_REAL=m \
-                 CONFIG_AMLOGIC_MEDIA_VDEC_AVS=m \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_AVS_MULTI=m \
                  CONFIG_AMLOGIC_MEDIA_VDEC_AVS2=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_H265=m \
