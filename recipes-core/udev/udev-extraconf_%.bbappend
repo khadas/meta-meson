@@ -9,6 +9,9 @@ SRC_URI:append = " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nand', '', \
     bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'file://block.rules', '', d),  d)} \
 "
+SRC_URI:append = " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'file://dmaheap.rules', '', d)} \
+"
 
 SRC_URI:append = " \
     ${@bb.utils.contains_any('DISTRO_FEATURES', ['bluetooth', 'wifi'], \
@@ -33,5 +36,9 @@ do_install:append () {
         install -d ${D}${sysconfdir}/udev/scripts
         install -m 0755 ${WORKDIR}/bt-rfkill.sh ${D}${sysconfdir}/udev/scripts
         install -m 0755 ${WORKDIR}/wlan-rfkill.sh ${D}${sysconfdir}/udev/scripts
+    fi
+
+    if [ -e "${WORKDIR}/dmaheap.rules" ]; then
+      install -m 0644 ${WORKDIR}/dmaheap.rules ${D}${sysconfdir}/udev/rules.d
     fi
 }
