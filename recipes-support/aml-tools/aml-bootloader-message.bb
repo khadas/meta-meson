@@ -1,7 +1,10 @@
+inherit systemd
+
 SUMMARY = "aml bootloader_message"
 LICENSE = "CLOSED"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_commonlib;protocol=${AML_GIT_PROTOCOL};branch=master;"
+SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "absystem", "file://success-boot.service", "", d)}"
 
 DEPENDS += "zlib"
 
@@ -24,7 +27,15 @@ do_install() {
     install -m 0644 ${S}/libbootloader_message.a ${D}${libdir}
     install -m 0755 ${S}/urlmisc ${D}${bindir}
     install -m 0755 ${S}/bootloader_slot ${D}${bindir}
+
+    if ${@bb.utils.contains("DISTRO_FEATURES", "absystem", 'true', 'false', d)}; then
+        install -d ${D}${systemd_unitdir}/system
+        install -m 0644 ${WORKDIR}/success-boot.service ${D}/${systemd_unitdir}/system
+    fi
 }
 
 FILES:${PN} = "${libdir}/* ${bindir}/*"
+FILES:${PN} += "${@bb.utils.contains("DISTRO_FEATURES", "absystem", "${systemd_unitdir}/system/*", "", d)}"
 FILES:${PN}-dev = "${includedir}/* "
+
+SYSTEMD_SERVICE:${PN} += "${@bb.utils.contains("DISTRO_FEATURES", "absystem", "success-boot.service", "", d)}"

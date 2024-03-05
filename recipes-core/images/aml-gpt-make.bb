@@ -3,9 +3,9 @@ LICENSE = "CLOSED"
 LIC_FILES_CHKSUM=""
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
-SRC_URI += "file://partition_table.txt"
+SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "absystem", "file://partition_table_ab.txt", "file://partition_table.txt", d)}"
 
-PARTITION_TABLE = "partition_table.txt"
+PARTITION_TABLE = "${@bb.utils.contains("DISTRO_FEATURES", "absystem", "partition_table_ab.txt", "partition_table.txt", d)}"
 
 S="${WORKDIR}/git"
 

@@ -1,0 +1,10 @@
+[Unit]
+Description=set boot success flag
+After=residentapp.service
+Wants=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/bootloader_slot success_boot
+
+[Install]
+WantedBy=multi-user.target
