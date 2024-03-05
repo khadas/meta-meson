@@ -291,5 +291,16 @@ EOF
 FILES:${PN}:append:t7 = " /vendor/* /factory/* "
 dirs755:append:t7 = " /vendor /factory "
 
+#/*-----------------------sm1----------------------------------*/
+do_install:append:sm1 () {
+    mkdir -p ${D}/vendor
+    mkdir -p ${D}/factory
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/vendor            /vendor                    auto       defaults              0  0
+ /dev/factory           /factory                   auto       defaults              0  0
+EOF
+}
+FILES:${PN}:append:sm1 = " /vendor/* /factory/* "
+dirs755:append:sm1 = " /vendor /factory "
 INSANE_SKIP:${PN} = "dev-so"
 INSANE_SKIP:${PN} += "empty-dirs"
