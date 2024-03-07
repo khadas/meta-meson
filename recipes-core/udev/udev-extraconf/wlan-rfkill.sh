@@ -11,7 +11,7 @@ case "${RFKILL_STATE}" in
     ;;
   1)
     echo "WLAN RFKILL switch is now ON"
-    /bin/systemctl start wpa_supplicant
+    /bin/systemctl start wpa_supplicant &
     ;;
   *)
     echo "Unknown RFKILL switch state: ${RFKILL_STATE}"
