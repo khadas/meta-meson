@@ -30,7 +30,7 @@ do_install() {
     touch ${D}/lib/firmware/hdcp/firmware.le
     install -d -m 0755 ${D}/lib/optee_armtz
     install -d -m 0755 ${D}/usr/bin
-    install -D -m 0755 ${S}/ca/bin${ARM_TARGET}/tee_hdcp ${D}/usr/bin/
+    install -D -m 0755 ${S}/ca/${PLATFORM_TDK_VERSION}/bin${ARM_TARGET}/tee_hdcp ${D}/usr/bin/
     install -D -m 0755 ${S}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
     if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
         install -D -m 0644 ${WORKDIR}/aml_hdcp.service ${D}${systemd_unitdir}/system/aml_hdcp.service

@@ -2,7 +2,7 @@ Index: git/utils/cli/a2dp_ctl.h
 ===================================================================
 --- /dev/null
 +++ git/utils/cli/a2dp_ctl.h
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,53 @@
 +#ifndef _A2DP_CTL_H_
 +#define _A2DP_CTL_H_
 +
@@ -34,7 +34,8 @@ Index: git/utils/cli/a2dp_ctl.h
 +}A2DP_Dev_t;
 +
 +int a2dp_ctl_init(void);
-+void a2dp_ctl_delinit(void);
++void a2dp_ctl_deinit(void);
++bool is_bluealsa_ready();
 +int a2dp_control(A2DP_Control_t control);
 +bool adapter_ready(void);
 +int adapter_scan(int onoff);
@@ -59,7 +60,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 ===================================================================
 --- /dev/null
 +++ git/utils/cli/lib_a2dp_ctl.c
-@@ -0,0 +1,1241 @@
+@@ -0,0 +1,1258 @@
 +/*
 + * BlueALSA - cli.c
 + * Copyright (c) 2016-2022 Arkadiusz Bokowy
@@ -255,6 +256,14 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +bool pcm_info_init() {
 +	ba_pcm_info.max_alloc_num = INIT_BA_PCM_NUM;
 +	ba_pcm_info.pcms = calloc(sizeof(ba_pcm_status_t)*ba_pcm_info.max_alloc_num, 1);
++}
++
++bool pcm_info_deinit() {
++	ba_pcm_info.max_alloc_num = 0;
++	if (ba_pcm_info.pcms) {
++		free(ba_pcm_info.pcms);
++		ba_pcm_info.pcms = NULL;
++	}
 +}
 +
 +bool add_pcm(struct ba_pcm *pcm) {
@@ -903,7 +912,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	DBusError err = DBUS_ERROR_INIT;
 +	if (!bluealsa_dbus_connection_ctx_init(&dbus_ctx, dbus_ba_service, &err)) {
 +		error("Couldn't initialize D-Bus context: %s", err.message);
-+		return EXIT_FAILURE;
++		goto fail1;
 +	}
 +
 +	bluealsa_dbus_connection_signal_match_add(&dbus_ctx,
@@ -918,14 +927,17 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +	if (!dbus_connection_add_filter(dbus_ctx.conn, dbus_signal_handler, NULL, NULL)) {
 +		error("Couldn't add D-Bus filter: %s", err.message);
-+		return EXIT_FAILURE;
++		goto fail;
 +	}
 +
 +	struct ba_pcm *pcms = NULL;
 +	size_t pcms_count = 0;
 +	int i;
-+	if (!bluealsa_dbus_get_pcms(&dbus_ctx, &pcms, &pcms_count, &err))
++	if (!bluealsa_dbus_get_pcms(&dbus_ctx, &pcms, &pcms_count, &err)) {
 +		error("Couldn't get BlueALSA PCM list: %s", err.message);
++		goto fail;
++	}
++
 +	for (i=0; i < pcms_count; i++) {
 +		add_pcm(&pcms[i]);
 +	}
@@ -938,8 +950,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	get_services(check_bluealsa_service, &running, &err);
 +	if (dbus_error_is_set(&err)) {
 +		error("D-Bus error: %s", err.message);
-+		bluealsa_dbus_connection_ctx_free(&dbus_ctx);
-+		return EXIT_FAILURE;
++		goto fail;
 +	}
 +
 +	if (running)
@@ -950,29 +961,34 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	dbus_loop_running = true;
 +	if (pthread_create(&thread_id, NULL, dbus_thread, NULL)) {
 +		error("thread create failed\n");
-+		bluealsa_dbus_connection_ctx_free(&dbus_ctx);
-+		return EXIT_FAILURE;
++		goto fail;
 +	}
 +	initFlag = true;
 +
 +	bluez_init();
-+
-+	error("yym: a2dp init success\n");
 +	return 0;
++
++fail:
++	bluealsa_dbus_connection_ctx_free(&dbus_ctx);
++fail1:
++	pcm_info_deinit();
++	pthread_mutex_destroy(&mtx);
++	pthread_mutex_destroy(&pcm_mtx);
++	return EXIT_FAILURE;
 +}
 +
-+void a2dp_ctl_delinit(void) {
++void a2dp_ctl_deinit(void) {
++	if (initFlag) return;
++
 +	dbus_loop_running = false;
-+	if (ba_pcm_info.pcms) {
-+		free(ba_pcm_info.pcms);
-+		ba_pcm_info.pcms = NULL;
-+		ba_pcm_info.max_alloc_num = 0;
-+	}
++	pcm_info_deinit();
 +
 +	pthread_mutex_destroy(&mtx);
 +	pthread_mutex_destroy(&pcm_mtx);
++	bluealsa_dbus_connection_ctx_free(&dbus_ctx);
 +
 +	bluez_deinit();
++	initFlag = false;
 +}
 +
 +static bool check_conn_dev_valid(const char *baddr, char *obj) {
@@ -1163,7 +1179,6 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	char obj[256] = {0};
 +	int idx;
 +
-+	error("yym: connect device %s\n", baddr);
 +	for (idx = 0; idx < ba_pcm_info.max_alloc_num; idx++) {
 +		if (ba_pcm_info.pcms[idx].connect_flag) {
 +			char addr[18];
@@ -1179,7 +1194,6 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	if (!check_conn_dev_valid(baddr, obj))
 +		return -1;
 +
-+	error("yym:  dev is valid\n");
 +	GVariant *param;
 +	/*if we are central, we should connect target's sink uuid*/
 +	if (is_sink) //strcmp(device_mode, "central") == 0)
@@ -1299,6 +1313,10 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +void register_callback(void (*conn_cb)(char *addr, bool is_source, A2DP_Event_t type)){
 +	mconnect_call_back = conn_cb;
++}
++
++bool  is_bluealsa_ready() {
++
 +}
 +
 Index: git/utils/cli/Makefile.am

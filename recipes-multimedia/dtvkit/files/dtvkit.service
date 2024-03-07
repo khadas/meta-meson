@@ -5,6 +5,9 @@ Before=wpeframework.service
 Wants=network-online.target local-fs.target
 
 [Service]
+User=system
+AmbientCapabilities=CAP_DAC_OVERRIDE
+CapabilityBoundingSet=CAP_DAC_OVERRIDE
 ExecStart=/usr/bin/dtvkitserver
 ExecStop=/bin/kill $MAINPID
 KillMode=mixed

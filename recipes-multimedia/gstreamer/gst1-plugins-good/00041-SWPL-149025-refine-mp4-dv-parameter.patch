@@ -1,0 +1,473 @@
+diff --git a/gst/isomp4/fourcc.h b/gst/isomp4/fourcc.h
+index bf7ab0a..27669ba 100644
+--- a/gst/isomp4/fourcc.h
++++ b/gst/isomp4/fourcc.h
+@@ -94,7 +94,9 @@ G_BEGIN_DECLS
+ #define FOURCC_alis     GST_MAKE_FOURCC('a','l','i','s')
+ #define FOURCC_appl     GST_MAKE_FOURCC('a','p','p','l')
+ #define FOURCC_avc1     GST_MAKE_FOURCC('a','v','c','1')
++#define FOURCC_avc2     GST_MAKE_FOURCC('a','v','c','2')
+ #define FOURCC_avc3     GST_MAKE_FOURCC('a','v','c','3')
++#define FOURCC_avc4     GST_MAKE_FOURCC('a','v','c','4')
+ #define FOURCC_avcC     GST_MAKE_FOURCC('a','v','c','C')
+ #define FOURCC_c608     GST_MAKE_FOURCC('c','6','0','8')
+ #define FOURCC_c708     GST_MAKE_FOURCC('c','7','0','8')
+@@ -117,6 +119,7 @@ G_BEGIN_DECLS
+ #define FOURCC_dac3     GST_MAKE_FOURCC('d','a','c','3')
+ #define FOURCC_damr     GST_MAKE_FOURCC('d','a','m','r')
+ #define FOURCC_data     GST_MAKE_FOURCC('d','a','t','a')
++#define FOURCC_dav1     GST_MAKE_FOURCC('d','a','v','1')
+ #define FOURCC_dcom     GST_MAKE_FOURCC('d','c','o','m')
+ #define FOURCC_desc     GST_MAKE_FOURCC('d','e','s','c')
+ #define FOURCC_dhlr     GST_MAKE_FOURCC('d','h','l','r')
+@@ -138,6 +141,8 @@ G_BEGIN_DECLS
+ #define FOURCC_dvcC     GST_MAKE_FOURCC('d','v','c','C')
+ #define FOURCC_dvvC     GST_MAKE_FOURCC('d','v','v','C')
+ #define FOURCC_dvwC     GST_MAKE_FOURCC('d','v','w','C')
++#define FOURCC_dvzC     GST_MAKE_FOURCC('d','v','z','C')
++#define FOURCC_dvxC     GST_MAKE_FOURCC('d','v','x','C')
+ #define FOURCC_edts     GST_MAKE_FOURCC('e','d','t','s')
+ #define FOURCC_elst     GST_MAKE_FOURCC('e','l','s','t')
+ #define FOURCC_enda     GST_MAKE_FOURCC('e','n','d','a')
+@@ -268,6 +273,11 @@ G_BEGIN_DECLS
+ #define FOURCC_vmhd     GST_MAKE_FOURCC('v','m','h','d')
+ #define FOURCC_vp08     GST_MAKE_FOURCC('v','p','0','8')
+ #define FOURCC_vp09     GST_MAKE_FOURCC('v','p','0','9')
++#define FOURCC_vpcC     GST_MAKE_FOURCC('v','p','c','C')
++#define FOURCC_vvc1     GST_MAKE_FOURCC('v','v','c','1')
++#define FOURCC_vvcN     GST_MAKE_FOURCC('v','v','c','N')
++#define FOURCC_vvi1     GST_MAKE_FOURCC('v','v','i','1')
++#define FOURCC_vvs1     GST_MAKE_FOURCC('v','v','s','1')
+ #define FOURCC_xvid     GST_MAKE_FOURCC('x','v','i','d')
+ #define FOURCC_wave     GST_MAKE_FOURCC('w','a','v','e')
+ #define FOURCC_wide     GST_MAKE_FOURCC('w','i','d','e')
+@@ -291,6 +301,8 @@ G_BEGIN_DECLS
+ #define FOURCC_vivo     GST_MAKE_FOURCC('v','i','v','o')
+ #define FOURCC_saiz     GST_MAKE_FOURCC('s','a','i','z')
+ #define FOURCC_saio     GST_MAKE_FOURCC('s','a','i','o')
++#define FOURCC_sbgp     GST_MAKE_FOURCC('s','b','g','p')
++#define FOURCC_sgpd     GST_MAKE_FOURCC('s','g','p','d')
+ 
+ #define FOURCC_3gg6     GST_MAKE_FOURCC('3','g','g','6')
+ #define FOURCC_3gg7     GST_MAKE_FOURCC('3','g','g','7')
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index 239f5be..3128ae5 100644
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -10781,6 +10781,239 @@ qtdemux_track_id_compare_func (QtDemuxStream ** stream1,
+   return (gint) (*stream1)->track_id - (gint) (*stream2)->track_id;
+ }
+ 
++static gint
++qtdemux_parse_dvcc (guint32 sampleEntry, guint32 dvConfig, const guint8 * data, GstCaps *caps)
++{
++    gint len;
++    const guint8 *config_data;
++    guint16 buf;
++    guint8 dv_profile;
++    guint8 dv_level;
++    guint8 rpu_present_flag;
++    gboolean dv_bl_present_flag = FALSE;
++    gboolean dv_el_present_flag = FALSE;
++    gboolean bRejectPlay = FALSE;
++
++    if (NULL == data || NULL == caps)
++    {
++        return 0;
++    }
++
++    len = QT_UINT32 (data);
++    config_data = data + 0x8;
++
++    if (((1<<30) < len) || (1 != config_data[0]) || (0 != config_data[1]))
++    {
++        return 0;
++    }
++
++    buf = (config_data[2] << 8) | config_data[3];
++
++    dv_profile        = (buf >> 9) & 0x7f;      // 7 bits
++    dv_level          = (buf >> 3) & 0x3f;      // 6 bits
++    rpu_present_flag  = (buf >> 2) & 0x01;      // 1 bit
++    dv_el_present_flag = (buf >> 1) & 0x01;     // 1 bit
++    dv_bl_present_flag = buf & 0x01;            // 1 bit
++
++    GST_DEBUG ("entry type:          %" GST_FOURCC_FORMAT, GST_FOURCC_ARGS (sampleEntry));
++    GST_DEBUG ("dvConfig type:       %" GST_FOURCC_FORMAT, GST_FOURCC_ARGS (dvConfig));
++    GST_DEBUG ("dv_profile: %d, dv_level: %d, dv_el_present_flag: %d, dv_bl_present_flag: %d",
++      dv_profile, dv_level, dv_el_present_flag, dv_bl_present_flag);
++
++    if (sampleEntry == FOURCC_hev1 || sampleEntry == FOURCC_hvc1)
++    {
++      if (dvConfig == FOURCC_dvcC || dvConfig == FOURCC_dvvC || dvConfig == FOURCC_dvwC)
++      {
++        if (dv_profile == 4 || dv_profile == 7 || dv_profile == 8)
++        {
++          GST_DEBUG ("Playback Dolby Vision");
++        }
++        else
++        {
++          GST_DEBUG ("invalid profile, playback as non-dv.");
++          dv_el_present_flag = 0;
++          dv_bl_present_flag = 0;
++        }
++      }
++      else
++      {
++        GST_DEBUG ("invalid dvConfig type, playback as non-dv.");
++        dv_el_present_flag = 0;
++        dv_bl_present_flag = 0;
++      }
++    }
++    else if (sampleEntry == FOURCC_dvhe || sampleEntry == FOURCC_dvh1)
++    {
++      if (dvConfig == FOURCC_dvcC)
++      {
++        if (dv_profile == 5)
++          GST_DEBUG ("Playback Dolby Vision");
++        else
++        {
++          GST_WARNING("reject play for invalid profile:%d", dv_profile);
++          bRejectPlay = TRUE;
++        }
++      }
++      else
++      {
++        GST_WARNING ("reject play for invalid dv config %" GST_FOURCC_FORMAT, GST_FOURCC_ARGS (dvConfig));
++        bRejectPlay = TRUE;
++      }
++    }
++    else if (sampleEntry == FOURCC_avc1 || sampleEntry == FOURCC_avc3 || sampleEntry == FOURCC_avc2 || sampleEntry == FOURCC_avc4)
++    {
++      if (dvConfig == FOURCC_dvcC || dvConfig == FOURCC_dvvC || dvConfig == FOURCC_dvwC)
++      {
++        if (dv_profile == 9)
++          GST_DEBUG ("Playback Dolby Vision");
++        else
++        {
++          GST_DEBUG ("invalid profile, Playback HEVC bitstream using base-layer");
++          dv_el_present_flag = 0;
++          dv_bl_present_flag = 0;
++        }
++      }
++      else
++      {
++        GST_DEBUG ("invalid dv config %" GST_FOURCC_FORMAT, GST_FOURCC_ARGS (dvConfig));
++        dv_el_present_flag = 0;
++        dv_bl_present_flag = 0;
++      }
++    }
++    else if (sampleEntry == FOURCC_dvav || sampleEntry == FOURCC_dva1)
++    {
++      if (dvConfig == FOURCC_dvcC)
++      {
++        if (dv_profile == 1)
++        {
++          GST_WARNING("reject play for invalid profile:%d", dv_profile);
++          bRejectPlay = TRUE;
++        }
++      }
++      else
++      {
++        GST_WARNING ("reject play for invalid dv config %" GST_FOURCC_FORMAT, GST_FOURCC_ARGS (dvConfig));
++        bRejectPlay = TRUE;
++      }
++    }
++    else if (sampleEntry == FOURCC_av01)
++    {
++      GST_DEBUG ("ToDo sampleEntry %" GST_FOURCC_FORMAT, GST_FOURCC_ARGS (sampleEntry));
++    }
++    else if (sampleEntry == FOURCC_dav1)
++    {
++      if (dvConfig == FOURCC_dvvC || dvConfig == FOURCC_dvwC)
++      {
++        if (dv_profile != 10)
++        {
++          GST_WARNING("reject play for invalid profile:%d", dv_profile);
++          bRejectPlay = TRUE;
++        }
++      }
++      else
++      {
++        GST_WARNING ("reject play for invalid dv config %" GST_FOURCC_FORMAT, GST_FOURCC_ARGS (dvConfig));
++        bRejectPlay = TRUE;
++      }
++    }
++    else if (sampleEntry == FOURCC_vvcN || sampleEntry == FOURCC_vvc1 || sampleEntry == FOURCC_vvi1 || sampleEntry == FOURCC_vvs1)
++    {
++      GST_DEBUG ("invalid sampleEntry %" GST_FOURCC_FORMAT, GST_FOURCC_ARGS (sampleEntry));
++      dv_el_present_flag = 0;
++      dv_bl_present_flag = 0;
++    }
++
++    gst_caps_set_simple (caps, "dv_bl_present_flag", G_TYPE_BOOLEAN, dv_bl_present_flag, NULL);
++    gst_caps_set_simple (caps, "dv_el_present_flag", G_TYPE_BOOLEAN, dv_el_present_flag, NULL);
++
++    return bRejectPlay ? -1 : 0;
++}
++
++static gint
++qtdemux_parse_sgpd_av1M (GstQTDemux * qtdemux, GNode * node)
++{
++  GNode *sgpd;
++  const guint8 *sgpd_data;
++  gint sgpd_size;
++  guint32 sgpd_fourcc;
++  gint sgpd_version;
++  gint sgpd_flag;
++  guint32 sgpd_group_type;
++  gint sgpd_default_len = -1;
++  guint sgpd_entry_cnt;
++  guint32 group_fourcc;
++  guint metadata_type;
++  guint metadata_specific_parameters;
++  gboolean bRejectPlay = FALSE;
++
++  GST_DEBUG_OBJECT (qtdemux, "try to find sgpd");
++
++  sgpd = qtdemux_tree_get_child_by_type (node, FOURCC_sgpd);
++  if (sgpd)
++  {
++      int rIdx = 0;
++      int entryIdx = 0;
++      sgpd_data = (const guint8 *) sgpd->data;
++      sgpd_size = QT_UINT32 (sgpd_data + rIdx);
++      rIdx += 4;
++
++      sgpd_fourcc = QT_FOURCC (sgpd_data + rIdx);
++      rIdx += 4;
++
++      sgpd_version = QT_UINT8 (sgpd_data + rIdx);
++      rIdx += 4; // 1 byte version + 3 byte flags
++
++      sgpd_group_type = QT_UINT32 (sgpd_data + rIdx);
++      rIdx += 4;
++
++      if (sgpd_version == 1) {
++        sgpd_default_len = QT_UINT32 (sgpd_data + rIdx);
++        rIdx += 4;
++      }
++      else if (sgpd_version >= 2)
++        rIdx += 4; // 4 byte default_sample_descriotion_index
++
++      sgpd_entry_cnt = QT_UINT32 (sgpd_data + rIdx);
++      rIdx += 4;
++
++      GST_WARNING_OBJECT (qtdemux, "sgpd_size=0x%x, sgpd_fourcc=0x%x, sgpd_version=0x%x, sgpd_group_type=0x%x, sgpd_entry_cnt=0x%x",
++        sgpd_size, sgpd_fourcc, sgpd_version, sgpd_group_type, sgpd_entry_cnt);
++
++      for (entryIdx = 0; entryIdx < sgpd_entry_cnt; entryIdx++)
++      {
++        if (sgpd_version == 1 && sgpd_default_len == 0) {
++          sgpd_default_len = QT_UINT32 (sgpd_data + rIdx);
++          rIdx += 4;
++        }
++
++        group_fourcc = QT_FOURCC (sgpd_data + rIdx);
++        rIdx += 4;
++  
++        if (group_fourcc == FOURCC_av1M) {
++          metadata_type = QT_UINT8 (sgpd_data + rIdx);
++          rIdx += 1;
++
++          metadata_specific_parameters = QT_UINT32 (sgpd_data + rIdx);
++          rIdx += 4;
++
++          if ( metadata_type != 4 || metadata_specific_parameters != 0xB5003B) {
++            // METADATA_TYPE_ITUT_T35  and 0xB5003B
++            bRejectPlay = TRUE;
++          }
++        }
++      GST_WARNING_OBJECT (qtdemux, "group_fourcc=0x%x, metadata_type=0x%x, metadata_specific_parameters=0x%x",
++        group_fourcc, metadata_type, metadata_specific_parameters);
++
++      }
++    }
++    else
++    {
++      GST_DEBUG_OBJECT (qtdemux, "no sgpd");
++    }
++
++    return bRejectPlay ? -1 : 0;
++}
++
+ /* parse the traks.
+  * With each track we associate a new QtDemuxStream that contains all the info
+  * about the trak.
+@@ -11383,6 +11616,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+           case FOURCC_H264:
+           case FOURCC_avc1:
+           case FOURCC_avc3:
++          case FOURCC_dav1:
+           {
+             gint len = QT_UINT32 (stsd_entry_data) - 0x56;
+             const guint8 *avc_data = stsd_entry_data + 0x56;
+@@ -11390,6 +11624,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+             /* find avcC */
+             while (len >= 0x8) {
+               gint size;
++              guint32 dvconfig;
+ 
+               if (QT_UINT32 (avc_data) <= len)
+                 size = QT_UINT32 (avc_data) - 0x8;
+@@ -11400,7 +11635,15 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+                 /* No real data, so break out */
+                 break;
+ 
+-              switch (QT_FOURCC (avc_data + 0x4)) {
++              dvconfig = QT_FOURCC (avc_data + 0x4);
++              switch (dvconfig) {
++                case FOURCC_dvcC:
++                case FOURCC_dvvC:
++                case FOURCC_dvwC:
++                {
++                  qtdemux_parse_dvcc (fourcc, dvconfig, avc_data, entry->caps);
++                  break;
++                }
+                 case FOURCC_avcC:
+                 {
+                   /* parse, if found */
+@@ -11421,6 +11664,17 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+ 
+                   break;
+                 }
++                case FOURCC_av1C:
++                {
++                    GST_DEBUG_OBJECT (qtdemux, "found av1C in stsd,so try to find sgpd");
++
++                    if (qtdemux_parse_sgpd_av1M(qtdemux, stbl) == -1)
++                    {
++                      GST_WARNING_OBJECT (qtdemux, "reject play for invalid metadata_type and specific_parameters");
++                      goto corrupt_file;
++                    }
++                  break;
++                }
+                 case FOURCC_strf:
+                 {
+                   GstBuffer *buf;
+@@ -11481,60 +11735,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+ 
+                   break;
+                 }
+-                case FOURCC_dvcC:
+-                case FOURCC_dvvC:
+-                case FOURCC_dvwC:
+-                {
+-                  guint32 dv_version_major = QT_UINT8(avc_data+8);
+-                  guint32 dv_version_minor = QT_UINT8(avc_data+9);
+-                  guint32 tmp = QT_UINT16(avc_data+10);
+-                  guint32 dv_profile = (tmp >> 9) & 0x7f;    // 7 bits
+-                  guint32 dv_level = (tmp >> 3) & 0x3f;    // 6 bits
+-                  guint32 rpu_present_flag = (tmp >> 2) & 0x01;
+-                  gboolean el_present_flag = (tmp >> 1) & 0x01;    // 1 bit
+-                  gboolean bl_present_flag = tmp & 0x01;    // 1 bit
+-
+-                  guint32 dv_bl_signal_compatibility_id = 0;// 0 stands for None
+-                  if (len >= 24) {
+-                    guint32 id = QT_UINT8(avc_data+12);
+-                    dv_bl_signal_compatibility_id = (id >> 4) & 0x0f; // 4 bits
+-                  }
+-
+-                  gst_caps_set_simple (entry->caps, "dv_bl_present_flag", G_TYPE_BOOLEAN, bl_present_flag, NULL);
+-                  gst_caps_set_simple (entry->caps, "dv_el_present_flag", G_TYPE_BOOLEAN, el_present_flag, NULL);
+ 
+-                  GST_DEBUG_OBJECT (qtdemux,"DOVI in dvcC/dvvC box, version: %d.%d, profile: %d, level: %d, "
+-                    "rpu flag: %d, el flag: %d, bl flag: %d, compatibility id: %d\n",
+-                    dv_version_major, dv_version_minor,
+-                    dv_profile, dv_level,
+-                    rpu_present_flag,
+-                    el_present_flag,
+-                    bl_present_flag,
+-                    dv_bl_signal_compatibility_id
+-                  );
+-                  /*
+-                  Expected results are:
+-                  • If the test vector (MP4) carries an undefined/unknown Base Layer Signal Compatibility ID (dv_bl_signal_
+-                      compatibility_id), the device under test rejects the playback.
+-                  • If the test vector (MP4) is of an undefined/unknown Dolby Vision profile, but its Base Layer Signal
+-                      Compatibility ID (dv_bl_signal_compatibility_id) is valid, the device under test plays the content
+-                      properly and TV displays in Dolby Vision picture mode.
+-                      Note: Level 11 metadata changes when the embedded label on the left side of the test pattern
+-                      changes.
+-                  • If the Dolby Vision configuration box contains unknown elements (reserved fields with non-zero value),
+-                      the device under test ignores the unknown elements properly and play the MP4 test vector properly and
+-                      TV displays in Dolby Vision picture mode.
+-                  */
+-                  if (dv_bl_signal_compatibility_id != 0 &&
+-                        dv_bl_signal_compatibility_id != 1 &&
+-                        dv_bl_signal_compatibility_id != 2 &&
+-                        dv_bl_signal_compatibility_id != 4 &&
+-                        dv_bl_signal_compatibility_id != 6) {
+-                          GST_ERROR_OBJECT(qtdemux,"Not support dolby vision config box");
+-                    goto corrupt_file;
+-                  }
+-                  
+-                } break;
+                 default:
+                   break;
+               }
+@@ -11557,6 +11758,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+             /* find hevc */
+             while (len >= 0x8) {
+               gint size;
++              guint32 dvconfig;
+ 
+               if (QT_UINT32 (hevc_data) <= len)
+                 size = QT_UINT32 (hevc_data) - 0x8;
+@@ -11567,7 +11769,24 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+                 /* No real data, so break out */
+                 break;
+ 
+-              switch (QT_FOURCC (hevc_data + 0x4)) {
++              dvconfig = QT_FOURCC (hevc_data + 0x4);
++
++              switch (dvconfig) {
++                case FOURCC_dvcC:
++                case FOURCC_dvvC:
++                case FOURCC_dvwC:
++                case FOURCC_dvzC:
++                case FOURCC_dvxC:
++                {
++                  gint ret = qtdemux_parse_dvcc (fourcc, dvconfig, hevc_data, entry->caps);
++                  if (ret == -1)
++                  {
++                    GST_WARNING_OBJECT (qtdemux, "reject play!");
++                    goto corrupt_file;
++                  }
++                  break;
++                }
++
+                 case FOURCC_hvcC:
+                 {
+                   /* parse, if found */
+@@ -11588,30 +11807,6 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+                   gst_buffer_unref (buf);
+                   break;
+                 }
+-                case FOURCC_dvcC:
+-                case FOURCC_dvvC:
+-                {
+-                    gint len = QT_UINT32 (hevc_data);
+-                    const guint8 *config_data = hevc_data + 0x8;
+-                    gboolean dv_bl_present_flag = FALSE;
+-                    gboolean dv_el_present_flag = FALSE;
+-
+-                    if (((1<<30) < len) || (1 != config_data[0]) || (0 != config_data[1]))
+-                    {
+-                        GST_DEBUG_OBJECT (qtdemux, "incorrect hvcC codec_data.");
+-                    }
+-                    else
+-                    {
+-                      dv_bl_present_flag = (config_data[3] & 0x01);
+-                      dv_el_present_flag = ((config_data[3] >> 1) & 0x01);
+-
+-                      GST_DEBUG_OBJECT (qtdemux, "dv_bl_present_flag=%d, dv_el_present_flag=%d", dv_bl_present_flag, dv_el_present_flag);
+-
+-                      gst_caps_set_simple (entry->caps, "dv_bl_present_flag", G_TYPE_BOOLEAN, dv_bl_present_flag, NULL);
+-                      gst_caps_set_simple (entry->caps, "dv_el_present_flag", G_TYPE_BOOLEAN, dv_el_present_flag, NULL);
+-                    }
+-                    break;
+-                }
+                 default:
+                   break;
+               }

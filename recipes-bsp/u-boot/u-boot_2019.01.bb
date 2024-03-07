@@ -87,6 +87,7 @@ VMX_UBOOT_PATH:sc2 = "sc2"
 VMX_UBOOT_BL32_VER = "1"
 VMX_UBOOT_BL32_VER:s4 = "1"
 VMX_UBOOT_BL32_VER:sc2 = "2"
+VMX_UBOOT_BL32_VER:aq2432 = "2"
 # Decide BL32 directory based on version
 VMX_UBOOT_BL32_DIR = "${@'v2' if d.getVar('VMX_UBOOT_BL32_VER') == '2' else ''}"
 

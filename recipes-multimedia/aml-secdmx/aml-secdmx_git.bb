@@ -23,7 +23,7 @@ TA_TARGET="noarch"
 do_install() {
     install -d ${D}${libdir}
     install -m 0755 -d ${D}${includedir}
-    install ${S}/${ARM_TARGET}/libdmx_client_linux.so ${D}${libdir}/libdmx_client.so
+    install ${S}/${ARM_TARGET}/$(PLATFORM_TDK_VERSION)/libdmx_client_linux.so ${D}${libdir}/libdmx_client.so
     install -m 0644 ${S}/include/* ${D}/${includedir}
 
     install -d ${D}/lib/optee_armtz

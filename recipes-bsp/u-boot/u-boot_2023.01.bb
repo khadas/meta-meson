@@ -88,9 +88,10 @@ IRDETO_UBOOT_PATH:bg209 = "s805c1/Yocto"
 IRDETO_BL2e_ARG="--bl2e irdeto-sdk/bootloader/${IRDETO_UBOOT_PATH}/bl2/blob-bl2e.sto.bin.signed"
 IRDETO_BL32_ARG="--bl32 irdeto-sdk/bootloader/${IRDETO_UBOOT_PATH}/bl32/blob-bl32.bin.signed"
 IRDETO_BL40_ARG="--bl40 irdeto-sdk/bootloader/${IRDETO_UBOOT_PATH}/bl40/blob-bl40.bin.signed"
+IRDETO_LOADER_ARG="--disable-bl33z"
 IRDETO_UBOOT_ARG = " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto', '${IRDETO_BL2e_ARG} ${IRDETO_BL40_ARG}', '', d)}"
-IRDETO_UBOOT_ARG:s1a += " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-ree-only', '', '${IRDETO_BL32_ARG}', d)}"
-
+IRDETO_UBOOT_ARG:append:s1a = " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-ree-only', '', '${IRDETO_BL32_ARG}', d)}"
+IRDETO_UBOOT_ARG:append:s1a = " ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', '${IRDETO_LOADER_ARG}', '', d)}"
 CFLAGS +=" -DCONFIG_YOCTO "
 KCFLAGS +=" -DCONFIG_YOCTO "
 

@@ -189,6 +189,15 @@ if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
 EOF
 fi
 
+if ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', 'true', 'false', d)}; then
+    mkdir -p ${D}/cadata
+    mkdir -p ${D}/casecure
+    cat >> ${D}${sysconfdir}/fstab <<EOF
+ /dev/mtdblock10         /casecure                 squashfs     defaults              0  0
+ /dev/mtdblock15         /cadata                   yaffs2       defaults              0  0
+EOF
+fi
+
     if ${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', 'false', 'true', d)}; then
         cat >> ${D}${sysconfdir}/fstab <<EOF
             tmpfs                /var/cache        tmpfs      defaults,nosuid,nodev,noexec              0  0

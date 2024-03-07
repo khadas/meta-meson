@@ -54,6 +54,11 @@ IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate-dvb-ota
             aucpu-fw \
             aml-dvb-ota", "", d)}"
 
+IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "irdeto-downloader", "tuner-prebuilt \
+            modules-load \
+            aucpu-fw \
+            irdeto-downloader", "", d)}"
+
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 
 AVB_RECOVERY_RSA_KEY = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \

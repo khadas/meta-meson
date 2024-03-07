@@ -1,0 +1,13 @@
+Index: gstreamer-1.16.3/plugins/elements/gstmultiqueue.c
+===================================================================
+--- gstreamer-1.16.3.orig/plugins/elements/gstmultiqueue.c
++++ gstreamer-1.16.3/plugins/elements/gstmultiqueue.c
+@@ -232,7 +232,7 @@ enum
+  * time, up to 10 MB. The number of buffers is dynamically scaled to make sure
+  * there is data in the queues. Normally, the byte and time limits are not hit
+  * in theses conditions. */
+-#define DEFAULT_MAX_SIZE_BYTES 10 * 1024 * 1024 /* 10 MB */
++#define DEFAULT_MAX_SIZE_BYTES 12 * 1024 * 1024 /* 12 MB */
+ #define DEFAULT_MAX_SIZE_BUFFERS 5
+ #define DEFAULT_MAX_SIZE_TIME 2 * GST_SECOND
+ 

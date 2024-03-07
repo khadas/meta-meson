@@ -34,9 +34,9 @@ do_install() {
     install -d -m 0755 ${D}${libdir}
     install -d -m 0755 ${D}/usr/bin
 
-    install -D -m 0755 ${S}/ca/bin${ARM_TARGET}/tee_provision ${D}/usr/bin/
-    install -D -m 0755 ${S}/ca/bin${ARM_TARGET}/tee_key_inject ${D}/usr/bin/
-    install -D -m 0755 ${S}/ca/lib${ARM_TARGET}/libprovision.so ${D}${libdir}
+    install -D -m 0755 ${S}/ca/${PLATFORM_TDK_VERSION}/bin${ARM_TARGET}/tee_provision ${D}/usr/bin/
+    install -D -m 0755 ${S}/ca/${PLATFORM_TDK_VERSION}/bin${ARM_TARGET}/tee_key_inject ${D}/usr/bin/
+    install -D -m 0755 ${S}/ca/${PLATFORM_TDK_VERSION}/lib${ARM_TARGET}/libprovision.so ${D}${libdir}
     install -D -m 0755 ${S}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
 
     install -D -m 0644 ${WORKDIR}/aml_key_inject.service ${D}${systemd_unitdir}/system/aml_key_inject.service

@@ -3,6 +3,9 @@ Description=binder servicemanager
 Wants=dev-binderfs.mount
 
 [Service]
+User=system
+CapabilityBoundingSet=
+PermissionsStartOnly=true
 ExecStartPre=/usr/bin/binder.sh
 ExecStart=/usr/bin/servicemanager
 ExecStop=/bin/kill $MAINPID

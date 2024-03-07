@@ -30,8 +30,8 @@ do_install () {
 	mkdir -p ${D}/lib/optee_armtz
 
     install -m 0644 ${S}/${TA_ARCH}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz
-    install -m 0644 ${S}/${TAR_ARCH}/libtee_preload_fw.so  ${D}${libdir}
-    install -m 0755 ${S}/${TAR_ARCH}/tee_preload_fw  ${D}/usr/bin
+    install -m 0644 ${S}/${PLATFORM_TDK_VERSION}/${TAR_ARCH}/libtee_preload_fw.so  ${D}${libdir}
+    install -m 0755 ${S}/${PLATFORM_TDK_VERSION}/${TAR_ARCH}/tee_preload_fw  ${D}/usr/bin
 
     # systemd service file
     install -d ${D}${systemd_unitdir}/system

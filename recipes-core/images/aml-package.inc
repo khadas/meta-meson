@@ -89,6 +89,10 @@ do_aml_pack() {
         sed -i '/_aml_dtb/ d' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
     fi
 
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', 'true', 'false', d)}; then
+        sed -i '/rootfs/a\file="caverify.img"            main_type="PARTITION"       sub_type="caverify"' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
+    fi
+
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
@@ -186,6 +190,7 @@ do_aml_pack() {
             sed -i '/vendor/d' ${DEPLOY_DIR_IMAGE}/sw-description
         fi
 
+        sed 's@version = \"1.0.1\"@version = \"'$(date "+%Y%m%d%H%M%S")'\"@' -i ${DEPLOY_DIR_IMAGE}/sw-description
         sed 's@boardname@${MACHINE_ARCH}@' -i ${DEPLOY_DIR_IMAGE}/sw-description
         sed 's@_lib32_@_@' -i ${DEPLOY_DIR_IMAGE}/sw-description
         sed 's@_k5.15@@' -i ${DEPLOY_DIR_IMAGE}/sw-description
@@ -239,5 +244,6 @@ do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partiti
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.utils.contains('MULTILIBS', 'multilib:lib32', ' lib32-recovery-image:do_image_complete', ' recovery-image:do_image_complete', d), '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', ' vbmeta-image:do_compile', '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', ' aml-gpt-make:do_install', '', d)}"
+do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', ' caverify-image:do_install ', '', d)}"
 addtask aml_pack after do_image_complete before do_build
 do_aml_pack[nostamp] = "1"

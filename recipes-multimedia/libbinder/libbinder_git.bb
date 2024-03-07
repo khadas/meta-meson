@@ -58,15 +58,8 @@ do_install(){
 }
 
 do_install:append(){
-    # system-user mode for systemd service
     if ${@bb.utils.contains("DISTRO_FEATURES", "disable-binderfs", "false", "true", d)}
     then
-        if ${@bb.utils.contains("DISTRO_FEATURES", "system-user", "true", "false", d)}
-        then
-            sed -i '/ln -sf/a\chmod g+rw /dev/binder' ${D}/${bindir}/binder.sh
-            sed -i '/ln -sf/a\chgrp system /dev/binder' ${D}/${bindir}/binder.sh
-        fi
-
         if ${@bb.utils.contains('DISTRO_FEATURES','sysvinit','true','false',d)}; then
             install -m 0755 ${WORKDIR}/binder.sysv.sh ${D}/${bindir}/binder.sh
         fi

@@ -3,7 +3,9 @@ Description=Audio Server Startup
 After=tee-supplicant.service
 
 [Service]
-User=root
+User=system
+AmbientCapabilities=CAP_DAC_OVERRIDE
+CapabilityBoundingSet=CAP_DAC_OVERRIDE
 #the bigger the value, the less log output, default is zero
 Environment="AML_AVSYNC_DEBUG_LEVEL=2"
 #vendor-image.bb will take action 'mkdir -p /vendor/lib; ln -sf /tmp/ds/0x4d_0x5331_0x32.so /vendor/lib/libdolbyms12.so'

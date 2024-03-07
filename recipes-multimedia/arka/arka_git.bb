@@ -19,12 +19,12 @@ INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
-DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service udev aml-mp-sdk"
+DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service udev aml-mp-sdk aml-ubootenv"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
     bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'meson-display aml-hdmicec jpeg', d)}"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi', 'aml-hdi freetype', ' directfb ', d)}"
 
-RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service"
+RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service aml-ubootenv"
 
 OECMAKE_GENERATOR = "Unix Makefiles"
 EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D}  -D_STBLABS_SAT_SCAN_"

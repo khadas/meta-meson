@@ -52,10 +52,20 @@ realtek_bt_init()
 		rm -f $rtk_bdaddr
 	fi
 
-	lsusb | grep "0bda:"
-	if [ $? -eq 0 ]; then
-		modprobe rtk_btusb
-	else
+	local cnt=5
+	while [ $cnt -gt 0 ]; do
+		lsusb | grep "0bda:"
+		if [ $? -eq 1 ]; then
+			echo "checking lsusb...  $cnt"
+			usleep 100000
+			cnt=$(($cnt-1))
+		else
+			modprobe rtk_btusb
+			break
+		fi
+	done
+
+	if [ $cnt -eq 0 ]; then
 		modprobe rtk_btuart
 		usleep 500000
 		rtk_hciattach -n -s 115200 "$tty" rtk_h5 &
