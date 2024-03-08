@@ -1,1 +1,1 @@
-RDEPENDS:${PN}-ptest:remove += " gcc-symlinks binutils-symlinks"
+RDEPENDS:${PN}-ptest:remove = " gcc-symlinks binutils-symlinks"
