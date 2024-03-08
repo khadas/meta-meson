@@ -124,11 +124,14 @@ do_kernel_metadata:prepend:k5.15-u () {
 
 do_kernel_metadata:prepend () {
     export COMMON_DRIVERS_DIR=./common_drivers
-    rm -f ${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}
-    if [ "${ARCH}" = "arm" ]; then
-        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
-    else
-        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI10_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKIDEBUG_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
+    if [ ! -f ${WORKDIR}/defconfig ];then
+        export KBUILD_DEFCONFIG="final_defconfig"
+        rm -f ${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}
+        if [ "${ARCH}" = "arm" ]; then
+            KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
+        else
+            KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${KBUILD_DEFCONFIG}  ${S}/scripts/kconfig/merge_config.sh -m -r ${GKI_DEFCONFIG_PATH}/${GKI_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI_AMLOGIC_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKI10_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GKIDEBUG_DEFCONFIG} ${GKI_AML_CONFIG_PATH}/${GCC_DEFCONFIG}
+        fi
     fi
 }
 
