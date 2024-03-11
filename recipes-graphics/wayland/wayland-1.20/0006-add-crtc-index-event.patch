@@ -1,0 +1,20 @@
+diff --git a/protocol/wayland.xml b/protocol/wayland.xml
+old mode 100644
+new mode 100755
+index 6936d45..46fb51f
+--- a/protocol/wayland.xml
++++ b/protocol/wayland.xml
+@@ -2648,6 +2648,13 @@
+       <arg name="factor" type="int" summary="scaling factor of output"/>
+     </event>
+ 
++    <event name="crtc_index" since="3">
++      <description summary="crtc index of output">
++    This event contains crtc index information of the current 
++    output.
++      </description>
++      <arg name="index" type="int" summary="crtc index of output"/>
++    </event>
+     <!-- Version 3 additions -->
+ 
+     <request name="release" type="destructor" since="3">

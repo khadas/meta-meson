@@ -24,12 +24,15 @@ index e2f975b..11ec8ff 100644
  		/* Only valid for first plane as other planes might be
  		 * sub-sampled according to fourcc format */
  		if (i == 0 &&
-@@ -995,6 +1001,10 @@ bind_linux_dmabuf(struct wl_client *client,
+@@ -995,6 +1001,13 @@ bind_linux_dmabuf(struct wl_client *client,
  
  	wl_array_for_each(fmt, &supported_formats->arr) {
  		modifiers = weston_drm_format_get_modifiers(fmt, &num_modifiers);
 +		if (fmt->format == DRM_FORMAT_NV12 || fmt->format == DRM_FORMAT_NV21) {
-+			zwp_linux_dmabuf_v1_send_modifier(resource, fmt->format, 0, 0);
++			if (version >= ZWP_LINUX_DMABUF_V1_MODIFIER_SINCE_VERSION)
++				zwp_linux_dmabuf_v1_send_modifier(resource, fmt->format, 0, 0);
++			else
++				zwp_linux_dmabuf_v1_send_format(resource, fmt->format);
 +			continue;
 +		}
  		for (i = 0; i < num_modifiers; i++) {
