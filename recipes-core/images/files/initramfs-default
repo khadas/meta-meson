@@ -200,8 +200,8 @@
 ./etc/udev/rules.d/localextra.rules
 ./etc/udev/rules.d/80-net-name-slot.rules
 ./etc/udev/rules.d/automount.rules
-./etc/udev/mount.blacklist.d
-./etc/udev/mount.blacklist
+./etc/udev/mount.ignorelist.d
+./etc/udev/mount.ignorelist
 ./etc/udev/scripts
 ./etc/udev/scripts/network.sh
 ./etc/udev/scripts/mount.sh

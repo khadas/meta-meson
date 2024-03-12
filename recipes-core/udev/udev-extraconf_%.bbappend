@@ -24,7 +24,7 @@ do_install:append () {
         install -m 0644 ${WORKDIR}/10-video.rules ${D}${sysconfdir}/udev/rules.d
     fi
     if [ -e "${WORKDIR}/block.rules" ]; then
-      echo "/dev/mmcblk0*" >> ${D}${sysconfdir}/udev/mount.blacklist
+      echo "/dev/mmcblk0*" >> ${D}${sysconfdir}/udev/mount.ignorelist
       install -m 0644 ${WORKDIR}/block.rules ${D}${sysconfdir}/udev/rules.d
     fi
     if ${@bb.utils.contains_any('DISTRO_FEATURES', ['bluetooth', 'wifi'], 'true', 'false', d)}; then
