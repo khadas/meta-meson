@@ -1,0 +1,29 @@
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 716e742..e726601 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -2435,7 +2435,6 @@ weston_surface_destroy(struct weston_surface *surface)
+ 			      &surface->pointer_constraints,
+ 			      link)
+ 		weston_pointer_constraint_destroy(constraint);
+-
+ 	fd_clear(&surface->acquire_fence_fd);
+ 	if(surface->is_video_surface) {
+ 		video_buffer_release[FRAME_FREE]=NULL;
+@@ -2443,6 +2442,8 @@ weston_surface_destroy(struct weston_surface *surface)
+ 		video_buffer_release[FRAME_CURR]=NULL;
+ 		release_cur = false;
+ 		release_pre = false;
++		if (surface->compositor->video_surface_count > 0)
++			surface->compositor->video_surface_count = surface->compositor->video_surface_count -1;
+ 	}
+ 	struct weston_surface *surface_tmp = NULL;
+ 	struct weston_surface *surface_pos = NULL;
+@@ -2453,7 +2454,6 @@ weston_surface_destroy(struct weston_surface *surface)
+ 			break;
+ 		}
+ 	}
+-	
+ 	if (surface->commit_queue) {
+ 		free(surface->commit_queue);
+ 		surface->commit_queue = NULL;
