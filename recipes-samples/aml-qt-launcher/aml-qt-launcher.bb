@@ -18,7 +18,7 @@ do_install() {
     install -D -m 0755 ${THISDIR}/files/qtlauncher.sh ${D}${bindir}
 }
 
-SYSTEMD_SERVICE_${PN} = "aml-qt-launcher.service"
+SYSTEMD_SERVICE:${PN} = "aml-qt-launcher.service"
 
-FILES_{PN} = "/usr/bin "
+FILES:{PN} = "/usr/bin "
 

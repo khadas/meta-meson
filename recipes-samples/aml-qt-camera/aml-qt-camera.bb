@@ -15,6 +15,6 @@ do_install() {
     install -m 0755 -D ${WORKDIR}/aml-qt-camera-${PV}/qt-demo-camera ${D}${bindir}
 }
 
-RDEPENDS_${PN} += "qtmultimedia"
-FILES_${PN} = " /usr/bin/*"
+RDEPENDS:${PN} += "qtmultimedia"
+FILES:${PN} = " /usr/bin/*"
 

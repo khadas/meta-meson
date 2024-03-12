@@ -1,6 +1,3 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/aml-test:"
-
-
 SUMMARY  = "scripts for nn test"
 DESCRIPTION = "Some scripts and file for nn test."
 LICENSE  = "AMLOGIC"

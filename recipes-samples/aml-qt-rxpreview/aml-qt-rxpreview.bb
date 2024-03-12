@@ -26,12 +26,12 @@ do_install() {
     install -m 0755 -D ${WORKDIR}/aml-qt-rxpreview.service ${D}${systemd_unitdir}/system/
     install -m 0755 -D ${WORKDIR}/aml-qt-rxpreview.sh ${D}${bindir}
 }
-SYSTEMD_SERVICE_${PN} = "aml-qt-rxpreview.service"
-FILES_${PN} = " /usr/bin/*"
-FILES_${PN} += " /lib/systemd/system/*"
+SYSTEMD_SERVICE:${PN} = "aml-qt-rxpreview.service"
+FILES:${PN} = " /usr/bin/*"
+FILES:${PN} += " /lib/systemd/system/*"
 
-RDEPENDS_${PN} = "qtmultimedia aml-tvserver "
+RDEPENDS:${PN} = "qtmultimedia aml-tvserver "
 
-INSANE_SKIP_${PN} = "ldflags dev-so dev-elf"
-INSANE_SKIP_${PN}-dev = "ldflags dev-so dev-elf"
+INSANE_SKIP:${PN} = "ldflags dev-so dev-elf"
+INSANE_SKIP:${PN}-dev = "ldflags dev-so dev-elf"
 
