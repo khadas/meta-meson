@@ -1,14 +1,17 @@
-From 719c8eb28a253829946aebd157906363978bf965 Mon Sep 17 00:00:00 2001
+From 8dbe16e4a8783de7f28c7b5eac5e42ffa7abb06a Mon Sep 17 00:00:00 2001
 From: Bing Jiang <bing.jiang@amlogic.com>
 Date: Tue, 7 Dec 2021 10:51:34 +0800
 Subject: [PATCH] policy/modules: for WiFi/BT
 
 Change-Id: Id3b2d620228275af0a13ff0c698bc574fed6455c
 ---
- policy/modules/kernel/devices.if          | 18 ++++++++++++++++++
- policy/modules/services/bluetooth.te      |  3 ++-
+ policy/modules/kernel/devices.if          | 18 ++++++++++++
+ policy/modules/services/bluetooth.if      | 36 +++++++++++++++++++++++
+ policy/modules/services/bluetooth.te      |  3 +-
+ policy/modules/services/dbus.te           |  4 +++
  policy/modules/services/networkmanager.te |  1 +
- 3 files changed, 21 insertions(+), 1 deletion(-)
+ policy/modules/system/udev.te             |  2 ++
+ 6 files changed, 63 insertions(+), 1 deletion(-)
 
 diff --git a/policy/modules/kernel/devices.if b/policy/modules/kernel/devices.if
 index d41a3e1b0..07f57c02a 100644
@@ -36,6 +39,50 @@ index d41a3e1b0..07f57c02a 100644
 +
 +	manage_chr_files_pattern($1, uhid_device_t, uhid_device_t)
 +')
+diff --git a/policy/modules/services/bluetooth.if b/policy/modules/services/bluetooth.if
+index e35e86312..249b35657 100644
+--- a/policy/modules/services/bluetooth.if
++++ b/policy/modules/services/bluetooth.if
+@@ -193,3 +193,39 @@ interface(`bluetooth_admin',`
+ 	files_list_runtime($1)
+ 	admin_pattern($1, bluetooth_runtime_t)
+ ')
++
++########################################
++## <summary>
++##	Inherit and use bluetooth file discriptors.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`bluetooth_use_fds',`
++	gen_require(`
++		type bluetooth_t;
++	')
++
++	allow $1 bluetooth_t:fd use;
++')
++
++########################################
++## <summary>
++##	Read and write bluetooth sockets.
++## </summary>
++## <param name="domain">
++##	<summary>
++##	Domain allowed access.
++##	</summary>
++## </param>
++#
++interface(`bluetooth_rw_bluetooth_sockets',`
++	gen_require(`
++		type bluetooth_t;
++	')
++
++	allow $1 bluetooth_t:bluetooth_socket { read write };
++')
 diff --git a/policy/modules/services/bluetooth.te b/policy/modules/services/bluetooth.te
 index 4529642b1..4850f25ef 100644
 --- a/policy/modules/services/bluetooth.te
@@ -57,6 +104,28 @@ index 4529642b1..4850f25ef 100644
  
  domain_use_interactive_fds(bluetooth_t)
  domain_dontaudit_search_all_domains_state(bluetooth_t)
+diff --git a/policy/modules/services/dbus.te b/policy/modules/services/dbus.te
+index 5fedab5ec..547b87ae2 100644
+--- a/policy/modules/services/dbus.te
++++ b/policy/modules/services/dbus.te
+@@ -78,6 +78,7 @@ allow system_dbusd_t self:dbus { send_msg acquire_svc };
+ allow system_dbusd_t self:unix_stream_socket { accept connectto listen };
+ allow system_dbusd_t self:netlink_selinux_socket { create bind read };
+ allow system_dbusd_t initrc_t:unix_dgram_socket sendto;
++allow system_dbusd_t initrc_t:unix_stream_socket { read write };
+ 
+ allow system_dbusd_t dbusd_etc_t:dir { list_dir_perms watch };
+ read_files_pattern(system_dbusd_t, dbusd_etc_t, dbusd_etc_t)
+@@ -165,6 +166,9 @@ userdom_dontaudit_search_user_home_dirs(system_dbusd_t)
+ # read a file in ~/.local/share
+ userdom_read_user_home_content_files(system_dbusd_t)
+ 
++bluetooth_use_fds(system_dbusd_t)
++bluetooth_rw_bluetooth_sockets(system_dbusd_t)
++
+ ifdef(`init_systemd', `
+ 	# gdm3 causes system_dbusd_t to want this access
+ 	dev_rw_dri(system_dbusd_t)
 diff --git a/policy/modules/services/networkmanager.te b/policy/modules/services/networkmanager.te
 index 0566a6919..45578db5a 100644
 --- a/policy/modules/services/networkmanager.te
@@ -69,6 +138,19 @@ index 0566a6919..45578db5a 100644
  
  fs_getattr_all_fs(NetworkManager_t)
  fs_search_auto_mountpoints(NetworkManager_t)
+diff --git a/policy/modules/system/udev.te b/policy/modules/system/udev.te
+index 02ce2e8c9..7a1d071c4 100644
+--- a/policy/modules/system/udev.te
++++ b/policy/modules/system/udev.te
+@@ -185,6 +185,8 @@ modutils_read_module_config(udev_t)
+ modutils_read_module_deps(udev_t)
+ modutils_read_module_objects(udev_t)
+ 
++networkmanager_status(udev_t)
++
+ seutil_read_config(udev_t)
+ seutil_read_default_contexts(udev_t)
+ seutil_read_file_contexts(udev_t)
 -- 
 2.29.0
 

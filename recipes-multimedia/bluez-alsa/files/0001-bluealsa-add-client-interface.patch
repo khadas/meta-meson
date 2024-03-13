@@ -1466,7 +1466,7 @@ Index: git/utils/aplay/bt-halplay.c
 ===================================================================
 --- /dev/null
 +++ git/utils/aplay/bt-halplay.c
-@@ -0,0 +1,1022 @@
+@@ -0,0 +1,967 @@
 +/*
 + * BlueALSA - aplay.c
 + * Copyright (c) 2016-2021 Arkadiusz Bokowy
@@ -1568,23 +1568,6 @@ Index: git/utils/aplay/bt-halplay.c
 +	sigaction(sig, &sigact, NULL);
 +
 +	main_loop_on = false;
-+}
-+
-+static int parse_bt_addresses(char *argv[], size_t count) {
-+
-+	ba_addrs_count = count;
-+	if ((ba_addrs = malloc(sizeof(*ba_addrs) * ba_addrs_count)) == NULL)
-+		return -1;
-+
-+	size_t i;
-+	for (i = 0; i < ba_addrs_count; i++) {
-+		if (str2ba(argv[i], &ba_addrs[i]) != 0)
-+			return errno = EINVAL, -1;
-+		if (bacmp(&ba_addrs[i], BDADDR_ANY) == 0)
-+			ba_addr_any = true;
-+	}
-+
-+	return 0;
 +}
 +
 +static const char *bluealsa_get_profile(const struct ba_pcm *pcm) {
@@ -1831,15 +1814,6 @@ Index: git/utils/aplay/bt-halplay.c
 +		close(worker->ba_pcm_ctrl_fd);
 +		worker->ba_pcm_ctrl_fd = -1;
 +	}
-+	//if (worker->pcm != NULL) {
-+		//snd_pcm_close(worker->pcm);
-+	//	worker->pcm = NULL;
-+	//}
-+	//if (worker->mixer != NULL) {
-+		//snd_mixer_close(worker->mixer);
-+	//	worker->mixer_elem = NULL;
-+	//	worker->mixer = NULL;
-+	//}
 +	audio_hal_close_stream();
 +	debug("Exiting PCM worker %s", worker->addr);
 +}
@@ -1871,6 +1845,8 @@ Index: git/utils/aplay/bt-halplay.c
 +		dbus_error_free(&err);
 +		goto fail;
 +	}
++
++	error("create worker routine for: %s\n", w->ba_pcm.pcm_path);
 +
 +	/* Initialize the max read length to 10 ms. Later, when the PCM device
 +	 * will be opened, this value will be adjusted to one period size. */
@@ -1954,7 +1930,7 @@ Index: git/utils/aplay/bt-halplay.c
 +			unsigned int buffer_time = pcm_buffer_time;
 +			unsigned int period_time = pcm_period_time;
 +			//snd_pcm_uframes_t buffer_size;
-+			snd_pcm_uframes_t period_size = 128*4;
++			snd_pcm_uframes_t period_size = 128*8;
 +			char *tmp;
 +
 +			/* After PCM open failure wait one second before retry. This can not be
@@ -2057,7 +2033,7 @@ Index: git/utils/aplay/bt-halplay.c
 +/**
 + * Stop the worker thread at workers[index]. */
 +static void pcm_worker_stop(size_t index) {
-+
++	error("pcm worker stop: index %d\n", index);
 +	/* Safety check for out-of-bounds read. */
 +	assert(index < workers_count);
 +
@@ -2078,7 +2054,8 @@ Index: git/utils/aplay/bt-halplay.c
 +static struct pcm_worker *supervise_pcm_worker_start(const struct ba_pcm *ba_pcm) {
 +
 +	size_t i;
-+	for (i = 0; i < workers_count; i++)
++	for (i = 0; i < workers_count; i++) {
++		error("pcm worker start:  %d :  exist path: %s, connected path %s\n", i, workers[i].ba_pcm.pcm_path, ba_pcm->pcm_path);
 +		if (strcmp(workers[i].ba_pcm.pcm_path, ba_pcm->pcm_path) == 0) {
 +			/* If the codec has changed after the device connected, then the
 +			 * audio format may have changed. If it has, the worker thread
@@ -2087,7 +2064,10 @@ Index: git/utils/aplay/bt-halplay.c
 +				pcm_worker_stop(i);
 +			else
 +				return &workers[i];
++		} else {
++			pcm_worker_stop(i);
 +		}
++	}
 +
 +	pthread_rwlock_wrlock(&workers_lock);
 +
@@ -2382,43 +2362,8 @@ Index: git/utils/aplay/bt-halplay.c
 +
 +		return EXIT_SUCCESS;
 +	}
-+#if 0
-+	if (optind == argc)
-+		ba_addr_any = true;
-+	else if (parse_bt_addresses(&argv[optind], argc - optind) == -1) {
-+		error("Couldn't parse BT addresses: %s", strerror(errno));
-+		return EXIT_FAILURE;
-+	}
 +
-+	if (verbose >= 1) {
-+
-+		char *ba_str = malloc(19 * ba_addrs_count + 1);
-+		char *tmp = ba_str;
-+		size_t i;
-+
-+		for (i = 0; i < ba_addrs_count; i++, tmp += 19)
-+			ba2str(&ba_addrs[i], stpcpy(tmp, ", "));
-+
-+		printf("Selected configuration:\n"
-+				"  BlueALSA service: %s\n"
-+				"  PCM device: %s\n"
-+				"  PCM buffer time: %u us\n"
-+				"  PCM period time: %u us\n"
-+				"  ALSA mixer device: %s\n"
-+				"  ALSA mixer element: '%s',%u\n"
-+				"  Bluetooth device(s): %s\n"
-+				"  Profile: %s\n",
-+				dbus_ba_service,
-+				pcm_device, pcm_buffer_time, pcm_period_time,
-+				mixer_device, mixer_elem_name, mixer_elem_index,
-+				ba_addr_any ? "ANY" : &ba_str[2],
-+				ba_profile_a2dp ? "A2DP" : "SCO");
-+
-+		free(ba_str);
-+	}
-+#else
 +	ba_addr_any = true;
-+#endif
 +
 +	bluealsa_dbus_connection_signal_match_add(&dbus_ctx,
 +			dbus_ba_service, NULL, DBUS_INTERFACE_OBJECT_MANAGER, "InterfacesAdded",
