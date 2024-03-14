@@ -6,6 +6,7 @@ include conf/machine/include/device-properties.inc
 MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS += " \
         media-modules "
 
+RRECOMMENDS:${KERNEL_PACKAGE_NAME}-base = ""
 MACHINE_EXTRA_RRECOMMENDS = " kernel-modules kernel-devicetree"
 EXTRA_IMAGEDEPENDS += "u-boot"
 IMAGE_FSTYPES += "tar.gz ext4"
