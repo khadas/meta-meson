@@ -1,30 +1,20 @@
-From 44aa58227ecf0e7c689c2dd750c14c620a68b835 Mon Sep 17 00:00:00 2001
-From: "kaiqiang.xiang" <kaiqiang.xiang@amlogic.com>
-Date: Fri, 18 Aug 2023 10:51:52 +0000
-Subject: [PATCH] SWPL-136361 set multiqueue size when event received
-
----
- plugins/elements/gstmultiqueue.c | 25 ++++++++++++++++++++++---
- plugins/elements/gstmultiqueue.h |  2 +-
- 2 files changed, 23 insertions(+), 4 deletions(-)
-
 diff --git a/plugins/elements/gstmultiqueue.c b/plugins/elements/gstmultiqueue.c
-index ff809a0..795f01a 100644
+index 7640a08..7a377d0 100644
 --- a/plugins/elements/gstmultiqueue.c
 +++ b/plugins/elements/gstmultiqueue.c
-@@ -656,6 +656,11 @@ gst_multi_queue_init (GstMultiQueue * mqueue)
+@@ -861,6 +861,11 @@ gst_multi_queue_init (GstMultiQueue * mqueue)
+   mqueue->extra_size.bytes = DEFAULT_EXTRA_SIZE_BYTES;
    mqueue->extra_size.visible = DEFAULT_EXTRA_SIZE_BUFFERS;
    mqueue->extra_size.time = DEFAULT_EXTRA_SIZE_TIME;
- 
++
 +  // save size for GST_EVENT_CUSTOM_DOWNSTREAM_STICKY
 +  mqueue->set_size.bytes = 0;
 +  mqueue->set_size.visible = 0;
 +  mqueue->set_size.time = 0;
-+
+
    mqueue->use_buffering = DEFAULT_USE_BUFFERING;
    mqueue->low_watermark = DEFAULT_LOW_WATERMARK * MAX_BUFFERING_LEVEL;
-   mqueue->high_watermark = DEFAULT_HIGH_WATERMARK * MAX_BUFFERING_LEVEL;
-@@ -710,7 +715,13 @@ gst_multi_queue_set_property (GObject * object, guint prop_id,
+@@ -915,7 +920,13 @@ gst_multi_queue_set_property (GObject * object, guint prop_id,
    switch (prop_id) {
      case PROP_MAX_SIZE_BYTES:
        GST_MULTI_QUEUE_MUTEX_LOCK (mq);
@@ -34,19 +24,19 @@ index ff809a0..795f01a 100644
 +        GST_DEBUG_OBJECT (mq, "received GST_EVENT_CUSTOM_DOWNSTREAM_STICKY, set byte:%d", mq->max_size.bytes);
 +      }
 +      else {
-+        mq->max_size.bytes = g_value_get_uint (value);
++         mq->max_size.bytes = g_value_get_uint (value);
 +      }
        SET_CHILD_PROPERTY (mq, bytes);
        GST_MULTI_QUEUE_MUTEX_UNLOCK (mq);
        gst_multi_queue_post_buffering (mq);
-@@ -755,7 +766,13 @@ gst_multi_queue_set_property (GObject * object, guint prop_id,
+@@ -960,7 +971,13 @@ gst_multi_queue_set_property (GObject * object, guint prop_id,
      }
      case PROP_MAX_SIZE_TIME:
        GST_MULTI_QUEUE_MUTEX_LOCK (mq);
 -      mq->max_size.time = g_value_get_uint64 (value);
 +      if (mq->set_size.time != 0) {
 +        mq->max_size.time = mq->set_size.time;
-+        GST_DEBUG_OBJECT (mq, "received GST_EVENT_CUSTOM_DOWNSTREAM_STICKY, set time:%d", mq->max_size.time);
++        GST_DEBUG_OBJECT (mq, "received GST_EVENT_CUSTOM_DOWNSTREAM_STICKY, set time:%lld", mq->max_size.time);
 +      }
 +      else {
 +        mq->max_size.time = g_value_get_uint64 (value);
@@ -54,15 +44,15 @@ index ff809a0..795f01a 100644
        SET_CHILD_PROPERTY (mq, time);
        GST_MULTI_QUEUE_MUTEX_UNLOCK (mq);
        gst_multi_queue_post_buffering (mq);
-@@ -1678,8 +1695,10 @@ gst_single_queue_push_one (GstMultiQueue * mq, GstSingleQueue * sq,
+@@ -1980,8 +1997,10 @@ gst_single_queue_push_one (GstMultiQueue * mq, GstSingleQueue * sq,
           GST_MULTI_QUEUE_MUTEX_LOCK (mq);
           mq->max_size.bytes = DEFAULT_MAX_SIZE_BYTES;
           SET_CHILD_PROPERTY (mq, bytes);
 -         mq->max_size.time = DEFAULT_MAX_SIZE_TIME * 4;
-+          mq->max_size.time = DEFAULT_MAX_SIZE_TIME * 10;
++         mq->max_size.time = DEFAULT_MAX_SIZE_TIME * 10;
           SET_CHILD_PROPERTY (mq, time);
-+          mq->set_size.bytes = DEFAULT_MAX_SIZE_BYTES;
-+          mq->set_size.time = DEFAULT_MAX_SIZE_TIME * 10;
++         mq->set_size.bytes = DEFAULT_MAX_SIZE_BYTES;
++         mq->set_size.time = DEFAULT_MAX_SIZE_TIME * 10;
           GST_MULTI_QUEUE_MUTEX_UNLOCK (mq);
           gst_multi_queue_post_buffering (mq);
           result = GST_FLOW_OK;
@@ -73,12 +63,9 @@ index 524fcf9..80b12ee 100644
 @@ -64,7 +64,7 @@ struct _GstMultiQueue {
    GList *queues;
    guint32 queues_cookie;
- 
+
 -  GstDataQueueSize  max_size, extra_size;
 +  GstDataQueueSize  max_size, extra_size, set_size;
    gboolean use_buffering;
    gint low_watermark, high_watermark;
    gboolean buffering;
--- 
-2.25.1
-

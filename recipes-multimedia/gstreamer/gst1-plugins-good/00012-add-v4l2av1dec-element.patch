@@ -1,24 +1,20 @@
 diff --git a/sys/v4l2/ext/videodev2.h b/sys/v4l2/ext/videodev2.h
-old mode 100644
-new mode 100755
-index dc829f0..e81945d
+index 24832ee..4c9e6f5 100755
 --- a/sys/v4l2/ext/videodev2.h
 +++ b/sys/v4l2/ext/videodev2.h
-@@ -661,6 +661,7 @@ struct v4l2_pix_format {
- #define V4L2_PIX_FMT_VC1_ANNEX_L v4l2_fourcc('V', 'C', '1', 'L') /* SMPTE 421M Annex L compliant stream */
- #define V4L2_PIX_FMT_VP8      v4l2_fourcc('V', 'P', '8', '0') /* VP8 */
+@@ -698,6 +698,7 @@ struct v4l2_pix_format {
+ #define V4L2_PIX_FMT_VP8_FRAME v4l2_fourcc('V', 'P', '8', 'F') /* VP8 parsed frame */
  #define V4L2_PIX_FMT_VP9      v4l2_fourcc('V', 'P', '9', '0') /* VP9 */
+ #define V4L2_PIX_FMT_VP9_FRAME v4l2_fourcc('V', 'P', '9', 'F') /* VP9 parsed frame */
 +#define V4L2_PIX_FMT_AV1      v4l2_fourcc('A', 'V', '1', '0') /* AV1 */
  #define V4L2_PIX_FMT_HEVC     v4l2_fourcc('H', 'E', 'V', 'C') /* HEVC aka H.265 */
  #define V4L2_PIX_FMT_FWHT     v4l2_fourcc('F', 'W', 'H', 'T') /* Fast Walsh Hadamard Transform (vicodec) */
- 
+ #define V4L2_PIX_FMT_FWHT_STATELESS     v4l2_fourcc('S', 'F', 'W', 'H') /* Stateless FWHT (vicodec) */
 diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
-old mode 100644
-new mode 100755
-index 2c78e22..58d91cc
+index a2aef8e..40a536f 100755
 --- a/sys/v4l2/gstv4l2object.c
 +++ b/sys/v4l2/gstv4l2object.c
-@@ -183,6 +183,7 @@ static const GstV4L2FormatDesc gst_v4l2_formats[] = {
+@@ -187,6 +187,7 @@ static const GstV4L2FormatDesc gst_v4l2_formats[] = {
    {V4L2_PIX_FMT_VC1_ANNEX_L, FALSE, GST_V4L2_CODEC},
    {V4L2_PIX_FMT_VP8, FALSE, GST_V4L2_CODEC | GST_V4L2_NO_PARSE},
    {V4L2_PIX_FMT_VP9, FALSE, GST_V4L2_CODEC | GST_V4L2_NO_PARSE},
@@ -26,7 +22,7 @@ index 2c78e22..58d91cc
  
    /*  Vendor-specific formats   */
    {V4L2_PIX_FMT_WNVA, TRUE, GST_V4L2_CODEC},
-@@ -1459,6 +1460,9 @@ gst_v4l2_object_v4l2fourcc_to_bare_struct (guint32 fourcc)
+@@ -1503,6 +1504,9 @@ gst_v4l2_object_v4l2fourcc_to_bare_struct (guint32 fourcc)
      case V4L2_PIX_FMT_VP9:
        structure = gst_structure_new_empty ("video/x-vp9");
        break;
@@ -36,7 +32,7 @@ index 2c78e22..58d91cc
      case V4L2_PIX_FMT_GREY:    /*  8  Greyscale     */
      case V4L2_PIX_FMT_Y16:
      case V4L2_PIX_FMT_Y16_BE:
-@@ -1836,6 +1840,8 @@ gst_v4l2_object_get_caps_info (GstV4l2Object * v4l2object, GstCaps * caps,
+@@ -1923,6 +1927,8 @@ gst_v4l2_object_get_caps_info (GstV4l2Object * v4l2object, GstCaps * caps,
        fourcc = V4L2_PIX_FMT_VP8;
      } else if (g_str_equal (mimetype, "video/x-vp9")) {
        fourcc = V4L2_PIX_FMT_VP9;
@@ -46,15 +42,13 @@ index 2c78e22..58d91cc
        const gchar *format = gst_structure_get_string (structure, "format");
        if (format) {
 diff --git a/sys/v4l2/gstv4l2videodec.c b/sys/v4l2/gstv4l2videodec.c
-old mode 100644
-new mode 100755
-index adb620d..93ae678
+index 36e08ae..7969a93 100755
 --- a/sys/v4l2/gstv4l2videodec.c
 +++ b/sys/v4l2/gstv4l2videodec.c
-@@ -1100,6 +1100,8 @@ G_STMT_START { \
-     SET_META ("VP8");
+@@ -1291,6 +1291,8 @@ G_STMT_START { \
    } else if (gst_structure_has_name (s, "video/x-vp9")) {
      SET_META ("VP9");
+     cdata->codec = gst_v4l2_vp9_get_codec ();
 +  } else if (gst_structure_has_name (s, "video/x-av1")) {
 +    SET_META ("AV1");
    } else if (gst_structure_has_name (s, "video/x-bayer")) {

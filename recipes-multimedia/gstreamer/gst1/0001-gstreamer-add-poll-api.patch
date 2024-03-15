@@ -1,11 +1,11 @@
-Index: gstreamer1-1.16.2/gst/gstpoll.c
-===================================================================
---- gstreamer1-1.16.2.orig/gst/gstpoll.c
-+++ gstreamer1-1.16.2/gst/gstpoll.c
-@@ -1295,6 +1295,58 @@ gst_poll_fd_can_read (const GstPoll * se
+diff --git a/gst/gstpoll.c b/gst/gstpoll.c
+index f5f10bc..10d96aa 100644
+--- a/gst/gstpoll.c
++++ b/gst/gstpoll.c
+@@ -1295,6 +1295,58 @@ gst_poll_fd_can_read (const GstPoll * set, GstPollFD * fd)
    return res;
  }
- 
+
 +static gboolean
 +gst_poll_fd_can_read_pri_unlocked (const GstPoll * set, GstPollFD * fd)
 +{
@@ -61,17 +61,18 @@ Index: gstreamer1-1.16.2/gst/gstpoll.c
  /**
   * gst_poll_fd_can_write:
   * @set: a file descriptor set.
-Index: gstreamer1-1.16.2/gst/gstpoll.h
-===================================================================
---- gstreamer1-1.16.2.orig/gst/gstpoll.h
-+++ gstreamer1-1.16.2/gst/gstpoll.h
-@@ -104,6 +104,9 @@ GST_API
+diff --git a/gst/gstpoll.h b/gst/gstpoll.h
+index 660f934..0cd29e9 100644
+--- a/gst/gstpoll.h
++++ b/gst/gstpoll.h
+@@ -104,6 +104,10 @@ GST_API
  gboolean        gst_poll_fd_can_read      (const GstPoll *set, GstPollFD *fd);
- 
+
  GST_API
 +gboolean        gst_poll_fd_can_read_pri  (const GstPoll *set, GstPollFD *fd);
 +
 +GST_API
++
  gboolean        gst_poll_fd_can_write     (const GstPoll *set, GstPollFD *fd);
- 
+
  GST_API

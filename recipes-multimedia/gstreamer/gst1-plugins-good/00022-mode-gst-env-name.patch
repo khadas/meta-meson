@@ -1,17 +1,17 @@
 diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
-index 7620e52..75a5ac8 100644
+index c45a526..d75cf1c 100755
 --- a/sys/v4l2/gstv4l2bufferpool.c
 +++ b/sys/v4l2/gstv4l2bufferpool.c
-@@ -69,7 +69,7 @@ enum _GstV4l2BufferPoolAcquireFlags
- static void gst_v4l2_buffer_pool_release_buffer (GstBufferPool * bpool,
-     GstBuffer * buffer);
+@@ -82,7 +82,7 @@ enum _GstV4l2BufferState
  
+ static void gst_v4l2_buffer_pool_complete_release_buffer (GstBufferPool * bpool,
+     GstBuffer * buffer, gboolean queued);
 -#ifdef GST_AML_SPEC_FLOW_FOR_VBP
 +#ifdef VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP
  static gboolean gst_v4l2_buffer_pool_release_buffer_aml_patch (GstBufferPool * bpool);
  #endif
  
-@@ -731,7 +731,7 @@ gst_v4l2_buffer_pool_streamoff (GstV4l2BufferPool * pool)
+@@ -776,7 +776,7 @@ gst_v4l2_buffer_pool_streamoff (GstV4l2BufferPool * pool)
  
        g_atomic_int_add (&pool->num_queued, -1);
      }
@@ -20,7 +20,7 @@ index 7620e52..75a5ac8 100644
      pool->read_to_free_bufs[i] = NULL;
  #endif
    }
-@@ -1096,7 +1096,7 @@ gst_v4l2_buffer_pool_poll (GstV4l2BufferPool * pool, gboolean wait)
+@@ -1152,7 +1152,7 @@ gst_v4l2_buffer_pool_poll (GstV4l2BufferPool * pool, gboolean wait)
  
  again:
    ret = gst_poll_wait (pool->poll, timeout);
@@ -29,7 +29,7 @@ index 7620e52..75a5ac8 100644
    GST_DEBUG_OBJECT (pool, "amlmodbuf poll timeout:%lld, ret:%d, errno:%d", timeout, ret, errno);
  #endif
    if (G_UNLIKELY (ret < 0)) {
-@@ -1122,7 +1122,7 @@ again:
+@@ -1199,7 +1199,7 @@ again:
  
    if (ret == 0)
    {
@@ -38,7 +38,7 @@ index 7620e52..75a5ac8 100644
      if((pool->obj->type == V4L2_BUF_TYPE_VIDEO_CAPTURE || pool->obj->type == V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) &&
         pool->obj->mode == GST_V4L2_IO_DMABUF_IMPORT)
      {
-@@ -1477,7 +1477,7 @@ gst_v4l2_buffer_pool_acquire_buffer (GstBufferPool * bpool, GstBuffer ** buffer,
+@@ -1597,7 +1597,7 @@ gst_v4l2_buffer_pool_acquire_buffer (GstBufferPool * bpool, GstBuffer ** buffer,
          case GST_V4L2_IO_USERPTR:
          case GST_V4L2_IO_DMABUF_IMPORT:
          {
@@ -47,7 +47,7 @@ index 7620e52..75a5ac8 100644
            GST_DEBUG_OBJECT (pool, "amlmodbuf return free buf before acquire buf");
            gst_v4l2_buffer_pool_release_buffer_aml_patch(bpool);
            ret = gst_v4l2_buffer_pool_dequeue (pool, buffer, FALSE);
-@@ -1569,7 +1569,7 @@ gst_v4l2_buffer_pool_release_buffer (GstBufferPool * bpool, GstBuffer * buffer)
+@@ -1706,7 +1706,7 @@ gst_v4l2_buffer_pool_complete_release_buffer (GstBufferPool * bpool,
  
              gst_v4l2_allocator_reset_group (pool->vallocator, group);
  
@@ -56,8 +56,8 @@ index 7620e52..75a5ac8 100644
              GST_DEBUG_OBJECT (pool, "amlmodbuf trace in add flow with buf:%p index:%d", buffer, group->buffer.index);
              pool->read_to_free_bufs[group->buffer.index] = buffer;
              if(gst_v4l2_buffer_pool_release_buffer_aml_patch(bpool))
-@@ -1658,7 +1658,7 @@ gst_v4l2_buffer_pool_release_buffer (GstBufferPool * bpool, GstBuffer * buffer)
-   }
+@@ -1815,7 +1815,7 @@ gst_v4l2_buffer_pool_release_buffer (GstBufferPool * bpool, GstBuffer * buffer)
+   gst_v4l2_buffer_pool_complete_release_buffer (bpool, buffer, queued);
  }
  
 -#ifdef GST_AML_SPEC_FLOW_FOR_VBP
@@ -66,19 +66,19 @@ index 7620e52..75a5ac8 100644
  gst_v4l2_buffer_pool_release_buffer_aml_patch (GstBufferPool * bpool)
  {
 diff --git a/sys/v4l2/gstv4l2bufferpool.h b/sys/v4l2/gstv4l2bufferpool.h
-index f5fa8e9..3dea2e4 100644
+index 2b323fe..712bc9b 100755
 --- a/sys/v4l2/gstv4l2bufferpool.h
 +++ b/sys/v4l2/gstv4l2bufferpool.h
-@@ -55,7 +55,7 @@ G_BEGIN_DECLS
-  * occure for mem-2-mem devices. */
- #define GST_V4L2_FLOW_SOURCE_CHANGE GST_FLOW_CUSTOM_SUCCESS_2
+@@ -61,6 +61,8 @@ G_BEGIN_DECLS
+  * resolution change flag set was received. */
+ #define GST_V4L2_FLOW_RESOLUTION_CHANGE GST_FLOW_CUSTOM_SUCCESS_2
  
--// #define GST_AML_SPEC_FLOW_FOR_VBP 1
 +// #define VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP 1
- 
++
  struct _GstV4l2BufferPool
  {
-@@ -92,7 +92,7 @@ struct _GstV4l2BufferPool
+   GstBufferPool parent;
+@@ -96,7 +98,7 @@ struct _GstV4l2BufferPool
    gboolean flushing;
  
    GstBuffer *buffers[VIDEO_MAX_FRAME];
@@ -86,12 +86,12 @@ index f5fa8e9..3dea2e4 100644
 +#ifdef VENDOR_MEDIA_GST_VIDEO_AML_SPEC_FLOW_FOR_VBP
    GstBuffer *read_to_free_bufs[VIDEO_MAX_FRAME];
  #endif
- 
+   volatile gint buffer_state[VIDEO_MAX_FRAME];
 diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
-index 98791b6..a4d7eb4 100644
+index 888304c..042d733 100755
 --- a/sys/v4l2/gstv4l2object.c
 +++ b/sys/v4l2/gstv4l2object.c
-@@ -493,8 +493,8 @@ gst_v4l2_object_new (GstElement * element,
+@@ -500,8 +500,8 @@ gst_v4l2_object_new (GstElement * element,
  
    if((V4L2_BUF_TYPE_VIDEO_CAPTURE == type || V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE == type))
    {

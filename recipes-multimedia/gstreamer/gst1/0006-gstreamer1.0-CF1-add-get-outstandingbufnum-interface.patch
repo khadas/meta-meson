@@ -1,8 +1,8 @@
 diff --git a/gst/gstbufferpool.c b/gst/gstbufferpool.c
-index 18545e3..7f24256 100644
+index 66b9c26..d714ec7 100644
 --- a/gst/gstbufferpool.c
 +++ b/gst/gstbufferpool.c
-@@ -531,12 +531,11 @@ gst_buffer_pool_set_active (GstBufferPool * pool, gboolean active)
+@@ -544,12 +544,12 @@ gst_buffer_pool_set_active (GstBufferPool * pool, gboolean active)
       * freed when they are released */
      outstanding = g_atomic_int_get (&priv->outstanding);
      GST_LOG_OBJECT (pool, "outstanding buffers %d", outstanding);
@@ -11,12 +11,12 @@ index 18545e3..7f24256 100644
        if (!do_stop (pool))
          goto stop_failed;
      }
--
+
 -    priv->active = FALSE;
    }
    GST_BUFFER_POOL_UNLOCK (pool);
- 
-@@ -1185,18 +1184,18 @@ flushing:
+
+@@ -1196,18 +1196,18 @@ flushing:
  static inline void
  dec_outstanding (GstBufferPool * pool)
  {
@@ -33,7 +33,7 @@ index 18545e3..7f24256 100644
 -      GST_BUFFER_POOL_UNLOCK (pool);
 -    }
 +  GST_DEBUG_OBJECT(pool, "outstanding pool->priv->outstanding:%d, is_flushing:%d, is_active:%d",
-+                   pool->priv->outstanding, GST_BUFFER_POOL_IS_FLUSHING (pool), pool->priv->active);
++  pool->priv->outstanding, GST_BUFFER_POOL_IS_FLUSHING (pool), pool->priv->active);
 +  g_atomic_int_dec_and_test (&pool->priv->outstanding);
 +
 +  /* all buffers are returned to the pool, see if we need to free them */
@@ -43,11 +43,11 @@ index 18545e3..7f24256 100644
 +    /* now that we have the lock, check if we have been de-activated with
 +     * outstanding buffers */
 +    if (!pool->priv->active)
-+      do_stop (pool);    GST_BUFFER_POOL_UNLOCK (pool);
++       do_stop (pool);     GST_BUFFER_POOL_UNLOCK (pool);
    }
  }
- 
-@@ -1414,3 +1413,89 @@ gst_buffer_pool_set_flushing (GstBufferPool * pool, gboolean flushing)
+
+@@ -1425,3 +1425,89 @@ gst_buffer_pool_set_flushing (GstBufferPool * pool, gboolean flushing)
  done:
    GST_BUFFER_POOL_UNLOCK (pool);
  }
@@ -138,13 +138,13 @@ index 18545e3..7f24256 100644
 +  }
 +}
 diff --git a/gst/gstbufferpool.h b/gst/gstbufferpool.h
-index 0efd24f..e4af6ef 100644
+index 18b73a0..919b172 100644
 --- a/gst/gstbufferpool.h
 +++ b/gst/gstbufferpool.h
-@@ -251,6 +251,12 @@ GstFlowReturn    gst_buffer_pool_acquire_buffer  (GstBufferPool *pool, GstBuffer
+@@ -345,6 +345,12 @@ GstFlowReturn    gst_buffer_pool_acquire_buffer  (GstBufferPool *pool, GstBuffer
  GST_API
  void             gst_buffer_pool_release_buffer  (GstBufferPool *pool, GstBuffer *buffer);
- 
+
 +GST_API
 +gint             gst_buffer_pool_get_outstanding_num  (GstBufferPool *pool);
 +
@@ -152,5 +152,5 @@ index 0efd24f..e4af6ef 100644
 +gboolean         gst_buffer_pool_increase_max_num  (GstBufferPool *pool, guint inc);
 +
  G_END_DECLS
- 
+
  #endif /* __GST_BUFFER_POOL_H__ */

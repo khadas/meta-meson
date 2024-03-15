@@ -1,18 +1,8 @@
-From 018231a53a8827ee8084aefb0154323e71dcb8b1 Mon Sep 17 00:00:00 2001
-From: "kaiqiang.xiang" <kaiqiang.xiang@amlogic.com>
-Date: Mon, 12 Jun 2023 13:32:57 +0000
-Subject: [PATCH] support hls discontinuity
-
----
- gst/isomp4/qtdemux.c | 30 ++++++++++++++++++++++++++++--
- gst/isomp4/qtdemux.h |  3 +++
- 2 files changed, 31 insertions(+), 2 deletions(-)
-
 diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
-index 85f1ceb..0d3de8a 100644
+index be284be..6dbf9d7 100755
 --- a/gst/isomp4/qtdemux.c
 +++ b/gst/isomp4/qtdemux.c
-@@ -681,6 +681,8 @@ gst_qtdemux_init (GstQTDemux * qtdemux)
+@@ -450,6 +450,8 @@ gst_qtdemux_init (GstQTDemux * qtdemux)
    GST_OBJECT_FLAG_SET (qtdemux, GST_ELEMENT_FLAG_INDEXABLE);
  
    gst_qtdemux_reset (qtdemux, TRUE);
@@ -21,7 +11,7 @@ index 85f1ceb..0d3de8a 100644
  }
  
  static void
-@@ -2516,6 +2518,19 @@ gst_qtdemux_handle_sink_event (GstPad * sinkpad, GstObject * parent,
+@@ -2377,6 +2379,19 @@ gst_qtdemux_handle_sink_event (GstPad * sinkpad, GstObject * parent,
  
        goto drop;
      }
@@ -41,7 +31,7 @@ index 85f1ceb..0d3de8a 100644
      default:
        break;
    }
-@@ -5846,12 +5861,18 @@ gst_qtdemux_push_buffer (GstQTDemux * qtdemux, QtDemuxStream * stream,
+@@ -5878,12 +5893,18 @@ gst_qtdemux_push_buffer (GstQTDemux * qtdemux, QtDemuxStream * stream,
      GST_BUFFER_FLAG_UNSET (buf, GST_BUFFER_FLAG_DISCONT);
    }
  
@@ -60,9 +50,9 @@ index 85f1ceb..0d3de8a 100644
 -      GST_TIME_ARGS (GST_BUFFER_DURATION (buf)), GST_PAD_NAME (stream->pad));
 +      GST_TIME_ARGS (GST_BUFFER_DURATION (buf)), GST_PAD_NAME (stream->pad), GST_TIME_ARGS (qtdemux->discontinuity_base_pos));
  
-   if (stream->protected && stream->protection_scheme_type == FOURCC_cenc) {
+   if (stream->protected && stream->protection_scheme_type == FOURCC_aavd) {
      GstStructure *crypto_info;
-@@ -7188,6 +7209,11 @@ gst_qtdemux_process_adapter (GstQTDemux * demux, gboolean force)
+@@ -7321,6 +7342,11 @@ gst_qtdemux_process_adapter (GstQTDemux * demux, gboolean force)
                  || prev_offset > demux->fragment_start_offset) {
                demux->fragment_start_offset = prev_offset;
                demux->fragment_start = prev_pts;
@@ -75,19 +65,16 @@ index 85f1ceb..0d3de8a 100644
                    "New fragment start found at: %" G_GUINT64_FORMAT " : %"
                    GST_TIME_FORMAT, demux->fragment_start_offset,
 diff --git a/gst/isomp4/qtdemux.h b/gst/isomp4/qtdemux.h
-index 05ea7c7..0d9d477 100644
+index 02df262..0dab898 100755
 --- a/gst/isomp4/qtdemux.h
 +++ b/gst/isomp4/qtdemux.h
-@@ -118,6 +118,9 @@ struct _GstQTDemux {
+@@ -139,6 +139,9 @@ struct _GstQTDemux {
    /* configured playback region */
    GstSegment segment;
  
 +  gboolean cal_discontinuity_pos;
 +  GstClockTime discontinuity_base_pos;
 +
-   /* PUSH-BASED only: If the initial segment event, or a segment consequence of
-    * a seek or incoming TIME segment from upstream needs to be pushed. This
-    * variable is used instead of pushing the event directly because at that
--- 
-2.25.1
-
+   /* State for key_units trickmode */
+   GstClockTime trickmode_interval;
+ 

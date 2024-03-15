@@ -1,19 +1,18 @@
-From c2002f0ee1ea619903cc508d0c91fdcab2647a22 Mon Sep 17 00:00:00 2001
-From: "sheng.liu" <sheng.liu@amlogic.com>
-Date: Wed, 27 Oct 2021 11:02:56 +0800
-Subject: [PATCH] gstreamer1.0-plugins-good:add v4l2 aml_dec_params structure
- [1/1]
+From 4f173108e40b912be76cbc138e85aeefae4cb1df Mon Sep 17 00:00:00 2001
+From: "yi.liu" <yi.liu@amlogic.com>
+Date: Wed, 13 Mar 2024 17:09:04 +0800
+Subject: [PATCH] gstreamer: add v4l2 aml_dec_params structure [1/1]
 
-PD#SWPL-56154
+PD#SWPL-158766
 
 Problem:
-No aml_dec_params structure to set aml dec params
 
 Solution:
-add v4l2 aml_dec_params structure
 
 Verify:
-AP222
+local
+
+Signed-off-by: yi.liu <yi.liu@amlogic.com>
 ---
  sys/v4l2/ext/aml-vdec.h  | 119 +++++++++++++++++++++++++++++++++++++++
  sys/v4l2/gstv4l2object.h |   1 +
@@ -22,7 +21,7 @@ AP222
 
 diff --git a/sys/v4l2/ext/aml-vdec.h b/sys/v4l2/ext/aml-vdec.h
 new file mode 100644
-index 0000000..0aa6c01
+index 0000000..0d15e83
 --- /dev/null
 +++ b/sys/v4l2/ext/aml-vdec.h
 @@ -0,0 +1,119 @@
@@ -146,7 +145,7 @@ index 0000000..0aa6c01
 +
 +#endif /* __AML_VDEC_H__ */
 diff --git a/sys/v4l2/gstv4l2object.h b/sys/v4l2/gstv4l2object.h
-index cdaf842..de9ddde 100644
+index 8da1053..b622c8d 100755
 --- a/sys/v4l2/gstv4l2object.h
 +++ b/sys/v4l2/gstv4l2object.h
 @@ -25,6 +25,7 @@
@@ -158,5 +157,5 @@ index cdaf842..de9ddde 100644
  #  include <libv4l2.h>
  #endif
 -- 
-2.32.0
+2.25.1
 

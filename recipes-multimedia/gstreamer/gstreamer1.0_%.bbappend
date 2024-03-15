@@ -1,2 +1,11 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/gst1:"
 
+SRC_URI:append = "file://0001-gstreamer-add-poll-api.patch "
+SRC_URI:append = "file://0002-modify-free-sequence-to-resolve-video-switch-problam.patch "
+SRC_URI:append = "file://0003-gstreamer-clcok-adjust-issue.patch "
+SRC_URI:append = "file://0004-do-not-post-buffering-in-multiqueue.patch "
+SRC_URI:append = "file://0005-SWPL-127765-multiqueue-AML-SET-MAX-BYTE-SIZE.patch "
+SRC_URI:append = "file://0006-gstreamer1.0-CF1-add-get-outstandingbufnum-interface.patch "
+SRC_URI:append = "file://0007-modify-protec-meta-transform-to-support-sampleAES.patch "
+SRC_URI:append = "file://0008-SWPL-136361-set-multiqueue-size-when-event-received.patch "
+SRC_URI:append = "file://0009-SWPL-153710-multiqueue-default-size.patch "

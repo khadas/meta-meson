@@ -1,32 +1,8 @@
-From f3bc5a123853e6e9240bcb5ca9b0d9ddfca0de41 Mon Sep 17 00:00:00 2001
-From: "sheng.liu" <sheng.liu@amlogic.com>
-Date: Fri, 10 Sep 2021 15:21:01 +0800
-Subject: [PATCH] gstreamer1.0-plugins-good: add more condition to select
- stream which buffer is discont when time position are same [1/1]
-
-PD#SWPL-58926
-
-Problem:
-qtdemux always send video data and no audio data which
-leand to element state can not be changed to pause and video can not be playback
-
-Solution:
-add more condition to select stream which
-buffer is discont when time position are same
-
-Verify:
-AP222
-
-Change-Id: I2aff1476c7849a115863e4ce207ec1887d096859
----
- isomp4/qtdemux.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/isomp4/qtdemux.c b/isomp4/qtdemux.c
-index 689a250..d902b05 100644
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index 382b9e8..2dadc0c 100755
 --- a/gst/isomp4/qtdemux.c
 +++ b/gst/isomp4/qtdemux.c
-@@ -6301,7 +6301,8 @@ gst_qtdemux_loop_state_movie (GstQTDemux * qtdemux)
+@@ -6358,7 +6358,8 @@ gst_qtdemux_loop_state_movie (GstQTDemux * qtdemux)
      position = stream->time_position;
  
      /* position of -1 is EOS */
@@ -36,6 +12,3 @@ index 689a250..d902b05 100644
        min_time = position;
        target_stream = stream;
      }
--- 
-2.32.0
-

@@ -1,8 +1,8 @@
 diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
-index 8a9072c..038021a 100644
+index 02764ba..dea7b51 100755
 --- a/gst/isomp4/qtdemux.c
 +++ b/gst/isomp4/qtdemux.c
-@@ -11176,14 +11176,18 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+@@ -11516,14 +11516,18 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
                    guint32 dv_profile = (tmp >> 9) & 0x7f;    // 7 bits
                    guint32 dv_level = (tmp >> 3) & 0x3f;    // 6 bits
                    guint32 rpu_present_flag = (tmp >> 2) & 0x01;
@@ -23,7 +23,7 @@ index 8a9072c..038021a 100644
                    GST_DEBUG_OBJECT (qtdemux,"DOVI in dvcC/dvvC box, version: %d.%d, profile: %d, level: %d, "
                      "rpu flag: %d, el flag: %d, bl flag: %d, compatibility id: %d\n",
                      dv_version_major, dv_version_minor,
-@@ -11269,6 +11273,30 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+@@ -11612,6 +11616,30 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
                    gst_buffer_unref (buf);
                    break;
                  }

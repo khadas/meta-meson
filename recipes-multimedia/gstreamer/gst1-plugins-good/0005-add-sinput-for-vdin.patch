@@ -1,8 +1,20 @@
-Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2object.h
-===================================================================
---- gst-plugins-good-1.16.3.orig/sys/v4l2/gstv4l2object.h
-+++ gst-plugins-good-1.16.3/sys/v4l2/gstv4l2object.h
-@@ -222,6 +222,8 @@ struct _GstV4l2Object {
+diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
+index 5851238..7bb9534 100755
+--- a/sys/v4l2/gstv4l2object.c
++++ b/sys/v4l2/gstv4l2object.c
+@@ -544,6 +544,7 @@ gst_v4l2_object_new (GstElement * element,
+   v4l2object->poll = gst_poll_new (TRUE);
+   v4l2object->can_wait_event = FALSE;
+   v4l2object->can_poll_device = TRUE;
++  v4l2object->tvin_port = -1;
+ 
+   return v4l2object;
+ }
+diff --git a/sys/v4l2/gstv4l2object.h b/sys/v4l2/gstv4l2object.h
+index 53fce4b..8da1053 100755
+--- a/sys/v4l2/gstv4l2object.h
++++ b/sys/v4l2/gstv4l2object.h
+@@ -228,6 +228,8 @@ struct _GstV4l2Object {
    gboolean skip_try_fmt_probes;
    gboolean can_wait_event;
    gboolean need_wait_event;
@@ -11,10 +23,10 @@ Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2object.h
  };
  
  struct _GstV4l2ObjectClassHelper {
-Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2src.c
-===================================================================
---- gst-plugins-good-1.16.3.orig/sys/v4l2/gstv4l2src.c
-+++ gst-plugins-good-1.16.3/sys/v4l2/gstv4l2src.c
+diff --git a/sys/v4l2/gstv4l2src.c b/sys/v4l2/gstv4l2src.c
+index f100407..1f900dd 100755
+--- a/sys/v4l2/gstv4l2src.c
++++ b/sys/v4l2/gstv4l2src.c
 @@ -72,6 +72,7 @@ enum
  {
    PROP_0,
@@ -23,7 +35,7 @@ Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2src.c
    PROP_LAST
  };
  
-@@ -147,6 +148,12 @@ gst_v4l2src_class_init (GstV4l2SrcClass
+@@ -157,6 +158,12 @@ gst_v4l2src_class_init (GstV4l2SrcClass * klass)
    gst_v4l2_object_install_properties_helper (gobject_class,
        DEFAULT_PROP_DEVICE);
  
@@ -36,7 +48,7 @@ Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2src.c
    /**
     * GstV4l2Src::prepare-format:
     * @v4l2src: the v4l2src instance
-@@ -226,6 +233,9 @@ gst_v4l2src_set_property (GObject * obje
+@@ -236,6 +243,9 @@ gst_v4l2src_set_property (GObject * object,
    if (!gst_v4l2_object_set_property_helper (v4l2src->v4l2object,
            prop_id, value, pspec)) {
      switch (prop_id) {
@@ -46,7 +58,7 @@ Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2src.c
        default:
          G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
          break;
-@@ -242,6 +252,9 @@ gst_v4l2src_get_property (GObject * obje
+@@ -252,6 +262,9 @@ gst_v4l2src_get_property (GObject * object,
    if (!gst_v4l2_object_get_property_helper (v4l2src->v4l2object,
            prop_id, value, pspec)) {
      switch (prop_id) {
@@ -56,11 +68,58 @@ Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2src.c
        default:
          G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
          break;
-Index: gst-plugins-good-1.16.3/sys/v4l2/v4l2_calls.c
-===================================================================
---- gst-plugins-good-1.16.3.orig/sys/v4l2/v4l2_calls.c
-+++ gst-plugins-good-1.16.3/sys/v4l2/v4l2_calls.c
-@@ -617,6 +617,13 @@ gst_v4l2_open (GstV4l2Object * v4l2objec
+diff --git a/sys/v4l2/v4l2_calls.c b/sys/v4l2/v4l2_calls.c
+index 8bf01b3..9b7d025 100755
+--- a/sys/v4l2/v4l2_calls.c
++++ b/sys/v4l2/v4l2_calls.c
+@@ -510,6 +510,32 @@ gst_v4l2_adjust_buf_type (GstV4l2Object * v4l2object)
+   }
+ }
+ 
++
++// Get the default tvin_port for HDMI RX and Screen device
++int get_default_tvin_port(GstV4l2Object * v4l2object){
++
++  GstElement *e;
++
++  e = v4l2object->element;
++
++  GST_DEBUG_OBJECT (e, "getting default_tvin_port");
++
++  // HDMI RX
++  if (0 == strcmp("vdinvideo",(v4l2object->vcap.driver)) || 0 == strcmp("vdin_video",(v4l2object->vcap.driver))) {
++    // VPP0(Video)
++    GST_DEBUG_OBJECT (e, "hdmirx tvin-port use 0");
++    return 0;
++  }
++  // screen
++  if (0 == strcmp("amlvideo2",(v4l2object->vcap.driver))) {
++    // VPP0(OSD+Video)
++    GST_DEBUG_OBJECT (e, "screen tvin-port use 0x11000001");
++    return 0x11000001;
++  }
++
++  GST_DEBUG_OBJECT (e, "tvin-port use -1");
++  return -1;
++}
+ /******************************************************
+  * gst_v4l2_open():
+  *   open the video device (v4l2object->videodev)
+@@ -564,6 +590,13 @@ gst_v4l2_open (GstV4l2Object * v4l2object, GstV4l2Error * error)
+   if (!gst_v4l2_get_capabilities (v4l2object))
+     goto error;
+ 
++  // get default tvin port for device
++  // screen : OSD+Video
++  // HDMI RX : Video
++  if (v4l2object->tvin_port == -1) {
++    v4l2object->tvin_port = get_default_tvin_port (v4l2object);
++  }
++
+   /* do we need to be a capture device? */
+   if (GST_IS_V4L2SRC (v4l2object->element) &&
+       !(v4l2object->device_caps & (V4L2_CAP_VIDEO_CAPTURE |
+@@ -581,6 +614,13 @@ gst_v4l2_open (GstV4l2Object * v4l2object, GstV4l2Error * error)
  
    gst_v4l2_adjust_buf_type (v4l2object);
  
@@ -74,15 +133,3 @@ Index: gst-plugins-good-1.16.3/sys/v4l2/v4l2_calls.c
    /* create enumerations, posts errors. */
    if (!gst_v4l2_fill_lists (v4l2object))
      goto error;
-Index: gst-plugins-good-1.16.3/sys/v4l2/gstv4l2object.c
-===================================================================
---- gst-plugins-good-1.16.3.orig/sys/v4l2/gstv4l2object.c
-+++ gst-plugins-good-1.16.3/sys/v4l2/gstv4l2object.c
-@@ -537,6 +537,7 @@ gst_v4l2_object_new (GstElement * elemen
-   v4l2object->poll = gst_poll_new (TRUE);
-   v4l2object->can_wait_event = FALSE;
-   v4l2object->can_poll_device = TRUE;
-+  v4l2object->tvin_port = -1;
- 
-   return v4l2object;
- }

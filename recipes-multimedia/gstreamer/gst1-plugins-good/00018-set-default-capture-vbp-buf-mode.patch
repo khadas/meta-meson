@@ -1,8 +1,8 @@
 diff --git a/sys/v4l2/gstv4l2object.c b/sys/v4l2/gstv4l2object.c
-index 3d5dd87..76295f2 100644
+index 369a25c..e31b502 100755
 --- a/sys/v4l2/gstv4l2object.c
 +++ b/sys/v4l2/gstv4l2object.c
-@@ -491,6 +491,20 @@ gst_v4l2_object_new (GstElement * element,
+@@ -498,6 +498,20 @@ gst_v4l2_object_new (GstElement * element,
     */
    v4l2object = g_new0 (GstV4l2Object, 1);
  

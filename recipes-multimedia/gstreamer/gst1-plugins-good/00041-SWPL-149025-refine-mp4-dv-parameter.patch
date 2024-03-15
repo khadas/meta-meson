@@ -1,8 +1,8 @@
 diff --git a/gst/isomp4/fourcc.h b/gst/isomp4/fourcc.h
-index bf7ab0a..27669ba 100644
+index 2e75b11..3dcabfb 100755
 --- a/gst/isomp4/fourcc.h
 +++ b/gst/isomp4/fourcc.h
-@@ -94,7 +94,9 @@ G_BEGIN_DECLS
+@@ -93,7 +93,9 @@ G_BEGIN_DECLS
  #define FOURCC_alis     GST_MAKE_FOURCC('a','l','i','s')
  #define FOURCC_appl     GST_MAKE_FOURCC('a','p','p','l')
  #define FOURCC_avc1     GST_MAKE_FOURCC('a','v','c','1')
@@ -29,19 +29,18 @@ index bf7ab0a..27669ba 100644
  #define FOURCC_edts     GST_MAKE_FOURCC('e','d','t','s')
  #define FOURCC_elst     GST_MAKE_FOURCC('e','l','s','t')
  #define FOURCC_enda     GST_MAKE_FOURCC('e','n','d','a')
-@@ -268,6 +273,11 @@ G_BEGIN_DECLS
- #define FOURCC_vmhd     GST_MAKE_FOURCC('v','m','h','d')
+@@ -277,6 +282,10 @@ G_BEGIN_DECLS
  #define FOURCC_vp08     GST_MAKE_FOURCC('v','p','0','8')
  #define FOURCC_vp09     GST_MAKE_FOURCC('v','p','0','9')
-+#define FOURCC_vpcC     GST_MAKE_FOURCC('v','p','c','C')
+ #define FOURCC_vpcC     GST_MAKE_FOURCC('v','p','c','C')
 +#define FOURCC_vvc1     GST_MAKE_FOURCC('v','v','c','1')
 +#define FOURCC_vvcN     GST_MAKE_FOURCC('v','v','c','N')
 +#define FOURCC_vvi1     GST_MAKE_FOURCC('v','v','i','1')
 +#define FOURCC_vvs1     GST_MAKE_FOURCC('v','v','s','1')
- #define FOURCC_xvid     GST_MAKE_FOURCC('x','v','i','d')
- #define FOURCC_wave     GST_MAKE_FOURCC('w','a','v','e')
- #define FOURCC_wide     GST_MAKE_FOURCC('w','i','d','e')
-@@ -291,6 +301,8 @@ G_BEGIN_DECLS
+ #define FOURCC_vtta     GST_MAKE_FOURCC('v','t','t','a')
+ #define FOURCC_vttc     GST_MAKE_FOURCC('v','t','t','c')
+ #define FOURCC_vttC     GST_MAKE_FOURCC('v','t','t','C')
+@@ -305,6 +314,8 @@ G_BEGIN_DECLS
  #define FOURCC_vivo     GST_MAKE_FOURCC('v','i','v','o')
  #define FOURCC_saiz     GST_MAKE_FOURCC('s','a','i','z')
  #define FOURCC_saio     GST_MAKE_FOURCC('s','a','i','o')
@@ -51,13 +50,14 @@ index bf7ab0a..27669ba 100644
  #define FOURCC_3gg6     GST_MAKE_FOURCC('3','g','g','6')
  #define FOURCC_3gg7     GST_MAKE_FOURCC('3','g','g','7')
 diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
-index 239f5be..3128ae5 100644
+index 174bf69..40b39ee 100755
 --- a/gst/isomp4/qtdemux.c
 +++ b/gst/isomp4/qtdemux.c
-@@ -10781,6 +10781,239 @@ qtdemux_track_id_compare_func (QtDemuxStream ** stream1,
+@@ -10925,6 +10925,240 @@ qtdemux_track_id_compare_func (QtDemuxStream ** stream1,
    return (gint) (*stream1)->track_id - (gint) (*stream2)->track_id;
  }
  
++
 +static gint
 +qtdemux_parse_dvcc (guint32 sampleEntry, guint32 dvConfig, const guint8 * data, GstCaps *caps)
 +{
@@ -291,26 +291,26 @@ index 239f5be..3128ae5 100644
 +    return bRejectPlay ? -1 : 0;
 +}
 +
- /* parse the traks.
-  * With each track we associate a new QtDemuxStream that contains all the info
-  * about the trak.
-@@ -11383,6 +11616,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+ static gboolean
+ qtdemux_parse_stereo_svmi_atom (GstQTDemux * qtdemux, QtDemuxStream * stream,
+     GNode * stbl)
+@@ -11519,6 +11753,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
            case FOURCC_H264:
            case FOURCC_avc1:
            case FOURCC_avc3:
 +          case FOURCC_dav1:
            {
-             gint len = QT_UINT32 (stsd_entry_data) - 0x56;
-             const guint8 *avc_data = stsd_entry_data + 0x56;
-@@ -11390,6 +11624,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+             guint len = QT_UINT32 (stsd_entry_data);
+             len = len <= 0x56 ? 0 : len - 0x56;
+@@ -11527,6 +11762,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
              /* find avcC */
              while (len >= 0x8) {
-               gint size;
+               guint size;
 +              guint32 dvconfig;
  
-               if (QT_UINT32 (avc_data) <= len)
-                 size = QT_UINT32 (avc_data) - 0x8;
-@@ -11400,7 +11635,15 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+               if (QT_UINT32 (avc_data) <= 0x8)
+                 size = 0;
+@@ -11539,7 +11775,15 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
                  /* No real data, so break out */
                  break;
  
@@ -327,7 +327,7 @@ index 239f5be..3128ae5 100644
                  case FOURCC_avcC:
                  {
                    /* parse, if found */
-@@ -11421,6 +11664,17 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+@@ -11560,6 +11804,17 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
  
                    break;
                  }
@@ -345,7 +345,7 @@ index 239f5be..3128ae5 100644
                  case FOURCC_strf:
                  {
                    GstBuffer *buf;
-@@ -11481,60 +11735,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+@@ -11620,60 +11875,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
  
                    break;
                  }
@@ -406,15 +406,15 @@ index 239f5be..3128ae5 100644
                  default:
                    break;
                }
-@@ -11557,6 +11758,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+@@ -11697,6 +11899,7 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
              /* find hevc */
              while (len >= 0x8) {
-               gint size;
+               guint size;
 +              guint32 dvconfig;
  
-               if (QT_UINT32 (hevc_data) <= len)
-                 size = QT_UINT32 (hevc_data) - 0x8;
-@@ -11567,7 +11769,24 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+               if (QT_UINT32 (hevc_data) <= 0x8)
+                 size = 0;
+@@ -11709,7 +11912,24 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
                  /* No real data, so break out */
                  break;
  
@@ -440,7 +440,7 @@ index 239f5be..3128ae5 100644
                  case FOURCC_hvcC:
                  {
                    /* parse, if found */
-@@ -11588,30 +11807,6 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
+@@ -11730,30 +11950,6 @@ qtdemux_parse_trak (GstQTDemux * qtdemux, GNode * trak)
                    gst_buffer_unref (buf);
                    break;
                  }

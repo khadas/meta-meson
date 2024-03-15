@@ -1,8 +1,8 @@
 diff --git a/plugins/elements/gstmultiqueue.c b/plugins/elements/gstmultiqueue.c
-index d4feb89..ff809a0 100644
+index a739c85..7640a08 100644
 --- a/plugins/elements/gstmultiqueue.c
 +++ b/plugins/elements/gstmultiqueue.c
-@@ -1672,6 +1672,19 @@ gst_single_queue_push_one (GstMultiQueue * mq, GstSingleQueue * sq,
+@@ -1974,6 +1974,19 @@ gst_single_queue_push_one (GstMultiQueue * mq, GstSingleQueue * sq,
          /* Applying the gap may have made the queue non-full again, unblock it if needed */
          gst_data_queue_limits_changed (sq->queue);
          break;
@@ -18,7 +18,7 @@ index d4feb89..ff809a0 100644
 +         gst_multi_queue_post_buffering (mq);
 +         result = GST_FLOW_OK;
 +       }
-+       break;
++        break;
        default:
          break;
      }

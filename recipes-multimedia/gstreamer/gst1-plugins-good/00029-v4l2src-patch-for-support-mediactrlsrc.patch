@@ -1,0 +1,321 @@
+From edc5823142541bfe488dd76a66307904b4f0501f Mon Sep 17 00:00:00 2001
+From: "yi.liu" <yi.liu@amlogic.com>
+Date: Tue, 12 Mar 2024 19:48:19 +0800
+Subject: [PATCH] gstreamer-good: 00029 patch  [1/1]
+
+PD#SWPL-158766
+
+Problem:
+
+Solution:
+
+Verify:
+local
+
+Signed-off-by: yi.liu <yi.liu@amlogic.com>
+---
+ sys/v4l2/amlv4l2src_adaptation.c | 157 +++++++++++++++++++++++++++++++
+ sys/v4l2/amlv4l2src_adaptation.h |  40 ++++++++
+ sys/v4l2/gstv4l2src.c            |  16 ++++
+ sys/v4l2/meson.build             |   8 +-
+ 4 files changed, 219 insertions(+), 2 deletions(-)
+ create mode 100644 sys/v4l2/amlv4l2src_adaptation.c
+ create mode 100644 sys/v4l2/amlv4l2src_adaptation.h
+
+diff --git a/sys/v4l2/amlv4l2src_adaptation.c b/sys/v4l2/amlv4l2src_adaptation.c
+new file mode 100644
+index 0000000..635a5c8
+--- /dev/null
++++ b/sys/v4l2/amlv4l2src_adaptation.c
+@@ -0,0 +1,157 @@
++/*
++ * Copyright (c) 2019 Amlogic, Inc. All rights reserved.
++ *
++ * This source code is subject to the terms and conditions defined in below
++ * which is part of this source code package.
++ *
++ * Description: Amlv4l2src Library
++ */
++
++// Copyright (C) 2019 Amlogic, Inc. All rights reserved.
++//
++// All information contained herein is Amlogic confidential.
++//
++// This software is provided to you pursuant to Software License
++// Agreement (SLA) with Amlogic Inc ("Amlogic"). This software may be
++// used only in accordance with the terms of this agreement.
++//
++// Redistribution and use in source and binary forms, with or without
++// modification is strictly prohibited without prior written permission
++// from Amlogic.
++//
++// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++#include "amlv4l2src_adaptation.h"
++#include <dlfcn.h>
++#include <stdio.h>
++#include <gst/gst.h>
++typedef int (*p_aml_v4l2src_connect) (char** devname);
++typedef void (*p_aml_v4l2src_disconnect) ();
++typedef void (*p_aml_v4l2src_streamon) ();
++typedef void (*p_aml_v4l2src_streamoff) ();
++
++typedef struct _aml_src aml_src_t;
++struct _aml_src {
++    int isInit;
++    p_aml_v4l2src_connect connect;
++    p_aml_v4l2src_disconnect disconnect;
++    p_aml_v4l2src_streamon streamon;
++    p_aml_v4l2src_streamoff streamoff;
++};
++
++aml_src_t pamlsrc = {
++    .isInit = 0,
++    .connect = 0,
++    .disconnect = 0,
++    .streamon = 0,
++    .streamoff = 0
++};
++
++
++static int aml_v4l2src_init(void) {
++    void *handle;
++
++    if (pamlsrc.isInit){
++        return 0;
++    }
++
++    handle = dlopen("/usr/lib/libamlv4l2src.so", RTLD_LAZY);
++
++    if (!handle) {
++        GST_ERROR("Error: dlopen libamlv4l2src.so fail");
++        pamlsrc.isInit = 1;
++	 return -1;
++    }
++    pamlsrc.connect = (p_aml_v4l2src_connect)dlsym(handle, "aml_v4l2src_connect");
++    if (0 == pamlsrc.connect){
++        GST_ERROR("Error: dlsym aml_v4l2src_connect fail");
++        return -1;
++    }
++    pamlsrc.disconnect = (p_aml_v4l2src_disconnect)dlsym(handle, "aml_v4l2src_disconnect");
++    if (0 == pamlsrc.disconnect){
++        GST_ERROR("Error: dlsym aml_v4l2src_disconnect fail");
++        return -1;
++    }
++    pamlsrc.streamon = (p_aml_v4l2src_streamon)dlsym(handle, "aml_v4l2src_streamon");
++    if (0 == pamlsrc.streamon){
++        GST_ERROR("Error: dlsym aml_v4l2src_streamon fail");
++        return -1;
++    }
++    pamlsrc.streamoff = (p_aml_v4l2src_streamoff)dlsym(handle, "aml_v4l2src_streamoff");
++    if (0 == pamlsrc.streamoff){
++        GST_ERROR("Error: dlsym aml_v4l2src_streamoff fail");
++        return -1;
++    }
++
++    GST_DEBUG("aml_v4l2src_connect addr: %p", pamlsrc.connect);
++    GST_DEBUG("aml_v4l2src_disconnect addr: %p", pamlsrc.disconnect);
++    GST_DEBUG("aml_v4l2src_streamon addr: %p", pamlsrc.streamon);
++    GST_DEBUG("aml_v4l2src_streamoff addr: %p", pamlsrc.streamoff);
++
++    pamlsrc.isInit = 1;
++    return 0;
++}
++
++
++
++int aml_v4l2src_connect(char** devname) {
++    if(0 != aml_v4l2src_init()) {
++	 return -1;
++    }
++    if (pamlsrc.connect){
++        return pamlsrc.connect(devname);
++    }
++    return 0;
++}
++
++
++void aml_v4l2src_disconnect() {
++    if (0 != aml_v4l2src_init()) {
++        return;
++    }
++
++    if (pamlsrc.disconnect){
++        return pamlsrc.disconnect();
++    }
++
++    return;
++}
++
++
++
++void aml_v4l2src_streamon() {
++    if (0 != aml_v4l2src_init()) {
++        return;
++    }
++
++    if (pamlsrc.streamon){
++        return pamlsrc.streamon();
++    }
++
++    return;
++}
++
++
++
++void aml_v4l2src_streamoff() {
++    if (0 != aml_v4l2src_init()) {
++        return;
++    }
++
++    if (pamlsrc.streamoff){
++        return pamlsrc.streamoff();
++    }
++
++    return;
++}
++
+diff --git a/sys/v4l2/amlv4l2src_adaptation.h b/sys/v4l2/amlv4l2src_adaptation.h
+new file mode 100644
+index 0000000..3ee9442
+--- /dev/null
++++ b/sys/v4l2/amlv4l2src_adaptation.h
+@@ -0,0 +1,40 @@
++/*
++ * Copyright (c) 2019 Amlogic, Inc. All rights reserved.
++ *
++ * This source code is subject to the terms and conditions defined in below
++ * which is part of this source code package.
++ *
++ * Description: Amlv4l2src Library Header
++ */
++
++// Copyright (C) 2019 Amlogic, Inc. All rights reserved.
++//
++// All information contained herein is Amlogic confidential.
++//
++// This software is provided to you pursuant to Software License
++// Agreement (SLA) with Amlogic Inc ("Amlogic"). This software may be
++// used only in accordance with the terms of this agreement.
++//
++// Redistribution and use in source and binary forms, with or without
++// modification is strictly prohibited without prior written permission
++// from Amlogic.
++//
++// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
++// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
++// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
++// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
++// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
++// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
++// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++
++int aml_v4l2src_connect(char** devname);
++void aml_v4l2src_disconnect();
++void aml_v4l2src_streamon();
++void aml_v4l2src_streamoff();
++
++
+diff --git a/sys/v4l2/gstv4l2src.c b/sys/v4l2/gstv4l2src.c
+index 1f900dd..61a6c75 100755
+--- a/sys/v4l2/gstv4l2src.c
++++ b/sys/v4l2/gstv4l2src.c
+@@ -62,6 +62,7 @@
+ #include "gstv4l2vidorient.h"
+ 
+ #include "gst/gst-i18n-plugin.h"
++#include "amlv4l2src_adaptation.h"
+ 
+ GST_DEBUG_CATEGORY (v4l2src_debug);
+ #define GST_CAT_DEFAULT v4l2src_debug
+@@ -916,6 +917,10 @@ gst_v4l2src_stop (GstBaseSrc * src)
+   GstV4l2Src *v4l2src = GST_V4L2SRC (src);
+   GstV4l2Object *obj = v4l2src->v4l2object;
+ 
++  /* AML: stream off and disconnect the device(MIPI Camera/HDMI RX...) */
++  aml_v4l2src_streamoff();
++  aml_v4l2src_disconnect();
++
+   if (GST_V4L2_IS_ACTIVE (obj)) {
+     if (!gst_v4l2_object_stop (obj))
+       return FALSE;
+@@ -936,6 +941,8 @@ gst_v4l2src_change_state (GstElement * element, GstStateChange transition)
+ 
+   switch (transition) {
+     case GST_STATE_CHANGE_NULL_TO_READY:
++      /* AML: Connect to device (MIPI Camera/HDMI RX...) */
++      aml_v4l2src_connect(&obj->videodev);
+       /* open the device */
+       if (!gst_v4l2_object_open (obj, &error)) {
+         gst_v4l2_error (v4l2src, &error);
+@@ -946,6 +953,14 @@ gst_v4l2src_change_state (GstElement * element, GstStateChange transition)
+       break;
+   }
+ 
++  /* AML: call device to stream on */
++  switch (transition) {
++    case GST_STATE_CHANGE_READY_TO_PAUSED:
++      aml_v4l2src_streamon();
++      break;
++    default:
++      break;
++  }
+   ret = GST_ELEMENT_CLASS (parent_class)->change_state (element, transition);
+ 
+   switch (transition) {
+@@ -973,6 +988,7 @@ gst_v4l2src_create (GstPushSrc * src, GstBuffer ** buf)
+   GstClockTime delay;
+   GstMessage *qos_msg;
+   gboolean half_frame;
++  static gint streamon_flag = 0;
+ 
+   do {
+     ret = GST_BASE_SRC_CLASS (parent_class)->alloc (GST_BASE_SRC (src), 0,
+diff --git a/sys/v4l2/meson.build b/sys/v4l2/meson.build
+index 65f551f..eb7e00e 100755
+--- a/sys/v4l2/meson.build
++++ b/sys/v4l2/meson.build
+@@ -33,7 +33,8 @@ v4l2_sources = [
+   'v4l2-utils.c',
+   'tuner.c',
+   'tunerchannel.c',
+-  'tunernorm.c'
++  'tunernorm.c',
++  'amlv4l2src_adaptation.c',
+ ]
+ 
+ v4l2 = get_option('v4l2')
+@@ -60,11 +61,14 @@ if have_v4l2
+   libv4l2_dep = dependency('libv4l2', required : get_option('v4l2-libv4l2'))
+   cdata.set('HAVE_LIBV4L2', libv4l2_dep.found())
+ 
++  # libamlv4l2src for media controller framework
++  amlv4l2src_adaptation = declare_dependency(link_args : ['-ldl'])
++
+   gstv4l2 = library('gstvideo4linux2',
+     v4l2_sources,
+     c_args : gst_plugins_good_args,
+     include_directories : [configinc, libsinc],
+-    dependencies : [gstbase_dep, gstvideo_dep, gstallocators_dep, gudev_dep, libv4l2_dep],
++    dependencies : [gstbase_dep, gstvideo_dep, gstallocators_dep, gudev_dep, libv4l2_dep, amlv4l2src_adaptation],
+     install : true,
+     install_dir : plugins_install_dir,
+   )
+-- 
+2.25.1
+

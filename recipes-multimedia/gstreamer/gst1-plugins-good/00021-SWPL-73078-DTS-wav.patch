@@ -1,8 +1,8 @@
 diff --git a/gst/wavparse/gstwavparse.c b/gst/wavparse/gstwavparse.c
-index 3c11b27..6601e84 100644
+index 4a7be71..605a9c6 100755
 --- a/gst/wavparse/gstwavparse.c
 +++ b/gst/wavparse/gstwavparse.c
-@@ -1875,7 +1875,7 @@ gst_wavparse_have_dts_caps (const GstCaps * caps, GstTypeFindProbability prob)
+@@ -1877,7 +1877,7 @@ gst_wavparse_have_dts_caps (const GstCaps * caps, GstTypeFindProbability prob)
     *    to be DTS.  */
    if (prob > GST_TYPE_FIND_LIKELY)
      return TRUE;

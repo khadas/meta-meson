@@ -1,8 +1,8 @@
-Index: gst-plugins-good-1.16.3/gst/matroska/matroska-demux.c
-===================================================================
---- gst-plugins-good-1.16.3.orig/gst/matroska/matroska-demux.c
-+++ gst-plugins-good-1.16.3/gst/matroska/matroska-demux.c
-@@ -287,7 +287,7 @@ gst_matroska_demux_init (GstMatroskaDemu
+diff --git a/gst/matroska/matroska-demux.c b/gst/matroska/matroska-demux.c
+index f1fc616..d489a5e 100755
+--- a/gst/matroska/matroska-demux.c
++++ b/gst/matroska/matroska-demux.c
+@@ -302,7 +302,7 @@ gst_matroska_demux_init (GstMatroskaDemux * demux)
    GST_OBJECT_FLAG_SET (demux, GST_ELEMENT_FLAG_INDEXABLE);
  
    demux->flowcombiner = gst_flow_combiner_new ();
@@ -11,7 +11,7 @@ Index: gst-plugins-good-1.16.3/gst/matroska/matroska-demux.c
    /* finish off */
    gst_matroska_demux_reset (GST_ELEMENT (demux));
  }
-@@ -362,6 +362,9 @@ gst_matroska_demux_reset (GstElement * e
+@@ -378,6 +378,9 @@ gst_matroska_demux_reset (GstElement * element)
    demux->deferred_seek_event = NULL;
    demux->deferred_seek_pad = NULL;
  
@@ -21,7 +21,7 @@ Index: gst-plugins-good-1.16.3/gst/matroska/matroska-demux.c
    gst_flow_combiner_clear (demux->flowcombiner);
  }
  
-@@ -754,6 +757,15 @@ beach:
+@@ -693,6 +696,15 @@ beach:
    return ret;
  }
  
@@ -37,7 +37,7 @@ Index: gst-plugins-good-1.16.3/gst/matroska/matroska-demux.c
  static GstFlowReturn
  gst_matroska_demux_parse_stream (GstMatroskaDemux * demux, GstEbmlRead * ebml,
      GstMatroskaTrackContext ** dest_context)
-@@ -797,7 +809,7 @@ gst_matroska_demux_parse_stream (GstMatr
+@@ -736,7 +748,7 @@ gst_matroska_demux_parse_stream (GstMatroskaDemux * demux, GstEbmlRead * ebml,
    context->tags = gst_tag_list_new_empty ();
    g_queue_init (&context->protection_event_queue);
    context->protection_info = NULL;
@@ -46,7 +46,7 @@ Index: gst-plugins-good-1.16.3/gst/matroska/matroska-demux.c
    GST_DEBUG_OBJECT (demux, "Parsing a TrackEntry (%d tracks parsed so far)",
        demux->common.num_streams);
  
-@@ -5965,6 +5977,11 @@ gst_matroska_demux_handle_sink_event (Gs
+@@ -6200,6 +6212,11 @@ gst_matroska_demux_handle_sink_event (GstPad * pad, GstObject * parent,
        "have event type %s: %p on sink pad", GST_EVENT_TYPE_NAME (event), event);
  
    switch (GST_EVENT_TYPE (event)) {
@@ -58,11 +58,11 @@ Index: gst-plugins-good-1.16.3/gst/matroska/matroska-demux.c
      case GST_EVENT_SEGMENT:
      {
        const GstSegment *segment;
-Index: gst-plugins-good-1.16.3/gst/matroska/matroska-demux.h
-===================================================================
---- gst-plugins-good-1.16.3.orig/gst/matroska/matroska-demux.h
-+++ gst-plugins-good-1.16.3/gst/matroska/matroska-demux.h
-@@ -128,6 +128,10 @@ typedef struct _GstMatroskaDemux {
+diff --git a/gst/matroska/matroska-demux.h b/gst/matroska/matroska-demux.h
+index a0a2794..5a2b986 100755
+--- a/gst/matroska/matroska-demux.h
++++ b/gst/matroska/matroska-demux.h
+@@ -129,6 +129,10 @@ typedef struct _GstMatroskaDemux {
  
    /* Cached upstream length (default G_MAXUINT64) */
    guint64	           cached_length;
@@ -73,11 +73,11 @@ Index: gst-plugins-good-1.16.3/gst/matroska/matroska-demux.h
  } GstMatroskaDemux;
  
  typedef struct _GstMatroskaDemuxClass {
-Index: gst-plugins-good-1.16.3/gst/matroska/matroska-read-common.c
-===================================================================
---- gst-plugins-good-1.16.3.orig/gst/matroska/matroska-read-common.c
-+++ gst-plugins-good-1.16.3/gst/matroska/matroska-read-common.c
-@@ -448,7 +448,7 @@ gst_matroska_parse_protection_meta (gpoi
+diff --git a/gst/matroska/matroska-read-common.c b/gst/matroska/matroska-read-common.c
+index 6fadbba..c5d715d 100755
+--- a/gst/matroska/matroska-read-common.c
++++ b/gst/matroska/matroska-read-common.c
+@@ -448,7 +448,7 @@ gst_matroska_parse_protection_meta (gpointer * data_out, gsize * size_out,
  
    /* Unencrypted buffer */
    if (!(signal_byte & GST_MATROSKA_BLOCK_ENCRYPTED)) {
@@ -86,7 +86,7 @@ Index: gst-plugins-good-1.16.3/gst/matroska/matroska-read-common.c
    }
  
    /* Encrypted buffer */
-@@ -591,7 +591,7 @@ gst_matroska_parse_protection_meta (gpoi
+@@ -591,7 +591,7 @@ gst_matroska_parse_protection_meta (gpointer * data_out, gsize * size_out,
    } else {
      gst_structure_set (info_protect, "subsample_count", G_TYPE_UINT, 0, NULL);
    }

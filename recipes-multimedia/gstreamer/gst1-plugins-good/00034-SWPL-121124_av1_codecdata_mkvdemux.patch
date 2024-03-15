@@ -1,14 +1,14 @@
 diff --git a/gst/matroska/matroska-demux.c b/gst/matroska/matroska-demux.c
-index c1f07ae..c85a5c0 100644
+index f926823..f1fc616 100755
 --- a/gst/matroska/matroska-demux.c
 +++ b/gst/matroska/matroska-demux.c
-@@ -6387,7 +6387,8 @@ gst_matroska_demux_video_caps (GstMatroskaTrackVideoContext *
+@@ -6632,7 +6632,8 @@ gst_matroska_demux_video_caps (GstMatroskaTrackVideoContext *
      if (data) {
        GstBuffer *priv;
  
--      priv = gst_buffer_new_wrapped (g_memdup (data, size), size);
+-      priv = gst_buffer_new_memdup (data, size);
 +      //For now, only OBUs here, so skip 4 bytes OBU header
-+      priv = gst_buffer_new_wrapped (g_memdup (data + 4, size - 4), size - 4);
++      priv = gst_buffer_new_memdup (data+ 4, size-4);
        gst_caps_set_simple (caps, "codec_data", GST_TYPE_BUFFER, priv, NULL);
        gst_buffer_unref (priv);
      } else {
