@@ -43,7 +43,7 @@ KDIR = "aml-5.15"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
 LINUX_VERSION ?= "5.15.137"
-LINUX_VERSION:s7 = "5.15.131"
+LINUX_VERSION:s7 = "5.15.137"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
 
 PR = "r2"
