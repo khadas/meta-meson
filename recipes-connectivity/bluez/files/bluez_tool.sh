@@ -1,6 +1,46 @@
 #!/bin/sh
 
 configure_file="/etc/bluetooth/main.conf"
+controller_name="persist.dialserver.name"
+
+function check_controller_name()
+{
+        for i in `seq 1 10`
+        do
+                ps -A | grep bluetoothd 2> /dev/null
+                if [ $? -eq 0 ]
+                then
+                        echo $0 bluetoothd already running
+                        break;
+                else
+                        if [ $i -eq 10 ]
+                        then
+                                echo "bluetoothd no running"
+                                return -1
+                        fi
+                        usleep 200000
+                fi
+        done
+
+	str=$(prop get $controller_name)
+	if [ $? -eq 0 ]; then
+              name=$(echo ${str##*[})
+              name=$(echo ${name%%]})
+
+	fi
+	echo "get controller mode: $name"
+
+	curName=$(hciconfig -a | grep Name)
+	if [ $? -eq 0 ]; then
+              curName=$(echo ${curName#*\'})
+              curName=$(echo ${curName%*\'})
+	fi
+
+	if [ "$name" != "$curName" ]; then
+        	bluetoothctl system-alias $name
+        	echo "reset controller alias to $name, pre name: $curName"
+        fi
+}
 
 function hci0_rfkill()
 {
@@ -173,6 +213,7 @@ Blue_start()
 		done
 	fi
 
+	check_controller_name
 	service_up
 
 	echo "|-----bluez is ready----|"
