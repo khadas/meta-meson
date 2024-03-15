@@ -24,6 +24,7 @@ SOC:aq222 = "s805x2"
 SOC:ap232 = "s905c3"
 SOC:bf201 = "s805c1a"
 SOC:bg201 = "s805c1"
+SOC:bh201 = "s905y5"
 SOC:aq2432 = "s805c3"
 SOC:pxp = "p1_pxp"
 
