@@ -75,7 +75,7 @@ do_install:append() {
 SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'arka-launcher', 'arka.service', '', d)}"
 
 FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/Arka/png /usr/share/Arka/jpg ${systemd_unitdir}/system/"
-FILES_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '${libdir}', '', d)}"
-FILES_${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '/usr/share/zoneinfo/Asia', '', d)}"
-FILES_${PN}-dev = ""
+FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '${libdir}', '', d)}"
+FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '/usr/share/zoneinfo/Asia', '', d)}"
+FILES:${PN}-dev = ""
 INSANE_SKIP:${PN} = "installed-vs-shipped"
