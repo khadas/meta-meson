@@ -1,6 +1,6 @@
 SUMMARY="Irdeto dvt app for Yocto projects"
 LICENSE = "CLOSED"
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 
 PV = "git${SRCPV}"
 

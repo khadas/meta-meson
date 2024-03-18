@@ -8,7 +8,7 @@ DEPENDS = "gstreamer1.0 gstreamer1.0-plugins-base aml-subtitleserver"
 #SRC_URI = "git://${AML_GIT_ROOT}/linux/multimedia/gst_plugin_aml_subtitlesink.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git"

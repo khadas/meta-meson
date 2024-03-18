@@ -2,7 +2,7 @@ DESCRIPTION = "Android Verified Boot 2.0 with Linux DM-Verity support"
 LICENSE = "APACHE"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/APACHE;md5=b8228f2369d92593f53f0a0685ebd3c0"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 PR = "r0"
 

@@ -10,7 +10,7 @@ MBRANCH = "amlogic-5.4-dev"
 #For common patches
 MDIR = "media_modules"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-5.4/amlogic/${MDIR}')}"
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV ?= "5.4"
 
 do_configure[noexec] = "1"

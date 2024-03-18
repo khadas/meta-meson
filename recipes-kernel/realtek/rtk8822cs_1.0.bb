@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/wifi/realtek/drivers/8822cs.git;protocol=${AML_GIT_PROTOCOL};branch=r-amlogic;nobranch=1"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
 do_populate_lic[noexec] = "1"

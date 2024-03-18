@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/gst-aml-drmbufferpool1', '../')}"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 DEPENDS = " gstreamer1.0 gstreamer1.0-plugins-base libdrm "

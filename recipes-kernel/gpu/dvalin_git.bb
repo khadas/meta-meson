@@ -5,7 +5,7 @@ LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://t83x/kernel/license.txt;md5=13e14ae1bd7ad5bff731bba4a31bb510"
 include gpu.inc
 
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 VER = "r44p0"
 PV = "${VER}git${SRCPV}"
 

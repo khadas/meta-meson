@@ -3,7 +3,7 @@ SUMMARY = "aml dvb ota for dtvkit"
 LICENSE = "CLOSED"
 #LIC_FILES_CHKSUM = "file://${COREBASE}/../${AML_META_LAYER}/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 DEPENDS = " aml-dvb android-rpcservice liblog jsoncpp"

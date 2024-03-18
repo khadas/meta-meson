@@ -15,7 +15,7 @@ inherit autotools pkgconfig
 
 DISABLE_STATIC = ""
 
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 #FILESEXTRAPATHS:prepend := "${THISDIR}/files:"

@@ -16,7 +16,7 @@ S = "${WORKDIR}"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 DEPENDS = "openssl-native xxd-native"
 
 do_install() {

@@ -13,7 +13,7 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/lib
 
 #SRCREV="bb62070629f62c580b32cdfe2cfaa3928611d6f3"
 #use head version, ?= conditonal operator can be control revision in external rdk-next.conf like configuration file
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 
 ARM_TARGET = "arm.aapcs-linux.hard"
 ARM_TARGET:aarch64 = "aarch64.lp64."

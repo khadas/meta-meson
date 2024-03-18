@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 DEPENDS += "libion"
 LIBION_SRC_DIR = "${COREBASE}/../aml-comp/hardware/aml-5.4/amlogic/libion"
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 
 do_configure[noexec] = "1"
 

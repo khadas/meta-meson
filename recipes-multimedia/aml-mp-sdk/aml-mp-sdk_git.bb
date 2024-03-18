@@ -10,7 +10,7 @@ DEPENDS += "aml-amaudioutils liblog aml-libdvr aml-mediahal-sdk aml-cas-hal aml-
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/common/aml_mp_sdk;protocol=${AML_GIT_PROTOCOL};branch=master;"
 #SRC_URI = "file://aml-comp/multimedia/aml_mp_sdk;protocol=file;branch=master;"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml_mp_sdk')}"
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 #DEPENDS += "libbinder"
 S="${WORKDIR}/git"
 RDEPENDS:${PN} += "aml-amaudioutils liblog aml-libdvr aml-mediahal-sdk aml-cas-hal aml-subtitleserver"

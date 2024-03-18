@@ -8,7 +8,7 @@ DEPENDS += "liblog libdrm-meson wayland wayland-protocols wayland-native"
 RDEPENDS:${PN} += "libdrm-meson liblog"
 #SRC_URI = "git://${AML_GIT_ROOT}/linux/multimedia/libvideorender.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git"

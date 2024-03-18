@@ -9,7 +9,7 @@ RDEPENDS:${PN} += " npu-common nndemo-library liblog"
 inherit autotools pkgconfig
 
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 
 do_configure[noexec] = "1"
 

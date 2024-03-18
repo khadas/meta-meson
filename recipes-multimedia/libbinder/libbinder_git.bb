@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${THISDIR}/files/LICENSE-2.0.txt;md5=3b83ef96387f1465
 
 DEPENDS = "linux-meson"
 
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 
 PV = "${SRCPV}"
 

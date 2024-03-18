@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/wifi/amlogic/drivers/w2.git;protocol=${AML_GIT_PROTOCOL};branch=r-amlogic"
 SRC_URI:append = " file://w2_bt_fw_uart.bin"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
 do_configure[noexec] = "1"

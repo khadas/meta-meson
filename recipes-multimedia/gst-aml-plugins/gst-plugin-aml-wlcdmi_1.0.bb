@@ -13,7 +13,7 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/gst
 
 inherit meson pkgconfig
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 #PV = "${SRCPV}"
 S = "${WORKDIR}"
 

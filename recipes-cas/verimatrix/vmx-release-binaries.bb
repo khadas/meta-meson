@@ -8,7 +8,7 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/vmx/vmx
 
 RDEPENDS:${PN} += "aml-libdvr aml-mediahal-sdk aml-audio-service liblog vmx-sdk-rel optee-userspace"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 S = "${WORKDIR}/git"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 

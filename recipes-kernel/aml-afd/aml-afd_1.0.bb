@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 #SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/AFD.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
 S = "${WORKDIR}/git"

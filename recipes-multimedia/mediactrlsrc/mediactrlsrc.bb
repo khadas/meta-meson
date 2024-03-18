@@ -1,7 +1,7 @@
 UMMARY = "amlogic mediactrl source reference"
 LICENSE = "CLOSED"
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES','mediactrlsrc-cam','isp','',d)}"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES','mediactrlsrc-hdmi','aml-tvserver','',d)}"

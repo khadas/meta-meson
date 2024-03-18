@@ -8,7 +8,7 @@ DEPENDS += "linux-meson"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "5.15"
 S = "${WORKDIR}/git"
 

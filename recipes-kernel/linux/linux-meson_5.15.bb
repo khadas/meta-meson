@@ -57,7 +57,7 @@ LINUX_VERSION_EXTENSION ?= "-amlogic"
 KERNEL_FEATURES:remove = "cfg/fs/vfat.scc"
 
 PR = "r2"
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 PV = "${LINUX_VERSION}+git${SRCPV}"
 
 KERNEL_IMAGETYPE = "Image"

@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 inherit native
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 do_configure[noexec] = "1"
 DEPENDS = "openssl-native"
 

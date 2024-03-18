@@ -1,7 +1,7 @@
 DESCRIPTION = "aml secdmx library"
 LICENSE = "AMLOGIC"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git"

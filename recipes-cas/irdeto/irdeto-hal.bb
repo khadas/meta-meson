@@ -12,7 +12,7 @@ PR = "r0"
 SRC_URI:append = " ${@get_patch_list_with_path('${COREBASE}/aml-patches/vendor/irdeto/hal')}"
 
 PN = 'irdeto-hal'
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"

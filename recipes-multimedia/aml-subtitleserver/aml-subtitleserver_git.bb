@@ -12,7 +12,7 @@ INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
 DEPENDS = " libbinder liblog aml-zvbi libtinyxml2 cairo libpng aml-mediahal-sdk"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_subtitleserver.git;protocol=${AML_GIT_PROTOCOL};branch=master"
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 SRC_URI +="file://subtitleserver.service"
 SRC_URI +="file://subtitleserver.init"

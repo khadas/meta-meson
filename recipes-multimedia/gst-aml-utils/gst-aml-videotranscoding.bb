@@ -8,7 +8,7 @@ DEPENDS += " gstreamer1.0 gstreamer1.0-plugins-base "
 RDEPENDS:${PN} = " "
 
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 PV = "${SRCPV}"
 
 #S = "${WORKDIR}/git/"

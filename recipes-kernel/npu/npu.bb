@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;m
 
 DEPENDS += "linux-meson"
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 
 INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
 do_compile() {

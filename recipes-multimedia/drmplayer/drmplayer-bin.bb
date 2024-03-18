@@ -9,7 +9,7 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/lib
 #PV = "git${SRCPV}"
 
 S = "${WORKDIR}/git"
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 
 do_compile[noexec] = "1"
 

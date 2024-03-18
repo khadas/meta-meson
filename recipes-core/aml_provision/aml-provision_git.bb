@@ -19,7 +19,7 @@ INITSCRIPT_PARAMS = "start 30 2 3 4 5 . stop 80 0 6 1 ."
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git"

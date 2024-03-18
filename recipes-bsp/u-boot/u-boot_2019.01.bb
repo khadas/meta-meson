@@ -42,14 +42,14 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/uboot/fip', 'f
 
 do_configure[noexec] = "1"
 
-SRCREV_bl2 ?="${AUTOREV}"
-SRCREV_bl30 ?="${AUTOREV}"
-SRCREV_src_ao ?="${AUTOREV}"
-SRCREV_bl31 ?="${AUTOREV}"
-SRCREV_bl31-1.3 ?="${AUTOREV}"
-SRCREV_bl32-3.8 ?="${AUTOREV}"
-SRCREV_bl33 ?="${AUTOREV}"
-SRCREV_fip ?="${AUTOREV}"
+#SRCREV_bl2 ?="${AUTOREV}"
+#SRCREV_bl30 ?="${AUTOREV}"
+#SRCREV_src_ao ?="${AUTOREV}"
+#SRCREV_bl31 ?="${AUTOREV}"
+#SRCREV_bl31-1.3 ?="${AUTOREV}"
+#SRCREV_bl32-3.8 ?="${AUTOREV}"
+#SRCREV_bl33 ?="${AUTOREV}"
+#SRCREV_fip ?="${AUTOREV}"
 
 S = "${WORKDIR}/uboot-repo"
 SRCREV_FORMAT = "bl2_bl30_src_ao_bl31_bl31-1.3_bl32-3.8_bl33_fip"

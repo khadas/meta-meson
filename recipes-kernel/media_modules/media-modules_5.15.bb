@@ -11,7 +11,7 @@ MBRANCH = "amlogic-5.15-dev"
 MDIR = "media_modules"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/hardware/aml-5.15/amlogic/${MDIR}')}"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV ?= "git${SRCPV}"
 
 do_configure[noexec] = "1"

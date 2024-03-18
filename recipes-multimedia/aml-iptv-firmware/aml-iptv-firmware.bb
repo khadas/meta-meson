@@ -10,7 +10,7 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/aml
 #DEPENDS += "aml-dvb aml-mediahal-sdk optee-userspace aml-secmem liblog aml-mp-sdk ffmpeg-vendor"
 #RDEPENDS:${PN} += "aml-audio-service libdrm-meson"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 ARM_TARGET = "arm.aapcs-linux.hard"

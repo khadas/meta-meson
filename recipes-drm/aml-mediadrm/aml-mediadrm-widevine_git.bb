@@ -14,7 +14,7 @@ PROVIDES = "widevine"
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm')}"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
 S = "${WORKDIR}/git"

@@ -12,7 +12,7 @@ LICENSE:libswresample = "AMLOGIC"
 LICENSE:libswscale = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 S = "${WORKDIR}/git"
 #SRC_URI = " git://${AML_GIT_ROOT}/platform/external/ffmpeg-aml;protocol=${AML_GIT_PROTOCOL};branch=s-amlogic"
 

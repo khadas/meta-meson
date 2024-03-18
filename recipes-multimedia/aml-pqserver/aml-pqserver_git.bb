@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/aml_pqserver.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 SRC_URI +="file://pqserver.service"
 SRC_URI += "file://pqserver.init"

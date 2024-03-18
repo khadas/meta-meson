@@ -9,7 +9,7 @@ SRC_URI:append = " file://a2dp_mode_cfg.txt"
 SRC_URI:append = " file://aml_bt_rf.txt"
 SRC_URI:append = " file://w1_bt_fw_uart.bin"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
 do_configure[noexec] = "1"

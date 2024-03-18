@@ -2,7 +2,7 @@ SUMMARY = "aml libion library"
 LICENSE = "AMLOGIC"
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 
 #PACKAGES = "${PN} FILES-${PN}-lib ${PN}-dev ${PN}-dbg ${PN}-staticdev"
 

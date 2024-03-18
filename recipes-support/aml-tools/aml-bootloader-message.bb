@@ -8,7 +8,7 @@ SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "absystem", "file://success-
 
 DEPENDS += "zlib"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/bootloader_message"

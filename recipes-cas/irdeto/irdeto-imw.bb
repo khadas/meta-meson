@@ -17,7 +17,7 @@ SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
 #PN = 'irdeto-imw'
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"

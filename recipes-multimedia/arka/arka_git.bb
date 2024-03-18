@@ -6,7 +6,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " file://arka.service "
 SRC_URI:append = " file://arka.init "
 SRC_URI:append = " file://Kolkata "
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 
 PV = "git${SRCPV}"
 

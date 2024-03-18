@@ -8,7 +8,7 @@ ARM_TARGET:aarch64 = "lib64"
 #SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/android-rpcservice;protocol=${AML_GIT_PROTOCOL};branch=p-amlogic"
 #dtvkit-ciplus dtvkit-dsmcc  dtvkit-mheg5
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 DEPENDS = "dtvkit-dvbcore dtvkit-amlogic dtvkit-ciplus dtvkit-dsmcc  dtvkit-mheg5   jsoncpp  libbinder liblog libjpeg-turbo libpng zlib freetype sqlite3 libxml2 curl freetype openssl aml-mp-sdk aml-subtitleserver optee-userspace"

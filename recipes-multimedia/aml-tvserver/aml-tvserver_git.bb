@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/tvserver.git;protocol=${AML_GIT_PROTOCOL};branch=pure-linux-amlogic"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 SRC_URI +="file://tvserver.service"
 

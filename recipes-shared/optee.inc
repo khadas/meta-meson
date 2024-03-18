@@ -12,7 +12,7 @@ TDIR = "tdk/v3.8.0"
 TDIR:s7 = "tdk/v3.18.0"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/${TDIR}', '${TDIR}')}"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 SRCREV_FORMAT = "tdk"
 #INC_PR = "${TDK_VERSION}"
 PV = "git${SRCPV}"

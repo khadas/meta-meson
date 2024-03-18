@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://${THISDIR}/android-tools-libatrace/LICENSE-2.0;md5=3b
 
 DEPENDS = "zlib"
 
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 
 PV = "${SRCPV}"
 

@@ -10,7 +10,7 @@ do_populate_lic[noexec] = "1"
 PROVIDES = "youtubesign-bin"
 RDEPENDS:${PN} += " optee-userspace"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 #SRC_URI = "git://${AML_GIT_ROOT}/vendor/amlogic/prebuilt/libmediadrm;protocol=${AML_GIT_ROOT_PROTOCOL};branch=linux-buildroot"
 
 S = "${WORKDIR}/git"

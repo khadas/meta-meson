@@ -1,7 +1,7 @@
 SUMMARY  = "Amlogic screencapture source reference"
 LICENSE = "CLOSED"
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 PV = "${@bb.parse.vars_from_file(d.getVar('FILE'),d)[1] or '1.0'}"
 PN = "${@bb.parse.vars_from_file(d.getVar('FILE'),d)[0] or 'aml-screencapture'}"
 

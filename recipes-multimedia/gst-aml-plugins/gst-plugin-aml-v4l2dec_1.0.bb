@@ -9,7 +9,7 @@ RDEPENDS:${PN} = " "
 
 LDFLAGS:append  = " -L${STAGING_LIBDIR}/gstreamer-1.0 -Wl,-rpath -Wl,/usr/lib/gstreamer-1.0 "
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/gst-plugin-aml-v4l2dec-1.0"

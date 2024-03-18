@@ -12,7 +12,7 @@ PR = "r0"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/nagra/nagra-sdk')}"
 
 PN = 'nagra-sdk'
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 S = "${WORKDIR}/git"
 
 ARM_TARGET = "usr/lib"

@@ -4,7 +4,7 @@ LICENSE = "CLOSED"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/realtek/bluetooth.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/rtk_hciattach"

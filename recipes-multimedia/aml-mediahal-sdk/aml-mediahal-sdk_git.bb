@@ -16,7 +16,7 @@ RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'wayland',
 
 #do_compile[noexec] = "1"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 
 PV = "git${SRCPV}"
 

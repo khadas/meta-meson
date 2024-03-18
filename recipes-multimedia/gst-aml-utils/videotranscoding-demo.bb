@@ -9,7 +9,7 @@ RDEPENDS:${PN} += "gst-aml-videotranscoding"
 
 inherit autotools pkgconfig
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 
 do_configure[noexec] = "1"
 

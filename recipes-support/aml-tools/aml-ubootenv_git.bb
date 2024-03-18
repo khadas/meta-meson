@@ -5,7 +5,7 @@ LICENSE = "CLOSED"
 
 RDEPENDS:${PN} += "aml-ubootenv"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/ubootenv"

@@ -6,7 +6,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/android-tools-logcat:"
 
 LIC_FILES_CHKSUM = "file://${THISDIR}/android-tools-logcat/LICENSE-2.0;md5=3b83ef96387f14655fc854ddc3c6bd57"
 
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 
 PV = "${SRCPV}"
 

@@ -10,7 +10,7 @@ RDEPENDS:${PN} = " aml-audio-service"
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/gst-aml-plugins1/', '../')}"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/gst-aml-plugins-1.0"

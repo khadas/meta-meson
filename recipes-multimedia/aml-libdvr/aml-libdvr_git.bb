@@ -8,7 +8,7 @@ RDEPENDS:${PN} += "aml-audio-service aml-mediahal-sdk liblog aml-dvb"
 
 #do_compile[noexec] = "1"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
 ARM_TARGET = "arm.aapcs-linux.hard"

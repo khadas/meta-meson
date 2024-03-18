@@ -11,7 +11,7 @@ RDEPENDS_${PN} = " libge2d"
 
 inherit autotools pkgconfig
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 
 do_configure[noexec] = "1"
 

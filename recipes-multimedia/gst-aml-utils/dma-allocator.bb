@@ -11,7 +11,7 @@ RDEPENDS:${PN} += " liblog"
 inherit autotools pkgconfig
 
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 
 do_configure[noexec] = "1"
 

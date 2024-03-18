@@ -10,7 +10,7 @@ SRC_URI += "file://recovery.bmp \
 inherit pkgconfig
 
 DEPENDS += "swupdate"
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 S = "${WORKDIR}/git"
 

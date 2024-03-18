@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 
 DEPENDS += "qtbase qtmultimedia"
 
-SRCREV ?="${AUTOREV}"
+#SRCREV ?="${AUTOREV}"
 PV = "${@bb.parse.vars_from_file(d.getVar('FILE'),d)[1] or '1.0'}"
 PN = "${@bb.parse.vars_from_file(d.getVar('FILE'),d)[0] or 'aml-qt-camera'}"
 

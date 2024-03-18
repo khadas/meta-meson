@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM=""
 #SRC_URI:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'nagra', 'git://${AML_GIT_ROOT_OP}/nagra-sdk-nocs.git;protocol=${AML_GIT_ROOT_PROTOCOL};branch=projects/openlinux/v3.6','', d)}"
 SRC_URI:append = " ${@get_patch_list_with_path('${COREBASE}/aml-patches/vendor/nagra/nagra-sdk')}"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 S = "${WORKDIR}/git"
 

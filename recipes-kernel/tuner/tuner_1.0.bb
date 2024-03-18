@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 #SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/tuner.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-4.9-dev"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "git${SRCPV}"
 
 do_configure[noexec] = "1"

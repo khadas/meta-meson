@@ -10,7 +10,7 @@ RDEPENDS:${PN} += " dma-allocator gst-aml-dma-allocator gst-aml-gfx2d detect-lib
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${COREBASE}/../aml-patches/multimedia/gst-plugin-nn/', '../')}"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 
 #S = "${WORKDIR}/git/"
 

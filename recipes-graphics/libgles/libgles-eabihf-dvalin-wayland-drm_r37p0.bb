@@ -22,7 +22,7 @@ RPROVIDES:${PN} += "libwayland-egl.so"
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/meson_mali')}"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 GPU_MODEL = "dvalin"

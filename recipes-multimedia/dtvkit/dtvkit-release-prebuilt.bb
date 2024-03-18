@@ -21,7 +21,7 @@ ARM_TARGET:aarch64 = "lib64"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/DTVKit/releaseDTVKit;protocol=${AML_GIT_PROTOCOL};branch=linux-rdk"
 #use head version, ?= conditonal operator can be control revision in external rdk-next.conf like configuration file
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 SRC_URI +="file://dtvkit.service"
 SRC_URI +="file://dtvkit_low_mem.service"
 SRC_URI +="file://dtvkit.init "

@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 inherit cmake pkgconfig
 DEPENDS += "liblog aml-amaudioutils"
 
-SRCREV = "${AUTOREV}"
+#SRCREV = "${AUTOREV}"
 do_package_qa[noexec] = "1"
 
 S="${WORKDIR}/git"

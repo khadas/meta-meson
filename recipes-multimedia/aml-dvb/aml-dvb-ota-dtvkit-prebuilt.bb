@@ -6,7 +6,7 @@ RDEPENDS:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', ' androi
 ARM_TARGET = "lib32"
 ARM_TARGET_aarch64 = "lib64"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 

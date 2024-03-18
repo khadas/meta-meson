@@ -10,7 +10,7 @@ SRC_URI:append = " file://audioserver.init"
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/hal_audio_service')}"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 PROVIDES = "${PN}-testapps"

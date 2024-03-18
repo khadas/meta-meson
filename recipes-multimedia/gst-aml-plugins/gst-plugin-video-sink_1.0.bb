@@ -8,7 +8,7 @@ RDEPENDS:${PN} = " aml-mediahal-sdk "
 
 # LDFLAGS:append  = " -lgstamlhalasink -lmediahal_videorender -lgstvideo-1.0 -lgstdrmbufferpool -lgstdrmallocator -L${STAGING_LIBDIR}/gstreamer-1.0 -Wl,-rpath -Wl,/usr/lib/gstreamer-1.0"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/gst-plugin-video-sink-1.0"

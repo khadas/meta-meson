@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/multimedia/libmediadrm/wlcdmi-bin')}"
 
 S = "${WORKDIR}/git"
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 
 EXTRA_OEMAKE=" STAGING_DIR=${STAGING_DIR_TARGET} \
                  TARGET_DIR=${D} \
