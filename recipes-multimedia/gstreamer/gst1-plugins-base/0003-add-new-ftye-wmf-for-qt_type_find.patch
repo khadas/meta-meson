@@ -1,40 +1,17 @@
-From 62abce48a0565a71f8e212d9413035e374c92860 Mon Sep 17 00:00:00 2001
-From: "sheng.liu" <sheng.liu@amlogic.com>
-Date: Tue, 26 Apr 2022 10:02:03 +0800
-Subject: [PATCH] gstreamer1.0-plugins-base: CB2 add new ftye wmf for
- qt_type_find [1/1]
-
-PD#SWPL-73426
-
-Problem:
-Ftyp wmf  mp4 file cannot be recognized, so can not be playback
-
-Solution:
-Add case ftye wmf in qt_type_find to recognize Ftyp wmf mp4 file
-
-Verify:
-AP212
----
- gst/typefind/gsttypefindfunctions.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
 diff --git a/gst/typefind/gsttypefindfunctions.c b/gst/typefind/gsttypefindfunctions.c
-index eec1034..c336bf0 100644
+index 5a4df31..1eefbaa 100644
 --- a/gst/typefind/gsttypefindfunctions.c
 +++ b/gst/typefind/gsttypefindfunctions.c
-@@ -3350,6 +3350,12 @@ qt_type_find (GstTypeFind * tf, gpointer unused)
-       break;
+@@ -3497,6 +3497,12 @@ qt_type_find (GstTypeFind * tf, gpointer unused)
+       }
      }
  
-+    if (STRNCMP (&data[4], "ftypwmf ", 8) == 0) {
-+      tip = GST_TYPE_FIND_MAXIMUM;
-+      variant = "wmf";
-+      break;
++    if (strncmp (&data[4], "ftypwmf ", 8) == 0) {
++        tip = GST_TYPE_FIND_MAXIMUM;
++        variant = "wmf";
++        break;
 +    }
 +
-     /* box/atom types that are in common with ISO base media file format */
-     if (STRNCMP (&data[4], "moov", 4) == 0 ||
-         STRNCMP (&data[4], "mdat", 4) == 0 ||
--- 
-2.25.1
-
+     /* top-level box/atom types that are in common with ISO base media file format */
+     if (memcmp (&data[4], "moov", 4) == 0 ||
+         memcmp (&data[4], "mdat", 4) == 0 ||

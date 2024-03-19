@@ -1,8 +1,8 @@
 diff --git a/ext/vorbis/gstvorbisdec.c b/ext/vorbis/gstvorbisdec.c
-index a0b48b7..57a0c23 100644
+index 6a410ed..b51d58a 100644
 --- a/ext/vorbis/gstvorbisdec.c
 +++ b/ext/vorbis/gstvorbisdec.c
-@@ -377,6 +377,72 @@ vorbis_dec_handle_header_buffer (GstVorbisDec * vd, GstBuffer * buffer)
+@@ -390,6 +390,71 @@ vorbis_dec_handle_header_buffer (GstVorbisDec * vd, GstBuffer * buffer)
    return ret;
  }
  
@@ -54,7 +54,7 @@ index a0b48b7..57a0c23 100644
 +    if (offset + length[i] > codec_data_size)
 +      goto error;
 +
-+    hdr = gst_buffer_new_wrapped (g_memdup (p + offset, length[i]), length[i]);
++    hdr = gst_buffer_new_wrapped (g_memdup2 (p + offset, length[i]), length[i]);
 +    gst_buffer_list_add (list, hdr);
 +
 +    offset += length[i];
@@ -71,11 +71,10 @@ index a0b48b7..57a0c23 100644
 +  }
 +}
 +
-+
  #define MIN_NUM_HEADERS 3
  static GstFlowReturn
  vorbis_dec_handle_header_caps (GstVorbisDec * vd)
-@@ -385,6 +451,8 @@ vorbis_dec_handle_header_caps (GstVorbisDec * vd)
+@@ -398,6 +463,8 @@ vorbis_dec_handle_header_caps (GstVorbisDec * vd)
    GstCaps *caps;
    GstStructure *s = NULL;
    const GValue *array = NULL;
@@ -84,7 +83,7 @@ index a0b48b7..57a0c23 100644
  
    caps = gst_pad_get_current_caps (GST_AUDIO_DECODER_SINK_PAD (vd));
    if (caps)
-@@ -392,6 +460,35 @@ vorbis_dec_handle_header_caps (GstVorbisDec * vd)
+@@ -405,6 +472,35 @@ vorbis_dec_handle_header_caps (GstVorbisDec * vd)
    if (s)
      array = gst_structure_get_value (s, "streamheader");
  

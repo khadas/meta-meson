@@ -1,28 +1,8 @@
-From 9cadb19ec8309e5fa4b79259d2aea9396fc761ca Mon Sep 17 00:00:00 2001
-From: "kenan.liu" <kenan.liu@amlogic.com>
-Date: Tue, 21 Dec 2021 10:05:28 +0800
-Subject: [PATCH] libav: CB0 implement gstlibav with ffmpeg in Gstreamer [1/1]
-
-PD#SWPL-57554
-
-Problem:
-default disable ffmpeg-demux for not affect other project
-
-Solution:
-ENABLE_FFMPEG_DEMUX=TRUE means using ffmpeg-demux
-
-Verify:
-AP222
----
- ext/libav/gstavcodecmap.c | 17 ++++---
- ext/libav/gstavdemux.c    | 96 +++++++++++++++++++++------------------
- 2 files changed, 61 insertions(+), 52 deletions(-)
-
 diff --git a/ext/libav/gstavcodecmap.c b/ext/libav/gstavcodecmap.c
-index 56a8a03..f011c71 100644
+index df3aa6b..1d40153 100644
 --- a/ext/libav/gstavcodecmap.c
 +++ b/ext/libav/gstavcodecmap.c
-@@ -3522,14 +3522,16 @@ gst_ffmpeg_formatid_to_caps (const gchar * format_name)
+@@ -3520,14 +3520,16 @@ gst_ffmpeg_formatid_to_caps (const gchar * format_name)
    GstCaps *caps = NULL;
  
    if (!strcmp (format_name, "mpeg")) {
@@ -43,7 +23,7 @@ index 56a8a03..f011c71 100644
    } else if (!strcmp (format_name, "asf")) {
      caps = gst_caps_new_empty_simple ("video/x-ms-asf");
    } else if (!strcmp (format_name, "avi")) {
-@@ -3547,7 +3549,7 @@ gst_ffmpeg_formatid_to_caps (const gchar * format_name)
+@@ -3545,7 +3547,7 @@ gst_ffmpeg_formatid_to_caps (const gchar * format_name)
          "systemstream", G_TYPE_BOOLEAN, TRUE, NULL);
    } else if (!strcmp (format_name, "4xm")) {
      caps = gst_caps_new_empty_simple ("video/x-4xm");
@@ -52,7 +32,7 @@ index 56a8a03..f011c71 100644
      caps = gst_caps_new_empty_simple ("video/x-matroska");
    } else if (!strcmp (format_name, "ivf")) {
      caps = gst_caps_new_empty_simple ("video/x-ivf");
-@@ -3561,7 +3563,7 @@ gst_ffmpeg_formatid_to_caps (const gchar * format_name)
+@@ -3559,7 +3561,7 @@ gst_ffmpeg_formatid_to_caps (const gchar * format_name)
      caps = gst_caps_new_empty_simple ("audio/x-ttafile");
    } else if (!strcmp (format_name, "aiff")) {
      caps = gst_caps_new_empty_simple ("audio/x-aiff");
@@ -61,7 +41,7 @@ index 56a8a03..f011c71 100644
      caps =
          gst_caps_from_string
          ("application/x-3gp; video/quicktime; audio/x-m4a");
-@@ -3583,7 +3585,8 @@ gst_ffmpeg_formatid_to_caps (const gchar * format_name)
+@@ -3581,7 +3583,8 @@ gst_ffmpeg_formatid_to_caps (const gchar * format_name)
    } else if (!strcmp (format_name, "gif")) {
      caps = gst_caps_from_string ("image/gif");
    } else if (!strcmp (format_name, "ogg")) {
@@ -72,10 +52,10 @@ index 56a8a03..f011c71 100644
      caps = gst_caps_from_string ("application/mxf");
    } else if (!strcmp (format_name, "gxf")) {
 diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
-index fa5fd4e..7b27b29 100644
+index 37de3fa..0fd47bf 100644
 --- a/ext/libav/gstavdemux.c
 +++ b/ext/libav/gstavdemux.c
-@@ -1982,6 +1982,7 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
+@@ -2015,6 +2015,7 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
    };
  
    void *i = 0;
@@ -83,13 +63,18 @@ index fa5fd4e..7b27b29 100644
  
    GST_LOG ("Registering demuxers");
  
-@@ -2071,51 +2072,56 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
+@@ -2104,58 +2105,63 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
          !strcmp (in_plugin->name, "ivf"))
        register_typefind_func = FALSE;
  
 -    /* Set the rank of demuxers known to work to MARGINAL.
 -     * Set demuxers for which we already have another implementation to NONE
 -     * Set All others to NONE*/
+-    /**
+-     * element-avdemux_xwma
+-     *
+-     * Since: 1.20
+-     */
 -    if (!strcmp (in_plugin->name, "wsvqa") ||
 -        !strcmp (in_plugin->name, "wsaud") ||
 -        !strcmp (in_plugin->name, "wc3movie") ||
@@ -117,6 +102,7 @@ index fa5fd4e..7b27b29 100644
 -        !strcmp (in_plugin->name, "daud") ||
 -        !strcmp (in_plugin->name, "avs") ||
 -        !strcmp (in_plugin->name, "aiff") ||
+-        !strcmp (in_plugin->name, "xwma") ||
 -        !strcmp (in_plugin->name, "4xm") ||
 -        !strcmp (in_plugin->name, "yuv4mpegpipe") ||
 -        !strcmp (in_plugin->name, "pva") ||
@@ -132,13 +118,19 @@ index fa5fd4e..7b27b29 100644
 -      GST_DEBUG ("ignoring %s", in_plugin->name);
 -      rank = GST_RANK_NONE;
 -      continue;
-+    env = getenv("VENDOR_MEDIA_GST_LIBAV_ENABLE_FFMPEG");
-+    if ((NULL == env) || ((env) && (atoi(env)))) {
-+        rank = GST_RANK_PRIMARY;
-+    } else {
-+        /* Set the rank of demuxers known to work to MARGINAL.
-+         * Set demuxers for which we already have another implementation to NONE
-+         * Set All others to NONE*/
+-    }
++     env = getenv("VENDOR_MEDIA_GST_LIBAV_ENABLE_FFMPEG");
++     if ((NULL == env) || ((env) && (atoi(env)))) {
++         rank = GST_RANK_PRIMARY;
++     } else {
++         /* Set the rank of demuxers known to work to MARGINAL.
++          * Set demuxers for which we already have another implementation to NONE
++            Set All others to NONE*/
++         /**
++          * element-avdemux_xwma
++          *
++          * Since: 1.20
++          */
 +        if (!strcmp (in_plugin->name, "wsvqa") ||
 +            !strcmp (in_plugin->name, "wsaud") ||
 +            !strcmp (in_plugin->name, "wc3movie") ||
@@ -166,6 +158,7 @@ index fa5fd4e..7b27b29 100644
 +            !strcmp (in_plugin->name, "daud") ||
 +            !strcmp (in_plugin->name, "avs") ||
 +            !strcmp (in_plugin->name, "aiff") ||
++            !strcmp (in_plugin->name, "xwma") ||
 +            !strcmp (in_plugin->name, "4xm") ||
 +            !strcmp (in_plugin->name, "yuv4mpegpipe") ||
 +            !strcmp (in_plugin->name, "pva") ||
@@ -182,9 +175,7 @@ index fa5fd4e..7b27b29 100644
 +          rank = GST_RANK_NONE;
 +          continue;
 +        }
-     }
++     }
  
      /* construct the type */
--- 
-2.32.0
-
+     type_name = g_strdup_printf ("avdemux_%s", in_plugin->name);

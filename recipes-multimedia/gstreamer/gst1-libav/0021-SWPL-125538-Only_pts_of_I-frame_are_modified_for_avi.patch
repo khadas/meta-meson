@@ -1,5 +1,5 @@
 diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
-index 023e796..7bed04e 100755
+index ee16595..24a9db2 100644
 --- a/ext/libav/gstavdemux.c
 +++ b/ext/libav/gstavdemux.c
 @@ -460,6 +460,8 @@ gst_ffmpegdemux_do_seek (GstFFMpegDemux * demux, GstSegment * segment)
@@ -11,7 +11,7 @@ index 023e796..7bed04e 100755
    /* initial seek position */
    target = segment->position + demux->start_time;
    /* convert target to ffmpeg time */
-@@ -1540,6 +1542,15 @@ gst_ffmpegdemux_loop (GstFFMpegDemux * demux)
+@@ -1569,6 +1571,15 @@ gst_ffmpegdemux_loop (GstFFMpegDemux * demux)
      duration = GST_CLOCK_TIME_NONE;
    }
  
@@ -20,14 +20,14 @@ index 023e796..7bed04e 100755
 +    GstClockTime dts = gst_ffmpeg_time_ff_to_gst (pkt.dts, avstream->time_base);
 +    //Set dts as pts
 +    if (GST_CLOCK_TIME_IS_VALID (dts) && (pkt.flags & AV_PKT_FLAG_KEY) && (avstream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO)) {
-+      timestamp = dts;
-+      GST_WARNING_OBJECT (demux,"set dts as pts:%" GST_TIME_FORMAT,GST_TIME_ARGS (timestamp));
++         timestamp = dts;
++         GST_WARNING_OBJECT (demux,"set dts as pts:%" GST_TIME_FORMAT,GST_TIME_ARGS (timestamp));
 +    }
 +  }
  
    GST_DEBUG_OBJECT (demux,
        "pkt pts:%" GST_TIME_FORMAT
-@@ -1701,8 +1712,9 @@ read_failed:
+@@ -1730,8 +1741,9 @@ read_failed:
      if (demux->flushing)
        ret = GST_FLOW_FLUSHING;
      else if (gst_ffmpegdemux_has_outputted (demux)

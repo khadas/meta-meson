@@ -1,28 +1,16 @@
-From b737a8bd690a309a7de0bd245f0557d15f61c07d Mon Sep 17 00:00:00 2001
-From: "kaiqiang.xiang" <kaiqiang.xiang@amlogic.com>
-Date: Tue, 19 Apr 2022 21:02:03 +0800
-Subject: [PATCH] fix SWPL-76313 wav playback
-
----
- ext/libav/gstavdemux.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
 diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
-index 52db9ca..17009ff 100644
+index 39bcfd9..97e0296 100644
 --- a/ext/libav/gstavdemux.c
 +++ b/ext/libav/gstavdemux.c
-@@ -1270,6 +1270,11 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
+@@ -1301,6 +1301,11 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
  
    gst_element_no_more_pads (GST_ELEMENT (demux));
  
 +  if(0 == strcmp(demux->context->iformat->name, "wav") && AV_NOPTS_VALUE == demux->context->start_time){
-+	/* start time is nops in wav file, set it to 0 */
-+	GST_DEBUG_OBJECT (demux, "start time is nops in wav file, set it to 0.");
-+	demux->context->start_time=0;
++    /* start time is nops in wav file, set it to 0 */
++    GST_DEBUG_OBJECT (demux, "start time is nops in wav file, set it to 0.");
++    demux->context->start_time=0;
 +  }
    /* transform some useful info to GstClockTime and remember */
    demux->start_time = gst_util_uint64_scale_int (demux->context->start_time,
        GST_SECOND, AV_TIME_BASE);
--- 
-2.25.1
-

@@ -1,23 +1,23 @@
 diff --git a/ext/libav/gstavcodecmap.c b/ext/libav/gstavcodecmap.c
-index 0022376..9ba5edc 100755
+index 61b76b1..b36a7cc 100644
 --- a/ext/libav/gstavcodecmap.c
 +++ b/ext/libav/gstavcodecmap.c
-@@ -2240,6 +2240,14 @@ gst_ffmpeg_codecid_to_caps (enum AVCodecID codec_id,
+@@ -2279,6 +2279,14 @@ gst_ffmpeg_codecid_to_caps (enum AVCodecID codec_id,
          /* FIXME: can ffmpeg handle multichannel Opus? */
          caps = gst_caps_new_simple ("audio/x-opus",
              "channel-mapping-family", G_TYPE_INT, 0, NULL);
 +      } else {
-+        caps = gst_caps_new_simple ("audio/x-opus",
-+            "channel-mapping-family", G_TYPE_INT, 0, NULL);
-+        if (context) {
-+          gst_caps_set_simple (caps,
-+            "rate", G_TYPE_INT, context->sample_rate,
-+            "channels", G_TYPE_INT, context->channels, NULL);
-+        }
++         caps = gst_caps_new_simple ("audio/x-opus",
++             "channel-mapping-family", G_TYPE_INT, 0, NULL);
++         if (context) {
++            gst_caps_set_simple (caps,
++              "rate", G_TYPE_INT, context->sample_rate,
++              "channels", G_TYPE_INT, context->channels, NULL);
++         }
        }
        break;
  
-@@ -2306,6 +2314,16 @@ gst_ffmpeg_codecid_to_caps (enum AVCodecID codec_id,
+@@ -2360,6 +2368,16 @@ gst_ffmpeg_codecid_to_caps (enum AVCodecID codec_id,
            gst_ff_aud_caps_new (context, NULL, codec_id, encode, "audio/x-ac4",
            NULL);
        break;
@@ -26,37 +26,35 @@ index 0022376..9ba5edc 100755
 +          gst_ff_aud_caps_new (context, NULL, codec_id, encode, "audio/x-vorbis",
 +          NULL);
 +      if (context) {
-+        gst_caps_set_simple (caps,
-+          "rate", G_TYPE_INT, context->sample_rate,
-+          "channels", G_TYPE_INT, context->channels, NULL);
++          gst_caps_set_simple (caps,
++            "rate", G_TYPE_INT, context->sample_rate,
++            "channels", G_TYPE_INT, context->channels, NULL);
 +      }
 +      break;
      default:
        GST_DEBUG ("Unknown codec ID %d, please add mapping here", codec_id);
        break;
 diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
-index 43601a6..056294f 100755
+index 72e89ea..45ddc0b 100644
 --- a/ext/libav/gstavdemux.c
 +++ b/ext/libav/gstavdemux.c
-@@ -1281,11 +1281,13 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
+@@ -1310,11 +1310,13 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
  
    gst_element_no_more_pads (GST_ELEMENT (demux));
  
 -  if(0 == strcmp(demux->context->iformat->name, "wav") && AV_NOPTS_VALUE == demux->context->start_time){
--	/* start time is nops in wav file, set it to 0 */
--	GST_DEBUG_OBJECT (demux, "start time is nops in wav file, set it to 0.");
--	demux->context->start_time=0;
 +  if (0 == strcmp(demux->context->iformat->name, "wav") 
 +    && AV_NOPTS_VALUE == demux->context->start_time) {
-+    /* start time is nops in wav file, set it to 0 */
-+    GST_DEBUG_OBJECT (demux, "start time is nops in wav file, set it to 0.");
+     /* start time is nops in wav file, set it to 0 */
+     GST_DEBUG_OBJECT (demux, "start time is nops in wav file, set it to 0.");
+-    demux->context->start_time=0;
 +    demux->context->start_time = 0;
    }
 +
    /* transform some useful info to GstClockTime and remember */
    demux->start_time = gst_util_uint64_scale_int (demux->context->start_time,
        GST_SECOND, AV_TIME_BASE);
-@@ -1504,7 +1506,8 @@ gst_ffmpegdemux_loop (GstFFMpegDemux * demux)
+@@ -1533,7 +1535,8 @@ gst_ffmpegdemux_loop (GstFFMpegDemux * demux)
      goto drop;
  #endif
  

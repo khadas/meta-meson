@@ -1,33 +1,8 @@
-From 274c811bf9bdee046f21f3b352115cc993b88a45 Mon Sep 17 00:00:00 2001
-From: xueling Li <xueling.li@amlogic.com>
-Date: Thu, 19 Oct 2023 13:52:00 +0800
-Subject: [PATCH] yocto: drop raw audio data according to clip meta data [1/1]
-
-PD#SWPL-132808
-
-Problem:
-youtube certification require this feature, audio clip happened
-when insert AD video without recreate new starboard player and
-keep AVsync not broken
-
-Solution:
-audio decoder drop raw audio data according to clip meta data
-
-Verify:
-yts test xx "MSE Conformance Tests MSE Core AVSync.AAC" --year=2024
-yts test xx "MSE Conformance Tests MSE Core AVSync.Opus" --year=2024
-
-Signed-off-by: xueling Li <xueling.li@amlogic.com>
----
- ext/libav/gstavauddec.c | 23 +++++++++++++++++++++++
- ext/libav/gstavauddec.h |  1 +
- 2 files changed, 24 insertions(+)
-
 diff --git a/ext/libav/gstavauddec.c b/ext/libav/gstavauddec.c
-index 91ee8e3..927f896 100644
+index 7ba04f0..9b44623 100644
 --- a/ext/libav/gstavauddec.c
 +++ b/ext/libav/gstavauddec.c
-@@ -150,6 +150,7 @@ gst_ffmpegauddec_init (GstFFMpegAudDec * ffmpegdec)
+@@ -151,6 +151,7 @@ gst_ffmpegauddec_init (GstFFMpegAudDec * ffmpegdec)
    ffmpegdec->context = avcodec_alloc_context3 (klass->in_plugin);
    ffmpegdec->context->opaque = ffmpegdec;
    ffmpegdec->opened = FALSE;
@@ -35,7 +10,7 @@ index 91ee8e3..927f896 100644
  
    ffmpegdec->frame = av_frame_alloc ();
  
-@@ -576,6 +577,27 @@ gst_ffmpegauddec_frame (GstFFMpegAudDec * ffmpegdec, GstFlowReturn * ret)
+@@ -582,6 +583,27 @@ gst_ffmpegauddec_frame (GstFFMpegAudDec * ffmpegdec, GstFlowReturn * ret)
  
    if (outbuf) {
      GST_LOG_OBJECT (ffmpegdec, "Decoded data, buffer %" GST_PTR_FORMAT, outbuf);
@@ -47,7 +22,7 @@ index 91ee8e3..927f896 100644
 +    if (ffmpegdec->cmeta) {
 +      GstAudioClippingMeta *cmeta = ffmpegdec->cmeta;
 +      GST_LOG_OBJECT (ffmpegdec, "cmeta start %"GST_TIME_FORMAT" end %"GST_TIME_FORMAT,
-+          GST_TIME_ARGS (cmeta->start), GST_TIME_ARGS(cmeta->end));
++      GST_TIME_ARGS (cmeta->start), GST_TIME_ARGS(cmeta->end));
 +      if (cmeta->format == GST_FORMAT_TIME) {
 +        cmeta->start  = gst_util_uint64_scale(cmeta->start, ffmpegdec->info.rate, GST_SECOND);
 +        cmeta->end = gst_util_uint64_scale(cmeta->end, ffmpegdec->info.rate, GST_SECOND);
@@ -58,13 +33,13 @@ index 91ee8e3..927f896 100644
 +        outbuf = gst_audio_buffer_truncate (outbuf, ffmpegdec->info.bpf, cmeta->start, size);
 +        GST_LOG_OBJECT (ffmpegdec, "cmeta start %lld, end %lld, size %d, osize %d", cmeta->start, cmeta->end, size, osize);
 +      }
-+    }
++  }
 +
      *ret =
          gst_audio_decoder_finish_subframe (GST_AUDIO_DECODER_CAST (ffmpegdec),
          outbuf);
-@@ -668,6 +690,7 @@ gst_ffmpegauddec_handle_frame (GstAudioDecoder * decoder, GstBuffer * inbuf)
-     return gst_ffmpegauddec_drain (ffmpegdec);
+@@ -677,6 +699,7 @@ gst_ffmpegauddec_handle_frame (GstAudioDecoder * decoder, GstBuffer * inbuf)
+     return gst_ffmpegauddec_drain (ffmpegdec, FALSE);
    }
  
 +  ffmpegdec->cmeta = gst_buffer_get_audio_clipping_meta (inbuf);
@@ -83,6 +58,3 @@ index d91de0d..87566c8 100644
  };
  
  typedef struct _GstFFMpegAudDecClass GstFFMpegAudDecClass;
--- 
-2.25.1
-

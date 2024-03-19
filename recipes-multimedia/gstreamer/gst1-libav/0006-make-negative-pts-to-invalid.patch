@@ -1,29 +1,13 @@
-From a30717330131e4cbd8e24d9573e4a3ef786c05fe Mon Sep 17 00:00:00 2001
-From: "sheng.liu" <sheng.liu@amlogic.com>
-Date: Sat, 2 Apr 2022 17:08:31 +0800
-Subject: [PATCH] gstreamer1.0-libav: make negative pts to invalid [1/1]
-
-PD#SWPL-76043
-
-Problem:
-negative pts will be set 0,
-whilc will lead multiqueue buffer level will not correct.
-
-Solution:
-Make negative pts to invalid
-
-Verify:
-AH212
----
- ext/libav/gstavdemux.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
 diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
-index e45925c..32e432a 100755
+index daf50b2..621c975 100644
 --- a/ext/libav/gstavdemux.c
 +++ b/ext/libav/gstavdemux.c
-@@ -1462,8 +1462,8 @@ gst_ffmpegdemux_loop (GstFFMpegDemux * demux)
-      * we reset pts to 0 since for us timestamp are unsigned
+@@ -1482,11 +1482,11 @@ gst_ffmpegdemux_loop (GstFFMpegDemux * demux)
+      * -1
+      * 1
+      *
+-     * we reset pts to 0 since for us timestamp are unsigned
++     * we reset pts to AV_NOPTS_VALUE since for us timestamp are unsigned
       */
      GST_WARNING_OBJECT (demux,
 -        "negative pts detected: %" G_GINT64_FORMAT " resetting to 0", pts);
@@ -33,6 +17,3 @@ index e45925c..32e432a 100755
    }
    timestamp = gst_ffmpeg_time_ff_to_gst (pts, avstream->time_base);
    if (GST_CLOCK_TIME_IS_VALID (timestamp)) {
--- 
-2.25.1
-

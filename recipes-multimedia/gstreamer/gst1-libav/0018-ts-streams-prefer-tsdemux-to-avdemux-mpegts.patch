@@ -1,26 +1,14 @@
-From 257681f3244f07225a37b13f953cc58ee28dad68 Mon Sep 17 00:00:00 2001
-From: "wang.ren" <wang.ren@amlogic.com>
-Date: Thu, 30 Jun 2022 12:26:47 +0800
-Subject: [PATCH] ts streams prefer tsdemux to avdemux_mpegts
-
----
- ext/libav/gstavdemux.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
 diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
-index 071d956..6e16078 100644
+index 24ddfd6..3e82f97 100644
 --- a/ext/libav/gstavdemux.c
 +++ b/ext/libav/gstavdemux.c
-@@ -2168,7 +2168,8 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
-         && strcmp (in_plugin->name, "mov,mp4,m4a,3gp,3g2,mj2")
-         && strcmp (in_plugin->name, "matroska")
-         && strcmp (in_plugin->name, "matroska_webm")
--        && strcmp (in_plugin->name, "matroska,webm")) {
-+        && strcmp (in_plugin->name, "matroska,webm")
-+        && strcmp (in_plugin->name, "mpegts")) {
-         rank = GST_RANK_PRIMARY;
-     } else {
-         /* Set the rank of demuxers known to work to MARGINAL.
--- 
-2.25.1
-
+@@ -2187,7 +2187,8 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
+           && strcmp (in_plugin->name, "mov,mp4,m4a,3gp,3g2,mj2")
+           && strcmp (in_plugin->name, "matroska")
+           && strcmp (in_plugin->name, "matroska_webm")
+-          && strcmp (in_plugin->name, "matroska,webm")) {
++          && strcmp (in_plugin->name, "matroska,webm")
++          && strcmp (in_plugin->name, "mpegts")) {
+          rank = GST_RANK_PRIMARY;
+      } else {
+          /* Set the rank of demuxers known to work to MARGINAL.

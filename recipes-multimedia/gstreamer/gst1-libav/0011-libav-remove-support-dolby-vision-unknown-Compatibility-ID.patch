@@ -1,18 +1,8 @@
-From 289fb3dbe3911251ca7679deb18d17e9261a2978 Mon Sep 17 00:00:00 2001
-From: "fei.deng" <fei.deng@amlogic.com>
-Date: Tue, 26 Apr 2022 19:34:21 +0800
-Subject: [PATCH] libav remove support dolby vision unknown Compatibility ID
-
-Change-Id: Ib97c2aa2d642bc8b4f2ce72b267208638ea48867
----
- ext/libav/gstavdemux.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
 diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
-index 920d2c1..9b51e16 100644
+index 97e0296..72e89ea 100644
 --- a/ext/libav/gstavdemux.c
 +++ b/ext/libav/gstavdemux.c
-@@ -1262,6 +1262,15 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
+@@ -1293,6 +1293,15 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
      goto beach;
    }
  
@@ -20,14 +10,11 @@ index 920d2c1..9b51e16 100644
 +  for (i = 0; i < n_streams; i++) {
 +    if (demux->context->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO &&
 +         demux->context->streams[i]->codec->has_dolby_vision_config_box == AV_DV_BOX_TYPE_ERROR) {
-+      GST_ERROR_OBJECT (demux, "Not support dolbyvison config box");
-+      goto beach;
++         GST_ERROR_OBJECT (demux, "Not support dolbyvison config box");
++         goto beach;
 +    }
 +  }
 +
    /* open_input_file() automatically reads the header. We can now map each
     * created AVStream to a GstPad to make GStreamer handle it. */
    for (i = 0; i < n_streams; i++) {
--- 
-2.25.1
-

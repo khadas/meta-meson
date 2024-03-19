@@ -1,8 +1,8 @@
 diff --git a/gst/playback/gstplaysink.c b/gst/playback/gstplaysink.c
-index 47133ec..9b4c38d 100644
+index f35f76d..631ce7b 100644
 --- a/gst/playback/gstplaysink.c
 +++ b/gst/playback/gstplaysink.c
-@@ -1898,26 +1898,31 @@ gen_video_chain (GstPlaySink * playsink, gboolean raw, gboolean async)
+@@ -1900,24 +1900,30 @@ gen_video_chain (GstPlaySink * playsink, gboolean raw, gboolean async)
     * decoder can continue while the sink blocks for synchronisation. We don't
     * need a lot of buffers as this consumes a lot of memory and we don't want
     * too little because else we would be context switching too quickly. */
@@ -37,16 +37,14 @@ index 47133ec..9b4c38d 100644
 +      gst_bin_add (bin, chain->queue);
 +      if (prev) {
 +        if (!gst_element_link_pads_full (prev, "src", chain->queue, "sink",
-+                GST_PAD_LINK_CHECK_TEMPLATE_CAPS))
++                 GST_PAD_LINK_CHECK_TEMPLATE_CAPS))
 +          goto link_failed;
 +      } else {
-+        head = chain->queue;
++            head = chain->queue;
 +      }
 +      prev = chain->queue;
      }
 -    prev = chain->queue;
    }
--
+ 
    GST_OBJECT_LOCK (playsink);
-   if (playsink->colorbalance_element) {
-     g_signal_handler_disconnect (playsink->colorbalance_element,

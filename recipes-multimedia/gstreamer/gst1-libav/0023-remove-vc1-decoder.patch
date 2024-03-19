@@ -1,27 +1,12 @@
-From 4bc032bfa120f8f97bac9643cfce7b7c1ed415c9 Mon Sep 17 00:00:00 2001
-From: "fei.deng" <fei.deng@amlogic.com>
-Date: Thu, 14 Dec 2023 07:16:12 +0000
-Subject: [PATCH] remove vc1 decoder
-
-Change-Id: I720abfdce018b045080de6cdd368498850ce79b0
----
- ext/libav/gstavviddec.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
 diff --git a/ext/libav/gstavviddec.c b/ext/libav/gstavviddec.c
-index f0a4342..64bb806 100644
+index f8d77d9..030aeff 100644
 --- a/ext/libav/gstavviddec.c
 +++ b/ext/libav/gstavviddec.c
-@@ -2312,7 +2312,8 @@ gst_ffmpegviddec_register (GstPlugin * plugin)
-         !strcmp (in_plugin->name, "srt") ||
+@@ -2569,6 +2569,7 @@ gst_ffmpegviddec_register (GstPlugin * plugin)
          !strcmp (in_plugin->name, "pgssub") ||
          !strcmp (in_plugin->name, "dvdsub") ||
--        !strcmp (in_plugin->name, "dvbsub")) {
-+        !strcmp (in_plugin->name, "dvbsub") ||
-+        !strcmp (in_plugin->name, "vc1")) {
+         !strcmp (in_plugin->name, "dvbsub") ||
++        !strcmp (in_plugin->name, "vc1") ||
+         !strcmp (in_plugin->name, "cdgraphics") ||
+         !strcmp (in_plugin->name, "av1")) {
        GST_LOG ("Ignoring decoder %s", in_plugin->name);
-       continue;
-     }
--- 
-2.25.1
-

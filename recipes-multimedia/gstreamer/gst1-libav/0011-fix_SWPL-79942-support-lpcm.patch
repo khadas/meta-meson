@@ -1,8 +1,8 @@
 diff --git a/ext/libav/gstavcodecmap.c b/ext/libav/gstavcodecmap.c
-index 7cc9210..0022376 100644
+index cb343dd..61b76b1 100644
 --- a/ext/libav/gstavcodecmap.c
 +++ b/ext/libav/gstavcodecmap.c
-@@ -1930,6 +1930,12 @@ gst_ffmpeg_codecid_to_caps (enum AVCodecID codec_id,
+@@ -1965,6 +1965,12 @@ gst_ffmpeg_codecid_to_caps (enum AVCodecID codec_id,
            NULL);
        break;
  

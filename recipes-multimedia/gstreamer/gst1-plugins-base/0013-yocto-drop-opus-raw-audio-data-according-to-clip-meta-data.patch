@@ -1,32 +1,8 @@
-From 584f6f4696b93d5184e40c9c57cac7aa081fdf9c Mon Sep 17 00:00:00 2001
-From: xueling Li <xueling.li@amlogic.com>
-Date: Thu, 19 Oct 2023 15:32:37 +0800
-Subject: [PATCH] yocto: drop raw audio data according to clip meta data [1/1]
-
-PD#SWPL-132808
-
-Problem:
-youtube certification require this feature, audio clip happened
-when insert AD video without recreate new starboard player and
-keep AVsync not broken
-
-Solution:
-audio decoder drop raw audio data according to clip meta data
-
-Verify:
-yts test xx "MSE Conformance Tests MSE Core AVSync.AAC" --year=2024
-yts test xx "MSE Conformance Tests MSE Core AVSync.Opus" --year=2024
-
-Signed-off-by: xueling Li <xueling.li@amlogic.com>
----
- ext/opus/gstopusdec.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
 diff --git a/ext/opus/gstopusdec.c b/ext/opus/gstopusdec.c
-index 7ff9bee..9f4a198 100644
+index 43bb1a4..54f9972 100644
 --- a/ext/opus/gstopusdec.c
 +++ b/ext/opus/gstopusdec.c
-@@ -695,6 +695,11 @@ opus_dec_chain_parse_data (GstOpusDec * dec, GstBuffer * buffer)
+@@ -740,6 +740,12 @@ opus_dec_chain_parse_data (GstOpusDec * dec, GstBuffer * buffer)
  
    cmeta = gst_buffer_get_audio_clipping_meta (buf);
  
@@ -35,9 +11,7 @@ index 7ff9bee..9f4a198 100644
 +    cmeta->start = gst_util_uint64_scale (cmeta->start, dec->sample_rate, GST_SECOND);
 +    cmeta->end = gst_util_uint64_scale (cmeta->end, dec->sample_rate, GST_SECOND);
 +  }
++
    g_assert (!cmeta || cmeta->format == GST_FORMAT_DEFAULT);
  
    /* Skip any samples that need skipping */
--- 
-2.25.1
-

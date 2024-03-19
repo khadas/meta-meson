@@ -1,19 +1,19 @@
 diff --git a/gst-libs/gst/app/gstappsrc.c b/gst-libs/gst/app/gstappsrc.c
-index 2967b93..298c42a 100644
+index 3ae3d9b..be94926 100644
 --- a/gst-libs/gst/app/gstappsrc.c
 +++ b/gst-libs/gst/app/gstappsrc.c
-@@ -100,6 +100,7 @@
+@@ -101,6 +101,7 @@
  #include <string.h>
-
+ 
  #include "gstappsrc.h"
 +#include "stdio.h"
-
+ 
  typedef enum
  {
-@@ -273,6 +274,30 @@ G_DEFINE_TYPE_WITH_CODE (GstAppSrc, gst_app_src, GST_TYPE_BASE_SRC,
+@@ -310,6 +311,30 @@ G_DEFINE_TYPE_WITH_CODE (GstAppSrc, gst_app_src, GST_TYPE_BASE_SRC,
      G_ADD_PRIVATE (GstAppSrc)
      G_IMPLEMENT_INTERFACE (GST_TYPE_URI_HANDLER, gst_app_src_uri_handler_init));
-
+ 
 +static void gst_app_src_dump_input_buf(GstAppSrc * appsrc, GstBuffer * buffer)
 +{
 +    const gchar *dump_dir = NULL;
@@ -41,19 +41,19 @@ index 2967b93..298c42a 100644
  static void
  gst_app_src_class_init (GstAppSrcClass * klass)
  {
-@@ -2012,6 +2037,7 @@ gst_app_src_push_sample_internal (GstAppSrc * appsrc, GstSample * sample)
+@@ -2843,6 +2868,7 @@ handle_buffer:
  GstFlowReturn
  gst_app_src_push_buffer (GstAppSrc * appsrc, GstBuffer * buffer)
  {
 +  gst_app_src_dump_input_buf(appsrc, buffer);
    return gst_app_src_push_buffer_full (appsrc, buffer, TRUE);
  }
-
+ 
 diff --git a/gst-libs/gst/video/gstvideodecoder.c b/gst-libs/gst/video/gstvideodecoder.c
-index 9a750b7..179aa6e 100644
+index cc5181c..cfd8242 100644
 --- a/gst-libs/gst/video/gstvideodecoder.c
 +++ b/gst-libs/gst/video/gstvideodecoder.c
-@@ -3122,7 +3122,20 @@ gst_video_decoder_clip_and_push_buf (GstVideoDecoder * decoder, GstBuffer * buf)
+@@ -3664,7 +3664,20 @@ gst_video_decoder_clip_and_push_buf (GstVideoDecoder * decoder, GstBuffer * buf)
          ret = GST_FLOW_EOS;
        }
      }
@@ -74,4 +74,4 @@ index 9a750b7..179aa6e 100644
 +    }
      goto done;
    }
-
+ 

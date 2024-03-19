@@ -1,32 +1,24 @@
-From 860cd8062ecadf7194760993568016e4613c130d Mon Sep 17 00:00:00 2001
-From: "yongchun.li" <yongchun.li@amlogic.com>
-Date: Mon, 29 Mar 2021 21:17:39 -0700
-Subject: [PATCH] appsrc: clear position when flush-stop event reset_time flag set
-
-On flush-stop event, if the reset time flag is true. reset the
-current positions
----
-Index: gst-plugins-base-1.16.3/gst-libs/gst/app/gstappsrc.c
-===================================================================
---- gst-plugins-base-1.16.3.orig/gst-libs/gst/app/gstappsrc.c
-+++ gst-plugins-base-1.16.3/gst-libs/gst/app/gstappsrc.c
-@@ -157,6 +157,7 @@ struct _GstAppSrcPrivate
+diff --git a/gst-libs/gst/app/gstappsrc.c b/gst-libs/gst/app/gstappsrc.c
+index 668438c..3ae3d9b 100644
+--- a/gst-libs/gst/app/gstappsrc.c
++++ b/gst-libs/gst/app/gstappsrc.c
+@@ -172,6 +172,7 @@ struct _GstAppSrcPrivate
  
    gboolean flushing;
    gboolean started;
 +  gboolean reset_pos;
    gboolean is_eos;
-   guint64 queued_bytes;
-   guint64 offset;
-@@ -614,6 +615,7 @@ gst_app_src_init (GstAppSrc * appsrc)
+   guint64 queued_bytes, queued_buffers;
+   /* Used to calculate the current time level */
+@@ -757,6 +758,7 @@ gst_app_src_init (GstAppSrc * appsrc)
    priv->max_latency = DEFAULT_PROP_MAX_LATENCY;
    priv->emit_signals = DEFAULT_PROP_EMIT_SIGNALS;
    priv->min_percent = DEFAULT_PROP_MIN_PERCENT;
 +  priv->reset_pos = FALSE;
+   priv->handle_segment_change = DEFAULT_PROP_HANDLE_SEGMENT_CHANGE;
+   priv->leaky_type = DEFAULT_PROP_LEAKY_TYPE;
  
-   gst_base_src_set_live (GST_BASE_SRC (appsrc), DEFAULT_PROP_IS_LIVE);
- }
-@@ -834,12 +836,18 @@ gst_app_src_send_event (GstElement * ele
+@@ -1016,12 +1018,18 @@ gst_app_src_send_event (GstElement * element, GstEvent * event)
  {
    GstAppSrc *appsrc = GST_APP_SRC_CAST (element);
    GstAppSrcPrivate *priv = appsrc->priv;
@@ -44,8 +36,16 @@ Index: gst-plugins-base-1.16.3/gst-libs/gst/app/gstappsrc.c
 +          priv->reset_pos);
        break;
      default:
-       break;
-@@ -1219,6 +1227,20 @@ gst_app_src_create (GstBaseSrc * bsrc, g
+       if (GST_EVENT_IS_SERIALIZED (event)) {
+@@ -1047,6 +1055,7 @@ gst_app_src_unlock (GstBaseSrc * bsrc)
+ {
+   GstAppSrc *appsrc = GST_APP_SRC_CAST (bsrc);
+   GstAppSrcPrivate *priv = appsrc->priv;
++  gboolean reset_time;
+ 
+   g_mutex_lock (&priv->mutex);
+   GST_DEBUG_OBJECT (appsrc, "unlock start");
+@@ -1617,6 +1626,20 @@ gst_app_src_create (GstBaseSrc * bsrc, guint64 offset, guint size,
      }
    }
  
@@ -64,9 +64,9 @@ Index: gst-plugins-base-1.16.3/gst-libs/gst/app/gstappsrc.c
 +  }
 +
    while (TRUE) {
-     /* return data as long as we have some */
-     if (!gst_queue_array_is_empty (priv->queue)) {
-@@ -2211,12 +2233,17 @@ gst_app_src_event (GstBaseSrc * src, Gst
+     /* Our lock may have been release to push events or caps, check out
+      * state in case we are now flushing. */
+@@ -3041,12 +3064,17 @@ gst_app_src_event (GstBaseSrc * src, GstEvent * event)
  {
    GstAppSrc *appsrc = GST_APP_SRC_CAST (src);
    GstAppSrcPrivate *priv = appsrc->priv;

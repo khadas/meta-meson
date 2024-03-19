@@ -1,16 +1,14 @@
 diff --git a/gst/typefind/gsttypefindfunctions.c b/gst/typefind/gsttypefindfunctions.c
-index efe7432..9ee425b 100644
+index 71ae934..6fe39c0 100644
 --- a/gst/typefind/gsttypefindfunctions.c
 +++ b/gst/typefind/gsttypefindfunctions.c
-@@ -5942,8 +5942,9 @@ plugin_init (GstPlugin * plugin)
-   TYPE_FIND_REGISTER (plugin, "audio/x-mod", GST_RANK_SECONDARY, mod_type_find,
-       "669,amf,ams,dbm,digi,dmf,dsm,gdm,far,imf,it,j2b,mdl,med,mod,mt2,mtm,"
-       "okt,psm,ptm,sam,s3m,stm,stx,ult,umx,xm", MOD_CAPS, NULL, NULL);
--  TYPE_FIND_REGISTER (plugin, "audio/mpeg", GST_RANK_PRIMARY, mp3_type_find,
--      "mp3,mp2,mp1,mpga", MP3_CAPS, NULL, NULL);
-+  /* using gstlibav with ffmpeg for more precise typefinding for container mpeg-ps/mp3 */
-+//   TYPE_FIND_REGISTER (plugin, "audio/mpeg", GST_RANK_PRIMARY, mp3_type_find,
-+//       "mp3,mp2,mp1,mpga", MP3_CAPS, NULL, NULL);
-   TYPE_FIND_REGISTER (plugin, "audio/x-ac3", GST_RANK_PRIMARY, ac3_type_find,
-       "ac3,eac3", AC3_CAPS, NULL, NULL);
-   TYPE_FIND_REGISTER (plugin, "audio/x-dts", GST_RANK_SECONDARY, dts_type_find,
+@@ -6028,7 +6028,8 @@ GST_TYPE_FIND_REGISTER_DEFINE (mod, "audio/x-mod", GST_RANK_SECONDARY,
+     mod_type_find,
+     "669,amf,ams,dbm,digi,dmf,dsm,gdm,far,imf,it,j2b,mdl,med,mod,mt2,mtm,"
+     "okt,psm,ptm,sam,s3m,stm,stx,ult,umx,xm", MOD_CAPS, NULL, NULL);
+-GST_TYPE_FIND_REGISTER_DEFINE (mp3, "audio/mpeg", GST_RANK_PRIMARY,
++/* Set RANK to NONE,using gstlibav with ffmpeg for more precise typefinding for container mpeg-ps/mp3 */
++GST_TYPE_FIND_REGISTER_DEFINE (mp3, "audio/mpeg", GST_RANK_NONE,
+     mp3_type_find, "mp3,mp2,mp1,mpga", MP3_CAPS, NULL, NULL);
+ GST_TYPE_FIND_REGISTER_DEFINE (ac3, "audio/x-ac3", GST_RANK_PRIMARY,
+     ac3_type_find, "ac3,eac3", AC3_CAPS, NULL, NULL);

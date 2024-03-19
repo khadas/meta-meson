@@ -1,25 +1,5 @@
-From 33f4291f00d0d89e57fbcb133176880e23698c55 Mon Sep 17 00:00:00 2001
-From: "sheng.liu" <sheng.liu@amlogic.com>
-Date: Fri, 31 Dec 2021 18:18:05 +0800
-Subject: [PATCH] gstreamer1.0-libav: Increase the MAX_STREAMS  [1/1]
-
-PD#SWPL-65566
-
-Problem:
-The test file have 25 streams, but ffmpeg found the number is 37
-We can not modify the ffmpeg, so increate the MAX_STREAMS
-
-Solution:
-Increase the number of MAX_STREAMS to 40
-
-Verify:
-AP222
----
- ext/libav/gstavdemux.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
 diff --git a/ext/libav/gstavdemux.c b/ext/libav/gstavdemux.c
-index 0edc5e2..f3cc93b 100644
+index 0fd47bf..daf50b2 100644
 --- a/ext/libav/gstavdemux.c
 +++ b/ext/libav/gstavdemux.c
 @@ -36,7 +36,7 @@
@@ -31,7 +11,7 @@ index 0edc5e2..f3cc93b 100644
  
  typedef struct _GstFFMpegDemux GstFFMpegDemux;
  typedef struct _GstFFStream GstFFStream;
-@@ -1254,6 +1254,11 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
+@@ -1279,6 +1279,11 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
  
    n_streams = demux->context->nb_streams;
    GST_DEBUG_OBJECT (demux, "we have %d streams", n_streams);
@@ -43,6 +23,3 @@ index 0edc5e2..f3cc93b 100644
  
    /* open_input_file() automatically reads the header. We can now map each
     * created AVStream to a GstPad to make GStreamer handle it. */
--- 
-2.32.0
-

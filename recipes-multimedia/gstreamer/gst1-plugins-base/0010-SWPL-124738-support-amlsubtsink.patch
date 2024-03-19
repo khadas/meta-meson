@@ -1,8 +1,8 @@
 diff --git a/gst/playback/gstplaysink.c b/gst/playback/gstplaysink.c
-index f216862..47133ec 100644
+index 5ea6d9e..f35f76d 100644
 --- a/gst/playback/gstplaysink.c
 +++ b/gst/playback/gstplaysink.c
-@@ -154,6 +154,7 @@ typedef struct
+@@ -155,6 +155,7 @@ typedef struct
    GstElement *queue;
    GstElement *identity;
    GstElement *overlay;
@@ -10,7 +10,7 @@ index f216862..47133ec 100644
    GstPad *videosinkpad;
    GstPad *textsinkpad;
    GstPad *srcpad;               /* outgoing srcpad, used to connect to the next
-@@ -2529,70 +2530,34 @@ gen_text_chain (GstPlaySink * playsink)
+@@ -2531,70 +2532,34 @@ gen_text_chain (GstPlaySink * playsink)
  
    if (textsinkpad == NULL) {
      if (!(playsink->flags & GST_PLAY_FLAG_NATIVE_VIDEO)) {
@@ -26,7 +26,7 @@ index f216862..47133ec 100644
          GST_ELEMENT_WARNING (playsink, CORE, MISSING_PLUGIN,
              (_("Missing element '%s' - check your GStreamer installation."),
 -                "queue"), ("video rendering might be suboptimal"));
-+                "queue"), ("rendering might be suboptimal"));
++               "queue"), ("rendering might be suboptimal"));
        } else {
 -        g_object_set (G_OBJECT (chain->queue), "max-size-buffers", 3,
 -            "max-size-bytes", 0, "max-size-time", (gint64) 0,
@@ -73,11 +73,11 @@ index f216862..47133ec 100644
 +
 +        chain->textsink =
 +           gst_element_factory_make ("amlsubtsink", "subtitlesink");
-+        if (chain->textsink == NULL) {
-+           post_missing_element_message (playsink, "amlsubtsink");
-+           GST_ELEMENT_WARNING (playsink, CORE, MISSING_PLUGIN,
-+               (_("Missing element '%s' - check your GStreamer installation."),
-+                   "amlsubtsink"), ("subtitle rendering disabled"));
++           if (chain->textsink == NULL) {
++              post_missing_element_message (playsink, "amlsubtsink");
++              GST_ELEMENT_WARNING (playsink, CORE, MISSING_PLUGIN,
++                  (_("Missing element '%s' - check your GStreamer installation."),
++                      "amlsubtsink"), ("subtitle rendering disabled"));
          } else {
 -          g_object_set (G_OBJECT (element), "max-size-buffers", 3,
 -              "max-size-bytes", 0, "max-size-time", (gint64) GST_SECOND,
