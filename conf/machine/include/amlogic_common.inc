@@ -153,5 +153,8 @@ DISTRO_FEATURES:append = " adb dropbear"
 DISTRO_FEATURES:append = " cec voiceinput "
 DISTRO_FEATURES:append = " screencapture "
 
+#Switch to aml video sink
+DISTRO_FEATURES:append = " amlvideosink "
+
 # SWUpdate UI config graphic library
 SWUPDATE_UI_LIB = "lvgl"
