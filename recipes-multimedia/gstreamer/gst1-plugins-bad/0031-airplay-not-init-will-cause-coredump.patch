@@ -1,18 +1,8 @@
-From 824e3ba9b488fb3c6d89514363f3dff500ed3913 Mon Sep 17 00:00:00 2001
-From: liuzhaoxiang <liuzhaoxiang@skyworth.com>
-Date: Sun, 15 May 2022 23:00:19 -0400
-Subject: [PATCH 20/30] airplay not init will cause coredump
-
-Change-Id: Id166410a3a4b341bb8c9964c5938c31ce6b11e30
----
- ext/hls/gsthlsdemux.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
 diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
-index 8fc2a8d..4b6109f 100755
+index 7738922..d2ba84a 100644
 --- a/ext/hls/gsthlsdemux.c
 +++ b/ext/hls/gsthlsdemux.c
-@@ -804,7 +804,7 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
+@@ -967,7 +967,7 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
    GstHLSDemuxStream *hls_stream = GST_HLS_DEMUX_STREAM_CAST (stream);   // FIXME: pass HlsStream into function
    GstHLSDemux *hlsdemux = GST_HLS_DEMUX_CAST (demux);
    GstClockTime first_pcr, last_pcr;
@@ -21,6 +11,3 @@ index 8fc2a8d..4b6109f 100755
  
    if (buffer == NULL)
      return GST_FLOW_OK;
--- 
-2.34.1
-

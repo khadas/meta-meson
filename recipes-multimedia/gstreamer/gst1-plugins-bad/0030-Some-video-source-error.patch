@@ -1,18 +1,8 @@
-From 3c78679ed9fa62849002dae1db97d21cb704326d Mon Sep 17 00:00:00 2001
-From: Runfeng Xiao <runfeng.xiao@amlogic.com>
-Date: Mon, 19 Dec 2022 18:45:03 +0800
-Subject: [PATCH 19/30] Some video source error.
-
-Change-Id: Ieadf9913ee7466d55b3a66aec0f0976d5e6be5be
----
- gst/mpegtsdemux/tsdemux.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index bfeb3f3..2b26966 100755
+index 7a5fc78..4569505 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -3167,7 +3167,7 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -3629,7 +3629,7 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
    {
        GstClockTime dur;
        gst_ts_demux_get_duration (demux, &dur);
@@ -21,6 +11,3 @@ index bfeb3f3..2b26966 100755
        {
           GST_ELEMENT_ERROR(demux, RESOURCE, FAILED, ("Duration is shorter than the start time resource error"),
               ("Duration is shorter than the start time resource error"));
--- 
-2.34.1
-

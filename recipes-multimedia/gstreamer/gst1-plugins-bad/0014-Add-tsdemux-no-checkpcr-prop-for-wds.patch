@@ -1,27 +1,16 @@
-From 400d8db7681bfc2e187ab685aa2bf11851996f9c Mon Sep 17 00:00:00 2001
-From: Runfeng Xiao <runfeng.xiao@amlogic.com>
-Date: Mon, 29 Mar 2021 15:47:27 +0800
-Subject: [PATCH 03/30] Add tsdemux no checkpcr prop for wds.
-
-Change-Id: I77c35b5abb1ccc3c6933915d17c12b0394225c3a
----
- gst/mpegtsdemux/tsdemux.c | 19 +++++++++++++++++++
- gst/mpegtsdemux/tsdemux.h |  1 +
- 2 files changed, 20 insertions(+)
-
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index eed5939..69b5e20 100755
+index fc8375a..d510eec 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -294,6 +294,7 @@ enum
+@@ -304,6 +304,7 @@ enum
    PROP_0,
    PROP_PROGRAM_NUMBER,
    PROP_EMIT_STATS,
 +  PROP_CHECK_PCR_ILLEGAL,
+   PROP_LATENCY,
+   PROP_SEND_SCTE35_EVENTS,
    /* FILL ME */
- };
- 
-@@ -386,6 +387,11 @@ gst_ts_demux_class_init (GstTSDemuxClass * klass)
+@@ -417,6 +418,11 @@ gst_ts_demux_class_init (GstTSDemuxClass * klass)
            "Emit messages for every pcr/opcr/pts/dts", FALSE,
            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
  
@@ -30,20 +19,20 @@ index eed5939..69b5e20 100755
 +          "no check messages pcr", FALSE,
 +          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 +
-   element_class = GST_ELEMENT_CLASS (klass);
-   gst_element_class_add_pad_template (element_class,
-       gst_static_pad_template_get (&video_template));
-@@ -480,6 +486,9 @@ gst_ts_demux_set_property (GObject * object, guint prop_id,
+   /**
+    * tsdemux:send-scte35-events:
+    *
+@@ -537,6 +543,9 @@ gst_ts_demux_set_property (GObject * object, guint prop_id,
      case PROP_EMIT_STATS:
        demux->emit_statistics = g_value_get_boolean (value);
        break;
 +    case PROP_CHECK_PCR_ILLEGAL:
 +      demux->no_check_pcr_illegal = g_value_get_boolean(value);
 +      break;
-     default:
-       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-   }
-@@ -3024,6 +3033,16 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+     case PROP_SEND_SCTE35_EVENTS:
+       demux->send_scte35_events = g_value_get_boolean (value);
+       break;
+@@ -3485,6 +3494,16 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
      }
  
      if (G_UNLIKELY (stream->pending_ts && !check_pending_buffers (demux))) {
@@ -61,7 +50,7 @@ index eed5939..69b5e20 100755
          PendingBuffer *pend;
          pend = g_slice_new0 (PendingBuffer);
 diff --git a/gst/mpegtsdemux/tsdemux.h b/gst/mpegtsdemux/tsdemux.h
-index 394aefd..833ac4a 100644
+index 76be6bb..e5b5666 100644
 --- a/gst/mpegtsdemux/tsdemux.h
 +++ b/gst/mpegtsdemux/tsdemux.h
 @@ -76,6 +76,7 @@ struct _GstTSDemux
@@ -69,9 +58,6 @@ index 394aefd..833ac4a 100644
    guint program_number;
    gboolean emit_statistics;
 +  gboolean no_check_pcr_illegal;
+   gboolean send_scte35_events;
+   gint latency; /* latency in ms */
  
-   /*< private >*/
-   gint program_generation; /* Incremented each time we switch program 0..15 */
--- 
-2.34.1
-

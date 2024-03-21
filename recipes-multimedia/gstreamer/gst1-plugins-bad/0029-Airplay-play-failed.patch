@@ -1,27 +1,16 @@
-From 63ba28ad77d2f62629833a399996b5c6fe15d1f9 Mon Sep 17 00:00:00 2001
-From: Runfeng Xiao <runfeng.xiao@amlogic.com>
-Date: Mon, 19 Dec 2022 18:43:50 +0800
-Subject: [PATCH 18/30] Airplay play failed.
-
-Change-Id: I4b4da818c34a3603a2abaf66d7a1b48963eec408
----
- gst/mpegtsdemux/tsdemux.c | 29 ++++++++++++++++++++++-------
- gst/mpegtsdemux/tsdemux.h |  1 +
- 2 files changed, 23 insertions(+), 7 deletions(-)
-
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index 8f6603f..bfeb3f3 100755
+index 39e36fb..7a5fc78 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -296,6 +296,7 @@ enum
-   PROP_EMIT_STATS,
-   PROP_CHECK_PCR_ILLEGAL,
+@@ -308,6 +308,7 @@ enum
+   PROP_LATENCY,
+   PROP_SEND_SCTE35_EVENTS,
    PROP_PROTECT_PTS,
 +  PROP_SWITCH_FILE_SRC,
    /* FILL ME */
  };
  
-@@ -398,6 +399,11 @@ gst_ts_demux_class_init (GstTSDemuxClass * klass)
+@@ -451,6 +452,11 @@ gst_ts_demux_class_init (GstTSDemuxClass * klass)
            "if cal pts error, protect pts", FALSE,
            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
  
@@ -33,15 +22,15 @@ index 8f6603f..bfeb3f3 100755
    element_class = GST_ELEMENT_CLASS (klass);
    gst_element_class_add_pad_template (element_class,
        gst_static_pad_template_get (&video_template));
-@@ -474,6 +480,7 @@ gst_ts_demux_init (GstTSDemux * demux)
-   demux->requested_program_number = -1;
+@@ -529,6 +535,7 @@ gst_ts_demux_init (GstTSDemux * demux)
    demux->program_number = -1;
    demux->no_check_pcr_count = 0;
+   demux->latency = DEFAULT_LATENCY;
 +  demux->switch_file_src = FALSE;
    gst_ts_demux_reset (base);
- }
  
-@@ -499,6 +506,10 @@ gst_ts_demux_set_property (GObject * object, guint prop_id,
+   g_mutex_init (&demux->lock);
+@@ -562,6 +569,10 @@ gst_ts_demux_set_property (GObject * object, guint prop_id,
      case PROP_PROTECT_PTS:
        MPEG_TS_BASE_PACKETIZER (demux)->protect_pts = g_value_get_boolean (value);
        break;
@@ -52,19 +41,18 @@ index 8f6603f..bfeb3f3 100755
      default:
        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
    }
-@@ -3152,13 +3163,17 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -3614,13 +3625,17 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
        GST_TIME_FORMAT, (buffer_list ? "list" : ""), GST_TIME_ARGS (stream->pts),
        GST_TIME_ARGS (stream->dts));
  
--   GstClockTime dur;
--   gst_ts_demux_get_duration (demux, &dur);
--   if( dur<stream->pts )
--   {
--      GST_ELEMENT_ERROR(demux, RESOURCE, FAILED, ("GStreamer encountered a general resource error"), ("GStreamer encountered a general resource error"));
--      res = GST_FLOW_ERROR;
--      goto beach;
+-  GstClockTime dur;
+-  gst_ts_demux_get_duration (demux, &dur);
+-  if( dur<stream->pts )
 +  if( demux->switch_file_src )
-+  {
+   {
+-    GST_ELEMENT_ERROR(demux, RESOURCE, FAILED, ("GStreamer encountered a general resource error"), ("GStreamer encountered a general resource error"));
+-    res = GST_FLOW_ERROR;
+-    goto beach;
 +      GstClockTime dur;
 +      gst_ts_demux_get_duration (demux, &dur);
 +      if( dur < stream->pts )
@@ -74,11 +62,11 @@ index 8f6603f..bfeb3f3 100755
 +         res = GST_FLOW_ERROR;
 +         goto beach;
 +      }
-    }
+   }
  
-   if (GST_CLOCK_TIME_IS_VALID (stream->dts))
+   if (GST_CLOCK_TIME_IS_VALID (stream->dts)) {
 diff --git a/gst/mpegtsdemux/tsdemux.h b/gst/mpegtsdemux/tsdemux.h
-index 378d001..acf7078 100644
+index dc4747a..e347cb1 100644
 --- a/gst/mpegtsdemux/tsdemux.h
 +++ b/gst/mpegtsdemux/tsdemux.h
 @@ -70,6 +70,7 @@ struct _GstTSDemux
@@ -89,6 +77,3 @@ index 378d001..acf7078 100644
  
    /* the following vars must be protected with the OBJECT_LOCK as they can be
     * accessed from the application thread and the streaming thread */
--- 
-2.34.1
-

@@ -1,28 +1,16 @@
-From 40d3458391a4cdc9f90e433ee4c238265468462b Mon Sep 17 00:00:00 2001
-From: "fei.deng" <fei.deng@amlogic.com>
-Date: Wed, 23 Nov 2022 17:42:21 +0800
-Subject: [PATCH] add gap time of pcr to last pcr
-
-Change-Id: I7133620c695c9a9b36a39936a876646adf4f8b58
----
- gst/mpegtsdemux/mpegtspacketizer.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
 diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
-index aebc688..124ab5c 100644
+index 2d6e404..ef235f8 100644
 --- a/gst/mpegtsdemux/mpegtspacketizer.c
 +++ b/gst/mpegtsdemux/mpegtspacketizer.c
-@@ -1856,7 +1856,9 @@ _set_current_group (MpegTSPCR * pcrtable,
+@@ -1898,8 +1898,9 @@ _set_current_group (MpegTSPCR * pcrtable,
+     } else if (lastpcr < pcr - 500 * PCR_MSECOND) {
        GST_WARNING ("GAP detected. diff %" GST_TIME_FORMAT,
            GST_TIME_ARGS (PCRTIME_TO_GSTTIME (pcr - lastpcr)));
-       /* The previous group closed at the raw last_pcr diff (+500ms for safety) */
+-      /* The previous group closed at the raw last_pcr diff (+500ms for safety) */
 -      pcr_offset += prev->values[prev->last_value].pcr + 500 * PCR_MSECOND;
-+      /*pcr_offset need to add gap time of pcr to lastpcr, because prev->values[prev->last_value].pcr is
++     /*pcr_offset need to add gap time of pcr to lastpcr, because prev->values[prev->last_value].pcr is
 +       always 0 that cause calcute current pts issue*/
-+      pcr_offset += pcr - lastpcr;
++     pcr_offset += pcr - lastpcr;
      } else
        /* Normal continuation (contiguous in time) */
        pcr_offset += pcr - prev->first_pcr;
--- 
-2.25.1
-

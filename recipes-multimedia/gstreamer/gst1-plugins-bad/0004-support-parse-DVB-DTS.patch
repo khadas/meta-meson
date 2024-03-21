@@ -1,27 +1,8 @@
-From 4345c540ccbd861fe17d06b11fcca7bd62438c40 Mon Sep 17 00:00:00 2001
-From: "sheng.liu" <sheng.liu@amlogic.com>
-Date: Tue, 1 Mar 2022 17:37:58 +0800
-Subject: [PATCH] gst1-plugins-bad: support parse DVB-DTS in tsdemux  [1/1]
-
-PD#SWPL-72342
-
-Problem:
-Dvt-dts audio data can not be parsed
-
-Solution:
-support parse DVB-DTS
-
-Verify:
-AH212
----
- gst/mpegtsdemux/tsdemux.c | 60 ++++++++++++++++++++++++---------------
- 1 file changed, 37 insertions(+), 23 deletions(-)
-
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index 770b925..cebbcb9 100644
+index 68cac44..3532592 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -1219,6 +1219,14 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+@@ -1443,6 +1443,13 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
        /* FIXME: Move all of this into a common method (there might be other
         * types also, depending on registratino descriptors also
         */
@@ -32,11 +13,10 @@ index 770b925..cebbcb9 100644
 +        caps = gst_caps_new_empty_simple ("audio/x-dts");
 +        break;
 +      }
-+
-       desc = mpegts_get_descriptor_from_stream (bstream, GST_MTS_DESC_DVB_AC3);
-       if (desc) {
-         GST_LOG ("ac3 audio");
-@@ -2911,19 +2919,22 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+ 
+       desc = mpegts_get_descriptor_from_stream_with_extension (bstream,
+           GST_MTS_DESC_DVB_EXTENSION, GST_MTS_DESC_EXT_DVB_AC4);
+@@ -3355,19 +3362,22 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
            "Got Keyframe, ready to go at %" GST_TIME_FORMAT,
            GST_TIME_ARGS (stream->pts));
  
@@ -47,31 +27,32 @@ index 770b925..cebbcb9 100644
 -          res = GST_FLOW_ERROR;
 -          goto beach;
 -        }
-+      if (bs->stream_type == GST_MPEGTS_STREAM_TYPE_PRIVATE_PES_PACKETS) {
-+          if (bs->registration_id == DRF_ID_OPUS) {
-+            buffer_list = parse_opus_access_unit (stream);
-+            if (!buffer_list) {
-+              res = GST_FLOW_ERROR;
-+              goto beach;
-+            }
- 
+-
 -        if (gst_buffer_list_length (buffer_list) == 1) {
 -          buffer = gst_buffer_ref (gst_buffer_list_get (buffer_list, 0));
 -          gst_buffer_list_unref (buffer_list);
 -          buffer_list = NULL;
 -        }
-+            if (gst_buffer_list_length (buffer_list) == 1) {
-+              buffer = gst_buffer_ref (gst_buffer_list_get (buffer_list, 0));
-+              gst_buffer_list_unref (buffer_list);
-+              buffer_list = NULL;
-+            }
-+          } else {
-+            buffer = gst_buffer_new_wrapped (stream->data, stream->current_size);
++      if (bs->stream_type == GST_MPEGTS_STREAM_TYPE_PRIVATE_PES_PACKETS) {
++          if (bs->registration_id == DRF_ID_OPUS) {
++              buffer_list = parse_opus_access_unit (stream);
++              if (!buffer_list) {
++                res = GST_FLOW_ERROR;
++                goto beach;
++              }
++              if (gst_buffer_list_length (buffer_list) == 1) {
++                  buffer = gst_buffer_ref (gst_buffer_list_get (buffer_list, 0));
++                  gst_buffer_list_unref (buffer_list);
++                  buffer_list = NULL;
++              }
++          } 
++          else {
++                   buffer = gst_buffer_new_wrapped (stream->data, stream->current_size);
 +          }
        } else if (bs->stream_type == GST_MPEGTS_STREAM_TYPE_VIDEO_JP2K) {
          buffer = parse_jp2k_access_unit (stream);
          if (!buffer) {
-@@ -2951,18 +2962,21 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -3409,19 +3419,21 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
        goto beach;
      }
    } else {
@@ -82,28 +63,27 @@ index 770b925..cebbcb9 100644
 -        res = GST_FLOW_ERROR;
 -        goto beach;
 -      }
-+    if (bs->stream_type == GST_MPEGTS_STREAM_TYPE_PRIVATE_PES_PACKETS) {
-+      if(bs->registration_id == DRF_ID_OPUS) {
-+        buffer_list = parse_opus_access_unit (stream);
-+        if (!buffer_list) {
-+          res = GST_FLOW_ERROR;
-+          goto beach;
-+        }
- 
+-
 -      if (gst_buffer_list_length (buffer_list) == 1) {
 -        buffer = gst_buffer_ref (gst_buffer_list_get (buffer_list, 0));
 -        gst_buffer_list_unref (buffer_list);
 -        buffer_list = NULL;
-+        if (gst_buffer_list_length (buffer_list) == 1) {
+-      }
++     if (bs->stream_type == GST_MPEGTS_STREAM_TYPE_PRIVATE_PES_PACKETS) {
++       if (bs->registration_id == DRF_ID_OPUS) {
++         buffer_list = parse_opus_access_unit (stream);
++         if (!buffer_list) {
++            res = GST_FLOW_ERROR;
++            goto beach;
++       }
++       if (gst_buffer_list_length (buffer_list) == 1) {
 +          buffer = gst_buffer_ref (gst_buffer_list_get (buffer_list, 0));
 +          gst_buffer_list_unref (buffer_list);
 +          buffer_list = NULL;
-+        }
-+      } else {
-+        buffer = gst_buffer_new_wrapped (stream->data, stream->current_size);
-       }
++       }
++       } else {
++             buffer = gst_buffer_new_wrapped (stream->data, stream->current_size);
++       }
      } else if (bs->stream_type == GST_MPEGTS_STREAM_TYPE_VIDEO_JP2K) {
        buffer = parse_jp2k_access_unit (stream);
--- 
-2.25.1
-
+       if (!buffer) {

@@ -1,37 +1,27 @@
-From d48b7d3abfc021337c13e3b8a9b14c4c51f86a57 Mon Sep 17 00:00:00 2001
-From: "runfeng.xiao" <runfeng.xiao@amlogic.com>
-Date: Thu, 18 Feb 2021 22:57:57 +0800
-Subject: [PATCH 01/30] tsdemux process private data.
-
----
- gst/mpegtsdemux/tsdemux.c | 39 +++++++++++++++++++++++++++++++++++----
- 1 file changed, 35 insertions(+), 4 deletions(-)
-
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index d857961..899b191 100644
+index cf05983..2b4947f 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -215,6 +215,10 @@ struct _TSDemuxStream
-   GstTsDemuxKeyFrameScanFunction scan_function;
+@@ -227,6 +227,9 @@ struct _TSDemuxStream
    TSDemuxH264ParsingInfos h264infos;
    TSDemuxJP2KParsingInfos jp2kInfos;
-+
+   TSDemuxADTSParsingInfos atdsInfos;
 +  //for hdcp parse
 +  gboolean hdcp_content_flag;
 +  guchar hdcp_contents[16];
  };
  
  #define VIDEO_CAPS \
-@@ -2335,6 +2339,19 @@ gst_ts_demux_parse_pes_header (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -2633,6 +2636,19 @@ gst_ts_demux_parse_pes_header (GstTSDemux * demux, TSDemuxStream * stream,
      goto discont;
    }
  
 +  if(header.private_data){
 +    /*GST_DEBUG("Header buffer set private: %08x %08x %08x %08x\n",
-+              ((guint32 *)header.private_data)[0],
-+              ((guint32 *)header.private_data)[1],
-+              ((guint32 *)header.private_data)[2],
-+              ((guint32 *)header.private_data)[3]);*/
++             ((guint32 *)header.private_data)[0],
++             ((guint32 *)header.private_data)[1],
++             ((guint32 *)header.private_data)[2],
++             ((guint32 *)header.private_data)[3]);*/
 +    memcpy(stream->hdcp_contents, header.private_data, 16);
 +    stream->hdcp_content_flag = TRUE;
 +  }else{
@@ -42,7 +32,7 @@ index d857961..899b191 100644
    if (stream->target_pes_substream != 0
        && header.stream_id_extension != stream->target_pes_substream) {
      GST_DEBUG ("Skipping unwanted substream");
-@@ -2893,11 +2910,11 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -3327,11 +3343,11 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
    MpegTSBaseStream *bs = (MpegTSBaseStream *) stream;
    GstBuffer *buffer = NULL;
    GstBufferList *buffer_list = NULL;
@@ -53,32 +43,29 @@ index d857961..899b191 100644
 -      "stream:%p, pid:0x%04x stream_type:%d state:%d", stream, bs->pid,
 -      bs->stream_type, stream->state);
 +  GST_DEBUG_OBJECT(stream->pad,
-+                   "stream:%p, pid:0x%04x stream_type:%d state:%d private set: %d", stream, bs->pid,
-+                   bs->stream_type, stream->state, stream->hdcp_content_flag);
++      "stream:%p, pid:0x%04x stream_type:%d state:%d private set: %d", stream, bs->pid,
++      bs->stream_type, stream->state, stream->hdcp_content_flag);
  
    if (G_UNLIKELY (stream->data == NULL)) {
-     GST_LOG ("stream->data == NULL");
-@@ -3098,6 +3115,20 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
-   else if (GST_CLOCK_TIME_IS_VALID (stream->pts))
-     demux->segment.position = stream->pts;
- 
+     GST_LOG_OBJECT (stream->pad, "stream->data == NULL");
+@@ -3554,6 +3570,20 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+     if (stream->pts > base->out_segment.position)
+       base->out_segment.position = stream->pts;
+   }
++  
 +  if(TRUE == stream->hdcp_content_flag) {
 +    guchar* iv = g_malloc(16);
 +    memcpy(iv, stream->hdcp_contents, 16);
 +    iv_buffer = gst_buffer_new_wrapped(iv, 16);
 +    GstStructure * drm_info_struct = gst_structure_new("drm_info",
-+                                                      "secure", G_TYPE_BOOLEAN, TRUE,
-+                                                      "iv", GST_TYPE_BUFFER, iv_buffer,
-+                                                      NULL);
++                                                       "secure", G_TYPE_BOOLEAN, TRUE,
++                                                       "iv", GST_TYPE_BUFFER, iv_buffer,
++                                                       NULL);
 +    if (drm_info_struct) {
-+      /*GST_DEBUG("attaching secure IV to output buffer");*/
-+      gst_buffer_add_protection_meta(buffer, drm_info_struct);
++        /*GST_DEBUG("attaching secure IV to output buffer");*/
++        gst_buffer_add_protection_meta(buffer, drm_info_struct);
 +    }
 +  }
-+
+ 
    if (buffer) {
      res = gst_pad_push (stream->pad, buffer);
-     /* Record that a buffer was pushed */
--- 
-2.34.1
-

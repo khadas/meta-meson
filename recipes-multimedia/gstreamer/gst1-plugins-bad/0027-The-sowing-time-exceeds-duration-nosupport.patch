@@ -1,33 +1,20 @@
-From de2673f5ad68b40c539ad3be5aae63432f1c31bf Mon Sep 17 00:00:00 2001
-From: Runfeng Xiao <runfeng.xiao@amlogic.com>
-Date: Mon, 19 Dec 2022 18:42:09 +0800
-Subject: [PATCH 16/30] The sowing time exceeds duration nosupport.
-
-Change-Id: I3959ec81541a43361f8a079e2f98c9ade0f1e050
----
- gst/mpegtsdemux/tsdemux.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index e6f4717..8f6603f 100755
+index 35317e3..39e36fb 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -3152,6 +3152,15 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -3614,6 +3614,15 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
        GST_TIME_FORMAT, (buffer_list ? "list" : ""), GST_TIME_ARGS (stream->pts),
        GST_TIME_ARGS (stream->dts));
  
-+   GstClockTime dur;
-+   gst_ts_demux_get_duration (demux, &dur);
-+   if( dur<stream->pts )
-+   {
-+      GST_ELEMENT_ERROR(demux, RESOURCE, FAILED, ("GStreamer encountered a general resource error"), ("GStreamer encountered a general resource error"));
-+      res = GST_FLOW_ERROR;
-+      goto beach;
-+   }
++  GstClockTime dur;
++  gst_ts_demux_get_duration (demux, &dur);
++  if( dur<stream->pts )
++  {
++    GST_ELEMENT_ERROR(demux, RESOURCE, FAILED, ("GStreamer encountered a general resource error"), ("GStreamer encountered a general resource error"));
++    res = GST_FLOW_ERROR;
++    goto beach;
++  }
 +
-   if (GST_CLOCK_TIME_IS_VALID (stream->dts))
-     demux->segment.position = stream->dts;
-   else if (GST_CLOCK_TIME_IS_VALID (stream->pts))
--- 
-2.34.1
-
+   if (GST_CLOCK_TIME_IS_VALID (stream->dts)) {
+     if (stream->dts > base->out_segment.position)
+       base->out_segment.position = stream->dts;

@@ -1,22 +1,11 @@
-From 7957b5af5553111d8c884a26c798906fa2f8a090 Mon Sep 17 00:00:00 2001
-From: Runfeng Xiao <runfeng.xiao@amlogic.com>
-Date: Mon, 19 Dec 2022 18:49:33 +0800
-Subject: [PATCH 26/30] hlsdemux parsem3u8 apos more than vpos.
-
-Change-Id: I15bf74c4352ad90acdadfc5714eeadce21627358
----
- ext/hls/gsthlsdemux.c | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
-
 diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
-index db1bfe7..a9e593e 100755
+index 528e45c..04ed2da 100644
 --- a/ext/hls/gsthlsdemux.c
 +++ b/ext/hls/gsthlsdemux.c
-@@ -1162,6 +1162,40 @@ gst_hls_demux_select_bitrate (GstAdaptiveDemuxStream * stream, guint64 bitrate)
+@@ -1325,6 +1325,39 @@ gst_hls_demux_select_bitrate (GstAdaptiveDemuxStream * stream, guint64 bitrate)
      return FALSE;
    }
  
-+
 +  if (NULL!= hlsdemux->current_variant) {
 +    gint64 vSeq, aSe1;
 +    GstClockTime vPostion, aPostion;
@@ -53,6 +42,3 @@ index db1bfe7..a9e593e 100755
    gst_hls_demux_change_playlist (hlsdemux, bitrate / MAX (1.0,
            ABS (demux->segment.rate)), &changed);
    if (changed)
--- 
-2.34.1
-

@@ -1,37 +1,8 @@
-From 94975147d46b55e5027ce133be36205816a8a70a Mon Sep 17 00:00:00 2001
-From: Ao Xu <ao.xu@amlogic.com>
-Date: Wed, 15 Apr 2020 12:21:59 +0800
-Subject: [PATCH 1/2] gistwaylandsink: use gstdrmallocator as the drm dma-buf
- allocation
-
-Signed-off-by: Ao Xu <ao.xu@amlogic.com>
-
-%% original patch: 0001-gistwaylandsink-use-gstdrmbufferpool.patch
----
- configure.ac                 |  2 +-
- ext/wayland/gstwaylandsink.c | 39 ++++++++++++++++++++++++++++++++++-----
- ext/wayland/gstwaylandsink.h |  2 ++
- ext/wayland/meson.build      |  3 ++-
- 4 files changed, 39 insertions(+), 7 deletions(-)
-
-diff --git a/configure.ac b/configure.ac
-index 5712e73..312260e 100644
---- a/configure.ac
-+++ b/configure.ac
-@@ -1320,7 +1320,7 @@ dnl **** Wayland ****
- translit(dnm, m, l) AM_CONDITIONAL(USE_WAYLAND, true)
- AC_PATH_PROG([wayland_scanner], [wayland-scanner])
- AG_GST_CHECK_FEATURE(WAYLAND, [wayland sink], wayland , [
--  PKG_CHECK_MODULES(WAYLAND, wayland-client >= 1.11.0 libdrm >= 2.4.55 wayland-protocols >= 1.15, [
-+  PKG_CHECK_MODULES(WAYLAND, wayland-client >= 1.11.0 libdrm >= 2.4.55 wayland-protocols >= 1.15, gstdrmbufferpool >= 1.0 [
-     if test "x$wayland_scanner" != "x"; then
-       HAVE_WAYLAND="yes"
-       AC_SUBST(WAYLAND_PROTOCOLS_DATADIR, `$PKG_CONFIG --variable=pkgdatadir wayland-protocols`)
 diff --git a/ext/wayland/gstwaylandsink.c b/ext/wayland/gstwaylandsink.c
-index 78dd294..54bb5d5 100644
+index 0761304..291ba18 100644
 --- a/ext/wayland/gstwaylandsink.c
 +++ b/ext/wayland/gstwaylandsink.c
-@@ -49,6 +49,7 @@
+@@ -50,6 +50,7 @@
  
  #include <gst/wayland/wayland.h>
  #include <gst/video/videooverlay.h>
@@ -39,7 +10,7 @@ index 78dd294..54bb5d5 100644
  
  /* signals */
  enum
-@@ -62,7 +63,9 @@ enum
+@@ -63,7 +64,9 @@ enum
  {
    PROP_0,
    PROP_DISPLAY,
@@ -50,11 +21,10 @@ index 78dd294..54bb5d5 100644
  };
  
  GST_DEBUG_CATEGORY (gstwayland_debug);
-@@ -208,6 +211,16 @@ gst_wayland_sink_class_init (GstWaylandSinkClass * klass)
-       g_param_spec_boolean ("fullscreen", "Fullscreen",
+@@ -212,6 +215,16 @@ gst_wayland_sink_class_init (GstWaylandSinkClass * klass)
            "Whether the surface should be made fullscreen ", FALSE,
            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-+
+ 
 +  g_object_class_install_property (gobject_class, PROP_ALLOCATION,
 +      g_param_spec_boolean ("use-drm", "Wayland Allocation name", "Wayland "
 +          "Use DRM based memory for allocation",
@@ -64,10 +34,11 @@ index 78dd294..54bb5d5 100644
 +      g_param_spec_boolean ("secure", "Wayland Allocation Secure", "Wayland "
 +          "Use Secure DRM based memory for allocation",
 +          FALSE, G_PARAM_WRITABLE));
++
+   gst_type_mark_as_plugin_api (GST_TYPE_WAYLAND_VIDEO, 0);
  }
  
- static void
-@@ -269,6 +282,16 @@ gst_wayland_sink_set_property (GObject * object,
+@@ -274,6 +287,16 @@ gst_wayland_sink_set_property (GObject * object,
        gst_wayland_sink_set_fullscreen (sink, g_value_get_boolean (value));
        GST_OBJECT_UNLOCK (sink);
        break;
@@ -84,7 +55,7 @@ index 78dd294..54bb5d5 100644
      default:
        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
        break;
-@@ -604,18 +627,24 @@ gst_wayland_sink_propose_allocation (GstBaseSink * bsink, GstQuery * query)
+@@ -621,16 +644,22 @@ gst_wayland_sink_propose_allocation (GstBaseSink * bsink, GstQuery * query)
    gst_query_parse_allocation (query, &caps, &need_pool);
  
    if (need_pool)
@@ -105,29 +76,27 @@ index 78dd294..54bb5d5 100644
 +    gst_query_add_allocation_param (query, alloc, NULL);
 +    g_object_unref (alloc);
 +  }
++
    gst_query_add_allocation_meta (query, GST_VIDEO_META_API_TYPE, NULL);
 -  g_object_unref (alloc);
  
    return TRUE;
-+
  }
- 
- static void
 diff --git a/ext/wayland/gstwaylandsink.h b/ext/wayland/gstwaylandsink.h
-index be92fe7..ef7b2da 100644
+index 7aabb6f..76350a6 100644
 --- a/ext/wayland/gstwaylandsink.h
 +++ b/ext/wayland/gstwaylandsink.h
-@@ -64,6 +64,8 @@ struct _GstWaylandSink
+@@ -63,6 +63,8 @@ struct _GstWaylandSink
+   gboolean fullscreen;
  
    gchar *display_name;
- 
 +  gboolean use_drm;
 +  gboolean secure;
+ 
    gboolean redraw_pending;
    GMutex render_lock;
-   GstBuffer *last_buffer;
 diff --git a/ext/wayland/meson.build b/ext/wayland/meson.build
-index 3c377ee..71757f6 100644
+index a3ffb70..f41ea7e 100644
 --- a/ext/wayland/meson.build
 +++ b/ext/wayland/meson.build
 @@ -9,6 +9,7 @@ wl_sources = [
@@ -137,7 +106,7 @@ index 3c377ee..71757f6 100644
 +gstdrmbufferpool_dep = dependency('gstdrmbufferpool')
  
  if use_wayland
-     protocols_datadir = wl_protocol_dep.get_pkgconfig_variable('pkgdatadir')
+     protocols_datadir = wl_protocol_dep.get_variable('pkgdatadir')
 @@ -42,7 +43,7 @@ if use_wayland
          c_args : gst_plugins_bad_args + ['-DGST_USE_UNSTABLE_API'],
          include_directories : [configinc],
@@ -147,6 +116,3 @@ index 3c377ee..71757f6 100644
          install : true,
          install_dir : plugins_install_dir,
      )
--- 
-2.7.4
-

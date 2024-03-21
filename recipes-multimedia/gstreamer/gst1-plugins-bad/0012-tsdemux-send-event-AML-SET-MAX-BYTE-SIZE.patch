@@ -1,45 +1,19 @@
-From e2033c9436ed06cefbc538b6c615cee42a3b03a8 Mon Sep 17 00:00:00 2001
-From: "sheng.liu" <sheng.liu@amlogic.com>
-Date: Tue, 13 Dec 2022 15:22:36 +0800
-Subject: [PATCH] gstreamer1.0-plugins-bad: CB1 send event to multiqueue to
- large buffer size [1/1]
-
-PD#SWPL-104970
-
-Problem:
-ts video data is more than setted multiqueue buffer size
-at the beginning which will stuck the pipeline when multiqueue is filled
-
-Solution:
-tsdemux seend a event to multiqueue
-when multiqueue get this event, set the buffer size to default 10M.
-
-Verify:
-AH212
----
- gst/mpegtsdemux/tsdemux.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index 44f2105..d857961 100644
+index 2b4947f..634d466 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -1774,6 +1774,15 @@ done:
+@@ -2017,6 +2017,14 @@ done:
      gst_pad_set_caps (pad, caps);
      gst_pad_set_query_function (pad, gst_ts_demux_srcpad_query);
      gst_pad_set_event_function (pad, gst_ts_demux_srcpad_event);
-+
 +    if (is_video) {
-+      GstStructure *s;
-+      GstEvent *event;      
-+      s = gst_structure_new_empty ("AML-SET-MAX-BYTE-SIZE");
-+      event = gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM_STICKY, s);
-+      GST_DEBUG("Send SET-MAX-BYTE-SIZE Event");
-+      gst_pad_push_event (pad, event);
++        GstStructure *s;
++        GstEvent *event;
++        s = gst_structure_new_empty ("AML-SET-MAX-BYTE-SIZE");
++        event = gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM_STICKY, s);
++        GST_DEBUG("Send SET-MAX-BYTE-SIZE Event");
++        gst_pad_push_event (pad, event);
 +    }
    }
  
    g_free (name);
--- 
-2.25.1
-

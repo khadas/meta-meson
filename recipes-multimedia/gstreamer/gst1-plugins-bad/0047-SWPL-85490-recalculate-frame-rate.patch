@@ -1,18 +1,8 @@
-From f9d4b0ff20a899e7da980e8b88953ecb2177d89f Mon Sep 17 00:00:00 2001
-From: "fei.deng" <fei.deng@amlogic.com>
-Date: Thu, 8 Jun 2023 07:17:03 +0000
-Subject: [PATCH] recalculate frame rate
-
-Change-Id: I9874329a4d1dd2c841df32ef0abd70ff68f83a9c
----
- gst-libs/gst/codecparsers/gsth264parser.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
 diff --git a/gst-libs/gst/codecparsers/gsth264parser.c b/gst-libs/gst/codecparsers/gsth264parser.c
-index eb063cb..74b9b17 100644
+index ec5cd3a..ce71039 100644
 --- a/gst-libs/gst/codecparsers/gsth264parser.c
 +++ b/gst-libs/gst/codecparsers/gsth264parser.c
-@@ -2533,6 +2533,13 @@ gst_h264_video_calculate_framerate (const GstH264SPS * sps,
+@@ -2749,6 +2749,13 @@ gst_h264_video_calculate_framerate (const GstH264SPS * sps,
              case 3:
              case 4:
                delta_tfi_divisor = 2;
@@ -26,6 +16,3 @@ index eb063cb..74b9b17 100644
                break;
              case 5:
              case 6:
--- 
-2.25.1
-

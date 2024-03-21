@@ -1,34 +1,13 @@
-From 57afcb81721224df3f37dc5919396389eaa84d84 Mon Sep 17 00:00:00 2001
-From: "sheng.liu" <sheng.liu@amlogic.com>
-Date: Thu, 1 Dec 2022 13:52:30 +0800
-Subject: [PATCH] gstreamer1.0-plugins-bad: CB1 do not create pts when it's
- invalid [1/1]
-
-PD#SWPL-101838
-
-Problem:
-h264parser caculate the wrong pts when pts is invalid
-
-Solution:
-do not let h264parser calculate the pts
-westerossink will do this job
-
-Verify:
-AH212
----
- gst/videoparsers/gsth264parse.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
-
 diff --git a/gst/videoparsers/gsth264parse.c b/gst/videoparsers/gsth264parse.c
-index 6bc1cf6..74b3f9b 100644
+index dde78dc..364b614 100644
 --- a/gst/videoparsers/gsth264parse.c
 +++ b/gst/videoparsers/gsth264parse.c
-@@ -2236,14 +2236,14 @@ gst_h264_parse_get_timestamp (GstH264Parse * h264parse,
+@@ -2605,14 +2605,14 @@ gst_h264_parse_get_timestamp (GstH264Parse * h264parse,
            (h264parse->sei_cpb_removal_delay * GST_SECOND,
            sps->vui_parameters.num_units_in_tick,
            sps->vui_parameters.time_scale);
 -    } else {
-+    }// else {
++    } //else {
        /* If no upstream timestamp is given, we write in new timestamp */
 -      upstream = h264parse->dts = h264parse->ts_trn_nb +
 -          (GstClockTime) gst_util_uint64_scale
@@ -36,15 +15,12 @@ index 6bc1cf6..74b3f9b 100644
 -          sps->vui_parameters.num_units_in_tick,
 -          sps->vui_parameters.time_scale);
 -    }
-+    // upstream = h264parse->dts = h264parse->ts_trn_nb +
-+    //      (GstClockTime) gst_util_uint64_scale
-+    //      (h264parse->sei_cpb_removal_delay * GST_SECOND,
-+    //      sps->vui_parameters.num_units_in_tick,
-+    //      sps->vui_parameters.time_scale);
-+    //}
++      //upstream = h264parse->dts = h264parse->ts_trn_nb +
++      //    (GstClockTime) gst_util_uint64_scale
++      //    (h264parse->sei_cpb_removal_delay * GST_SECOND,
++      //    sps->vui_parameters.num_units_in_tick,
++      //    sps->vui_parameters.time_scale);
++      //}
    } else {
      GstClockTime dur;
  
--- 
-2.25.1
-

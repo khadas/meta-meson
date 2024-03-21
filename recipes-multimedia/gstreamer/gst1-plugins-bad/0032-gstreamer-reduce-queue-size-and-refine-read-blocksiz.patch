@@ -1,27 +1,3 @@
-From f087b9fd10ae13485c0b2bdc1a613503b3da360c Mon Sep 17 00:00:00 2001
-From: Runfeng Xiao <runfeng.xiao@amlogic.com>
-Date: Sat, 4 Jun 2022 16:45:21 +0800
-Subject: [PATCH 21/30] gstreamer: reduce queue size and refine read blocksize
- [1/2]
-
-PD#TV-53466
-
-Problem:
-Crash due to use huge memory.
-
-Solution:
-reduce queue size and refine read blocksize
-
-Verify:
-on t5d am32a2
-
-Change-Id: I7d4b762d5d30285f979c20425010d9d5ffd83046
----
- ext/hls/gsthlsdemux-util.c                    | 5 +++++
- ext/hls/gsthlsdemux.c                         | 2 --
- gst-libs/gst/adaptivedemux/gstadaptivedemux.c | 6 ++++--
- 3 files changed, 9 insertions(+), 4 deletions(-)
-
 diff --git a/ext/hls/gsthlsdemux-util.c b/ext/hls/gsthlsdemux-util.c
 index 95f61d4..8bac2f6 100644
 --- a/ext/hls/gsthlsdemux-util.c
@@ -39,10 +15,10 @@ index 95f61d4..8bac2f6 100644
      return FALSE;
  
 diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
-index 4b6109f..cee3f76 100755
+index d2ba84a..05e0205 100644
 --- a/ext/hls/gsthlsdemux.c
 +++ b/ext/hls/gsthlsdemux.c
-@@ -869,7 +869,6 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
+@@ -1032,7 +1032,6 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
      hls_stream->pending_pcr_buffer = NULL;
    }
  
@@ -50,7 +26,7 @@ index 4b6109f..cee3f76 100755
    if (!gst_hlsdemux_tsreader_find_pcrs (&hls_stream->tsreader, &buffer,
            &first_pcr, &last_pcr, &tags)
        && !at_eos) {
-@@ -877,7 +876,6 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
+@@ -1040,7 +1039,6 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
      hls_stream->pending_pcr_buffer = buffer;
      return GST_FLOW_OK;
    }
@@ -59,10 +35,10 @@ index 4b6109f..cee3f76 100755
    if (tags) {
      gst_adaptive_demux_stream_set_tags (stream, tags);
 diff --git a/gst-libs/gst/adaptivedemux/gstadaptivedemux.c b/gst-libs/gst/adaptivedemux/gstadaptivedemux.c
-index 543e108..11d996a 100644
+index 404f959..a62effe 100644
 --- a/gst-libs/gst/adaptivedemux/gstadaptivedemux.c
 +++ b/gst-libs/gst/adaptivedemux/gstadaptivedemux.c
-@@ -130,7 +130,9 @@ GST_DEBUG_CATEGORY (adaptivedemux_debug);
+@@ -129,7 +129,9 @@ GST_DEBUG_CATEGORY (adaptivedemux_debug);
  #define DEFAULT_FAILED_COUNT 3
  #define DEFAULT_CONNECTION_SPEED 0
  #define DEFAULT_BITRATE_LIMIT 0.8f
@@ -73,7 +49,7 @@ index 543e108..11d996a 100644
  #define NUM_LOOKBACK_FRAGMENTS 3
  
  #define GST_MANIFEST_GET_LOCK(d) (&(GST_ADAPTIVE_DEMUX_CAST(d)->priv->manifest_lock))
-@@ -3044,7 +3046,7 @@ gst_adaptive_demux_stream_update_source (GstAdaptiveDemuxStream * stream,
+@@ -3104,7 +3106,7 @@ gst_adaptive_demux_stream_update_source (GstAdaptiveDemuxStream * stream,
        return FALSE;
  
      g_object_set (queue, "max-size-bytes", (guint) SRC_QUEUE_MAX_BYTES, NULL);
@@ -82,6 +58,3 @@ index 543e108..11d996a 100644
      g_object_set (queue, "max-size-time", (guint64) 0, NULL);
  
      uri_handler = gst_element_make_from_uri (GST_URI_SRC, uri, NULL, NULL);
--- 
-2.34.1
-

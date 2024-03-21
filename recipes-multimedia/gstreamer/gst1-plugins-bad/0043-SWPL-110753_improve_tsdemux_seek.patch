@@ -1,45 +1,45 @@
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index 7c241d1..53e94ac 100644
+index 27b7724..cc1b24d 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -464,6 +464,7 @@ gst_ts_demux_reset (MpegTSBase * base)
+@@ -516,6 +516,7 @@ gst_ts_demux_reset (MpegTSBase * base)
    demux->group_id = G_MAXUINT;
  
    demux->last_seek_offset = -1;
 +  demux->pre_seek_start = -1;
    demux->program_generation = 0;
- }
  
-@@ -883,6 +884,7 @@ gst_ts_demux_do_seek (MpegTSBase * base, GstEvent * event)
+   demux->mpeg_pts_offset = 0;
+@@ -962,6 +963,7 @@ gst_ts_demux_do_seek (MpegTSBase * base, GstEvent * event)
    GstSeekType start_type, stop_type;
    gint64 start, stop;
    guint64 start_offset;
 +  guint64 request_offset;
+   gboolean update = FALSE;
+   GstSegment seeksegment;
  
-   gst_event_parse_seek (event, &rate, &format, &flags, &start_type, &start,
-       &stop_type, &stop);
-@@ -908,6 +910,9 @@ gst_ts_demux_do_seek (MpegTSBase * base, GstEvent * event)
+@@ -1017,6 +1019,9 @@ gst_ts_demux_do_seek (MpegTSBase * base, GstEvent * event)
      start_offset =
-         mpegts_packetizer_ts_to_offset (base->packetizer, MAX (0,
-             start - SEEK_TIMESTAMP_OFFSET), demux->program->pcr_pid);
+         mpegts_packetizer_ts_to_offset (base->packetizer, target,
+         demux->program->pcr_pid);
 +    request_offset =
 +        mpegts_packetizer_ts_to_offset (base->packetizer, MAX (0,
 +            start), demux->program->pcr_pid);
- 
      if (G_UNLIKELY (start_offset == -1)) {
-       GST_WARNING ("Couldn't convert start position to an offset");
-@@ -932,6 +937,7 @@ gst_ts_demux_do_seek (MpegTSBase * base, GstEvent * event)
-   /* record offset and rate */
-   base->seek_offset = start_offset;
-   demux->last_seek_offset = base->seek_offset;
-+  demux->pre_seek_start = request_offset;
-   demux->rate = rate;
-   res = GST_FLOW_OK;
+       GST_WARNING_OBJECT (demux,
+           "Couldn't convert start position to an offset");
+@@ -1026,6 +1031,7 @@ gst_ts_demux_do_seek (MpegTSBase * base, GstEvent * event)
  
-@@ -3146,10 +3152,29 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
-       stream->seeked_dts = stream->dts;
-       stream->needs_keyframe = FALSE;
+     base->seek_offset = start_offset;
+     demux->last_seek_offset = base->seek_offset;
++    demux->pre_seek_start = request_offset;
+     /* Reset segment if we're not doing an accurate seek */
+     demux->reset_segment = (!(flags & GST_SEEK_FLAG_ACCURATE));
+ 
+@@ -3590,10 +3596,28 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
      } else {
+       GList *tmp;
+       GST_DEBUG_OBJECT (stream->pad, "Rewinding after keyframe seek failure");
 -      base->seek_offset = demux->last_seek_offset - 200 * base->packetsize;
 -      if (demux->last_seek_offset < 200 * base->packetsize)
 -        base->seek_offset = 0;
@@ -66,19 +66,18 @@ index 7c241d1..53e94ac 100644
 +      {
 +        GST_DEBUG_OBJECT (stream->pad, "continue read from %lld", base->seek_offset);
 +      }
-+
        mpegts_packetizer_flush (base->packetizer, FALSE);
-       base->mode = BASE_MODE_SEEKING;
  
+       /* Reset all streams accordingly */
 diff --git a/gst/mpegtsdemux/tsdemux.h b/gst/mpegtsdemux/tsdemux.h
-index acf7078..2316518 100644
+index e347cb1..c3784c5 100644
 --- a/gst/mpegtsdemux/tsdemux.h
 +++ b/gst/mpegtsdemux/tsdemux.h
-@@ -104,6 +104,7 @@ struct _GstTSDemux
+@@ -105,6 +105,7 @@ struct _GstTSDemux
  
    /* Used when seeking for a keyframe to go backward in the stream */
    guint64 last_seek_offset;
 +  guint64 pre_seek_start;
- };
  
- struct _GstTSDemuxClass
+   /* The current difference between PES PTSs and our output running times,
+    * in the MPEG time domain. This is used for potentially updating

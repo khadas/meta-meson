@@ -1,20 +1,8 @@
-From 6371701dfcadcd1d187724f4ecac3e4264f9a0f9 Mon Sep 17 00:00:00 2001
-From: Song Zhao <song.zhao@amlogic.com>
-Date: Thu, 12 Aug 2021 13:49:48 -0700
-Subject: [PATCH 09/30] tsdemux: handle seek with
- GST_SEEK_FLAG_TRICKMODE_NO_AUDIO
-
----
- gst/mpegtsdemux/mpegtsbase.c | 4 ++++
- gst/mpegtsdemux/mpegtsbase.h | 3 +++
- gst/mpegtsdemux/tsdemux.c    | 3 +++
- 3 files changed, 10 insertions(+)
-
 diff --git a/gst/mpegtsdemux/mpegtsbase.c b/gst/mpegtsdemux/mpegtsbase.c
-index 1a68f86..ad75110 100644
+index 85d5afd..10628af 100644
 --- a/gst/mpegtsdemux/mpegtsbase.c
 +++ b/gst/mpegtsdemux/mpegtsbase.c
-@@ -1756,6 +1756,10 @@ mpegts_base_handle_seek_event (MpegTSBase * base, GstPad * pad,
+@@ -1903,6 +1903,10 @@ mpegts_base_handle_seek_event (MpegTSBase * base, GstPad * pad,
      goto done;
    }
  
@@ -26,40 +14,37 @@ index 1a68f86..ad75110 100644
    /* If the subclass can seek, do that */
    ret = klass->seek (base, event);
 diff --git a/gst/mpegtsdemux/mpegtsbase.h b/gst/mpegtsdemux/mpegtsbase.h
-index 5775cdd..632784f 100644
+index 3d463f4..fab6d6a 100644
 --- a/gst/mpegtsdemux/mpegtsbase.h
 +++ b/gst/mpegtsdemux/mpegtsbase.h
-@@ -161,6 +161,9 @@ struct _MpegTSBase {
-   /* Whether the parent bin is streams-aware, meaning we can
+@@ -170,6 +170,9 @@ struct _MpegTSBase {
     * add/remove streams at any point in time */
    gboolean streams_aware;
-+
+ 
 +  /* save seek flag */
 +  gboolean no_audio_set;
- };
- 
- struct _MpegTSBaseClass {
++
+   /* Do not use the PCR stream for timestamp calculation. Useful for
+    * streams with broken/invalid PCR streams. */
+   gboolean ignore_pcr;
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index 5cffac8..ac8d34a 100755
+index 5f06a65..ea36de7 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -2564,6 +2564,7 @@ calculate_and_push_newsegment (GstTSDemux * demux, TSDemuxStream * stream,
-       /* Start from the first ts/pts */
+@@ -2901,6 +2901,7 @@ calculate_and_push_newsegment (GstTSDemux * demux, TSDemuxStream * stream,
        GstClockTime base =
-           demux->segment.base + demux->segment.position - demux->segment.start;
+           seg->base + seg->position - (seg->start + seg->offset);
+       GstClockTime stop = seg->stop;
 +      MpegTSBase *tsbase = (MpegTSBase *) demux;
-       gst_segment_init (&demux->segment, GST_FORMAT_TIME);
-       demux->segment.start = firstts;
-       demux->segment.stop = GST_CLOCK_TIME_NONE;
-@@ -2571,6 +2572,8 @@ calculate_and_push_newsegment (GstTSDemux * demux, TSDemuxStream * stream,
-       demux->segment.time = firstts;
-       demux->segment.rate = demux->rate;
-       demux->segment.base = base;
+ 
+       gst_segment_init (seg, GST_FORMAT_TIME);
+       seg->start = firstts;
+@@ -2909,6 +2910,8 @@ calculate_and_push_newsegment (GstTSDemux * demux, TSDemuxStream * stream,
+       seg->time = firstts;
+       seg->rate = demux->rate;
+       seg->base = base;
 +      if (tsbase->no_audio_set)
-+        demux->segment.flags |= GST_SEGMENT_FLAG_TRICKMODE_NO_AUDIO;
++        seg->flags |= GST_SEGMENT_FLAG_TRICKMODE_NO_AUDIO;
      }
-   } else if (demux->segment.start < firstts) {
+   } else if (base->out_segment.start < firstts) {
      /* Take into account the offset to the first buffer timestamp */
--- 
-2.34.1
-

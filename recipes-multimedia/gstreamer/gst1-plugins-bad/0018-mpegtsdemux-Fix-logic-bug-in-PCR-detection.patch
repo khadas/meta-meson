@@ -1,38 +1,27 @@
-From 00313ec111a7aa1ebc241c9e314ca3e9e91072ab Mon Sep 17 00:00:00 2001
-From: "pengbing.deng" <pengbing.deng@amlogic.com>
-Date: Mon, 26 Jul 2021 11:06:34 +0800
-Subject: [PATCH 07/30] mpegtsdemux: Fix logic bug in PCR detection
-
-Change-Id: I98668c0f7910067eff0472afa3d0af9a7e2c9587
----
- gst/mpegtsdemux/tsdemux.c | 4 ++--
- gst/mpegtsdemux/tsdemux.h | 1 +
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index da4dd53..5cffac8 100755
+index 8582b2f..5f06a65 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -467,6 +467,7 @@ gst_ts_demux_init (GstTSDemux * demux)
+@@ -521,6 +521,7 @@ gst_ts_demux_init (GstTSDemux * demux)
    demux->flowcombiner = gst_flow_combiner_new ();
    demux->requested_program_number = -1;
    demux->program_number = -1;
 +  demux->no_check_pcr_count = 0;
+   demux->latency = DEFAULT_LATENCY;
    gst_ts_demux_reset (base);
- }
  
-@@ -3035,8 +3036,7 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -3496,8 +3497,7 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
      if (G_UNLIKELY (stream->pending_ts && !check_pending_buffers (demux))) {
        //according to prop process issue ts file, in advance goto error
        if (!demux->no_check_pcr_illegal) {
 -        static int count = 0;
 -        if (count++ > 200) {
-+        if (demux->no_check_pcr_count++ > 200) {  
++        if (demux->no_check_pcr_count++ > 200) {
            res = GST_FLOW_ERROR;
            GST_DEBUG("process pcr error, return gst_flow_error");
            goto beach;
 diff --git a/gst/mpegtsdemux/tsdemux.h b/gst/mpegtsdemux/tsdemux.h
-index 833ac4a..378d001 100644
+index e5b5666..dc4747a 100644
 --- a/gst/mpegtsdemux/tsdemux.h
 +++ b/gst/mpegtsdemux/tsdemux.h
 @@ -77,6 +77,7 @@ struct _GstTSDemux
@@ -40,9 +29,6 @@ index 833ac4a..378d001 100644
    gboolean emit_statistics;
    gboolean no_check_pcr_illegal;
 +  guint no_check_pcr_count;
+   gboolean send_scte35_events;
+   gint latency; /* latency in ms */
  
-   /*< private >*/
-   gint program_generation; /* Incremented each time we switch program 0..15 */
--- 
-2.34.1
-

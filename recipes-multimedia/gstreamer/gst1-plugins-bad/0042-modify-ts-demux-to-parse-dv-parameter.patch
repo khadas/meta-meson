@@ -1,12 +1,11 @@
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-index bd1500e..80eefde 100755
+index be9e712..27b7724 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -1495,6 +1495,55 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+@@ -1727,6 +1727,54 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+           is_video = TRUE;
            caps = gst_caps_new_simple ("video/x-h265",
-               "stream-format", G_TYPE_STRING, "byte-stream",
-               "alignment", G_TYPE_STRING, "nal", NULL);
-+
+               "stream-format", G_TYPE_STRING, "byte-stream", NULL);
 +          if (bstream->registration_id == DRF_ID_DolbyVision) {
 +            desc = mpegts_get_descriptor_from_stream (bstream, 0xb0);
 +            if (desc) {
@@ -58,7 +57,7 @@ index bd1500e..80eefde 100755
            break;
          case DRF_ID_KLVA:
            sparse = TRUE;
-@@ -1565,25 +1614,71 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+@@ -1803,24 +1851,71 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
            "systemstream", G_TYPE_BOOLEAN, FALSE, NULL);
        break;
      case GST_MPEGTS_STREAM_TYPE_VIDEO_H264:
@@ -71,7 +70,7 @@ index bd1500e..80eefde 100755
 -          "stream-format", G_TYPE_STRING, "byte-stream",
 -          "alignment", G_TYPE_STRING, "nal", NULL);
 -      } else {
--        caps = gst_caps_new_simple("video/x-h264",
+-         caps = gst_caps_new_simple("video/x-h264",
 -          "stream-format", G_TYPE_STRING, "byte-stream",
 -          "alignment", G_TYPE_STRING, "nal", NULL);
 -       }
@@ -79,8 +78,7 @@ index bd1500e..80eefde 100755
      case GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC:
        is_video = TRUE;
 -      caps = gst_caps_new_simple ("video/x-h265",
--          "stream-format", G_TYPE_STRING, "byte-stream",
--          "alignment", G_TYPE_STRING, "nal", NULL);
+-          "stream-format", G_TYPE_STRING, "byte-stream", NULL);
 +      if(bstream->stream_type == GST_MPEGTS_STREAM_TYPE_VIDEO_H264){
 +        if (program->registration_id == DRF_ID_HDCP) {
 +          stream->hdcp_content_flag = TRUE;

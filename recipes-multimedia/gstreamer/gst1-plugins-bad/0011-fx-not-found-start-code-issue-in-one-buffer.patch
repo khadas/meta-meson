@@ -1,18 +1,8 @@
-From 293ad258c625c8b8a8624b7d860c86728a966ad0 Mon Sep 17 00:00:00 2001
-From: "fei.deng" <fei.deng@amlogic.com>
-Date: Wed, 30 Nov 2022 20:01:42 +0800
-Subject: [PATCH] fx not found start code issue in one buffer
-
-Change-Id: Ic745db51f8b3ec958e3e5aeef00a8a8e0c6e19c1
----
- gst/videoparsers/gsth264parse.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
 diff --git a/gst/videoparsers/gsth264parse.c b/gst/videoparsers/gsth264parse.c
-index 6bc1cf6..5978a43 100644
+index 364b614..5204add 100644
 --- a/gst/videoparsers/gsth264parse.c
 +++ b/gst/videoparsers/gsth264parse.c
-@@ -1311,9 +1311,8 @@ gst_h264_parse_handle_frame (GstBaseParse * parse,
+@@ -1462,9 +1462,8 @@ gst_h264_parse_handle_frame (GstBaseParse * parse,
              ("Error parsing H.264 stream"), ("Invalid H.264 stream"));
          goto invalid_stream;
        case GST_H264_PARSER_NO_NAL:
@@ -24,6 +14,3 @@ index 6bc1cf6..5978a43 100644
        case GST_H264_PARSER_BROKEN_DATA:
          GST_WARNING_OBJECT (h264parse, "input stream is corrupt; "
              "it contains a NAL unit of length %u", nalu.size);
--- 
-2.25.1
-

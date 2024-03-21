@@ -1,20 +1,5 @@
-From 42c51828f3c7490bf538da716a2fbc86f55104b3 Mon Sep 17 00:00:00 2001
-From: Runfeng Xiao <runfeng.xiao@amlogic.com>
-Date: Sat, 20 Mar 2021 20:55:51 +0800
-Subject: [PATCH 02/30] playbin support HDCP.
-
-Change-Id: Ifdff6030803d9f91781ebfd359ab24990413e6a3
----
- gst/mpegtsdemux/gstmpegdesc.h |  1 +
- gst/mpegtsdemux/tsdemux.c     | 26 +++++++++++++++++---------
- 2 files changed, 18 insertions(+), 9 deletions(-)
- mode change 100644 => 100755 gst/mpegtsdemux/gstmpegdesc.h
- mode change 100644 => 100755 gst/mpegtsdemux/tsdemux.c
-
 diff --git a/gst/mpegtsdemux/gstmpegdesc.h b/gst/mpegtsdemux/gstmpegdesc.h
-old mode 100644
-new mode 100755
-index 642ea57..39a6c1d
+index 36f0dba..5e4320a 100644
 --- a/gst/mpegtsdemux/gstmpegdesc.h
 +++ b/gst/mpegtsdemux/gstmpegdesc.h
 @@ -220,6 +220,7 @@
@@ -26,26 +11,23 @@ index 642ea57..39a6c1d
  #define DRF_ID_DTS1       0x44545331
  #define DRF_ID_DTS2       0x44545332
 diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
-old mode 100644
-new mode 100755
-index 899b191..eed5939
+index 634d466..fc8375a 100644
 --- a/gst/mpegtsdemux/tsdemux.c
 +++ b/gst/mpegtsdemux/tsdemux.c
-@@ -218,6 +218,7 @@ struct _TSDemuxStream
- 
+@@ -229,6 +229,7 @@ struct _TSDemuxStream
+   TSDemuxADTSParsingInfos atdsInfos;
    //for hdcp parse
    gboolean hdcp_content_flag;
 +  gboolean hdcp_have_iv;
    guchar hdcp_contents[16];
  };
  
-@@ -1511,9 +1512,16 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+@@ -1749,8 +1750,16 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
        break;
      case GST_MPEGTS_STREAM_TYPE_VIDEO_H264:
        is_video = TRUE;
 -      caps = gst_caps_new_simple ("video/x-h264",
--          "stream-format", G_TYPE_STRING, "byte-stream",
--          "alignment", G_TYPE_STRING, "nal", NULL);
+-          "stream-format", G_TYPE_STRING, "byte-stream", NULL);
 +      if (program->registration_id == DRF_ID_HDCP) {
 +        stream->hdcp_content_flag = TRUE;
 +        caps = gst_caps_new_simple("application/x-hdcp",
@@ -59,9 +41,9 @@ index 899b191..eed5939
        break;
      case GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC:
        is_video = TRUE;
-@@ -2346,10 +2354,10 @@ gst_ts_demux_parse_pes_header (GstTSDemux * demux, TSDemuxStream * stream,
-               ((guint32 *)header.private_data)[2],
-               ((guint32 *)header.private_data)[3]);*/
+@@ -2651,10 +2660,10 @@ gst_ts_demux_parse_pes_header (GstTSDemux * demux, TSDemuxStream * stream,
+              ((guint32 *)header.private_data)[2],
+              ((guint32 *)header.private_data)[3]);*/
      memcpy(stream->hdcp_contents, header.private_data, 16);
 -    stream->hdcp_content_flag = TRUE;
 +    stream->hdcp_have_iv = TRUE;
@@ -73,19 +55,16 @@ index 899b191..eed5939
    }
  
    if (stream->target_pes_substream != 0
-@@ -3120,9 +3128,9 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+@@ -3584,9 +3593,9 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
      memcpy(iv, stream->hdcp_contents, 16);
      iv_buffer = gst_buffer_new_wrapped(iv, 16);
      GstStructure * drm_info_struct = gst_structure_new("drm_info",
--                                                      "secure", G_TYPE_BOOLEAN, TRUE,
--                                                      "iv", GST_TYPE_BUFFER, iv_buffer,
--                                                      NULL);
-+        "secure", G_TYPE_BOOLEAN, stream->hdcp_have_iv,
-+        "iv", GST_TYPE_BUFFER, iv_buffer,
-+        NULL);
+-                                                       "secure", G_TYPE_BOOLEAN, TRUE,
+-                                                       "iv", GST_TYPE_BUFFER, iv_buffer,
+-                                                       NULL);
++                                                      "secure", G_TYPE_BOOLEAN, stream->hdcp_have_iv,
++                                                      "iv", GST_TYPE_BUFFER, iv_buffer,
++                                                      NULL);
      if (drm_info_struct) {
-       /*GST_DEBUG("attaching secure IV to output buffer");*/
-       gst_buffer_add_protection_meta(buffer, drm_info_struct);
--- 
-2.34.1
-
+         /*GST_DEBUG("attaching secure IV to output buffer");*/
+         gst_buffer_add_protection_meta(buffer, drm_info_struct);
