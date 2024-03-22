@@ -1,0 +1,18 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+        target-path = "/bt-dev";
+        __overlay__ {
+            power_down_disable = <1>;
+        };
+    };
+
+    fragment@1 {
+        target-path = "/drm-subsystem";
+        __overlay__ {
+            crtc_masks = <2 1 1>;
+        };
+    };
+};

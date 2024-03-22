@@ -1,0 +1,32 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+        target-path = "/reserved-memory/heap-gfx";
+        __overlay__ {
+            size = <0x0 0x12c00000>;
+        };
+    };
+
+    fragment@1 {
+        target-path = "/cvbsout";
+        __overlay__ {
+            status = "disabled";
+        };
+    };
+
+    fragment@2 {
+        target-path = "/drm-amcvbsout";
+        __overlay__ {
+            status = "disabled";
+        };
+    };
+
+    fragment@3 {
+        target-path = "/aml_bt";
+        __overlay__ {
+            power_down_disable = <1>;
+        };
+    };
+};

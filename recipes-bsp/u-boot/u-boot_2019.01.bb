@@ -9,7 +9,6 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files_2019/bl31_1.3/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2019/bl32_3.8/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2019/fip:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files/:"
-FILESEXTRAPATHS:prepend := "${THISDIR}/2019/:"
 
 LICENSE = "GPL-2.0-or-later"
 
@@ -18,10 +17,10 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;m
 EXTRA_OEMAKE = ''
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', 'file://absystem.cfg', '', d)}"
-CFG_FILE = "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', '${WORKDIR}/absystem.cfg ', '', d)}"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', ' file://absystem.cfg', '', d)}"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'hdmionly', ' file://hdmitx_only.cfg', '', d)}"
 
-SRC_URI += "file://merge_config.sh \
+SRC_URI:append = " file://merge_config.sh \
 "
 
 #SRC_URI = "git://${AML_GIT_ROOT}/firmware/bin/bl2.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-dev;destsuffix=uboot-repo/bl2/bin;name=bl2"
@@ -126,13 +125,14 @@ FINAL_DEFCONFIG_PATH = "${S}/bl33/v2019/board/amlogic/defconfigs"
 DEFCONFIG = "${UBOOT_TYPE%_config}_defconfig"
 
 do_compile:prepend () {
-    if [ -f "${WORKDIR}/*.cfg" ]; then
+    cfg_files=$(find ${WORKDIR} -maxdepth 1 -name "*.cfg")
+    if [ -n "$cfg_files" ]; then
         UBOOT_TYPE="${UBOOT_MACHINE}"
-        if [ -f "${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp" ]; then
-            mv -f ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp  ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}
+        if [ ! -f ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ]; then
+            mv ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG} ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp
         fi
-        mv ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG} ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp
-        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${DEFCONFIG} ${WORKDIR}/merge_config.sh -m -r ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ${CFG_FILE}
+
+        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${DEFCONFIG} ${WORKDIR}/merge_config.sh -m -r ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ${cfg_files}
     fi
 }
 

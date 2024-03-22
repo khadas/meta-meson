@@ -32,19 +32,19 @@ SRC_URI:append:t7 = " file://t7.cfg"
 SRC_URI:append:g12b = " file://g12b.cfg"
 SRC_URI:append:sm1 = " file://sm1.cfg"
 
-SRC_URI += "file://common.cfg"
+SRC_URI:append = " file://common.cfg"
 
 # add support partition encryption
-SRC_URI += "${@bb.utils.contains_any('DISTRO_FEATURES', 'partition-enc partition-enc-local', 'file://partition-enc.cfg', '', d)}"
+SRC_URI:append = "${@bb.utils.contains_any('DISTRO_FEATURES', 'partition-enc partition-enc-local', ' file://partition-enc.cfg', '', d)}"
 
 # add support nand
-SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'file://nand.cfg', '', d)}"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', ' file://nand.cfg', '', d)}"
 
 # Enable selinux support in the kernel if the feature is enabled
-SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.cfg', '', d)}"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux.cfg', '', d)}"
 
 # add support dm-verity
-SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'file://dm-verity.cfg', '', d)}"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' file://dm-verity.cfg', '', d)}"
 
 # Enable debian support in the kernel if the feature is enabled
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://amlbian.cfg', '', d)}"
@@ -58,6 +58,15 @@ SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-imw', ' fi
 #For common patches
 KDIR = "aml-5.15"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
+
+#For amlbian dtsoverlay
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://partition_debian.dtsi', '', d)}"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'hdmionly', ' file://hdmionly_overlay.dtsi', '', d)}"
+SRC_URI:append:t7 = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://t7_debian_overlay.dtsi', '', d)}"
+SRC_URI:append:g12b = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://g12b_debian_overlay.dtsi', '', d)}"
+SRC_URI:append:s4 = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://s4_debian_overlay.dtsi', '', d)}"
+SRC_URI:append:sc2 = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://sc2_debian_overlay.dtsi', '', d)}"
+SRC_URI:append:sm1 = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://sm1_debian_overlay.dtsi', '', d)}"
 
 LINUX_VERSION ?= "5.15.137"
 LINUX_VERSION:s7 = "5.15.137"

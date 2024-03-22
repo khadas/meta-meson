@@ -10,6 +10,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files_2023/bl31_2.7/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2023/bl32_3.8/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2023/bl32_3.18/bin:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/files_2023/fip:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files/:"
 
 LICENSE = "GPL-2.0-or-later"
 
@@ -24,6 +25,12 @@ PATCHTOOL="git"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/uboot/bl33/v2023', 'bl33/v2023')}"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/uboot/fip', 'fip')}"
 #can not patch bl binaries due to permission issue bl binary repos
+
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', ' file://absystem.cfg', '', d)}"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'hdmionly', ' file://hdmitx_only.cfg', '', d)}"
+
+SRC_URI:append = " file://merge_config.sh \
+"
 
 do_configure[noexec] = "1"
 
@@ -97,6 +104,22 @@ KCFLAGS +=" -DCONFIG_YOCTO "
 
 SOC = "TBD"
 SOC_bg201 = "s805s1a"
+
+FINAL_DEFCONFIG_PATH = "${S}/bl33/v2023/configs/amlogic"
+DEFCONFIG = "${UBOOT_TYPE%_config}_defconfig"
+
+do_compile:prepend () {
+    cfg_files=$(find ${WORKDIR} -maxdepth 1 -name "*.cfg")
+    if [ -n "$cfg_files" ]; then
+        UBOOT_TYPE="${UBOOT_MACHINE}"
+        if [ ! -f ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ]; then
+            mv ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG} ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp
+        fi
+
+        KCONFIG_CONFIG=${FINAL_DEFCONFIG_PATH}/${DEFCONFIG} ${WORKDIR}/merge_config.sh -m -r ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ${cfg_files}
+    fi
+}
+
 do_compile () {
     cd ${S}
     cp -f fip/mk .
@@ -148,6 +171,10 @@ do_compile () {
     if [ "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', 'true', 'false', d)}" = "true" ] &&\
            [ "${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'true', 'false', d)}" = "true" ] ; then
         mkdir -p ${DEPLOY_DIR_IMAGE}
-        cp ${S}/bl33/v2023/board/amlogic/${UBOOT_TYPE%_config}/device-keys/fip/rsa/${SOC}/rootrsa-0/key/bl33-level-3-rsa-priv.pem ${DEPLOY_DIR_IMAGE}
+        cp ${S}/bl33/v2023/configs/amlogic/${UBOOT_TYPE%_config}/device-keys/fip/rsa/${SOC}/rootrsa-0/key/bl33-level-3-rsa-priv.pem ${DEPLOY_DIR_IMAGE}
+    fi
+
+    if [ -f "${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp" ]; then
+        mv -f ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}
     fi
 }

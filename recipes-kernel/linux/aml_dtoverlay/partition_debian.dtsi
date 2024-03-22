@@ -1,0 +1,27 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+        target-path = "/partitions";
+		__removenode__ {
+		};
+    };
+
+    fragment@1 {
+        target-path = "/";
+		__overlay__ {
+			partitions: partitions{
+				parts = <1>;
+				part-0 = <&rootfs>;
+
+				rootfs:rootfs
+				{
+					pname = "rootfs";
+					size = <0xffffffff 0xffffffff>;
+					mask = <4>;
+				};
+			};
+		};
+    };
+};
