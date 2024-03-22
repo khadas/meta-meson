@@ -27,6 +27,8 @@ SOC:bg201 = "s805c1"
 SOC:bh201 = "s905y5"
 SOC:aq2432 = "s805c3"
 SOC:pxp = "p1_pxp"
+SOC:an400 = "a311d2"
+SOC:ar301 = "t982x9"
 
 S = "${WORKDIR}/git"
 
