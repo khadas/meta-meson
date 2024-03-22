@@ -8,3 +8,6 @@ Before=local-fs.target var-lib.mount umount.target
 Type=simple
 Environment="SCRIPT_ARGS=%I"
 ExecStart=/usr/bin/format-to-ext4.sh $SCRIPT_ARGS
+
+[Install]
+WantedBy=multi-user.target

@@ -11,7 +11,7 @@ S = "${WORKDIR}"
 
 SYSTEMD_AUTO_ENABLE ?= "${@bb.utils.contains('DISTRO_FEATURES','systemd','enable','',d)}"
 SYSTEMD_PACKAGES += "${@bb.utils.contains('DISTRO_FEATURES','systemd','${PN}','',d)}"
-SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES','systemd','ext4format@.service','',d)}"
+SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES','systemd','ext4format@tee.service','',d)}"
 
 do_install() {
 	install -d ${D}${bindir}
