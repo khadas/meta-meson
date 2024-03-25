@@ -22,8 +22,8 @@ S = "${WORKDIR}/git"
 
 LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138441c57c9e1edb9fde685bd3c8"
 
-DEPENDS += "liblog aml-libdvr aml-mediahal-sdk irdeto-sdk directfb"
-RDEPENDS:${PN} += "liblog aml-libdvr aml-mediahal-sdk irdeto-sdk directfb"
+DEPENDS += "liblog aml-libdvr aml-mediahal-sdk irdeto-sdk directfb meson-display libdrm"
+RDEPENDS:${PN} += "liblog aml-libdvr aml-mediahal-sdk irdeto-sdk directfb meson-display libdrm"
 
 EXTRA_OEMAKE = "STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D} \
           mode=release \
