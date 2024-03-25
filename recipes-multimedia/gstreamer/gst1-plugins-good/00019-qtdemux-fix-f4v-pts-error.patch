@@ -1,0 +1,13 @@
+diff --git a/gst/isomp4/qtdemux.c b/gst/isomp4/qtdemux.c
+index 173100e..46ca384 100755
+--- a/gst/isomp4/qtdemux.c
++++ b/gst/isomp4/qtdemux.c
+@@ -9479,7 +9479,7 @@ qtdemux_stbl_init (GstQTDemux * qtdemux, QtDemuxStream * stream, GNode * stbl)
+         /* HACK: if sample_offset is larger than 2 * duration, ignore the box.
+          * slightly inaccurate PTS could be more usable than corrupted one */
+         if (G_UNLIKELY ((ctts_version == 0 || offset != G_MININT32)
+-                && ABS (offset) / 2 > stream->duration)) {
++                && ABS (offset) * 2 > stream->duration)) {
+           GST_WARNING_OBJECT (qtdemux,
+               "Ignore corrupted ctts, sample_offset %" G_GINT32_FORMAT
+               " larger than duration %" G_GUINT64_FORMAT, offset,

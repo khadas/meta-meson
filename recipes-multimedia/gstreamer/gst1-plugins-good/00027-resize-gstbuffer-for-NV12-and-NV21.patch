@@ -1,0 +1,17 @@
+diff --git a/sys/v4l2/gstv4l2bufferpool.c b/sys/v4l2/gstv4l2bufferpool.c
+index 91b95f1..3a63b95 100644
+--- a/sys/v4l2/gstv4l2bufferpool.c
++++ b/sys/v4l2/gstv4l2bufferpool.c
+@@ -2220,6 +2220,12 @@ gst_v4l2_buffer_pool_process (GstV4l2BufferPool * pool, GstBuffer ** buf,
+ 
+           ret = gst_v4l2_buffer_pool_copy_buffer (pool, *buf, tmp);
+ 
++          if (obj->mode == GST_V4L2_IO_DMABUF && (GST_VIDEO_FORMAT_NV12 == pool->caps_info.finfo->format || GST_VIDEO_FORMAT_NV21 == pool->caps_info.finfo->format) && gst_buffer_get_size (*buf) > (pool->caps_info.width * pool->caps_info.height * 3 / 2))
++          {
++            GST_DEBUG_OBJECT (pool, "resizebuf. format:%d [%d, %d] W:%d, H:%d", pool->caps_info.finfo->format, GST_VIDEO_FORMAT_NV12, GST_VIDEO_FORMAT_NV21, pool->caps_info.width, pool->caps_info.height);
++            gst_buffer_resize (*buf, 0, pool->caps_info.width * pool->caps_info.height * 3 / 2);
++          }
++
+           /* an queue the buffer again after the copy */
+           gst_v4l2_buffer_pool_complete_release_buffer (bpool, tmp, FALSE);
+ 
