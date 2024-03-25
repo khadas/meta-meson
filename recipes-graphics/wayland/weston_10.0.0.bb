@@ -35,7 +35,9 @@ DEPENDS += "wayland wayland-protocols libinput virtual/egl pango wayland-native 
 
 WESTON_MAJOR_VERSION = "${@'.'.join(d.getVar('PV').split('.')[0:1])}"
 
-EXTRA_OEMESON += "-Dbackend-rdp=false -Dpipewire=false -DWESTON_MAX_OUTPUT_PIPLINE=1 -DWESTON_USE_DEFAULT_Z_ORDER=true  -DWESTON_FORCE_BACKGROUND_TRANSPARENT=true"
+EXTRA_OEMESON += "-Dbackend-rdp=false -Dpipewire=false -DWESTON_USE_DEFAULT_Z_ORDER=true  -DWESTON_FORCE_BACKGROUND_TRANSPARENT=true"
+
+EXTRA_OEMESON += "${@bb.utils.contains('DISTRO_FEATURES', 'dual_display', '-DWESTON_MAX_OUTPUT_PIPLINE=2', '-DWESTON_MAX_OUTPUT_PIPLINE=1', d)}"
 
 EXTRA_OEMESON += "${@bb.utils.contains('DISTRO_FEATURES', 'amlogic-tv', '-DBUILD_AML_TV=true', '', d)}"
 
