@@ -54,8 +54,6 @@ MEDIA_CONFIGS = " \
                  CONFIG_AMLOGIC_MEDIA_VDEC_REAL=m \
                  CONFIG_AMLOGIC_MEDIA_VDEC_AVS=m \
                  CONFIG_AMLOGIC_MEDIA_VDEC_AVS2=m \
-                 CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
-                 CONFIG_AMLOGIC_MEDIA_VENC_H265=m \
                  CONFIG_AMLOGIC_MEDIA_VDEC_AV1=m \
                  CONFIG_AMLOGIC_MEDIA_ENHANCEMENT_DOLBYVISION=y \
                  CONFIG_AMLOGIC_MEDIA_GE2D=y \
@@ -63,14 +61,19 @@ MEDIA_CONFIGS = " \
                  "
 
 MEDIA_CONFIGS:append:t3 = "\
+                 CONFIG_AMLOGIC_MEDIA_VENC_COMMON=m \
+                 CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
-                 CONFIG_AMLOGIC_MEDIA_VENC_MULTI=m \
                  "
 MEDIA_CONFIGS:append:t7 = "\
-                 CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
+                 CONFIG_AMLOGIC_MEDIA_VENC_COMMON=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_MULTI=m \
+                 CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  "
 MEDIA_CONFIGS:append:sc2 = "\
+                 CONFIG_AMLOGIC_MEDIA_VENC_COMMON=m \
+                 CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
+                 CONFIG_AMLOGIC_MEDIA_VENC_H265=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  "
 MEDIA_CONFIGS:append:t5d = "\
@@ -127,9 +130,9 @@ KERNEL_MODULE_AUTOLOAD += "amvdec_ports"
 #KERNEL_MODULE_AUTOLOAD += "aml_hardware_dmx"
 #KERNEL_MODULE_AUTOLOAD += "vpu"
 
-KERNEL_MODULE_AUTOLOAD:append:t3 = " encoder jpegenc amvenc_multi"
-KERNEL_MODULE_AUTOLOAD:append:t7 = " encoder jpegenc amvenc_multi"
-KERNEL_MODULE_AUTOLOAD:append:sc2 = " encoder jpegenc vpu"
+KERNEL_MODULE_AUTOLOAD:append:t3 = " encoder_common amlogic-encoder amlogic-jpegenc"
+KERNEL_MODULE_AUTOLOAD:append:t7 = " encoder_common amlogic-jpegenc amlogic-multienc"
+KERNEL_MODULE_AUTOLOAD:append:sc2 = " encoder_common amlogic-encoder amlogic-jpegenc amlogic-vpu"
 
 # Skip auto loading for Zapper project
 MODULE_AUTOLOAD_ZAPPER_SKIP = "\
