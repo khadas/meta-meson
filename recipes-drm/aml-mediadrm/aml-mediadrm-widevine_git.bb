@@ -26,7 +26,12 @@ ARM_TARGET:aarch64 = "aarch64.lp64."
 TA_TARGET="noarch"
 
 def get_widevine_version(datastore):
-    if datastore.getVar("WIDEVINE_VERSION", True) == "16":
+    version = datastore.getVar("WIDEVINE_VERSION", True)
+    if version == "18":
+        return "prebuilt-v18"
+    elif version == "17":
+        return "prebuilt-v17"
+    elif version == "16":
         return "prebuilt-v16"
     else:
         return "prebuilt-v15"
