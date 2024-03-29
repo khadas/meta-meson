@@ -6,6 +6,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/COPYING.GPL;md5=751
 #We still need patch even in external src mode
 SRCTREECOVEREDTASKS:remove = "do_patch"
 FILESEXTRAPATHS:prepend := "${THISDIR}/5.15:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/aml_dtoverlay:"
 
 FILESEXTRAPATHS:prepend:bf201 := "${THISDIR}/5.15/bf201:"
 FILESEXTRAPATHS:prepend:bg201 := "${THISDIR}/5.15/bg201:"
@@ -47,6 +48,9 @@ SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://am
 # support booting from nfs if the feature is enabled
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'nfs-boot', ' file://nfs-boot.cfg', '', d)}"
 
+# Irdeto IMW
+SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-imw', ' file://s1a_irdeto_imw_overlay.dtsi', '', d)}"
+
 #For common patches
 KDIR = "aml-5.15"
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
@@ -80,6 +84,7 @@ FINAL_DEFCONFIG_PATH = "${S}/arch/${ARCH}/configs"
 GKI_DEFCONFIG_PATH = "${S}/arch/arm64/configs"
 GKI_DEFCONFIG_PATH:kernel32 = "${S}/common_drivers/arch/arm/configs"
 GKI_AML_CONFIG_PATH = "${S}/common_drivers/arch/${ARCH}/configs"
+DTB_DIR = "${B}/common_drivers/arch/${ARCH}/boot/dts/amlogic"
 
 SOC = ""
 SOC:sc2 = "sc2"
@@ -104,6 +109,16 @@ do_compile:prepend () {
         echo "export LOADERADDR"
         export LOADADDR=0x208000
     fi
+}
+
+do_compile:append () {
+    for f in $(ls ${WORKDIR}/*.dtsi 2> /dev/null); do
+        output="${f%.dtsi}"
+        ${B}/scripts/dtc/dtc -I dts -O dtb -o ${output}.dtbo ${f}
+        for DTB in ${KERNEL_DEVICETREE}; do
+            ${B}/scripts/dtc/fdtoverlay -i ${DTB_DIR}/${DTB} ${output}.dtbo -o ${DTB_DIR}/${DTB}
+        done
+    done
 }
 
 do_configure:prepend () {

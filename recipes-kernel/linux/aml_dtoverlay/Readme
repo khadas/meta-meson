@@ -1,0 +1,17 @@
+Please refer to dts overlay: kernel\aml-5.15\Documentation\devicetree\overlay-notes.rst
+
+Note:
+    In order to increase the function of deleting nodes, we added the "__removenode__" keyword, if you have the need to delete nodes, please refer to the following writing.
+example:
+=========================================================================================
+    /dts-v1/;
+    /plugin/;
+
+    / {
+        fragment@0 {
+            target-path = "/partitions";  //Absolute path of the node to be deleted.
+		    __removenode__ {              //"__removenode__" node needn't write anything inside.
+		    };
+        };
+    };
+==========================================================================================

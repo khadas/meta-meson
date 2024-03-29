@@ -1,0 +1,11 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+        target-path = "/soc/apb4/watchdog@2100";
+        __overlay__ {
+            amlogic,feed_watchdog_mode = <0>;
+        };
+    };
+};
