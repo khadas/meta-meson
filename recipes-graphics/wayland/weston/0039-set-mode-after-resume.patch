@@ -1,0 +1,12 @@
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 809c857..9eab2dc 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -3257,6 +3257,7 @@ session_notify(struct wl_listener *listener, void *data)
+ 		weston_compositor_wake(compositor);
+ 		weston_compositor_damage_all(compositor);
+ 		b->state_invalid = true;
++		b->allow_modeset = true;
+ 		udev_input_enable(&b->input);
+ 	} else {
+ 		weston_log("deactivating session\n");
