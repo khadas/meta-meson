@@ -14,7 +14,9 @@ BBMASK .= "|meta-selinux/recipes-core/coreutils/coreutils_%.bbappend"
 #Common part
 #BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'OverlayFS', '|meta-meson/recipes-core/volatile-binds/volatile-binds.bb', '', d)}"
 
-BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'qt5', '', '|meta-meson/recipes-graphics/qt5/qtbase_%d.bbappend', d)}"
+BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'qt5', '', '|meta-meson/recipes-graphics/qt5/', d)}"
+BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'qt5', '', '|aml-qt-rxpreview/aml-qt-rxpreview.bb', d)}"
+BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'qt5', '', '|aml-qt-camera/aml-qt-camera.bb', d)}"
 BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '', '|meta-meson/recipes-security/refpolicy/refpolicy-%.bbappend', d)}"
 BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', '', '|meta-meson/recipes-core/util-linux/util-linux_%.bbappend', d)}"
 BBMASK .= "${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', '', '|meta-meson/recipes-kernel/make-mod-scripts/make-mod-scripts_1.0.bbappend', d)}"
