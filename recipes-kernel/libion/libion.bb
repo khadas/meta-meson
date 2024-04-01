@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 do_configure[noexec] = "1"
 
-EXTRA_OEMAKE = "LIBION_STAGING_DIR=${D} CROSS=${TARGET_PREFIX} TARGET_DIR=${D} STAGING_DIR=${D} DESTDIR=${D} INSTALL_DIR=${D}/usr/lib"
+EXTRA_OEMAKE = "OUT_DIR=${B} LIBION_STAGING_DIR=${D} CROSS=${TARGET_PREFIX} TARGET_DIR=${D} STAGING_DIR=${D} DESTDIR=${D} INSTALL_DIR=${D}/usr/lib"
 
 do_compile () {
     cd ${S}
@@ -20,7 +20,7 @@ do_install () {
     install -d ${D}${libdir}
     install -m 0644 -D ${S}/include/ion/ion.h ${D}${includedir}
     install -m 0644 -D ${S}/include/ion/IONmem.h ${D}${includedir}
-    install -m 0644 -D ${S}/libion.so ${D}${libdir}
+    install -m 0644 -D ${B}/libion.so ${D}${libdir}
 }
 
 FILES:${PN} = " ${libdir}/*"
