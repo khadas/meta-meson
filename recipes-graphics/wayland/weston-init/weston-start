@@ -3,6 +3,7 @@
 # Copyright (C) 2016 Freescale Semiconductor
 
 export PATH="/sbin:/usr/sbin:/bin:/usr/bin"
+export WESTON_USE_GBM_MODIFIERS=0
 
 usage() {
 	cat <<EOF
