@@ -62,6 +62,7 @@ PATH:append = ":${STAGING_DIR_NATIVE}/riscv-none-gcc/bin"
 DEPENDS:append = "gcc-linaro-aarch64-elf-native "
 DEPENDS:append = "vim-native zip-native"
 DEPENDS:append = " riscv-none-gcc-native "
+DEPENDS:s5:append = " ninja-native "
 
 DEPENDS:append = " coreutils-native python-native python-pycrypto-native "
 #override this in customer layer bbappend for customer specific bootloader binaries

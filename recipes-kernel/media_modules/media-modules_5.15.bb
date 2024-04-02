@@ -78,6 +78,12 @@ MEDIA_CONFIGS:append:sc2 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_H265=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  "
+MMEDIA_CONFIGS:append:s5 = "\
+                 CONFIG_AMLOGIC_MEDIA_VENC_COMMON=m \
+                 CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
+                 CONFIG_AMLOGIC_MEDIA_VENC_H265=m \
+                 CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
+                 "
 MEDIA_CONFIGS:append:t5d = "\
                  CONFIG_AMLOGIC_HW_DEMUX=m \
                  "
@@ -147,6 +153,7 @@ KERNEL_MODULE_AUTOLOAD += "amvdec_ports"
 KERNEL_MODULE_AUTOLOAD:append:t3 = " encoder_common amlogic-encoder amlogic-jpegenc"
 KERNEL_MODULE_AUTOLOAD:append:t7 = " encoder_common amlogic-jpegenc amlogic-multienc"
 KERNEL_MODULE_AUTOLOAD:append:sc2 = " encoder_common amlogic-encoder amlogic-jpegenc amlogic-vpu"
+KERNEL_MODULE_AUTOLOAD:append:s5 = " encoder_common amlogic-encoder amlogic-jpegenc amlogic-vpu"
 KERNEL_MODULE_AUTOLOAD:append:g12b = " encoder_common amlogic-encoder amlogic-jpegenc amlogic-vpu"
 KERNEL_MODULE_AUTOLOAD:append:sm1 = " encoder_common amlogic-encoder amlogic-jpegenc amlogic-vpu"
 
