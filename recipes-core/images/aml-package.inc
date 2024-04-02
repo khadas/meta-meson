@@ -187,7 +187,7 @@ do_aml_pack() {
             sed -i '/vendor/d' ${DEPLOY_DIR_IMAGE}/sw-description
         fi
 
-        sed 's@version = \"1.0.1\"@version = \"'$(date "+%Y%m%d%H%M%S")'\"@' -i ${DEPLOY_DIR_IMAGE}/sw-description
+        sed 's@version = \"1.0.1\"@version = \"1.0.1-'$(date "+%s")'\"@' -i ${DEPLOY_DIR_IMAGE}/sw-description
         sed 's@boardname@${MACHINE_ARCH}@' -i ${DEPLOY_DIR_IMAGE}/sw-description
         sed 's@_lib32_@_@' -i ${DEPLOY_DIR_IMAGE}/sw-description
         sed 's@_k5.15@@' -i ${DEPLOY_DIR_IMAGE}/sw-description
