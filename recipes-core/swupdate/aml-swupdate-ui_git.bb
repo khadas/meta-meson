@@ -15,13 +15,16 @@ PV = "${SRCPV}"
 S = "${WORKDIR}/git"
 
 # configurate lvgl app needs below two conditions
-EXTRA_OEMAKE += "${@bb.utils.contains("SWUPDATE_UI_LIB", "lvgl", "CONFIG_LVGL_APP=y", "" ,d)} OUT_DIR=${B} "
+do_configure[noexec] = "1"
+EXTRA_OEMAKE += "${@bb.utils.contains("SWUPDATE_UI_LIB", "lvgl", "CONFIG_LVGL_APP=y", "" ,d)}"
+EXTRA_OEMAKE += "OUT_DIR=${B} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} DESTDIR=${D}"
+
 PACKAGECONFIG:append = "${@bb.utils.contains("SWUPDATE_UI_LIB", "lvgl", " lvgl", " directfb" ,d)}"
 PACKAGECONFIG[lvgl] = "-lvgl,-no-lvgl,lvgl lv-drivers"
 PACKAGECONFIG[directfb] = "-directfb,-no-directfb,directfb"
 
 do_compile(){
-    oe_runmake -C ${S} PKG_CONFIG="${STAGING_BINDIR_NATIVE}/pkg-config" all
+    oe_runmake ${EXTRA_OEMAKE} -C ${S} PKG_CONFIG="${STAGING_BINDIR_NATIVE}/pkg-config" all
 }
 
 do_install() {
