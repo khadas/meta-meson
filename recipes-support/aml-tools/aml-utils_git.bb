@@ -25,22 +25,24 @@ FILES:${PN}-usb-monitor = "${bindir}/usb_monitor "
 FILES:${PN}-fota-upgrade = "${bindir}/fota_upgrade "
 
 IR_REMOTE_DEVICE ?= "/dev/input/event0"
-EXTRA_OEMAKE = "IR_REMOTE_DEVICE=${IR_REMOTE_DEVICE}"
+
+do_configure[noexec] = "1"
+EXTRA_OEMAKE = "OUT_DIR=${B} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} DESTDIR=${D} IR_REMOTE_DEVICE=${IR_REMOTE_DEVICE}"
 
 UTILS_CMDS = "wifi_power simulate_key usb_monitor"
 UTILS_CMDS += "${@bb.utils.contains("DISTRO_FEATURES", "fota-upgrade", " fota_upgrade", "", d)}"
 
 do_compile() {
     for CMD in ${UTILS_CMDS} ; do
-        oe_runmake -C ${S} ${CMD}
+        oe_runmake ${EXTRA_OEMAKE} -C ${S} ${CMD}
     done
 }
 
 do_install() {
     install -d ${D}${bindir}
-    install -m 0755 ${S}/wifi_power ${D}${bindir}
-    install -m 0755 ${S}/simulate_key ${D}${bindir}
-    install -m 0755 ${S}/usb_monitor ${D}${bindir}
+    install -m 0755 ${B}/wifi_power ${D}${bindir}
+    install -m 0755 ${B}/simulate_key ${D}${bindir}
+    install -m 0755 ${B}/usb_monitor ${D}${bindir}
     if ${@bb.utils.contains("DISTRO_FEATURES", "fota-upgrade", "true", "false", d)}; then
         install -m 0755 ${S}/fota_upgrade ${D}${bindir}
     fi

@@ -11,6 +11,8 @@ PV = "${SRCPV}"
 S = "${WORKDIR}/git/ubootenv"
 B = "${WORKDIR}/build"
 
+do_configure[noexec] = "1"
+
 do_compile(){
     ${MAKE} -C ${S} all OUT_DIR=${B}
 }

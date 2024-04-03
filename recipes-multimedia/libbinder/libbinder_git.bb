@@ -30,11 +30,12 @@ inherit ${@bb.utils.contains('DISTRO_FEATURES', 'disable-binderfs', ' ', 'update
 INITSCRIPT_NAME = "binder"
 INITSCRIPT_PARAMS = "start 30 2 3 4 5 . stop 80 0 6 1 ."
 
-EXTRA_OEMAKE = "'STAGING_DIR=${STAGING_DIR_TARGET}'"
+do_configure[noexec] = "1"
+EXTRA_OEMAKE = "OUT_DIR=${B} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} DESTDIR=${D}"
 
 do_compile(){
     cd ${S}
-    oe_runmake all
+    oe_runmake ${EXTRA_OEMAKE} all
 }
 
 
@@ -45,12 +46,12 @@ do_install(){
     install -d ${D}${includedir}/binder
     install -d ${D}${includedir}/utils
     install -d ${D}/${systemd_unitdir}/system
-    install -m 0644 ${S}/libbinder.so ${D}${libdir}
+    install -m 0644 ${B}/libbinder.so ${D}${libdir}
     install -m 0644 ${S}/include/binder/* ${D}${includedir}/binder
     install -m 0644 ${S}/include/utils/* ${D}${includedir}/utils
     if ${@bb.utils.contains("DISTRO_FEATURES", "disable-binderfs", "false", "true", d)}
     then
-        install -m 0755 ${S}/servicemanager ${D}${bindir}
+        install -m 0755 ${B}/servicemanager ${D}${bindir}
         install -m 0644 ${WORKDIR}/binder.service ${D}/${systemd_unitdir}/system
         install -m 0644 ${WORKDIR}/dev-binderfs.mount ${D}/${systemd_unitdir}/system
         install -m 0755 ${WORKDIR}/binder.sh ${D}/${bindir}

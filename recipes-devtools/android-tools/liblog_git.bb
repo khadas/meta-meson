@@ -19,16 +19,19 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic
 
 S = "${WORKDIR}/git/liblog"
 
+do_configure[noexec] = "1"
+EXTRA_OEMAKE = "OUT_DIR=${B} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} DESTDIR=${D}"
+
 #do_package_qa[noexec] = "1"
 
 do_compile(){
-    ${MAKE} -C ${S}
+    ${MAKE} ${EXTRA_OEMAKE} -C ${S}
 }
 
 do_install(){
     install -d ${D}${libdir}
     install -d ${D}${includedir}
-    install -m 0644 ${S}/liblog*.so* ${D}${libdir}
+    install -m 0644 ${B}/liblog*.so* ${D}${libdir}
     cp -ra ${S}/include/* ${D}${includedir}
 }
 

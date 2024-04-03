@@ -19,15 +19,19 @@ SRC_URI += "file://LICENSE-2.0"
 #For common patches
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/amlogic/aml_commonlib')}"
 
+do_configure[noexec] = "1"
+EXTRA_OEMAKE = "OUT_DIR=${B} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} DESTDIR=${D}"
+
 S = "${WORKDIR}/git/logcat"
 
 do_compile(){
-    ${MAKE} -C ${S} STAGING_DIR=TBD
+    cd ${S}/
+    ${MAKE} ${EXTRA_OEMAKE} -C ${S}
 }
 
 do_install(){
     install -d ${D}${bindir}
-    install -m 0755 ${S}/logcat ${D}${bindir}
-    install -m 0755 ${S}/logcat_test ${D}${bindir}
+    install -m 0755 ${B}/logcat ${D}${bindir}
+    install -m 0755 ${B}/logcat_test ${D}${bindir}
 }
 INSANE_SKIP:${PN} = "ldflags"

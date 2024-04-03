@@ -13,10 +13,14 @@ PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/bootloader_message"
 
+do_configure[noexec] = "1"
+EXTRA_OEMAKE = "OUT_DIR=${B} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} DESTDIR=${D}"
+
 CFLAGS += " -DBOOTCTOL_AVB "
+
 do_compile(){
     export CFLAGS="${CFLAGS}"
-    ${MAKE} -C ${S} all
+    ${MAKE} -C ${S} ${EXTRA_OEMAKE} all
 }
 
 do_install() {
@@ -24,9 +28,10 @@ do_install() {
     install -d ${D}${libdir}
     install -d ${D}${bindir}
     install -m 0644 ${S}/bootloader_message.h ${D}${includedir}
-    install -m 0644 ${S}/libbootloader_message.a ${D}${libdir}
-    install -m 0755 ${S}/urlmisc ${D}${bindir}
-    install -m 0755 ${S}/bootloader_slot ${D}${bindir}
+
+    install -m 0644 ${B}/libbootloader_message.a ${D}${libdir}
+    install -m 0755 ${B}/urlmisc ${D}${bindir}
+    install -m 0755 ${B}/bootloader_slot ${D}${bindir}
 
     if ${@bb.utils.contains("DISTRO_FEATURES", "absystem", 'true', 'false', d)}; then
         install -d ${D}${systemd_unitdir}/system
