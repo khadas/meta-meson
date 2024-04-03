@@ -22,13 +22,13 @@ IPC_TYPE = "TV_BINDER"
 INITSCRIPT_NAME = "pqserver"
 INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
 
-EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
+EXTRA_OEMAKE="OUT_DIR=${B} STAGING_DIR=${STAGING_DIR_TARGET} \
               TV_IPC_TYPE=${IPC_TYPE} \
               TARGET_DIR=${D} \
              "
 do_compile() {
     cd ${S}
-    oe_runmake  all
+    oe_runmake ${EXTRA_OEMAKE} all
 }
 do_install() {
    install -d ${D}${libdir}
@@ -36,12 +36,12 @@ do_install() {
    install -d ${D}${includedir}
 
     cd ${S}
-#    oe_runmake  install
-    install -m 0644 ${S}/libpqclient.so ${D}${libdir}
-    install -m 0644 ${S}/libpq.so ${D}${libdir}
-    install -m 755 ${S}/pqservice ${D}/usr/bin/
-    install -m 755 ${S}/pqtest ${D}/usr/bin/
-    install -m 755 ${S}/pqcbtest ${D}/usr/bin/
+#    oe_runmake ${EXTRA_OEMAKE} install
+    install -m 0644 ${B}/libpqclient.so ${D}${libdir}
+    install -m 0644 ${B}/libpq.so ${D}${libdir}
+    install -m 755 ${B}/pqservice ${D}/usr/bin/
+    install -m 755 ${B}/pqtest ${D}/usr/bin/
+    install -m 755 ${B}/pqcbtest ${D}/usr/bin/
     install -m 0644 ${S}/client/include/*.h ${D}${includedir}
     if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
         install -D -m 0644 ${WORKDIR}/pqserver.service ${D}${systemd_unitdir}/system/pqserver.service
