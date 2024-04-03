@@ -17,12 +17,12 @@ do_configure[noexec] = "1"
 inherit autotools pkgconfig systemd
 S="${WORKDIR}/git"
 
-EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} \
+EXTRA_OEMAKE="OUT_DIR=${B} STAGING_DIR=${STAGING_DIR_TARGET} \
                 TARGET_DIR=${D} \
              "
 do_compile() {
     cd ${S}
-    oe_runmake  all
+    oe_runmake ${EXTRA_OEMAKE} all
 }
 do_install() {
    install -d ${D}${libdir}
@@ -30,7 +30,7 @@ do_install() {
    install -d ${D}${includedir}
 
     cd ${S}
-    oe_runmake  install
+    oe_runmake ${EXTRA_OEMAKE} install
     install -m 0644 ${S}/client/include/*.h ${D}${includedir}
     if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
         install -D -m 0644 ${WORKDIR}/tvserver.service ${D}${systemd_unitdir}/system/tvserver.service
@@ -40,7 +40,7 @@ do_install() {
 
 }
 SYSTEMD_SERVICE:${PN} = "tvserver.service "
-#SYSTEMD_SERVICE_${PN} = "tvserver.service hdcprx.service"
+#SYSTEMD_SERVICE:${PN} = "tvserver.service hdcprx.service"
 
 FILES:${PN} = "${libdir}/* ${bindir}/*"
 FILES:${PN}-dev = "${includedir}/* "
