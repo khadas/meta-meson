@@ -39,6 +39,10 @@ IMAGE_INSTALL:remove = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'system-config', '', d)} \
 "
 
+IMAGE_INSTALL:append:aarch64 = " \
+                            libgcc \
+                            "
+
 IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "swupdate", \
             "aml-bootloader-message \
             libconfig \
