@@ -66,6 +66,9 @@ PREFERRED_PROVIDER_widevine = "aml-mediadrm-widevine"
 
 PREFERRED_VERSION_libgles-eabihf-dvalin-wayland-drm = "r44p0"
 PREFERRED_VERSION_libgles-eabihf-gondul-wayland-drm = "r44p0"
+PREFERRED_VERSION_libgles-eabihf-valhall-wayland-drm = "r41p0"
+
+PREFERRED_VERSION_valhall = "r41p0%"
 
 #for vulkan
 PREFERRED_VERSION_vulkan-headers = "1.2.196"
