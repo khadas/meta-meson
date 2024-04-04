@@ -16,6 +16,8 @@ SOC_FAMILY:s7 = "s7"
 SOC_FAMILY:t5d = "t5d"
 SOC_FAMILY:t5w = "t5w"
 SOC_FAMILY:t3 = "t3"
+SOC_FAMILY:t3x = "t3x"
+SOC_FAMILY:t5m = "t5m"
 SOC_FAMILY:s1a = "s1a"
 
 PACK_CONF = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'aml_upgrade_package_nand.conf', bb.utils.contains('DISTRO_FEATURES', 'absystem', 'aml_upgrade_package_ab.conf', 'aml_upgrade_package.conf', d), d)}"

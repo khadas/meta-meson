@@ -20,6 +20,8 @@ SOC_FAMILY:sc2 = "sc2"
 SOC_FAMILY:s1a = "s1a"
 SOC_FAMILY:t7 = "t7"
 SOC_FAMILY:t3 = "t3"
+SOC_FAMILY:t3x = "t3x"
+SOC_FAMILY:t5m = "t5m"
 
 PR = "r1"
 

@@ -63,6 +63,8 @@ DEPENDS:append = "gcc-linaro-aarch64-elf-native "
 DEPENDS:append = "vim-native zip-native"
 DEPENDS:append = " riscv-none-gcc-native "
 DEPENDS:s5:append = " ninja-native "
+DEPENDS:t3x:append = " ninja-native "
+DEPENDS:t5m:append = " ninja-native "
 
 DEPENDS:append = " coreutils-native python-native python-pycrypto-native "
 #override this in customer layer bbappend for customer specific bootloader binaries
