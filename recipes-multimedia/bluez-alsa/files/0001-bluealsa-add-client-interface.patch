@@ -2,7 +2,7 @@ Index: git/utils/cli/a2dp_ctl.h
 ===================================================================
 --- /dev/null
 +++ git/utils/cli/a2dp_ctl.h
-@@ -0,0 +1,53 @@
+@@ -0,0 +1,55 @@
 +#ifndef _A2DP_CTL_H_
 +#define _A2DP_CTL_H_
 +
@@ -16,6 +16,8 @@ Index: git/utils/cli/a2dp_ctl.h
 +    A2DP_EVENT_PLAYING,
 +    A2DP_EVENT_PAUSE,
 +    A2DP_EVENT_STOP,
++    A2DP_EVENT_SERVICE_START,
++    A2DP_EVENT_SERVICE_STOP,
 +}A2DP_Event_t;
 +
 +typedef enum {
@@ -60,7 +62,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 ===================================================================
 --- /dev/null
 +++ git/utils/cli/lib_a2dp_ctl.c
-@@ -0,0 +1,1258 @@
+@@ -0,0 +1,1323 @@
 +/*
 + * BlueALSA - cli.c
 + * Copyright (c) 2016-2022 Arkadiusz Bokowy
@@ -108,7 +110,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +#define TRANSPORT_INTERFACE "org.bluez.MediaTransport1"
 +
 +static GDBusConnection *conn;
-+static gboolean A2dpConnected = FALSE;
++static gboolean bluealsa_running = FALSE;
 +
 +static struct ba_dbus_ctx dbus_ctx;
 +static char dbus_ba_service[32] = BLUEALSA_SERVICE;
@@ -756,6 +758,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	if (!dbus_message_iter_init(message, &iter))
 +		goto fail;
 +
++	error("dbus signal handler: interface: %s, signal: %s\n", interface, signal);
 +	if (strcmp(interface, DBUS_INTERFACE_OBJECT_MANAGER) == 0) {
 +
 +		const char *path;
@@ -845,8 +848,47 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +			return DBUS_HANDLER_RESULT_HANDLED;
 +		}
-+	}
-+	if (strcmp(interface, DBUS_INTERFACE_PROPERTIES) == 0) {
++	}	else if (strcmp(interface, DBUS_INTERFACE_DBUS) == 0) {
++			if (strcmp(signal, "NameOwnerChanged") == 0) {
++
++				const char *arg0 = NULL, *arg1 = NULL, *arg2 = NULL;
++				if (dbus_message_iter_init(message, &iter) &&
++						dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_STRING)
++					dbus_message_iter_get_basic(&iter, &arg0);
++				else
++					goto fail;
++				if (dbus_message_iter_next(&iter) &&
++						dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_STRING)
++					dbus_message_iter_get_basic(&iter, &arg1);
++				else
++					goto fail;
++				if (dbus_message_iter_next(&iter) &&
++						dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_STRING)
++					dbus_message_iter_get_basic(&iter, &arg2);
++				else
++					goto fail;
++
++				if (strcmp(arg0, dbus_ctx.ba_service))
++					goto fail;
++
++				if (strlen(arg1) == 0) {
++					error("ServiceRunning %s\n", dbus_ctx.ba_service);
++					bluealsa_running = true;
++					if (mconnect_call_back)
++						mconnect_call_back(NULL, false, A2DP_EVENT_SERVICE_START);
++				}   else if (strlen(arg2) == 0) {
++					bluealsa_running = false;
++					error("ServiceStopped %s\n", dbus_ctx.ba_service);
++					if (mconnect_call_back)
++						mconnect_call_back(NULL, false, A2DP_EVENT_SERVICE_STOP);
++				}
++
++				else
++					goto fail;
++
++				return DBUS_HANDLER_RESULT_HANDLED;
++			}
++	} else if (strcmp(interface, DBUS_INTERFACE_PROPERTIES) == 0) {
 +		const char *path;
 +		if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_OBJECT_PATH)
 +			goto fail;
@@ -925,25 +967,17 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +			dbus_ba_service, NULL, DBUS_INTERFACE_PROPERTIES, "PropertiesChanged",
 +			"arg0='"BLUEALSA_INTERFACE_PCM"'");
 +
++	char dbus_args[50];
++	snprintf(dbus_args, sizeof(dbus_args), "arg0='%s',arg2=''", dbus_ctx.ba_service);
++	bluealsa_dbus_connection_signal_match_add(&dbus_ctx,
++			DBUS_SERVICE_DBUS, NULL, DBUS_INTERFACE_DBUS, "NameOwnerChanged", dbus_args);
++	snprintf(dbus_args, sizeof(dbus_args), "arg0='%s',arg1=''", dbus_ctx.ba_service);
++	bluealsa_dbus_connection_signal_match_add(&dbus_ctx,
++			DBUS_SERVICE_DBUS, NULL, DBUS_INTERFACE_DBUS, "NameOwnerChanged", dbus_args);
++
 +	if (!dbus_connection_add_filter(dbus_ctx.conn, dbus_signal_handler, NULL, NULL)) {
 +		error("Couldn't add D-Bus filter: %s", err.message);
 +		goto fail;
-+	}
-+
-+	struct ba_pcm *pcms = NULL;
-+	size_t pcms_count = 0;
-+	int i;
-+	if (!bluealsa_dbus_get_pcms(&dbus_ctx, &pcms, &pcms_count, &err)) {
-+		error("Couldn't get BlueALSA PCM list: %s", err.message);
-+		goto fail;
-+	}
-+
-+	for (i=0; i < pcms_count; i++) {
-+		add_pcm(&pcms[i]);
-+	}
-+	if (pcms) {
-+		free(pcms);
-+		pcms = NULL;
 +	}
 +
 +	bool running = false;
@@ -953,10 +987,31 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +		goto fail;
 +	}
 +
-+	if (running)
++	if (running) {
++		bluealsa_running = true;
 +		printf("ServiceRunning %s\n", dbus_ctx.ba_service);
-+	else
++	} else {
++		bluealsa_running = false;
 +		printf("ServiceStopped %s\n", dbus_ctx.ba_service);
++	}
++
++	if (bluealsa_running) {
++		struct ba_pcm *pcms = NULL;
++		size_t pcms_count = 0;
++		int i;
++		if (!bluealsa_dbus_get_pcms(&dbus_ctx, &pcms, &pcms_count, &err)) {
++			error("Couldn't get BlueALSA PCM list: %s", err.message);
++			goto fail;
++		}
++
++		for (i=0; i < pcms_count; i++) {
++			add_pcm(&pcms[i]);
++		}
++		if (pcms) {
++			free(pcms);
++			pcms = NULL;
++		}
++	}
 +
 +	dbus_loop_running = true;
 +	if (pthread_create(&thread_id, NULL, dbus_thread, NULL)) {
@@ -974,6 +1029,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	pcm_info_deinit();
 +	pthread_mutex_destroy(&mtx);
 +	pthread_mutex_destroy(&pcm_mtx);
++	bluealsa_running = false;
 +	return EXIT_FAILURE;
 +}
 +
@@ -981,6 +1037,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +	if (initFlag) return;
 +
 +	dbus_loop_running = false;
++	bluealsa_running = false;
 +	pcm_info_deinit();
 +
 +	pthread_mutex_destroy(&mtx);
@@ -1123,7 +1180,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +}
 +
 +int a2dp_control(A2DP_Control_t control) {
-+	if (!initFlag) return -1;
++	if (!bluealsa_running) return -1;
 +	struct ba_pcm pcm;
 +	char ctrl_string[16];
 +
@@ -1152,17 +1209,19 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +}
 +
 +bool adapter_ready(void) {
-+	if (!initFlag) return -1;
++	if (!bluealsa_running) return -1;
 +	return get_adapter_status();
 +}
 +
 +int adapter_scan(int onoff) {
-+	if (!initFlag) return -1;
++	if (!bluealsa_running) return -1;
 +	return 0;
 +}
 +
 +int disconnect_dev(const char *baddr)
 +{
++	if (!bluealsa_running) return -1;
++
 +	char obj[256] = {0};
 +
 +	if (!check_conn_dev_valid(baddr, obj))
@@ -1176,6 +1235,8 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +
 +int connect_dev(const char* baddr, bool is_sink)
 +{
++	if (!bluealsa_running) return -1;
++
 +	char obj[256] = {0};
 +	int idx;
 +
@@ -1208,7 +1269,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +}
 +
 +unsigned char get_connect_status(A2DP_Dev_t **dev, int *cnt) {
-+	if (!initFlag) return -1;
++	if (!bluealsa_running) return -1;
 +
 +	struct ba_pcm pcm;
 +	size_t connect_cnt = 0;
@@ -1238,6 +1299,8 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +}
 +
 +int pcm_bluealsa_open(const char *bddr) {
++	if (!bluealsa_running) return -1;
++
 +	int ret = -1;
 +
 +	pthread_mutex_lock(&pcm_mtx);
@@ -1271,6 +1334,8 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +}
 +
 +int pcm_bluealsa_close() {
++	if (!bluealsa_running) return -1;
++
 +	int ret;
 +	pthread_mutex_lock(&pcm_mtx);
 +	if (pcm_handle_playback == NULL) {
@@ -1290,6 +1355,8 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +}
 +
 +int pcm_bluealsa_write(void *buf, size_t bytes) {
++	if (!bluealsa_running) return -1;
++
 +	pthread_mutex_lock(&pcm_mtx);
 +	if (pcm_handle_playback == NULL) {
 +		error("%s dev not open\n", __func__);
@@ -1316,7 +1383,7 @@ Index: git/utils/cli/lib_a2dp_ctl.c
 +}
 +
 +bool  is_bluealsa_ready() {
-+
++	return bluealsa_running;
 +}
 +
 Index: git/utils/cli/Makefile.am
