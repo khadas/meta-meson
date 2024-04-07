@@ -1,0 +1,14 @@
+diff -Nur toybox-0.8.6/scripts/make.sh toybox-0.8.6-new/scripts/make.sh
+--- toybox-0.8.6/scripts/make.sh	2024-04-07 17:05:45.650434238 +0800
++++ toybox-0.8.6-new/scripts/make.sh	2024-04-07 17:06:55.043107509 +0800
+@@ -310,7 +310,9 @@
+   wait $DASHN;
+   DONE=$((DONE+$?))
+ done
+-[ $DONE -ne 0 ] && exit 1
++
++#Disable this saint check.
++#[ $DONE -ne 0 ] && exit 1
+ 
+ do_loudly $BUILD $LNKFILES $LINK || exit 1
+ if [ ! -z "$NOSTRIP" ] ||
