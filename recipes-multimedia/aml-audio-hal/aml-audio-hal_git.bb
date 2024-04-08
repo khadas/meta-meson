@@ -90,6 +90,7 @@ do_install:append() {
     install -m 0755 ${WORKDIR}/${PROPERTY_SET_AVSYNC} ${D}/${sysconfdir}/halaudio/audio_hal_delay_base.json
     install -m 0755 ${WORKDIR}/ms12_audio_profiles.ini ${D}/${sysconfdir}/halaudio/ms12_audio_profiles.ini
     install -m 0644 ${WORKDIR}/${PROPERTY_SET_MIXER} ${D}/${sysconfdir}/mixer_paths.xml
+    install -m 0644 -D ${S}/include/Virtualx_v4.h -t ${D}/usr/include
     if ${@bb.utils.contains('DISTRO_FEATURES', 'low-memory', 'true', 'false', d)}; then
         sed -i '/Codec_Support_List/i \\t"Audio_Delay_Max":100,' ${D}/${sysconfdir}/halaudio/aml_audio_config.json
     fi
