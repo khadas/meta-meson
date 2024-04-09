@@ -13,7 +13,7 @@ do_compile(){
 
 do_install() {
     install -d ${D}${libdir} ${D}${includedir}
-    cp --no-preserve=ownership -af ${S}/*.h ${D}${includedir}
-    cp --no-preserve=ownership -af ${B}/*.so.0 ${B}/*.so ${D}${libdir}
+    cp -rf ${S}/*.h ${D}${includedir}
+    cp -rf ${B}/*.so.0 ${B}/*.so ${D}${libdir}
 }
 

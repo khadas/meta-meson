@@ -4,8 +4,6 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI = "file://aml_platformserver.service"
-SRC_URI += "file://aml_platformserver.socket"
-SRC_URI += "file://aml_platformserver.conf"
 
 #SRCREV ?= "${AUTOREV}"
 
@@ -74,25 +72,20 @@ do_compile(){
 do_install() {
     cd ${S}
     install -d ${D}${includedir}/platform_service ${D}${libdir}/pkgconfig ${D}${systemd_unitdir}/system ${D}${sysconfdir}/systemd/system.conf.d ${D}${sysconfdir}/dbus-1/system.d ${D}${libdir} ${D}${bindir}
-    cp --no-preserve=ownership -af ${S}/client/*.h ${D}${includedir}/platform_service
-    cp --no-preserve=ownership -af ${S}/lib/*.h ${D}${includedir}/platform_service
-    cp --no-preserve=ownership -af ${S}/include/*.h ${D}${includedir}/platform_service
-    cp --no-preserve=ownership -af ${BUILDDIR}/*.so.0 ${BUILDDIR}/*.so ${D}${libdir}
-    cp --no-preserve=ownership -af ${BUILDDIR}/aml_platformservice ${BUILDDIR}/aml_platformtest ${D}${bindir}
+    cp -rf ${S}/client/*.h ${D}${includedir}/platform_service
+    cp -rf ${S}/lib/*.h ${D}${includedir}/platform_service
+    cp -rf ${S}/include/*.h ${D}${includedir}/platform_service
+    cp -rf ${BUILDDIR}/*.so.0 ${BUILDDIR}/*.so ${D}${libdir}
+    cp -rf ${BUILDDIR}/aml_platformservice ${BUILDDIR}/aml_platformtest ${D}${bindir}
     install -m 644 ${S}/aml-platform-client.pc ${D}${libdir}/pkgconfig
     install -m 0644 ${WORKDIR}/aml_platformserver.service ${D}${systemd_unitdir}/system/
-    install -m 0644 ${WORKDIR}/aml_platformserver.socket ${D}${systemd_unitdir}/system/
-    install -m 0644 ${WORKDIR}/aml_platformserver.conf ${D}${sysconfdir}/systemd/system.conf.d
     install -m 0644 ${S}/dbus/amlogic.yocto.sdk.conf ${D}${sysconfdir}/dbus-1/system.d/
-    if ${@bb.utils.contains("DISTRO_FEATURES", "system-user", "true", "false", d)}; then
-      sed -i 's/\(SocketGroup=\).*/\1session/' ${D}${systemd_unitdir}/system/aml_platformserver.socket
-    fi
     if ${@bb.utils.contains("DISTRO_FEATURES", "amlogic-tv", "false", "true", d)}; then
       sed -i '/ExecStart=\/usr\/bin\/aml_platformservice/i\ExecStartPre=\/bin\/sh -c '\''echo 1 > /sys\/class\/amhdmitx\/amhdmitx0\/rxsense_policy'\''' ${D}${systemd_unitdir}/system/aml_platformserver.service
     fi
 }
 
-SYSTEMD_SERVICE:${PN} = "aml_platformserver.service aml_platformserver.socket"
+SYSTEMD_SERVICE:${PN} = "aml_platformserver.service"
 
 # ----------------------------------------------------------------------------
 
