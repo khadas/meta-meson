@@ -9,6 +9,8 @@ do_configure[noexec] = "1"
 DEPENDS = "libion"
 RDEPENDS:${PN} += "libion"
 
+EXTRA_OEMAKE = "LIBDIR=${B} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} DESTDIR=${D}"
+
 do_compile() {
     if [ "${TARGET_ARCH}" = "aarch64" ]; then
         export ARM_TARGET=64
@@ -16,8 +18,8 @@ do_compile() {
 	    export ARM_TARGET=32
     fi
     cd ${S}/
-    oe_runmake all
-    oe_runmake dewarp_test "AML_DEW_BIT=${ARM_TARGET}"
+    oe_runmake ${EXTRA_OEMAKE} all
+    oe_runmake ${EXTRA_OEMAKE} dewarp_test "AML_DEW_BIT=${ARM_TARGET}"
 }
 
 do_install() {
@@ -30,9 +32,9 @@ do_install() {
     install -d ${D}${libdir}
     install -d ${D}${bindir}
 
-    install -m 0755 -D ${S}/gdc_test ${D}${bindir}
-    install -m 0755 -D ${S}/dewarp_test ${D}${bindir}
-    install -m 0644 -D ${S}/libgdc.so ${D}${libdir}
+    install -m 0755 -D ${B}/gdc_test ${D}${bindir}
+    install -m 0755 -D ${B}/dewarp_test ${D}${bindir}
+    install -m 0644 -D ${B}/libgdc.so ${D}${libdir}
     install -m 0644 -D ${S}/dewarp/lib/${ARM_TARGET}/libdewarp.so ${D}${libdir}
 
     install -m 0644 ${S}/include/gdc/gdc_api.h ${D}${includedir}
