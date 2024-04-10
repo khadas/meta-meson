@@ -111,6 +111,14 @@ MEDIA_CONFIGS:bg201 = " \
                  CONFIG_AMLOGIC_MEDIA_VDEC_H265=m \
                  CONFIG_AMLOGIC_MEDIA_GE2D=y \
                  "
+
+MEDIA_CONFIGS:ap222-zapper = " \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_MPEG2_MULTI=m \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_H264_MULTI=m \
+                 CONFIG_AMLOGIC_MEDIA_VDEC_H265=m \
+                 CONFIG_AMLOGIC_MEDIA_GE2D=y \
+                 "
+
 MEDIA_CONFIGS:append_g12b = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_COMMON=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
@@ -198,7 +206,7 @@ MODULE_AUTOLOAD_ZAPPER_SKIP = "\
   amvdec_ports \
 "
 
-KERNEL_MODULE_AUTOLOAD:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '${MODULE_AUTOLOAD_ZAPPER_SKIP}', '', d)}"
+KERNEL_MODULE_AUTOLOAD:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${MODULE_AUTOLOAD_ZAPPER_SKIP}', '', d)}"
 
 KERNEL_MODULE_PROBECONF += "amvdec_ports amvdec_mh264"
 module_conf_amvdec_ports = "options amvdec_ports multiplanar=1 vp9_need_prefix=1 av1_need_prefix=1"

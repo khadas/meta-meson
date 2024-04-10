@@ -17,7 +17,7 @@ SRC_URI += "\
 
 # If disable-debug-support, MODULEDIRNAME will be set to directfb-$BINARY_VERSION-pure in
 # directfb configure which will not be installed to the final package, add a patch to sovle this problem
-SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', ' file://0005-configure-change-MODULEDIRNAME-when-disable-debug-support.patch', '', d)}"
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' file://0005-configure-change-MODULEDIRNAME-when-disable-debug-support.patch', '', d)}"
 
 PACKAGECONFIG:remove = "linuxinput"
 
@@ -36,13 +36,13 @@ DISABLED_CONFIG = "--disable-network \
 
 EXTRA_OECONF += "--with-gfxdrivers=amlgfx \
                  --with-inputdrivers=linuxinput,ps2mouse,serialmouse \
-                 ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '${DISABLED_CONFIG}', '', d)} \
+                 ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '${DISABLED_CONFIG}', '', d)} \
                 "
 
 do_install:append() {
     install -d ${D}/etc/
     install -D -m 0644 ${WORKDIR}/directfbrc ${D}/etc/directfbrc
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}
     then
         sed -i "s/1920x1080/1280x720/g" ${D}/etc/directfbrc
         sed -i "s/#no-cursor/no-cursor/g" ${D}/etc/directfbrc

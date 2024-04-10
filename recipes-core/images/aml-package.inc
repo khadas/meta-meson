@@ -162,7 +162,7 @@ do_aml_pack() {
             if ${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'true', 'false', d)}; then
                 cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-nand-${ROOTFS_TYPE}-avb ${DEPLOY_DIR_IMAGE}/sw-description
                 cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand-${ROOTFS_TYPE}-avb ${DEPLOY_DIR_IMAGE}/sw-package-filelist
-            elif ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}; then
+            elif ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then
                 cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-description-nand-${ROOTFS_TYPE}-zapper-2k ${DEPLOY_DIR_IMAGE}/sw-description
                 cp -f ${STAGING_DIR_NATIVE}${bindir}/aml-swupdate/${SOC_FAMILY}/sw-package-filelist-nand-${ROOTFS_TYPE}-zapper-2k ${DEPLOY_DIR_IMAGE}/sw-package-filelist
             else

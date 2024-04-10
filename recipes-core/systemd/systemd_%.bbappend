@@ -5,7 +5,7 @@ SRC_URI:append = " file://0027-fix-udisk-can-not-unmount-properly.patch"
 SRC_URI:append = " file://0028-custom-hwdb-module.patch"
 SRC_URI:append = " file://0001-apply-the-state-to-rfkill-dev-even-when-the-state-fi.patch"
 
-PACKAGECONFIG:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'hostnamed networkd nss-resolve resolved randomseed timesyncd', '', d)}"
+PACKAGECONFIG:remove = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'hostnamed networkd nss-resolve resolved randomseed timesyncd', '', d)}"
 
 do_install:append() {
 sed -i -e 's/ExecStart=/ExecStart=-/' ${D}/lib/systemd/system/systemd-modules-load.service

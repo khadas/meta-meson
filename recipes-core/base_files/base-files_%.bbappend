@@ -66,7 +66,7 @@ if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
 EOF
     fi
 
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then
     cat >> ${D}${sysconfdir}/fstab <<EOF
  /dev/mtdblock6         /factory                   yaffs2     defaults              0  0
  /dev/mtdblock7         /tee                       yaffs2     defaults              0  0
@@ -132,7 +132,7 @@ if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'true', 'false', d)}; then
 EOF
     fi
 
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}; then
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then
     cat >> ${D}${sysconfdir}/fstab <<EOF
  /dev/mtdblock6         /factory                   yaffs2     defaults              0  0
  /dev/mtdblock7         /tee                       yaffs2     defaults              0  0

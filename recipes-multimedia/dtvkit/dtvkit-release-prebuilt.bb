@@ -2,10 +2,10 @@ SUMMARY = "amlogic dtvkit prebuilt"
 LICENSE = "CLOSED"
 DEPENDS = "aml-mp-sdk "
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'dtvkit-src', ' android-rpcservice', '', d)} "
-DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', ' libtinyxml2', ' libxml2', d)} "
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' libtinyxml2', ' libxml2', d)} "
 RDEPENDS:${PN} = "aml-mp-sdk aml-mediahal-sdk  aml-subtitleserver aml-libdvr jsoncpp liblog libjpeg-turbo libpng zlib freetype sqlite3 freetype openssl "
-RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', ' libtinyxml2', ' libxml2', d)} " 
-RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-binderfs', '', ' libbinder', d)} " 
+RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', ' libtinyxml2', ' libxml2', d)} "
+RDEPENDS:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-binderfs', '', ' libbinder', d)} "
 
 inherit systemd
 inherit ${@bb.utils.contains('DISTRO_FEATURES', 'disable-binderfs', ' ', 'update-rc.d', d)}
@@ -72,7 +72,7 @@ do_install () {
         fi
     fi
     install -d ${D}/${systemd_unitdir}/system
-    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper-2k", "false", "true", d)}; then
+    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper", "false", "true", d)}; then
         install -m 0644 ${WORKDIR}/dtvkit.service ${D}/${systemd_unitdir}/system//dtvkit.service
     fi
 

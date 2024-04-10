@@ -66,7 +66,7 @@ do_install:append() {
       install -m 0755 ${WORKDIR}/arka.init ${D}${sysconfdir}/init.d/arka
     fi
 
-   if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', 'true', 'false', d)}; then
+   if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then
     install -d ${D}/usr/share/zoneinfo/Asia/
     install -m 0755 ${WORKDIR}/Kolkata ${D}/usr/share/zoneinfo/Asia
    fi
@@ -76,6 +76,6 @@ SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'arka-launcher'
 
 FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/Arka/png /usr/share/Arka/jpg ${systemd_unitdir}/system/"
 FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '${libdir}', '', d)}"
-FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-2k', '/usr/share/zoneinfo/Asia', '', d)}"
+FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '/usr/share/zoneinfo/Asia', '', d)}"
 FILES:${PN}-dev = ""
 INSANE_SKIP:${PN} = "installed-vs-shipped"

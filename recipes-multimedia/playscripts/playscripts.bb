@@ -21,7 +21,7 @@ do_install() {
         sed -i '$a\export XDG_RUNTIME_DIR=\/run' ${D}${sysconfdir}/profile.d/property_set.sh
     fi
 
-    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper-2k", "true", "false", d)}
+    if ${@bb.utils.contains("DISTRO_FEATURES", "zapper", "true", "false", d)}
     then
         cat << EOF >> ${D}${sysconfdir}/profile.d/property_set.sh
 ## adjust dmx filter number from 64 to 16 to reduce memory use
