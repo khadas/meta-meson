@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 
 #SRCREV ?= "${AUTOREV}"
 
-DEPENDS = "linux-uapi-headers zlib"
+DEPENDS = "linux-uapi-headers zlib libbsd"
 
 EXTRA_OECMAKE += "-DLIB_DIR=${libdir} -DBIN_DIR=${bindir} -DINCLUDE_DIR=${includedir}"
 
