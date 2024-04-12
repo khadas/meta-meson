@@ -64,6 +64,11 @@ do_install:append() {
 
       install -d ${D}${sysconfdir}/init.d
       install -m 0755 ${WORKDIR}/arka.init ${D}${sysconfdir}/init.d/arka
+
+      if ${@bb.utils.contains("DISTRO_FEATURES", "zapper-128m-sei", "true", "false", d)}
+      then
+        sed -i '/# Starts arka service\./i\export IRDETO_USING_DEVICE_INFO=1' ${D}${sysconfdir}/init.d/arka
+      fi
     fi
 
    if ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'true', 'false', d)}; then

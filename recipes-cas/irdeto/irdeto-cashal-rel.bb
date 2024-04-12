@@ -18,7 +18,7 @@ EX_CFLAGS:bf201 = "-DPVR_CRYPTO_ENABLE"
 EX_CFLAGS:bg201 = "-DPVR_CRYPTO_ENABLE"
 
 USE_DYNAMIC_CCA_LIBRARY:bf201 = "1"
-USE_DYNAMIC_CCA_LIBRARY:bg201 = "1"
+USE_DYNAMIC_CCA_LIBRARY:bg201 = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-128m-sei', '0', '1', d)}"
 
 CCA_HARDWARE_NO = "HW05"
 CCA_HARDWARE_NO:bf201 = "HW07"
@@ -52,6 +52,10 @@ do_install() {
         install -D -m 0644 ${S}/libird_cca.so ${D}/${libdir}
     fi
 
+    if [ -e ${S}/cca/config/device_info.json ] ; then
+        install -D -m 0644 ${S}/cca/config/device_info.json ${D}/etc/cas/irdeto
+    fi
+
     for file in `ls -a ${S}/cca/data/`
     do
         if [ "${file##*.}" = "dat" ]; then
@@ -59,12 +63,15 @@ do_install() {
         fi
     done
 
-    if [ -e ${S}/cca/config/device_info.json ] ; then
-        install -D -m 0644 ${S}/cca/config/device_info.json ${D}/etc/cas/irdeto
-    fi
+    for file in `ls -a ${S}/cca/data/`
+    do
+        if [ "${file##*.}" = "bin" ]; then
+            install -D -m 0644 ${S}/cca/data/${file} ${D}/etc/cas/irdeto/cadata
+        fi
+    done
 
 }
 
-FILES:${PN} = "${libdir}/* /usr/lib/* ${bindir}/* /etc/cas/irdeto/cadata/*"
+FILES:${PN} = "${libdir}/* /usr/lib/* ${bindir}/* /etc/cas/irdeto/cadata/* /etc/cas/irdeto/*"
 FILES:${PN}-dev = "${includedir}/* "
 INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
