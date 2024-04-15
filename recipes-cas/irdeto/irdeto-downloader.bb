@@ -40,10 +40,13 @@ do_install() {
 
     install -d ${D}${sysconfdir}/init.d
     install -m 0755 ${S}/files/irdeto-downloader.init ${D}${sysconfdir}/init.d/irdeto-downloader
+
+    install -d ${D}/usr/share/misc
+    install -D -m 0644 ${S}/files/tuning_code_data.json ${D}/usr/share/misc/tuning_code_data.json
 }
 
 SYSTEMD_SERVICE:${PN} = "irdeto-downloader.service"
 
-FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/"
+FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/misc/"
 FILES:${PN}-dev = "${includedir}/* "
 INSANE_SKIP:${PN} = "dev-so ldflags dev-elf"
