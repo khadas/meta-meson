@@ -1,6 +1,7 @@
 {
 	"TV_Platform": 0,
 	"STB_Platform": 1,
+	"HDMITX_Src_Select": 3,
 	"Dual_Spdif_Support": 1,
 	"Ms12_Force_Ddp_Out": 0,
 	"Dtv_Audio_Skipamadec": 0,
