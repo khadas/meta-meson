@@ -1,0 +1,88 @@
+RAMDISK_MODULES_LOAD_LIST=(
+	amlogic-debug-iotrace
+	amlogic-uart
+	amlogic-hwspinlock
+	amlogic-gkitool
+	amlogic-memory-debug
+	amlogic-secmon
+	amlogic-clk
+	amlogic-aoclk
+	amlogic-gpio
+	amlogic-pinctrl
+	amlogic-hwspinlock
+	amlogic-mailbox
+	amlogic-pwm
+	pwm-regulator
+	amlogic-reset
+	amlogic-power
+	amlogic-cpuinfo
+	amlogic-cpufreq
+	amlogic-efuse-unifykey
+	amlogic-mmc
+	amlogic-i2c.ko
+	amlogic-spi.ko
+	amlogic-rng.ko
+	tee.ko
+	optee.ko
+	amlogic-tee.ko
+	videobuf-core.ko
+	dvb-core.ko
+	amlogic-pm.ko
+	amlogic-input.ko
+	amlogic-regulator.ko
+	amlogic-watchdog.ko
+	amlogic-usb.ko
+	xhci-plat-hcd.ko
+	dwc3.ko
+	dwc3-haps.ko
+	dwc3-of-simple.ko
+	dwc_otg.ko
+)
+
+VENDOR_MODULES_LOAD_FIRST_LIST=(
+	aml-dvb.ko
+	aml_media.ko
+	amlogic-camera.ko
+	amlogic-adc.ko
+	amlogic-rtc-virtual.ko
+	amlogic-thermal.ko
+	amlogic-irblaster.ko
+	amlogic-inphy.ko
+	aml_drm.ko
+	amlogic-crypto-dma
+	amlogic-wireless.ko
+	amlogic_pcie_v2_host.ko
+	amlogic-pcie-v3_host.ko
+)
+
+VENDOR_MODULES_LOAD_LAST_LIST=(
+)
+
+RECOVERY_MODULES_LOAD_LIST=(
+	dwc_otg.ko
+)
+
+COMMON_GKI_MODULES_LIST=(
+	zsmalloc.ko
+	zram.ko
+	libarc4.ko
+	rfkill.ko
+	mii.ko
+	aqc111.ko
+	asix.ko
+	ax88179_178a.ko
+	cdc_eem.ko
+	cdc_ether.ko
+	cdc_ncm.ko
+	r8152.ko
+	r8153_ecm.ko
+	rtl8150.ko
+	usbnet.ko
+	ptp.ko
+	pps_core.ko
+)
+
+GKI_MODULES_LOAD_WHITE_LIST=(
+	${COMMON_GKI_MODULES_LIST[@]}
+	${EXTRA_GKI_MODULES_LIST[@]}
+)

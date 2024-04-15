@@ -202,6 +202,12 @@ do_aml_pack() {
                 sed 's@value = "1";@value = "2";@' -i ${DEPLOY_DIR_IMAGE}/sw-description
             fi
         fi
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_66', 'true', 'false', d)}; then
+            if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'false', 'true', d)}; then
+                sed 's@bootloader@bootloader_up@' -i ${DEPLOY_DIR_IMAGE}/sw-description
+                sed 's@value = "1";@value = "2";@' -i ${DEPLOY_DIR_IMAGE}/sw-description
+            fi
+        fi
         if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-enc', 'true', 'false', d)}; then
             ${DEPLOY_DIR_IMAGE}/sw_enc_package_create.sh ${DEPLOY_DIR_IMAGE}
         else

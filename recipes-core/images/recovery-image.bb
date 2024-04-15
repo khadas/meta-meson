@@ -34,6 +34,9 @@ IMAGE_INSTALL:append = "\
 IMAGE_INSTALL:remove:k5.15 = "\
                     kernel-modules \
                     "
+IMAGE_INSTALL:remove:k6.6 = "\
+                    kernel-modules \
+                    "
 
 IMAGE_INSTALL:remove = "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'zapper', 'system-config', '', d)} \
@@ -146,6 +149,7 @@ remove_hwdb_for_zapper() {
 }
 
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'install_kernel_modules; ', '', d)}"
+ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'kernel_66', 'install_kernel_modules; ', '', d)}"
 install_kernel_modules() {
    if [ -f ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz ]; then
      tar -zxvf ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz -C ${IMAGE_ROOTFS}/

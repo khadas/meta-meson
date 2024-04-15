@@ -8,9 +8,12 @@ SRC_URI:append = " \
 SRC_URI:append = " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nand', '', \
     bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'file://block.rules', '', d),  d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'nand', '', \
+    bb.utils.contains('DISTRO_FEATURES', 'kernel_66', 'file://block.rules', '', d),  d)} \
 "
 SRC_URI:append = " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'file://dmaheap.rules', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_66', 'file://dmaheap.rules', '', d)} \
 "
 
 SRC_URI:append = " \

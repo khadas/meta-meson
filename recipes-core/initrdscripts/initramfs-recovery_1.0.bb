@@ -24,6 +24,12 @@ do_install() {
             sed -i "s/#upstream_emmc_mount/upstream_emmc_mount/g" ${D}/init
         fi
     fi
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_66', 'true', 'false', d)}; then
+        sed -i "s/#kernel_515_module_install/kernel_515_module_install/g" ${D}/init
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'false', 'true', d)}; then
+            sed -i "s/#upstream_emmc_mount/upstream_emmc_mount/g" ${D}/init
+        fi
+    fi
 }
 
 FILES:${PN} += " /init /dev "

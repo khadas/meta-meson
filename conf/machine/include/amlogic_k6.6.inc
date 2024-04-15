@@ -1,0 +1,7 @@
+PREFERRED_VERSION_linux-meson = "6.6%"
+PREFERRED_VERSION_media-modules = "6.6%"
+PREFERRED_VERSION_qca6174 = "6.6%"
+LINUXLIBCVERSION = "6.6%"
+OVERRIDES .= ":k6.6"
+DISTRO_FEATURES:append = " kernel_66"
+DISTRO_FEATURES:append = " gpt-partition"
