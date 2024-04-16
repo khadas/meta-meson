@@ -36,6 +36,7 @@ TDK_VERSION:t7 = "v3.8/dev/A311D2"
 TDK_VERSION:s4 = "v3.8/dev/S905Y4"
 TDK_VERSION:s5 = "v3.8/dev/S928X"
 TDK_VERSION:s7 = "v3.8/dev/S905Y5"
+TDK_VERSION:s7d = "v3.8/dev/S905X5M"
 TDK_VERSION:ar301 = "v3.8/dev/T982"
 TDK_VERSION:t3 = "v3.8/dev/T965D4"
 TDK_VERSION:t5w = "v3.8/dev/T962D4"
@@ -44,6 +45,7 @@ TDK_VERSION:t3M = "v3.8/dev/T963D4"
 
 PLATFORM_TDK_VERSION = "v3.8.0"
 PLATFORM_TDK_VERSION:s7 = "v3.18.0"
+PLATFORM_TDK_VERSION:s7d = "v3.18.0"
 
 #Widevine Version
 WIDEVINE_VERSION = "16"
@@ -74,6 +76,7 @@ PREFERRED_VERSION_libgles-eabihf-valhall-wayland-drm = "r41p0"
 PREFERRED_VERSION_libgles-eabihf-vale-wayland-drm = "r41p0"
 
 PREFERRED_VERSION_valhall = "r41p0%"
+PREFERRED_VERSION_vale = "r41p0%"
 
 #for vulkan
 PREFERRED_VERSION_vulkan-headers = "1.2.196"

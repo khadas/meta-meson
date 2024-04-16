@@ -10,6 +10,7 @@ do_compile[noexec] = "1"
 
 SOC_FAMILY = "TBD"
 SOC_FAMILY:s7 = "s7"
+SOC_FAMILY:s7d = "s7d"
 SOC_FAMILY:s4 = "s4"
 SOC_FAMILY:s5 = "s5"
 SOC_FAMILY:t5d = "t5d"

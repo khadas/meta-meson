@@ -63,6 +63,7 @@ EXTERNALSRC:pn-aml-efuse = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/efuse
 EXTERNALSRC:pn-optee-userspace:t5d = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk/v2.4.4' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk/v2.4.4')) else ''}"
 EXTERNALSRC:pn-optee-userspace = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk/v3.8.0' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk/v3.8.0')) else ''}"
 EXTERNALSRC:pn-optee-userspace:s7 = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk/v3.18.0' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk/v3.18.0')) else ''}"
+EXTERNALSRC:pn-optee-userspace:s7d = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk/v3.18.0' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/tdk/v3.18.0')) else ''}"
 EXTERNALSRC:pn-aml-avsync = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/avsync-lib' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/avsync-lib')) else ''}"
 EXTERNALSRC:pn-aml-mp-sdk = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/aml_mp_sdk' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/aml_mp_sdk')) else ''}"
 EXTERNALSRC:pn-ffmpeg = "${@'${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg-aml' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/multimedia/ffmpeg-aml')) else ''}"
