@@ -119,13 +119,13 @@ MEDIA_CONFIGS:ap222-zapper = " \
                  CONFIG_AMLOGIC_MEDIA_GE2D=y \
                  "
 
-MEDIA_CONFIGS:append_g12b = "\
+MEDIA_CONFIGS:append:g12b = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_COMMON=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_H265=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  "
-MEDIA_CONFIGS:append_sm1 = "\
+MEDIA_CONFIGS:append:sm1 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_COMMON=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_H265=m \
