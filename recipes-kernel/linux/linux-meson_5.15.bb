@@ -70,6 +70,9 @@ SRC_URI:append:s4 = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file:/
 SRC_URI:append:sc2 = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://sc2_debian_overlay.dtsi', '', d)}"
 SRC_URI:append:sm1 = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://sm1_debian_overlay.dtsi', '', d)}"
 
+# add usbci
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'usbci', ' file://usbci.cfg', '', d)}"
+
 LINUX_VERSION ?= "5.15.137"
 LINUX_VERSION:s7 = "5.15.137"
 LINUX_VERSION_EXTENSION ?= "-amlogic"
