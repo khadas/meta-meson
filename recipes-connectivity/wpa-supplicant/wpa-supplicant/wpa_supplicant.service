@@ -5,7 +5,7 @@ Wants=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/sbin/wpa_supplicant -u -B -Dnl80211 -iwlan0 -c /etc/wpa_supplicant.conf
+ExecStart=/usr/sbin/wpa_supplicant -u -B -Dnl80211 -iwlan0 -c /etc/wpa_supplicant.conf -f /var/log/wpa.log
 RemainAfterExit=yes
 Restart=on-failure
 RestartSec=1
