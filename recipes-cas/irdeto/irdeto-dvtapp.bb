@@ -32,7 +32,7 @@ do_install() {
     install -m 0755 -D ${S}/irdeto-dvtapp ${D}/usr/bin/
 
     install -d ${D}/usr/share/fonts/
-    install -D -m 0644 ${S}/fonts/decker.ttf ${D}/usr/share/fonts/decker.ttf
+    install -D -m 0644 ${S}/fonts/loader_font.ttf  ${D}/usr/share/fonts/loader_font.ttf
 
     install -d ${D}/${systemd_unitdir}/system
     install -D -m 0644 ${S}/files/irdeto-dvtapp.service ${D}${systemd_unitdir}/system/irdeto-dvtapp.service
