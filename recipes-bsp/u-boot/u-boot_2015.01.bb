@@ -16,10 +16,8 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;m
 EXTRA_OEMAKE = ''
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
+SRC_URI:append = " file://merge_config.sh"
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', ' file://absystem.cfg', '', d)}"
-
-SRC_URI:append = " file://merge_config.sh \
-"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/firmware/bin/bl2.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-dev;destsuffix=uboot-repo/bl2/bin;name=bl2"
 #SRC_URI:append = " git://${AML_GIT_ROOT}/firmware/bin/bl30.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-dev;destsuffix=uboot-repo/bl30/bin;name=bl30"

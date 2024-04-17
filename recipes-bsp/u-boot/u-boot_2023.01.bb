@@ -26,11 +26,10 @@ SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/uboot/bl33/v20
 SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/uboot/fip', 'fip')}"
 #can not patch bl binaries due to permission issue bl binary repos
 
+SRC_URI:append = " file://merge_config.sh"
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', ' file://absystem.cfg', '', d)}"
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'hdmionly', ' file://hdmitx_only.cfg', '', d)}"
-
-SRC_URI:append = " file://merge_config.sh \
-"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'disable_kernel_log', ' file://disable_kernel_log.cfg', '', d)}"
 
 do_configure[noexec] = "1"
 
