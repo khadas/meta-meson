@@ -35,6 +35,7 @@ do_install() {
         install -m 0755 -D ${S}/libvirtualsurround.so -t ${D}${libdir}/soundfx/
         install -m 0755 -D ${S}/libvirtualx4.so -t ${D}${libdir}/soundfx/
         install -m 0755 -D ${S}/libdpe.so -t ${D}${libdir}/soundfx/
+        install -m 0755 -D ${S}/libdbx.so -t ${D}${libdir}/soundfx/
 }
 
 FILES:${PN} = "${libdir}/*"
