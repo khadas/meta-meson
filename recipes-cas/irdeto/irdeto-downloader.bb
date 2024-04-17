@@ -18,8 +18,21 @@ inherit cml1 systemd update-rc.d
 INITSCRIPT_NAME = "irdeto-downloader"
 INITSCRIPT_PARAMS = "start 80 2 3 4 5 . stop 80 0 6 1 ."
 
+DEPENDS += "${@bb.utils.contains("DISTRO_FEATURES", "irdeto-downloader", " meson-display aml-ubootenv", " " ,d)}"
+
+
 EXTRA_OEMAKE = "STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D} SYSROOT_DIR=${PKG_CONFIG_SYSROOT_DIR}"
 SYSTEMD_AUTO_ENABLE:${PN} = "enable"
+
+# HDMI Plug-in/Plug-out Control Header
+INCLUDE_DIRS = " \
+    -I${STAGING_DIR_TARGET}${includedir}/libdrm_meson/ \
+    -I${STAGING_DIR_TARGET}${includedir}/libdrm/ \
+    -I${STAGING_DIR_TARGET}${includedir}/display_settings/ \
+    "
+TARGET_CFLAGS += "${@bb.utils.contains("DISTRO_FEATURES", "irdeto-downloader", " ${INCLUDE_DIRS}", " " ,d)}"
+EXTRA_OEMAKE += "${@bb.utils.contains("DISTRO_FEATURES", "irdeto-downloader", " ENABLE_HDMI_CTRL=y", " " ,d)}"
+
 
 do_configure () {
 }
