@@ -16,6 +16,7 @@ KBRANCH = "amlogic-5.15-dev"
 #SRC_URI = "git://${AML_GIT_ROOT}/kernel/common.git;protocol=${AML_GIT_PROTOCOL};branch=${KBRANCH};"
 SRC_URI:append = " file://modules_install.sh"
 SRC_URI:append = " file://extra_modules_install.sh"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '',  ' file://common.cfg', d)}"
 SRC_URI:append:sc2 = " file://sc2.cfg"
 SRC_URI:append:s5 = " file://sc2.cfg"
 SRC_URI:append:s4 = " file://s4.cfg"
@@ -34,7 +35,6 @@ SRC_URI:append:t7 = " file://t7.cfg"
 SRC_URI:append:g12b = " file://g12b.cfg"
 SRC_URI:append:sm1 = " file://sm1.cfg"
 
-SRC_URI:append = " file://common.cfg"
 
 # add support partition encryption
 SRC_URI:append = "${@bb.utils.contains_any('DISTRO_FEATURES', 'partition-enc partition-enc-local', ' file://partition-enc.cfg', '', d)}"
