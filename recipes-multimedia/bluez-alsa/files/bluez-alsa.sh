@@ -1,7 +1,8 @@
 #!/bin/sh
 
-configure_file="/etc/bluetooth/main.conf"
 BLUEALSA="bluealsa -S"
+
+bluealsa_type="persist.bluealsa.type"
 
 WAIT_BLUETOOTHD()
 {
@@ -127,26 +128,23 @@ Blue_stop()
 
 set_mode()
 {
-   #sed -i '/A2DP=/c\A2DP='$mode $configure_file
-   sed '/A2DP=/c\A2DP='$mode $configure_file > /tmp/foo && cat /tmp/foo > $configure_file
+	prop set $bluealsa_type $mode
 }
 
 get_mode()
 {
-	if [ -f $configure_file ];then
-		str=`grep "A2DP=" $configure_file`
-		if [ ! $str = "" ];then
-			mode=`echo $str | awk -F = '{print $2}'`
-		else
-			echo No A2DP type defined in confirue file
+	str=$(prop get $bluealsa_type)
+	if [ $? -eq 0 ]; then
+        	if [[ "$str" == *"$bluealsa_type"* ]]; then
+			mode=$(echo ${str##*[})
+			mode=$(echo ${mode%%]})
 		fi
-	else
-		echo "No configure file"
 	fi
 	echo "get a2dp mode: $mode"
 }
 
 pre_mode="disable"
+mode="disable"
 if [ $2 ];then
 	get_mode
         pre_mode=$mode

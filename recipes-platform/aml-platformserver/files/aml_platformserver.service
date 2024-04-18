@@ -1,0 +1,14 @@
+[Unit]
+Description=Platform Service
+After=basic.target
+Before=wpeframework.service
+
+[Service]
+User=root
+#Environment="PLF_LOG_LEVEL=5"
+ExecStart=/usr/bin/aml_platformservice
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

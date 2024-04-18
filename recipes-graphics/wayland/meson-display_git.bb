@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 DEPENDS += " libdrm libdrm-meson"
 DEPENDS += "linux-uapi-headers"
 RDEPENDS:${PN} += " libdrm-meson"
-DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '',  'json-c', d)}"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'weston', 'json-c', '', d)}"
 #do_configure[noexec] = "1"
 inherit autotools pkgconfig
 
