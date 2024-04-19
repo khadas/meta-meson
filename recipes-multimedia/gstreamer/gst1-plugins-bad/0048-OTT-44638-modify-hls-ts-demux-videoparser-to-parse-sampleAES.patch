@@ -1,0 +1,1266 @@
+diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
+index 93db317..092d8e1 100644
+--- a/ext/hls/gsthlsdemux.c
++++ b/ext/hls/gsthlsdemux.c
+@@ -65,6 +65,10 @@ GST_DEBUG_CATEGORY (gst_hls_demux_debug);
+ /* GObject */
+ static void gst_hls_demux_finalize (GObject * obj);
+ 
++/* Property */
++static void gst_hls_demux_set_property (GObject * object,
++    guint prop_id, const GValue * value, GParamSpec * pspec);
++
+ /* GstElement */
+ static GstStateChangeReturn
+ gst_hls_demux_change_state (GstElement * element, GstStateChange transition);
+@@ -125,6 +129,12 @@ G_DEFINE_TYPE (GstHLSDemux, gst_hls_demux, GST_TYPE_ADAPTIVE_DEMUX);
+ GST_ELEMENT_REGISTER_DEFINE_WITH_CODE (hlsdemux, "hlsdemux", GST_RANK_PRIMARY,
+     GST_TYPE_HLS_DEMUX, hls_element_init (plugin));
+ 
++enum
++{
++  PROP_0,
++  PROP_USE_HW_DECRYPT,
++};
++
+ static void
+ gst_hls_demux_finalize (GObject * obj)
+ {
+@@ -153,8 +163,14 @@ gst_hls_demux_class_init (GstHLSDemuxClass * klass)
+ 
+   gobject_class->finalize = gst_hls_demux_finalize;
+ 
++  gobject_class->set_property = GST_DEBUG_FUNCPTR(gst_hls_demux_set_property);
+   element_class->change_state = GST_DEBUG_FUNCPTR (gst_hls_demux_change_state);
+ 
++  g_object_class_install_property(gobject_class, PROP_USE_HW_DECRYPT,
++      g_param_spec_boolean("use-hw-decrypt", "HW decrypt",
++      "Use hw decrypt",
++      FALSE, G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS));
++
+   gst_element_class_add_static_pad_template (element_class, &srctemplate);
+   gst_element_class_add_static_pad_template (element_class, &sinktemplate);
+ 
+@@ -204,6 +220,25 @@ gst_hls_demux_init (GstHLSDemux * demux)
+   g_mutex_init (&demux->keys_lock);
+ }
+ 
++void
++gst_hls_demux_set_property (GObject * object, guint prop_id,
++    const GValue * value, GParamSpec * pspec)
++{
++    GstHLSDemux *demux = GST_HLS_DEMUX(object);
++
++    switch (prop_id) {
++    case PROP_USE_HW_DECRYPT:
++        g_mutex_lock (&demux->keys_lock);
++        demux->use_hw_decrypt = g_value_get_boolean(value);
++        g_mutex_unlock (&demux->keys_lock);
++        GST_INFO_OBJECT (demux, "use hw decrypt %d", demux->use_hw_decrypt);
++        break;
++    default:
++        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
++        break;
++    }
++}
++
+ static GstStateChangeReturn
+ gst_hls_demux_change_state (GstElement * element, GstStateChange transition)
+ {
+@@ -922,7 +957,7 @@ gst_hls_demux_start_fragment (GstAdaptiveDemux * demux,
+       hls_stream->stream_type);
+ 
+   /* If no decryption is needed, there's nothing to be done here */
+-  if (hls_stream->current_key == NULL)
++  if (hls_stream->current_key == NULL || hlsdemux->use_hw_decrypt)
+     return TRUE;
+ 
+   m3u8 = gst_hls_demux_stream_get_m3u8 (hls_stream);
+@@ -1018,6 +1053,31 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
+       return GST_FLOW_OK;
+     }
+ 
++    GST_DEBUG_OBJECT (hlsdemux, "current key method %d", hls_stream->current_key_method);
++    if (hls_stream->current_key_method == GST_HLS_KEY_METHOD_AES128) {
++      guint size = gst_caps_get_size(caps);
++      for (guint i = 0; i < size; i++) {
++        GstStructure *structure = gst_caps_get_structure(caps, i);
++        gst_structure_set (structure,
++                     "original-media-type", G_TYPE_STRING, gst_structure_get_name(structure),
++                     "encryption-algorithm", G_TYPE_STRING, "AES",
++                     "cipher-mode", G_TYPE_STRING, "cbc1",
++                     NULL);
++        gst_structure_set_name(structure, "application/x-aes128-cbc");
++      }
++    } else if (hls_stream->current_key_method == GST_HLS_KEY_METHOD_SAMPLE_AES) {
++      gchar *system_id = "";
++      GstBuffer *key_data = gst_buffer_new_wrapped (g_strdup (hls_stream->current_key_data),
++          strlen (hls_stream->current_key_data));
++      if (hls_stream->current_system_id)
++        system_id = hls_stream->current_system_id;
++
++      GstEvent *event =
++          gst_event_new_protection (system_id, key_data, "hls/sample-aes");
++      gst_adaptive_demux_stream_queue_event(stream, event);
++      gst_buffer_unref(key_data);
++    }
++
+     GST_DEBUG_OBJECT (stream->pad,
+         "Typefind result: %" GST_PTR_FORMAT " prob:%d", caps, prob);
+ 
+@@ -1055,6 +1115,31 @@ gst_hls_demux_handle_buffer (GstAdaptiveDemux * demux,
+   }
+ 
+   if (buffer) {
++    if (hls_stream->current_key) {
++      GstBuffer *key = gst_buffer_new_wrapped (g_strdup (hls_stream->current_key), strlen (hls_stream->current_key));
++      GstBuffer *key_id = gst_buffer_new_allocate (NULL, 16, NULL);
++      gst_buffer_fill (key_id, 0, hls_stream->current_key_id, 16);
++      GstBuffer *iv = gst_buffer_new_allocate (NULL, 16, NULL);
++      gst_buffer_fill (iv, 0, hls_stream->current_iv, 16);
++      GstBuffer *kid = hls_stream->have_key_id ? key_id : key; // for verimatrix hls
++
++      GstStructure *crypto_info = gst_structure_new ("application/x-aes128-cbc",
++        "iv_size", G_TYPE_UINT, 16,
++        "kid", GST_TYPE_BUFFER, kid,
++        "iv", GST_TYPE_BUFFER, iv,
++        "encrypted", G_TYPE_BOOLEAN, TRUE,
++         NULL);
++
++      if (hls_stream->current_key_method == GST_HLS_KEY_METHOD_AES128) {
++        gst_structure_set(crypto_info,
++        "cipher-mode", G_TYPE_STRING, "cbc1",
++        NULL);
++      }
++      gst_buffer_add_protection_meta (buffer, crypto_info);
++      gst_buffer_unref(key);
++      gst_buffer_unref(key_id);
++      gst_buffer_unref(iv);
++    }
+     buffer = gst_buffer_make_writable (buffer);
+     GST_BUFFER_OFFSET (buffer) = hls_stream->current_offset;
+     hls_stream->current_offset += gst_buffer_get_size (buffer);
+@@ -1069,9 +1154,10 @@ gst_hls_demux_finish_fragment (GstAdaptiveDemux * demux,
+     GstAdaptiveDemuxStream * stream)
+ {
+   GstHLSDemuxStream *hls_stream = GST_HLS_DEMUX_STREAM_CAST (stream);   // FIXME: pass HlsStream into function
++  GstHLSDemux *hlsdemux = GST_HLS_DEMUX_CAST (demux);
+   GstFlowReturn ret = GST_FLOW_OK;
+ 
+-  if (hls_stream->current_key)
++  if (hls_stream->current_key && !hlsdemux->use_hw_decrypt)
+     gst_hls_demux_stream_decrypt_end (hls_stream);
+ 
+   if (stream->last_ret == GST_FLOW_OK) {
+@@ -1140,7 +1226,7 @@ gst_hls_demux_data_received (GstAdaptiveDemux * demux,
+     hls_stream->current_offset = 0;
+ 
+   /* Is it encrypted? */
+-  if (hls_stream->current_key) {
++  if (hls_stream->current_key && !hlsdemux->use_hw_decrypt) {
+     GError *err = NULL;
+     gsize size;
+     GstBuffer *tmp_buffer;
+@@ -1197,10 +1283,22 @@ gst_hls_demux_stream_free (GstAdaptiveDemuxStream * stream)
+     g_free (hls_stream->current_key);
+     hls_stream->current_key = NULL;
+   }
++  if (hls_stream->current_key_data) {
++    g_free (hls_stream->current_key_data);
++    hls_stream->current_key_data = NULL;
++  }
++  if (hls_stream->current_key_id) {
++    g_free (hls_stream->current_key_id);
++    hls_stream->current_key_id = NULL;
++  }
+   if (hls_stream->current_iv) {
+     g_free (hls_stream->current_iv);
+     hls_stream->current_iv = NULL;
+   }
++  if (hls_stream->current_system_id) {
++    g_free (hls_stream->current_system_id);
++    hls_stream->current_system_id = NULL;
++  }
+   gst_hls_demux_stream_decrypt_end (hls_stream);
+ }
+ 
+@@ -1293,9 +1391,17 @@ gst_hls_demux_update_fragment_info (GstAdaptiveDemuxStream * stream)
+ 
+   g_free (hlsdemux_stream->current_key);
+   hlsdemux_stream->current_key = g_strdup (file->key);
++  g_free (hlsdemux_stream->current_key_data);
++  hlsdemux_stream->current_key_data = g_strdup (file->key_data);
++  hlsdemux_stream->current_key_method = file->key_method;
++  hlsdemux_stream->have_key_id = file->have_key_id;
++  g_free (hlsdemux_stream->current_key_id);
++  hlsdemux_stream->current_key_id = g_memdup (file->key_id, sizeof (file->key_id));
+   g_free (hlsdemux_stream->current_iv);
+   hlsdemux_stream->current_iv = g_memdup2 (file->iv, sizeof (file->iv));
+ 
++  g_free (hlsdemux_stream->current_system_id);
++  hlsdemux_stream->current_system_id = g_strdup (file->system_id);
+   g_free (stream->fragment.uri);
+   stream->fragment.uri = g_strdup (file->uri);
+ 
+diff --git a/ext/hls/gsthlsdemux.h b/ext/hls/gsthlsdemux.h
+index 98d6099..5690584 100644
+--- a/ext/hls/gsthlsdemux.h
++++ b/ext/hls/gsthlsdemux.h
+@@ -112,7 +112,12 @@ struct _GstHLSDemuxStream
+ #endif
+ 
+   gchar     *current_key;
++  gchar     *current_key_data;
++  GstHLSKeyMethod current_key_method;
++  guint8    *current_key_id;
++  gboolean  have_key_id;
+   guint8    *current_iv;
++  gchar     *current_system_id;
+ 
+   /* Accumulator for reading PAT/PMT/PCR from
+    * the stream so we can set timestamps/segments
+@@ -150,6 +155,8 @@ struct _GstHLSDemux
+   GstHLSVariantStream  *previous_variant;
+ 
+   gboolean streams_aware;
++
++  gboolean use_hw_decrypt;
+ };
+ 
+ struct _GstHLSDemuxClass
+diff --git a/ext/hls/m3u8.c b/ext/hls/m3u8.c
+index 5cbdbd5..fdd958b 100644
+--- a/ext/hls/m3u8.c
++++ b/ext/hls/m3u8.c
+@@ -153,6 +153,8 @@ gst_m3u8_media_file_unref (GstM3U8MediaFile * self)
+     g_free (self->title);
+     g_free (self->uri);
+     g_free (self->key);
++    g_free (self->key_data);
++    g_free (self->system_id);
+     g_free (self);
+   }
+ }
+@@ -490,13 +492,18 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+   gchar *title, *end;
+   gboolean discontinuity = FALSE;
+   gchar *current_key = NULL;
++  gchar *current_key_data = NULL;
++  GstHLSKeyMethod current_key_method = GST_HLS_KEY_METHOD_NONE;
+   gboolean have_iv = FALSE;
++  gboolean have_key_id = FALSE;
+   guint8 iv[16] = { 0, };
++  guint8 key_id[16] = { 0, };
+   gint64 size = -1, offset = -1;
+   gint64 mediasequence;
+   GList *previous_files = NULL;
+   gboolean have_mediasequence = FALSE;
+   GstM3U8InitFile *last_init_file = NULL;
++  gchar *current_system_id = NULL;
+ 
+   g_return_val_if_fail (self != NULL, FALSE);
+   g_return_val_if_fail (data != NULL, FALSE);
+@@ -567,6 +574,10 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+ 
+         /* set encryption params */
+         file->key = current_key ? g_strdup (current_key) : NULL;
++        file->key_data = current_key_data ? g_strdup (current_key_data) : NULL;
++        file->key_method = current_key_method;
++        file->system_id = current_system_id ? g_strdup (current_system_id) : NULL;
++        file->have_key_id = have_key_id;
+         if (file->key) {
+           if (have_iv) {
+             memcpy (file->iv, iv, sizeof (iv));
+@@ -574,6 +585,8 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+             guint8 *iv = file->iv + 12;
+             GST_WRITE_UINT32_BE (iv, file->sequence);
+           }
++          if (have_key_id)
++            memcpy (file->key_id, key_id, sizeof (key_id));
+         }
+ 
+         if (size != -1) {
+@@ -667,10 +680,14 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+       } else if (g_str_has_prefix (data_ext_x, "KEY:")) {
+         gchar *v, *a;
+ 
++        g_free(current_key_data);
++        current_key_data = NULL;
++        current_key_data = g_strdup(data);
+         data = data + 11;
+ 
+         /* IV and KEY are only valid until the next #EXT-X-KEY */
+         have_iv = FALSE;
++        have_key_id = FALSE;
+         g_free (current_key);
+         current_key = NULL;
+         while (data && parse_attributes (&data, &a, &v)) {
+@@ -708,10 +725,54 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+             }
+             have_iv = TRUE;
+           } else if (g_str_equal (a, "METHOD")) {
+-            if (!g_str_equal (v, "AES-128")) {
++            if (g_str_equal (v, "AES-128")) {
++              current_key_method = GST_HLS_KEY_METHOD_AES128;
++            } else if (g_str_equal (v, "SAMPLE-AES")) {
++              current_key_method = GST_HLS_KEY_METHOD_SAMPLE_AES;
++            } else {
++              current_key_method = GST_HLS_KEY_METHOD_INVALID;
+               GST_WARNING ("Encryption method %s not supported", v);
+               continue;
+             }
++          } else if (g_str_equal (a, "KEYFORMAT")) {
++            if (g_str_has_prefix (v, "urn:uuid:")) {
++              g_free (current_system_id);
++              current_system_id = NULL;
++              current_system_id = g_strdup (v + 9);
++            } else {
++              GST_WARNING ("Encryption keyformat %s not supported", v);
++              continue;
++            }
++          } else if (g_str_equal (a, "KEYID")) {
++            gchar *keyidp = v;
++            gint i;
++
++            if (strlen (keyidp) < 32 + 2 || (!g_str_has_prefix (keyidp, "0x")
++                    && !g_str_has_prefix (keyidp, "0X"))) {
++              GST_WARNING ("Can't read KEYID");
++              continue;
++            }
++
++            keyidp += 2;
++            for (i = 0; i < 16; i++) {
++              gint h, l;
++
++              h = g_ascii_xdigit_value (*keyidp);
++              keyidp++;
++              l = g_ascii_xdigit_value (*keyidp);
++              keyidp++;
++              if (h == -1 || l == -1) {
++                i = -1;
++                break;
++              }
++              key_id[i] = (h << 4) | l;
++            }
++
++            if (i == -1) {
++              GST_WARNING ("Can't read KEYID");
++              continue;
++            }
++            have_key_id = TRUE;
+           }
+         }
+       } else if (g_str_has_prefix (data_ext_x, "BYTERANGE:")) {
+@@ -780,6 +841,12 @@ gst_m3u8_update (GstM3U8 * self, gchar * data)
+   g_free (current_key);
+   current_key = NULL;
+ 
++  g_free (current_key_data);
++  current_key_data = NULL;
++
++  g_free (current_system_id);
++  current_system_id = NULL;
++
+   self->files = g_list_reverse (self->files);
+ 
+   if (last_init_file)
+diff --git a/ext/hls/m3u8.h b/ext/hls/m3u8.h
+index f4085de..c27c8c6 100644
+--- a/ext/hls/m3u8.h
++++ b/ext/hls/m3u8.h
+@@ -92,6 +92,13 @@ GstM3U8 *          gst_m3u8_ref   (GstM3U8 * m3u8);
+ 
+ void               gst_m3u8_unref (GstM3U8 * m3u8);
+ 
++typedef enum
++{
++  GST_HLS_KEY_METHOD_INVALID = -1,
++  GST_HLS_KEY_METHOD_NONE,
++  GST_HLS_KEY_METHOD_SAMPLE_AES,
++  GST_HLS_KEY_METHOD_AES128
++} GstHLSKeyMethod;
+ 
+ struct _GstM3U8MediaFile
+ {
+@@ -101,10 +108,15 @@ struct _GstM3U8MediaFile
+   gint64 sequence;               /* the sequence nb of this file */
+   gboolean discont;             /* this file marks a discontinuity */
+   gchar *key;
++  gchar *key_data;
++  GstHLSKeyMethod key_method;
++  guint8 key_id[16];
+   guint8 iv[16];
+   gint64 offset, size;
+   gint ref_count;               /* ATOMIC */
+   GstM3U8InitFile *init_file;   /* Media Initialization (hold ref) */
++  gchar *system_id;
++  gboolean have_key_id;
+ };
+ 
+ struct _GstM3U8InitFile
+diff --git a/gst-libs/gst/mpegts/gstmpegtsdescriptor.c b/gst-libs/gst/mpegts/gstmpegtsdescriptor.c
+index 9d2232a..d59029b 100644
+--- a/gst-libs/gst/mpegts/gstmpegtsdescriptor.c
++++ b/gst-libs/gst/mpegts/gstmpegtsdescriptor.c
+@@ -788,9 +788,10 @@ gst_mpegts_parse_descriptors (guint8 * buffer, gsize buf_len)
+     desc->data = data;
+     desc->tag = *data++;
+     desc->length = *data++;
++    desc->codec_tag = *(guint32 *)data;
+     /* Copy the data now that we known the size */
+     desc->data = g_memdup2 (desc->data, desc->length + 2);
+-    GST_LOG ("descriptor 0x%02x length:%d", desc->tag, desc->length);
++    GST_LOG ("descriptor 0x%02x length:%d codec_tag %x ", desc->tag, desc->length, desc->codec_tag);
+     GST_MEMDUMP ("descriptor", desc->data + 2, desc->length);
+     /* extended descriptors */
+     if (G_UNLIKELY (desc->tag == 0x7f))
+diff --git a/gst-libs/gst/mpegts/gstmpegtsdescriptor.h b/gst-libs/gst/mpegts/gstmpegtsdescriptor.h
+index 3e4d95d..f740b9b 100644
+--- a/gst-libs/gst/mpegts/gstmpegtsdescriptor.h
++++ b/gst-libs/gst/mpegts/gstmpegtsdescriptor.h
+@@ -193,6 +193,7 @@ struct _GstMpegtsDescriptor
+   guint8 tag_extension;
+   guint8 length;
+   guint8 *data;
++  guint32 codec_tag;
+ 
+   /*< private >*/
+   /* Padding for future extension */
+diff --git a/gst-libs/gst/mpegts/gstmpegtssection.c b/gst-libs/gst/mpegts/gstmpegtssection.c
+index 3ab178e..79c3d32 100644
+--- a/gst-libs/gst/mpegts/gstmpegtssection.c
++++ b/gst-libs/gst/mpegts/gstmpegtssection.c
+@@ -753,6 +753,19 @@ _parse_pmt (GstMpegtsSection * section)
+         gst_mpegts_parse_descriptors (data, stream_info_length);
+     if (stream->descriptors == NULL)
+       goto error;
++    if (stream->stream_type == GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC)
++    {
++      GstMpegtsDescriptor *descriptor;
++      for (i = 0; i < stream->descriptors->len; i++) {
++        descriptor = g_ptr_array_index (stream->descriptors, i);
++        GST_LOG ("descriptor 0x%02x length:%d", descriptor->tag, descriptor->length);
++        if (descriptor->tag == 0xF && descriptor->length >= 4
++              && descriptor->codec_tag == GST_MAKE_FOURCC('z','a','v','c')) {
++            GST_LOG("Found a H265 sample-aes stream");
++            stream->stream_type = GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC_AES_128_CBC;
++        }
++      }
++    }
+     data += stream_info_length;
+ 
+     i += 1;
+diff --git a/gst-libs/gst/mpegts/gstmpegtssection.h b/gst-libs/gst/mpegts/gstmpegtssection.h
+index b40c84f..5db2da0 100644
+--- a/gst-libs/gst/mpegts/gstmpegtssection.h
++++ b/gst-libs/gst/mpegts/gstmpegtssection.h
+@@ -400,6 +400,11 @@ typedef enum {
+   GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC                   = 0x24,
+   /* 0x24 - 0x7e : Rec. ITU-T H.222.0 | ISO/IEC 13818-1 Reserved */
+   GST_MPEGTS_STREAM_TYPE_IPMP_STREAM                  = 0x7f,
++  GST_MPEGTS_STREAM_TYPE_AUDIO_AAC_ADTS_AES_128_CBC   = 0xcf,
++  GST_MPEGTS_STREAM_TYPE_VIDEO_H264_AES_128_CBC       = 0xdb,
++  GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC_AES_128_CBC       = 0xdc,
++  GST_MPEGTS_STREAM_TYPE_AUDIO_AC3_AES_128_CBC        = 0xc1,
++  GST_MPEGTS_STREAM_TYPE_AUDIO_EAC3_AES_128_CBC       = 0xc2,
+   /* 0x80 - 0xff : User Private (or defined in other specs) */
+ 
+   /**
+diff --git a/gst/mpegtsdemux/mpegtsbase.c b/gst/mpegtsdemux/mpegtsbase.c
+index 10628af..fe54e4c 100644
+--- a/gst/mpegtsdemux/mpegtsbase.c
++++ b/gst/mpegtsdemux/mpegtsbase.c
+@@ -1508,7 +1508,7 @@ mpegts_base_chain (GstPad * pad, GstObject * parent, GstBuffer * buf)
+   MpegTSBase *base;
+   MpegTSPacketizerPacketReturn pret;
+   MpegTSPacketizer2 *packetizer;
+-  MpegTSPacketizerPacket packet;
++  MpegTSPacketizerPacket packet = {0};
+   MpegTSBaseClass *klass;
+ 
+   base = GST_MPEGTS_BASE (parent);
+diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
+index bbd9e80..9b89fb9 100644
+--- a/gst/mpegtsdemux/mpegtspacketizer.c
++++ b/gst/mpegtsdemux/mpegtspacketizer.c
+@@ -850,6 +850,10 @@ mpegts_packetizer_next_packet (MpegTSPacketizer2 * packetizer,
+   gsize sync_offset;
+ 
+   packet_size = packetizer->packet_size;
++  if (G_UNLIKELY(packet->protection_info)) {
++    gst_structure_free(packet->protection_info);
++    packet->protection_info = NULL;
++  }
+   if (G_UNLIKELY (!packet_size)) {
+     if (!mpegts_try_discover_packet_size (packetizer))
+       return PACKET_NEED_MORE;
+@@ -889,6 +893,14 @@ mpegts_packetizer_next_packet (MpegTSPacketizer2 * packetizer,
+       packetizer->offset += packet_size;
+       GST_MEMDUMP ("data_start", packet->data_start, 16);
+ 
++      GstBufferList *list = gst_adapter_get_buffer_list(packetizer->adapter, gst_adapter_available (packetizer->adapter));
++      GstBuffer *buffer = gst_buffer_list_get(list, 0);
++      GstProtectionMeta *meta = gst_buffer_get_protection_meta(buffer);
++      if (meta) {
++        packet->protection_info = gst_structure_copy(meta->info);
++      }
++      gst_buffer_list_unref(list);
++
+       return mpegts_packetizer_parse_packet (packetizer, packet);
+     }
+   }
+@@ -900,6 +912,8 @@ mpegts_packetizer_process_next_packet (MpegTSPacketizer2 * packetizer)
+   MpegTSPacketizerPacket packet;
+   MpegTSPacketizerPacketReturn ret;
+ 
++  memset(&packet, 0, sizeof(MpegTSPacketizerPacket));
++
+   ret = mpegts_packetizer_next_packet (packetizer, &packet);
+   if (ret != PACKET_NEED_MORE)
+     mpegts_packetizer_clear_packet (packetizer, &packet);
+@@ -918,6 +932,10 @@ mpegts_packetizer_clear_packet (MpegTSPacketizer2 * packetizer,
+     if (packetizer->map_size - packetizer->map_offset < packet_size)
+       mpegts_packetizer_flush_bytes (packetizer, packetizer->map_offset);
+   }
++  if (G_LIKELY(packet->protection_info)) {
++    gst_structure_free(packet->protection_info);
++    packet->protection_info = NULL;
++  }
+ }
+ 
+ gboolean
+diff --git a/gst/mpegtsdemux/mpegtspacketizer.h b/gst/mpegtsdemux/mpegtspacketizer.h
+index 04e673a..ea8e667 100644
+--- a/gst/mpegtsdemux/mpegtspacketizer.h
++++ b/gst/mpegtsdemux/mpegtspacketizer.h
+@@ -319,6 +319,7 @@ typedef struct
+   guint8  afc_flags;
+   guint64 pcr;
+   guint64 offset;
++  GstStructure *protection_info;
+ } MpegTSPacketizerPacket;
+ 
+ typedef struct
+diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
+index cc1b24d..b606ac9 100644
+--- a/gst/mpegtsdemux/tsdemux.c
++++ b/gst/mpegtsdemux/tsdemux.c
+@@ -51,6 +51,7 @@
+ #include <gst/video/video-color.h>
+ 
+ #include <math.h>
++#include <gst/base/gstbytewriter.h>
+ 
+ #define _gst_log2(x) (log(x)/log(2))
+ 
+@@ -227,6 +228,7 @@ struct _TSDemuxStream
+   TSDemuxH264ParsingInfos h264infos;
+   TSDemuxJP2KParsingInfos jp2kInfos;
+   TSDemuxADTSParsingInfos atdsInfos;
++  GstStructure *protection_info;
+   //for hdcp parse
+   gboolean hdcp_content_flag;
+   gboolean hdcp_have_iv;
+@@ -502,6 +504,11 @@ gst_ts_demux_reset (MpegTSBase * base)
+   gst_event_replace (&demux->segment_event, NULL);
+   g_mutex_unlock (&demux->lock);
+ 
++  if (demux->protection_event) {
++    gst_event_unref (demux->protection_event);
++    demux->protection_event = NULL;
++  }
++
+   if (demux->global_tags) {
+     gst_tag_list_unref (demux->global_tags);
+     demux->global_tags = NULL;
+@@ -1147,6 +1154,11 @@ push_event (MpegTSBase * base, GstEvent * event)
+     /* tags are stored to be used after if there are no streams yet,
+      * so we should never reject */
+     early_ret = TRUE;
++  } else if (GST_EVENT_TYPE (event) == GST_EVENT_PROTECTION) {
++    if (demux->program == NULL) {
++      gst_event_replace(&demux->protection_event, event);
++      early_ret = TRUE;
++    }
+   }
+ 
+   if (G_UNLIKELY (demux->program == NULL)) {
+@@ -1835,6 +1847,19 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+       /* we will set caps later once parsing adts header is done */
+       stream->atdsInfos.mpegversion = 4;
+       break;
++    case GST_MPEGTS_STREAM_TYPE_AUDIO_AAC_ADTS_AES_128_CBC:
++      is_audio = TRUE;
++      /* prefer mpegversion 4 since it's more commonly supported one */
++      caps = gst_caps_new_simple ("application/x-aes128-cbc",
++          "mpegversion", G_TYPE_INT, 4,
++          "stream-format", G_TYPE_STRING, "adts",
++          "original-media-type", G_TYPE_STRING, "audio/mpeg",
++          "encryption-algorithm", G_TYPE_STRING, "AES",
++          "cipher-mode", G_TYPE_STRING, "cbcs",
++          "parsed", G_TYPE_BOOLEAN, FALSE, NULL);
++      /* we will set caps later once parsing adts header is done */
++      stream->atdsInfos.mpegversion = 4;
++      break;
+     case GST_MPEGTS_STREAM_TYPE_AUDIO_AAC_LATM:
+       is_audio = TRUE;
+       if (program->registration_id == DRF_ID_HDCP) {
+@@ -1850,12 +1875,46 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+           "stream-format", G_TYPE_STRING, "loas", NULL);
+       }
+       break;
++    case GST_MPEGTS_STREAM_TYPE_AUDIO_AC3_AES_128_CBC:
++      is_audio = TRUE;
++      caps = gst_caps_new_simple ("application/x-aes128-cbc",
++          "original-media-type", G_TYPE_STRING, "audio/x-ac3",
++          "encryption-algorithm", G_TYPE_STRING, "AES",
++          "cipher-mode", G_TYPE_STRING, "cbcs",
++          "parsed", G_TYPE_BOOLEAN, FALSE, NULL);
++      /* we will set caps later once parsing adts header is done */
++      break;
++    case GST_MPEGTS_STREAM_TYPE_AUDIO_EAC3_AES_128_CBC:
++      is_audio = TRUE;
++      caps = gst_caps_new_simple ("application/x-aes128-cbc",
++          "original-media-type", G_TYPE_STRING, "audio/x-eac3",
++          "encryption-algorithm", G_TYPE_STRING, "AES",
++          "cipher-mode", G_TYPE_STRING, "cbcs",
++          "parsed", G_TYPE_BOOLEAN, FALSE, NULL);
++      /* we will set caps later once parsing adts header is done */
++      break;
+     case GST_MPEGTS_STREAM_TYPE_VIDEO_MPEG4:
+       is_video = TRUE;
+       caps = gst_caps_new_simple ("video/mpeg",
+           "mpegversion", G_TYPE_INT, 4,
+           "systemstream", G_TYPE_BOOLEAN, FALSE, NULL);
+       break;
++    case GST_MPEGTS_STREAM_TYPE_VIDEO_H264_AES_128_CBC:
++      is_video = TRUE;
++      caps = gst_caps_new_simple ("application/x-aes128-cbc",
++          "stream-format", G_TYPE_STRING, "byte-stream",
++          "original-media-type", G_TYPE_STRING, "video/x-h264",
++          "encryption-algorithm", G_TYPE_STRING, "AES",
++          "cipher-mode", G_TYPE_STRING, "cbcs", NULL);
++      break;
++    case GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC_AES_128_CBC:
++      is_video = TRUE;
++      caps = gst_caps_new_simple ("application/x-aes128-cbc",
++          "stream-format", G_TYPE_STRING, "byte-stream",
++          "original-media-type", G_TYPE_STRING, "video/x-h265",
++          "encryption-algorithm", G_TYPE_STRING, "AES",
++          "cipher-mode", G_TYPE_STRING, "cbcs", NULL);
++      break;
+     case GST_MPEGTS_STREAM_TYPE_VIDEO_H264:
+     case GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC:
+       is_video = TRUE;
+@@ -2225,7 +2284,8 @@ gst_ts_demux_stream_added (MpegTSBase * base, MpegTSBaseStream * bstream,
+     }
+ 
+     if (base->mode != BASE_MODE_PUSHING
+-        && bstream->stream_type == GST_MPEGTS_STREAM_TYPE_VIDEO_H264) {
++        && (bstream->stream_type == GST_MPEGTS_STREAM_TYPE_VIDEO_H264
++          || bstream->stream_type == GST_MPEGTS_STREAM_TYPE_VIDEO_H264_AES_128_CBC)) {
+       stream->scan_function =
+           (GstTsDemuxKeyFrameScanFunction) scan_keyframe_h264;
+     } else {
+@@ -2511,8 +2571,13 @@ gst_ts_demux_program_started (MpegTSBase * base, MpegTSBaseProgram * program)
+         GST_DEBUG_OBJECT (stream->pad, "sparse stream, pushing GAP event");
+         gst_pad_push_event (stream->pad, gst_event_new_gap (0, 0));
+       }
++      if (demux->protection_event) {
++        GstEvent *evt = gst_event_ref(demux->protection_event);
++        gst_pad_push_event(stream->pad, evt);
++      }
+     }
+ 
++    gst_event_replace(&demux->protection_event, NULL);
+     gst_element_no_more_pads ((GstElement *) demux);
+   }
+ }
+@@ -2969,6 +3034,9 @@ gst_ts_demux_queue_data (GstTSDemux * demux, TSDemuxStream * stream,
+       GST_LOG_OBJECT (demux, "HEADER: Parsing PES header");
+ 
+       /* parse the header */
++      if (packet->protection_info) {
++        stream->protection_info = gst_structure_copy(packet->protection_info);
++      }
+       gst_ts_demux_parse_pes_header (demux, stream, data, size, packet->offset);
+       break;
+     }
+@@ -3813,6 +3881,17 @@ gst_ts_demux_push_pending_data (GstTSDemux * demux, TSDemuxStream * stream,
+   }
+ 
+   if (buffer) {
++    if (stream->protection_info) {
++      if (bs->stream_type == GST_MPEGTS_STREAM_TYPE_VIDEO_H264_AES_128_CBC
++            || bs->stream_type == GST_MPEGTS_STREAM_TYPE_VIDEO_HEVC_AES_128_CBC) {
++        gst_structure_set (stream->protection_info,
++            "crypt_byte_block", G_TYPE_UINT, 1,
++            "skip_byte_block", G_TYPE_UINT, 9,
++            NULL
++        );
++      }
++      gst_buffer_add_protection_meta (buffer, gst_structure_copy(stream->protection_info));
++    }
+     res = gst_pad_push (stream->pad, buffer);
+     /* Record that a buffer was pushed */
+     stream->nb_out_buffers += 1;
+@@ -3865,7 +3944,10 @@ beach:
+   stream->data = NULL;
+   stream->allocated_size = 0;
+   stream->current_size = 0;
+-
++  if (stream->protection_info) {
++    gst_structure_free(stream->protection_info);
++    stream->protection_info = NULL;
++  }
+   return res;
+ }
+ 
+diff --git a/gst/mpegtsdemux/tsdemux.h b/gst/mpegtsdemux/tsdemux.h
+index c3784c5..66e1c6e 100644
+--- a/gst/mpegtsdemux/tsdemux.h
++++ b/gst/mpegtsdemux/tsdemux.h
+@@ -114,6 +114,8 @@ struct _GstTSDemux
+ 
+   /* This is to protect demux->segment_event */
+   GMutex lock;
++
++  GstEvent *protection_event;
+ };
+ 
+ struct _GstTSDemuxClass
+diff --git a/gst/videoparsers/gsth264parse.c b/gst/videoparsers/gsth264parse.c
+index 5204add..e48140a 100644
+--- a/gst/videoparsers/gsth264parse.c
++++ b/gst/videoparsers/gsth264parse.c
+@@ -75,6 +75,13 @@ enum
+       GST_H264_PARSE_STATE_GOT_SLICE)
+ };
+ 
++enum
++{
++  GST_H264_PARSE_ENCRYPTION_NONE = 0,
++  GST_H264_PARSE_ENCRYPTION_CENC = 1,
++  GST_H264_PARSE_ENCRYPTION_CBCS = 2,
++};
++
+ enum
+ {
+   GST_H264_PARSE_SEI_EXPIRED = 0,
+@@ -88,14 +95,20 @@ enum
+ static GstStaticPadTemplate sinktemplate = GST_STATIC_PAD_TEMPLATE ("sink",
+     GST_PAD_SINK,
+     GST_PAD_ALWAYS,
+-    GST_STATIC_CAPS ("video/x-h264"));
++    GST_STATIC_CAPS ("video/x-h264;"
++      "application/x-aes128-cbc,"
++      "original-media-type=(string) video/x-h264;"
++    ));
+ 
+ static GstStaticPadTemplate srctemplate = GST_STATIC_PAD_TEMPLATE ("src",
+     GST_PAD_SRC,
+     GST_PAD_ALWAYS,
+     GST_STATIC_CAPS ("video/x-h264, parsed = (boolean) true, "
+         "stream-format=(string) { avc, avc3, byte-stream }, "
+-        "alignment=(string) { au, nal }"));
++        "alignment=(string) { au, nal };"
++        "application/x-aes128-cbc,"
++        "original-media-type=(string) video/x-h264;"
++        ));
+ 
+ #define parent_class gst_h264_parse_parent_class
+ G_DEFINE_TYPE (GstH264Parse, gst_h264_parse, GST_TYPE_BASE_PARSE);
+@@ -205,6 +218,7 @@ gst_h264_parse_init (GstH264Parse * h264parse)
+   h264parse->aud_needed = TRUE;
+   h264parse->aud_insert = TRUE;
+   h264parse->update_timecode = DEFAULT_UPDATE_TIMECODE;
++  h264parse->encryption_mode = GST_H264_PARSE_ENCRYPTION_NONE;
+ }
+ 
+ static void
+@@ -239,6 +253,10 @@ gst_h264_parse_reset_frame (GstH264Parse * h264parse)
+   h264parse->have_pps_in_frame = FALSE;
+   h264parse->have_aud_in_frame = FALSE;
+   gst_adapter_clear (h264parse->frame_out);
++  if (G_LIKELY(h264parse->subsample_writer != NULL)) {
++    gst_byte_writer_free(h264parse->subsample_writer);
++    h264parse->subsample_writer = NULL;
++  }
+ }
+ 
+ static void
+@@ -926,6 +944,54 @@ gst_h264_parse_process_sei (GstH264Parse * h264parse, GstH264NalUnit * nalu)
+   g_array_free (messages, TRUE);
+ }
+ 
++static guint
++find_next_unescape_index(guint8 * data, guint offset, guint limit)
++{
++  for (guint i = offset; i < limit - 2; i++) {
++    if (data[i] == 0x00 && data[i + 1] == 0x00 && data[i + 2] == 0x03) {
++      return i;
++    }
++  }
++  return limit;
++}
++
++/* Unescapes data replacing occurrences of [0, 0, 3] with [0, 0] and returns the new size */
++static guint
++gst_h264_unescape_stream(guint8 * data, guint limit)
++{
++  guint *scratch_escape_positions = (guint *)g_malloc(limit);
++  guint scratch_escape_positions_num = 0;
++  guint position = 0;
++
++  while (position < limit) {
++    position = find_next_unescape_index(data, position, limit);
++    if (position < limit) {
++      scratch_escape_positions[scratch_escape_positions_num] = position;
++      scratch_escape_positions_num++;
++      position += 3;
++    }
++  }
++
++  guint scratch_escape_count = scratch_escape_positions_num;
++  guint escaped_position = 0; /* The position being read from */
++  guint unescaped_position = 0; /* The position being written to */
++  for (guint i = 0; i < scratch_escape_count; i++) {
++    guint next_escape_position = scratch_escape_positions[i];
++    guint copy_length = next_escape_position - escaped_position;
++    memmove(data + unescaped_position, data + escaped_position, copy_length);
++    unescaped_position += copy_length;
++    data[unescaped_position++] = 0;
++    data[unescaped_position++] = 0;
++    escaped_position += copy_length + 3;
++  }
++
++  guint unescaped_length = limit - scratch_escape_count;
++  guint remaining_length = unescaped_length - unescaped_position;
++  memmove(data + unescaped_position, data + escaped_position, remaining_length);
++  g_free(scratch_escape_positions);
++  return unescaped_length;
++}
++
+ /* caller guarantees 2 bytes of nal payload */
+ static gboolean
+ gst_h264_parse_process_nal (GstH264Parse * h264parse, GstH264NalUnit * nalu)
+@@ -1144,6 +1210,40 @@ gst_h264_parse_process_nal (GstH264Parse * h264parse, GstH264NalUnit * nalu)
+       break;
+   }
+ 
++  if (h264parse->encryption_mode != GST_H264_PARSE_ENCRYPTION_NONE) {
++    if (G_LIKELY(h264parse->subsample_writer == NULL)) {
++      h264parse->subsample_writer = gst_byte_writer_new_with_size(sizeof (guint16) + sizeof (guint32), FALSE);
++    }
++    if (h264parse->encryption_mode == GST_H264_PARSE_ENCRYPTION_CBCS) {
++      guint newSize = 0;
++      switch (nal_type) {
++      case GST_H264_NAL_SLICE:
++      case GST_H264_NAL_SLICE_IDR:
++        if (nalu->size > 48) {
++          newSize = gst_h264_unescape_stream(nalu->data + nalu->offset, nalu->size);
++          nalu->size = newSize;
++          if ((nalu->size - 32) % (10 * 16) == 16) {
++            gst_byte_writer_put_uint16_be (h264parse->subsample_writer, 32 + 4);
++            gst_byte_writer_put_uint32_be (h264parse->subsample_writer, nalu->size - 32 -16);
++            gst_byte_writer_put_uint16_be (h264parse->subsample_writer, 16);
++            gst_byte_writer_put_uint32_be (h264parse->subsample_writer, 0);
++          } else {
++            gst_byte_writer_put_uint16_be (h264parse->subsample_writer, 32 + 4);
++            gst_byte_writer_put_uint32_be (h264parse->subsample_writer, nalu->size - 32);
++          }
++        } else {
++          gst_byte_writer_put_uint16_be (h264parse->subsample_writer, nalu->size + 4);
++          gst_byte_writer_put_uint32_be (h264parse->subsample_writer, 0);
++        }
++        break;
++      default:
++        gst_byte_writer_put_uint16_be (h264parse->subsample_writer, nalu->size + 4);
++        gst_byte_writer_put_uint32_be (h264parse->subsample_writer, 0);
++        break;
++      }
++    }
++  }
++
+   /* if AVC output needed, collect properly prefixed nal in adapter,
+    * and use that to replace outgoing buffer data later on */
+   if (h264parse->transform) {
+@@ -1567,6 +1667,21 @@ end:
+ 
+   gst_h264_parse_parse_frame (parse, frame);
+ 
++  if (h264parse->encryption_mode != GST_H264_PARSE_ENCRYPTION_NONE) {
++    GstProtectionMeta *meta = gst_buffer_get_protection_meta(frame->out_buffer);
++    GstBuffer *subsamples = gst_byte_writer_free_and_get_buffer(h264parse->subsample_writer);
++    guint subsample_count = gst_buffer_get_size(subsamples) / (sizeof (guint16) + sizeof (guint32));
++    if (meta && meta->info) {
++      gst_structure_set(meta->info,
++        "subsample_count", G_TYPE_UINT, subsample_count,
++        "subsamples", GST_TYPE_BUFFER, subsamples,
++        NULL
++      );
++    }
++    gst_buffer_unref(subsamples);
++    h264parse->subsample_writer = NULL;
++  }
++
+   return gst_base_parse_finish_frame (parse, frame, framesize);
+ 
+ more:
+@@ -1703,7 +1818,7 @@ gst_h264_parse_get_par (GstH264Parse * h264parse, gint * num, gint * den)
+ }
+ 
+ static GstCaps *
+-get_compatible_profile_caps (GstH264SPS * sps)
++get_compatible_profile_caps (GstH264Parse * h264parse, GstH264SPS * sps)
+ {
+   GstCaps *caps = NULL;
+   const gchar **profiles = NULL;
+@@ -1825,7 +1940,10 @@ get_compatible_profile_caps (GstH264SPS * sps)
+ 
+   if (profiles) {
+     GValue value = G_VALUE_INIT;
+-    caps = gst_caps_new_empty_simple ("video/x-h264");
++    if (h264parse->encryption_mode == GST_H264_PARSE_ENCRYPTION_CBCS)
++      caps = gst_caps_new_simple ("application/x-aes128-cbc", "original-media-type", G_TYPE_STRING, "video/x-h264", NULL);
++    else
++      caps = gst_caps_new_empty_simple ("video/x-h264");
+     for (i = 0; profiles[i]; i++) {
+       g_value_init (&value, G_TYPE_STRING);
+       g_value_set_string (&value, profiles[i]);
+@@ -1848,7 +1966,11 @@ ensure_caps_profile (GstH264Parse * h264parse, GstCaps * caps, GstH264SPS * sps)
+ 
+   peer_caps = gst_pad_get_current_caps (GST_BASE_PARSE_SRC_PAD (h264parse));
+   if (!peer_caps || !gst_caps_can_intersect (caps, peer_caps)) {
+-    GstCaps *filter_caps = gst_caps_new_empty_simple ("video/x-h264");
++    GstCaps *filter_caps;
++    if (h264parse->encryption_mode == GST_H264_PARSE_ENCRYPTION_CBCS)
++      filter_caps = gst_caps_new_empty_simple ("application/x-aes128-cbc");
++    else
++      filter_caps = gst_caps_new_empty_simple ("video/x-h264");
+ 
+     if (peer_caps)
+       gst_caps_unref (peer_caps);
+@@ -1862,7 +1984,7 @@ ensure_caps_profile (GstH264Parse * h264parse, GstCaps * caps, GstH264SPS * sps)
+   if (peer_caps && !gst_caps_can_intersect (caps, peer_caps)) {
+     GstStructure *structure;
+ 
+-    compat_caps = get_compatible_profile_caps (sps);
++    compat_caps = get_compatible_profile_caps (h264parse, sps);
+     if (compat_caps != NULL) {
+       GstCaps *res_caps = NULL;
+ 
+@@ -3372,6 +3494,8 @@ gst_h264_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+   }
+ 
+   str = gst_caps_get_structure (caps, 0);
++  if (gst_structure_has_name(str, "application/x-aes128-cbc"))
++    h264parse->encryption_mode = GST_H264_PARSE_ENCRYPTION_CBCS;
+ 
+   /* accept upstream info if provided */
+   gst_structure_get_int (str, "width", &h264parse->width);
+@@ -3523,7 +3647,13 @@ gst_h264_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+     GstCaps *in_caps;
+ 
+     /* prefer input type determined above */
+-    in_caps = gst_caps_new_simple ("video/x-h264",
++    if (h264parse->encryption_mode == GST_H264_PARSE_ENCRYPTION_CBCS)
++      in_caps = gst_caps_new_simple ("application/x-aes128-cbc",
++          "original-media-type", G_TYPE_STRING, "video/x-h264",
++          NULL);
++    else
++      in_caps = gst_caps_new_empty_simple ("video/x-h264");
++    gst_caps_set_simple (in_caps,
+         "parsed", G_TYPE_BOOLEAN, TRUE,
+         "stream-format", G_TYPE_STRING,
+         gst_h264_parse_get_string (h264parse, TRUE, format),
+diff --git a/gst/videoparsers/gsth264parse.h b/gst/videoparsers/gsth264parse.h
+index 1ec700a..cb30924 100644
+--- a/gst/videoparsers/gsth264parse.h
++++ b/gst/videoparsers/gsth264parse.h
+@@ -30,6 +30,7 @@
+ #include <gst/codecparsers/gsth264parser.h>
+ #include <gst/video/video.h>
+ #include "gstvideoparseutils.h"
++#include <gst/base/gstbytewriter.h>
+ 
+ G_BEGIN_DECLS
+ 
+@@ -166,6 +167,10 @@ struct _GstH264Parse
+ 
+   /* For forward predicted trickmode */
+   gboolean discard_bidirectional;
++
++  /* For HW DRM */
++  GstByteWriter *subsample_writer;
++  guint encryption_mode;
+ };
+ 
+ struct _GstH264ParseClass
+diff --git a/gst/videoparsers/gsth265parse.c b/gst/videoparsers/gsth265parse.c
+index 98322b7..5ee7d6d 100644
+--- a/gst/videoparsers/gsth265parse.c
++++ b/gst/videoparsers/gsth265parse.c
+@@ -68,6 +68,13 @@ enum
+       GST_H265_PARSE_STATE_GOT_SLICE)
+ };
+ 
++enum
++{
++  GST_H265_PARSE_ENCRYPTION_NONE = 0,
++  GST_H265_PARSE_ENCRYPTION_CENC = 1,
++  GST_H265_PARSE_ENCRYPTION_CBCS = 2,
++};
++
+ enum
+ {
+   GST_H265_PARSE_SEI_EXPIRED = 0,
+@@ -81,14 +88,18 @@ enum
+ static GstStaticPadTemplate sinktemplate = GST_STATIC_PAD_TEMPLATE ("sink",
+     GST_PAD_SINK,
+     GST_PAD_ALWAYS,
+-    GST_STATIC_CAPS ("video/x-h265"));
++    GST_STATIC_CAPS ("video/x-h265;"
++        "application/x-aes128-cbc,"
++        "original-media-type=(string) video/x-h265;"));
+ 
+ static GstStaticPadTemplate srctemplate = GST_STATIC_PAD_TEMPLATE ("src",
+     GST_PAD_SRC,
+     GST_PAD_ALWAYS,
+     GST_STATIC_CAPS ("video/x-h265, parsed = (boolean) true, "
+         "stream-format=(string) { hvc1, hev1, byte-stream }, "
+-        "alignment=(string) { au, nal }"));
++        "alignment=(string) { au, nal };"
++        "application/x-aes128-cbc,"
++        "original-media-type=(string) video/x-h265;"));
+ 
+ #define parent_class gst_h265_parse_parent_class
+ G_DEFINE_TYPE (GstH265Parse, gst_h265_parse, GST_TYPE_BASE_PARSE);
+@@ -171,6 +182,7 @@ gst_h265_parse_init (GstH265Parse * h265parse)
+   gst_base_parse_set_infer_ts (GST_BASE_PARSE (h265parse), FALSE);
+   GST_PAD_SET_ACCEPT_INTERSECT (GST_BASE_PARSE_SINK_PAD (h265parse));
+   GST_PAD_SET_ACCEPT_TEMPLATE (GST_BASE_PARSE_SINK_PAD (h265parse));
++  h265parse->encryption_mode = GST_H265_PARSE_ENCRYPTION_NONE;
+ }
+ 
+ 
+@@ -203,6 +215,10 @@ gst_h265_parse_reset_frame (GstH265Parse * h265parse)
+   h265parse->have_sps_in_frame = FALSE;
+   h265parse->have_pps_in_frame = FALSE;
+   gst_adapter_clear (h265parse->frame_out);
++  if (G_LIKELY(h265parse->subsample_writer != NULL)) {
++    gst_byte_writer_free(h265parse->subsample_writer);
++    h265parse->subsample_writer = NULL;
++  }
+ }
+ 
+ static void
+@@ -709,6 +725,54 @@ gst_h265_parse_process_sei_user_data (GstH265Parse * h265parse,
+ 
+ }
+ 
++static guint
++find_next_unescape_index(guint8 * data, guint offset, guint limit)
++{
++  for (guint i = offset; i < limit - 2; i++) {
++    if (data[i] == 0x00 && data[i + 1] == 0x00 && data[i + 2] == 0x03) {
++      return i;
++    }
++  }
++  return limit;
++}
++
++/* Unescapes data replacing occurrences of [0, 0, 3] with [0, 0] and returns the new size */
++static guint
++gst_h265_unescape_stream(guint8 * data, guint limit)
++{
++  guint *scratch_escape_positions = (guint *)g_malloc(limit);
++  guint scratch_escape_positions_num = 0;
++  guint position = 0;
++
++  while (position < limit) {
++    position = find_next_unescape_index(data, position, limit);
++    if (position < limit) {
++      scratch_escape_positions[scratch_escape_positions_num] = position;
++      scratch_escape_positions_num++;
++      position += 3;
++    }
++  }
++
++  guint scratch_escape_count = scratch_escape_positions_num;
++  guint escaped_position = 0; /* The position being read from */
++  guint unescaped_position = 0; /* The position being written to */
++  for (guint i = 0; i < scratch_escape_count; i++) {
++    guint next_escape_position = scratch_escape_positions[i];
++    guint copy_length = next_escape_position - escaped_position;
++    memmove(data + unescaped_position, data + escaped_position, copy_length);
++    unescaped_position += copy_length;
++    data[unescaped_position++] = 0;
++    data[unescaped_position++] = 0;
++    escaped_position += copy_length + 3;
++  }
++
++  guint unescaped_length = limit - scratch_escape_count;
++  guint remaining_length = unescaped_length - unescaped_position;
++  memmove(data + unescaped_position, data + escaped_position, remaining_length);
++  g_free(scratch_escape_positions);
++  return unescaped_length;
++}
++
+ /* caller guarantees 2 bytes of nal payload */
+ static gboolean
+ gst_h265_parse_process_nal (GstH265Parse * h265parse, GstH265NalUnit * nalu)
+@@ -976,6 +1040,38 @@ gst_h265_parse_process_nal (GstH265Parse * h265parse, GstH265NalUnit * nalu)
+       break;
+   }
+ 
++  if (h265parse->encryption_mode != GST_H265_PARSE_ENCRYPTION_NONE) {
++    if (G_LIKELY(h265parse->subsample_writer == NULL)) {
++      h265parse->subsample_writer = gst_byte_writer_new_with_size(sizeof (guint16) + sizeof (guint32), FALSE);
++    }
++    if (h265parse->encryption_mode == GST_H265_PARSE_ENCRYPTION_CBCS) {
++        /* calculated values */
++      if ((nal_type >= GST_H265_NAL_SLICE_TRAIL_N && nal_type <= GST_H265_NAL_SLICE_RASL_R)
++          || (nal_type >= GST_H265_NAL_SLICE_BLA_W_LP && nal_type <= GST_H265_NAL_SLICE_CRA_NUT)) {
++        guint newSize = 0;
++        if (nalu->size > 48) {
++          newSize = gst_h265_unescape_stream(nalu->data + nalu->offset, nalu->size);
++          nalu->size = newSize;
++          if ((nalu->size - 32) % (10 * 16) == 16) {
++            gst_byte_writer_put_uint16_be (h265parse->subsample_writer, 32 + 4);
++            gst_byte_writer_put_uint32_be (h265parse->subsample_writer, nalu->size - 32 -16);
++            gst_byte_writer_put_uint16_be (h265parse->subsample_writer, 16);
++            gst_byte_writer_put_uint32_be (h265parse->subsample_writer, 0);
++          } else {
++            gst_byte_writer_put_uint16_be (h265parse->subsample_writer, 32 + 4);
++            gst_byte_writer_put_uint32_be (h265parse->subsample_writer, nalu->size - 32);
++          }
++        } else {
++          gst_byte_writer_put_uint16_be (h265parse->subsample_writer, nalu->size + 4);
++          gst_byte_writer_put_uint32_be (h265parse->subsample_writer, 0);
++        }
++      } else {
++        gst_byte_writer_put_uint16_be (h265parse->subsample_writer, nalu->size + 4);
++        gst_byte_writer_put_uint32_be (h265parse->subsample_writer, 0);
++      }
++    }
++  }
++
+   /* if HEVC output needed, collect properly prefixed nal in adapter,
+    * and use that to replace outgoing buffer data later on */
+   if (h265parse->transform) {
+@@ -1371,6 +1467,21 @@ end:
+ 
+   gst_h265_parse_parse_frame (parse, frame);
+ 
++  if (h265parse->encryption_mode != GST_H265_PARSE_ENCRYPTION_NONE) {
++    GstProtectionMeta *meta = gst_buffer_get_protection_meta(frame->out_buffer);
++    GstBuffer *subsamples = gst_byte_writer_free_and_get_buffer(h265parse->subsample_writer);
++    guint subsample_count = gst_buffer_get_size(subsamples) / (sizeof (guint16) + sizeof (guint32));
++    if (meta && meta->info) {
++      gst_structure_set(meta->info,
++        "subsample_count", G_TYPE_UINT, subsample_count,
++        "subsamples", GST_TYPE_BUFFER, subsamples,
++        NULL
++      );
++    }
++    gst_buffer_unref(subsamples);
++    h265parse->subsample_writer = NULL;
++  }
++
+   return gst_base_parse_finish_frame (parse, frame, framesize);
+ 
+ more:
+@@ -1669,7 +1780,7 @@ profile_to_flag (GstH265Profile p)
+ }
+ 
+ static GstCaps *
+-get_compatible_profile_caps (GstH265SPS * sps, GstH265Profile profile)
++get_compatible_profile_caps (GstH265Parse * h265parse, GstH265SPS * sps, GstH265Profile profile)
+ {
+   GstCaps *caps = NULL;
+   gint i;
+@@ -1960,7 +2071,12 @@ get_compatible_profile_caps (GstH265SPS * sps, GstH265Profile profile)
+   if (profiles) {
+     GValue value = G_VALUE_INIT;
+     const gchar *profile_str;
+-    caps = gst_caps_new_empty_simple ("video/x-h265");
++    if (h265parse->encryption_mode == GST_H265_PARSE_ENCRYPTION_CBCS)
++      caps = gst_caps_new_simple ("application/x-aes128-cbc",
++                "original-media-type", G_TYPE_STRING, "video/x-h265",
++                NULL);
++    else
++      caps = gst_caps_new_empty_simple ("video/x-h265");
+ 
+     for (i = GST_H265_PROFILE_MAIN; i < GST_H265_PROFILE_MAX; i++) {
+       if ((profiles & profile_to_flag (i)) == profile_to_flag (i)) {
+@@ -2014,7 +2130,11 @@ ensure_caps_profile (GstH265Parse * h265parse, GstCaps * caps, GstH265SPS * sps,
+ 
+   peer_caps = gst_pad_get_current_caps (GST_BASE_PARSE_SRC_PAD (h265parse));
+   if (!peer_caps || !gst_caps_can_intersect (caps, peer_caps)) {
+-    GstCaps *filter_caps = gst_caps_new_empty_simple ("video/x-h265");
++    GstCaps *filter_caps;
++    if (h265parse->encryption_mode == GST_H265_PARSE_ENCRYPTION_CBCS)
++      filter_caps = gst_caps_new_empty_simple ("application/x-aes128-cbc");
++    else
++      filter_caps = gst_caps_new_empty_simple ("video/x-h265");
+ 
+     if (peer_caps)
+       gst_caps_unref (peer_caps);
+@@ -2028,7 +2148,7 @@ ensure_caps_profile (GstH265Parse * h265parse, GstCaps * caps, GstH265SPS * sps,
+   if (peer_caps && !gst_caps_can_intersect (caps, peer_caps)) {
+     GstStructure *structure;
+ 
+-    compat_caps = get_compatible_profile_caps (sps, profile);
++    compat_caps = get_compatible_profile_caps (h265parse, sps, profile);
+     if (compat_caps != NULL) {
+       GstCaps *res_caps = NULL;
+ 
+@@ -3068,6 +3188,9 @@ gst_h265_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+ 
+   str = gst_caps_get_structure (caps, 0);
+ 
++  if (gst_structure_has_name(str, "application/x-aes128-cbc"))
++    h265parse->encryption_mode = GST_H265_PARSE_ENCRYPTION_CBCS;
++
+   /* accept upstream info if provided */
+   gst_structure_get_int (str, "width", &h265parse->width);
+   gst_structure_get_int (str, "height", &h265parse->height);
+@@ -3160,7 +3283,13 @@ gst_h265_parse_set_caps (GstBaseParse * parse, GstCaps * caps)
+     GstCaps *in_caps;
+ 
+     /* prefer input type determined above */
+-    in_caps = gst_caps_new_simple ("video/x-h265",
++    if (h265parse->encryption_mode == GST_H265_PARSE_ENCRYPTION_CBCS)
++      in_caps = gst_caps_new_simple ("application/x-aes128-cbc",
++                    "original-media-type", G_TYPE_STRING, "video/x-h265",
++                    NULL);
++    else
++      in_caps = gst_caps_new_empty_simple ("video/x-h265");
++    gst_caps_set_simple (in_caps,
+         "parsed", G_TYPE_BOOLEAN, TRUE,
+         "stream-format", G_TYPE_STRING,
+         gst_h265_parse_get_string (h265parse, TRUE, format),
+diff --git a/gst/videoparsers/gsth265parse.h b/gst/videoparsers/gsth265parse.h
+index e49d22c..fe96c45 100644
+--- a/gst/videoparsers/gsth265parse.h
++++ b/gst/videoparsers/gsth265parse.h
+@@ -26,6 +26,7 @@
+ #include <gst/codecparsers/gsth265parser.h>
+ #include <gst/video/video.h>
+ #include "gstvideoparseutils.h"
++#include <gst/base/gstbytewriter.h>
+ 
+ G_BEGIN_DECLS
+ 
+@@ -130,6 +131,10 @@ struct _GstH265Parse
+ 
+   /* For forward predicted trickmode */
+   gboolean discard_bidirectional;
++
++  /* For HW DRM */
++  GstByteWriter *subsample_writer;
++  guint encryption_mode;
+ };
+ 
+ struct _GstH265ParseClass
