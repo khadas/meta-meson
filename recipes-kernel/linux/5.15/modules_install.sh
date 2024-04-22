@@ -49,7 +49,7 @@ function regenerate_modules_sequence_list()
 }
 
 adjust_sequence_modules_loading() {
-    chips=$(echo ${MACHINE} | cut -d'-' -f1 | cut -c6-)
+    chips=${MACHINE}
     if [ $chips = "g12b" ] || [ $chips = "sm1" ];then
         chips=g12a
     fi
