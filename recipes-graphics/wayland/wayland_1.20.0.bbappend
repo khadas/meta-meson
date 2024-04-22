@@ -6,6 +6,7 @@ SRC_URI += " \
     file://0005-10.0.0-improve-priority-of-main-thread.patch \
     file://0006-add-crtc-index-event.patch \
     file://0007-remove-abort-action-when-listener-function-is-NULL.patch \
+    file://0008-add-keep-last-frame-request.patch \
     "
 
 do_install:append() {

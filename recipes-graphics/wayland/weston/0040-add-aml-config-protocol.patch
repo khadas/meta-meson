@@ -1,0 +1,219 @@
+From 145a4ea7b1b7e4ddfbffb29bf4c5e4255d0a5883 Mon Sep 17 00:00:00 2001
+From: "limin.tian" <limin.tian@amlogic.com>
+Date: Tue, 2 Apr 2024 07:35:57 +0000
+Subject: [PATCH 2/2] add aml config protocol
+
+---
+ libweston/aml_config.c         | 80 ++++++++++++++++++++++++++++++++++
+ libweston/compositor.c         |  4 ++
+ libweston/libweston-internal.h |  3 ++
+ libweston/meson.build          |  3 ++
+ protocol/aml-config.xml        | 46 +++++++++++++++++++
+ protocol/meson.build           |  1 +
+ 6 files changed, 137 insertions(+)
+ create mode 100755 libweston/aml_config.c
+ create mode 100755 protocol/aml-config.xml
+
+diff --git a/libweston/aml_config.c b/libweston/aml_config.c
+new file mode 100755
+index 0000000..b760a13
+--- /dev/null
++++ b/libweston/aml_config.c
+@@ -0,0 +1,80 @@
++/*
++ * Copyright © 2019 Collabora, Ltd.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining
++ * a copy of this software and associated documentation files (the
++ * "Software"), to deal in the Software without restriction, including
++ * without limitation the rights to use, copy, modify, merge, publish,
++ * distribute, sublicense, and/or sell copies of the Software, and to
++ * permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice (including the
++ * next paragraph) shall be included in all copies or substantial
++ * portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
++ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
++ * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
++ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
++ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
++ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++ * SOFTWARE.
++ */
++
++#include "config.h"
++
++#include <assert.h>
++#include <stdint.h>
++#include <unistd.h>
++#include <sys/types.h>
++
++#include <libweston/libweston.h>
++#include "aml-config-server-protocol.h"
++#include "libweston-internal.h"
++
++static void
++aml_config_destroy_resource(struct wl_client *client,
++		       struct wl_resource *global_resource)
++{
++	wl_resource_destroy(global_resource);
++}
++
++static const struct aml_config_interface
++	aml_config_interface_v1 = {
++		aml_config_destroy_resource
++};
++
++static void
++bind_aml_config(struct wl_client *client, void *data,
++		    uint32_t version, uint32_t id)
++{
++	struct wl_resource *resource;
++	struct weston_compositor *ec = data;
++
++	resource = wl_resource_create(client,
++			&aml_config_interface,
++			version, id);
++	if (!resource) {
++		wl_client_post_no_memory(client);
++		return;
++	}
++
++	wl_resource_set_implementation(resource,
++				       &aml_config_interface_v1,
++				       ec, NULL);
++	const char* aml_config_list = "set_video_plane, keep_last_frame";
++	aml_config_send_aml_config_list(resource, aml_config_list);
++}
++
++WL_EXPORT int
++aml_config_setup(struct weston_compositor *ec)
++{
++	if (!wl_global_create(ec->wl_display,
++			      &aml_config_interface, 1,
++			      ec, bind_aml_config))
++		return -1;
++
++	return 0;
++}
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 20db0a7..78cdb2c 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -8652,6 +8652,10 @@ weston_compositor_create(struct wl_display *display,
+ 	if (weston_input_init(ec) != 0)
+ 		goto fail;
+ 
++	if (aml_config_setup(ec) !=0 ) {
++		weston_log("\n aml config fail\n");
++	}
++	
+ 	wl_list_init(&ec->view_list);
+ 	wl_list_init(&ec->plane_list);
+ 	wl_list_init(&ec->layer_list);
+diff --git a/libweston/libweston-internal.h b/libweston/libweston-internal.h
+index 7c30706..38b1ed0 100644
+--- a/libweston/libweston-internal.h
++++ b/libweston/libweston-internal.h
+@@ -155,6 +155,9 @@ weston_input_init(struct weston_compositor *compositor);
+ 
+ /* weston_output */
+ 
++int
++aml_config_setup(struct weston_compositor *ec);
++
+ void
+ weston_output_disable_planes_incr(struct weston_output *output);
+ 
+diff --git a/libweston/meson.build b/libweston/meson.build
+index 56fe2e2..b6a6e4c 100644
+--- a/libweston/meson.build
++++ b/libweston/meson.build
+@@ -36,6 +36,7 @@ srcs_libweston = [
+ 	'weston-log.c',
+ 	'weston-direct-display.c',
+ 	'zoom.c',
++	'aml_config.c',
+ 	linux_dmabuf_unstable_v1_protocol_c,
+ 	linux_dmabuf_unstable_v1_server_protocol_h,
+ 	linux_explicit_synchronization_unstable_v1_protocol_c,
+@@ -68,6 +69,8 @@ srcs_libweston = [
+ 	weston_debug_server_protocol_h,
+ 	weston_direct_display_protocol_c,
+ 	weston_direct_display_server_protocol_h,
++	aml_config_protocol_c,
++	aml_config_server_protocol_h,
+ ]
+ 
+ if get_option('renderer-gl')
+diff --git a/protocol/aml-config.xml b/protocol/aml-config.xml
+new file mode 100755
+index 0000000..c2cd2cb
+--- /dev/null
++++ b/protocol/aml-config.xml
+@@ -0,0 +1,46 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<protocol name="aml_config">
++
++  <copyright>
++    Copyright © 2019 Collabora Ltd.
++
++    Permission is hereby granted, free of charge, to any person obtaining a
++    copy of this software and associated documentation files (the "Software"),
++    to deal in the Software without restriction, including without limitation
++    the rights to use, copy, modify, merge, publish, distribute, sublicense,
++    and/or sell copies of the Software, and to permit persons to whom the
++    Software is furnished to do so, subject to the following conditions:
++
++    The above copyright notice and this permission notice (including the next
++    paragraph) shall be included in all copies or substantial portions of the
++    Software.
++
++    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
++    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++    DEALINGS IN THE SOFTWARE.
++  </copyright>
++
++  <interface name="aml_config" version="1">
++    <description summary="aml config for client">
++      Weston extension to inform the clients of the new interface added by amlogic.
++    </description>
++	
++    <request name="destroy" type="destructor">
++      <description summary="destroy factory object">
++        Destroys the factory object, but does not affect any other objects.
++      </description>
++    </request>
++	
++    <event name="aml_config_list">
++      <description summary="aml config list">
++	The aml_config_list event inform the clients of the new interface add by amlogic
++      </description>
++      <arg name="list" type="string"
++	   summary="the new interface added by amlogic"/>
++    </event>
++  </interface>
++</protocol>
+diff --git a/protocol/meson.build b/protocol/meson.build
+index 7d869da..d6f48de 100644
+--- a/protocol/meson.build
++++ b/protocol/meson.build
+@@ -34,6 +34,7 @@ generated_protocols = [
+ 	[ 'weston-test', 'internal' ],
+ 	[ 'weston-touch-calibration', 'internal' ],
+ 	[ 'weston-direct-display', 'internal' ],
++	[ 'aml-config', 'internal' ],
+ 	[ 'xdg-output', 'v1' ],
+ 	[ 'xdg-shell', 'v6' ],
+ 	[ 'xdg-shell', 'stable' ],
+-- 
+2.25.1
+

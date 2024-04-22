@@ -1,0 +1,20 @@
+diff --git a/protocol/wayland.xml b/protocol/wayland.xml
+index d281437..377642e 100755
+--- a/protocol/wayland.xml
++++ b/protocol/wayland.xml
+@@ -1766,6 +1766,15 @@
+       <arg name="pts_hi" type="uint" summary="high 32 bits of frame pts"/>
+       <arg name="pts_lo" type="uint" summary="low 32 bits of frame pts"/>
+     </request>
++    <request name="keep_last_frame">
++      <description summary="keep last frame or not">
++    This request sets a value for current surface.
++    The value is uesd to inform server to keep the last frame or not for 
++    current surface when the video is over. The value will not change until
++    next different value is committed.
++      </description>
++      <arg name="keep_last_frame" type="uint" summary="keep last frame or not"/>
++    </request>
+   </interface>
+ 
+   <interface name="wl_seat" version="7">
