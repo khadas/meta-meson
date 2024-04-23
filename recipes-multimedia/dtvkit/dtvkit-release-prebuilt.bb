@@ -67,8 +67,10 @@ do_install () {
     if ${@bb.utils.contains("DISTRO_FEATURES", "dtvkit-src", "false", "true", d)}; then
         install -D -m 0644 ${S}/${ARM_TARGET}/*.so ${D}/${libdir}
         if ${@bb.utils.contains("DISTRO_FEATURES", "disable-binderfs", "false", "true", d)}; then
-            install -D -m 0755 ${S}/${ARM_TARGET}/dtvkitserver ${D}/${bindir}
             install -D -m 0755 ${S}/${ARM_TARGET}/CLIENT ${D}/${bindir}
+            if [ -f ${S}/${ARM_TARGET}/dtvkitserver ]; then
+                install -D -m 0755 ${S}/${ARM_TARGET}/dtvkitserver ${D}/${bindir}
+            fi
         fi
     fi
     install -d ${D}/${systemd_unitdir}/system
