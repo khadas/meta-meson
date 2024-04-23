@@ -55,6 +55,7 @@ SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'nfs-boot', ' file://n
 
 # Irdeto IMW
 SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-imw', ' file://s1a_irdeto_imw_overlay.dtsi', '', d)}"
+SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'videocapture', ' file://s1a_videocapture.dtsi', '', d)}"
 
 #For common patches
 KDIR = "aml-5.15"
@@ -71,6 +72,7 @@ SRC_URI:append:sm1 = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file:
 
 # add usbci
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'usbci', ' file://usbci.cfg', '', d)}"
+SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'videocapture', ' file://s1a_videocapture.cfg', '', d)}"
 
 LINUX_VERSION ?= "5.15.137"
 LINUX_VERSION:s7 = "5.15.137"

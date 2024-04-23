@@ -1,0 +1,23 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+        target-path = "/reserved-memory/heap-gfx";
+        __overlay__ {
+            alloc-ranges = <0x03800000 0x1400000>;
+        };
+    };
+    fragment@1 {
+        target-path = "/reserved-memory/linux,codec_mm_cma";
+        __overlay__ {
+            size = <0x08400000>;
+        };
+    };
+    fragment@2 {
+        target-path = "/amlvideo2_0";
+        __overlay__ {
+            status = "okay";
+        };
+    };
+};

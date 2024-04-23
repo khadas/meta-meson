@@ -24,6 +24,12 @@ do_install() {
     if ${@bb.utils.contains("DISTRO_FEATURES", "zapper", "true", "false", d)}
     then
         cat << EOF >> ${D}${sysconfdir}/profile.d/property_set.sh
+
+        if ${@bb.utils.contains("DISTRO_FEATURES", "videocapture", "true", "false", d)}
+        then
+            echo 1 > /sys/module/decoder_common/parameters/mediasync_add_amlvideo2
+        fi
+
 ## adjust dmx filter number from 64 to 16 to reduce memory use
 echo adjust 64 16 > /sys/class/dmx/cache_status
 #reduce pes buf size for subtitle for low memory requirement
