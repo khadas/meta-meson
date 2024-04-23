@@ -111,6 +111,8 @@ SOC:s7 = "s7"
 SOC:t3 = "t3"
 SOC:t3x = "t3x"
 SOC:t5m = "t5m"
+SOC:t5w = "t5w"
+SOC:t5d = "t5d"
 SOC:t7 = "t7"
 SOC:s1a = "s1a"
 
