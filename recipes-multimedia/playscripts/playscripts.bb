@@ -41,6 +41,9 @@ echo 2 > /sys/module/amvdec_mh264/parameters/reorder_dpb_size_margin
 echo 1 > /sys/module/amvdec_mh264/parameters/save_buffer
 echo 0x1 > /sys/module/amvdec_h265/parameters/dynamic_buf_num_margin
 
+#disable media_sync slow_sync function
+echo 0 > /sys/module/media_sync/parameters/media_sync_start_slow_sync_enable
+
 echo codec_mm.scatter.keep_size_PAGE=0 > /sys/class/codec_mm/config
 
 echo schedutil > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor
