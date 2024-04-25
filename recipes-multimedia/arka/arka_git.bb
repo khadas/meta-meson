@@ -21,7 +21,7 @@ SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
 DEPENDS = " dtvkit-release-prebuilt jsoncpp aml-audio-service udev aml-mp-sdk aml-ubootenv"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
-    bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype', d), 'meson-display aml-hdmicec jpeg', d)}"
+    bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston freetype', 'westeros freetype curl', d), 'meson-display aml-hdmicec jpeg', d)}"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi', 'aml-hdi freetype', ' directfb ', d)}"
 
 RDEPENDS:${PN} = "dtvkit-release-prebuilt aml-audio-service aml-ubootenv"
@@ -32,7 +32,7 @@ EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-audio-server'
 EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-project-sun', '-DARKA_PROJECT=sunepg', \
     bb.utils.contains('DISTRO_FEATURES', 'arka-project-aml', '-DARKA_PROJECT=amlepg', '-DARKA_PROJECT=aslepg', d), d)}"
 EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', \
-    bb.utils.contains('DISTRO_FEATURES', 'weston', '-DUSE_EGL=ON -DUSE_WESTON=ON', '-DUSE_EGL=ON', d), '', d)}"
+    bb.utils.contains('DISTRO_FEATURES', 'weston', '-DUSE_EGL=ON -DUSE_WESTON=ON', '-DUSE_EGL=ON -DUSE_AML_MP=ON', d), '', d)}"
 EXTRA_OECMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'arka-hdi',  '-DUSE_AML_HDI=ON',  ' ', d)}"
 
 INCLUDE_DIRS = " \
@@ -70,6 +70,14 @@ do_install:append() {
     install -d ${D}/usr/share/zoneinfo/Asia/
     install -m 0755 ${WORKDIR}/Kolkata ${D}/usr/share/zoneinfo/Asia
    fi
+
+   if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
+      install -d ${D}/etc/systemd/system.conf.d
+      cat << EOF > ${D}/etc/systemd/system.conf.d/arka.conf
+[Manager]
+DefaultEnvironment=vendor_amlmp_disable_subtitle=1 iptv_streamtype=0 TSPLAYER_PIPELINE=1 TSPLAYER_LOW_MEM=1 TSPLAYER_SUBTILTEFLAG=2
+EOF
+   fi
 }
 
 SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'arka-launcher', 'arka.service', '', d)}"
@@ -77,5 +85,6 @@ SYSTEMD_SERVICE:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'arka-launcher'
 FILES:${PN} += "${bindir} ${sysconfdir} /usr/share/fonts/ /usr/share/Arka/png /usr/share/Arka/jpg ${systemd_unitdir}/system/"
 FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'use-egl', '${libdir}', '', d)}"
 FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'zapper', '/usr/share/zoneinfo/Asia', '', d)}"
+FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '/etc/systemd/system.conf.d/* ', ' ', d)}"
 FILES:${PN}-dev = ""
 INSANE_SKIP:${PN} = "installed-vs-shipped"
