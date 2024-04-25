@@ -5,7 +5,7 @@ inherit systemd pkgconfig
 
 DEPENDS += " lvglui virtual/egl aml-platformserver aml-tvserver rapidjson aml-appmanager aml-system-server"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 S = "${WORKDIR}/git"
 
@@ -17,14 +17,17 @@ do_compile(){
 }
 
 do_install() {
-    install -d ${D}${bindir}
+    install -d ${D}${bindir} ${D}${sysconfdir}/dbus-1/system.d/
     install -m 0755 ${S}/system-app ${D}${bindir}
+    install -m 0755 ${S}/OOBE ${D}${bindir}
     install -d ${D}/usr/share/pixmaps/sysapp/
     install -d ${D}/usr/share/pixmaps/sysapp/bt-help-raw-gif
     install -d ${D}/usr/share/pixmaps/sysapp/network-help-raw-gif
     install -D -m 0644 ${S}/image/* ${D}/usr/share/pixmaps/sysapp/
     install -D -m 0644 ${S}/bt-help-raw-gif/* ${D}/usr/share/pixmaps/sysapp/bt-help-raw-gif/
+    install -D -m 0644 ${S}/oobe_src/tos ${D}/usr/share/pixmaps/sysapp/
     install -D -m 0644 ${S}/network-help-raw-gif/* ${D}/usr/share/pixmaps/sysapp/network-help-raw-gif/
+    install -D -m 0644 ${S}/amlogic.yocto.systemapp.conf ${D}${sysconfdir}/dbus-1/system.d/
 }
 
 do_makeclean() {
@@ -32,7 +35,7 @@ do_makeclean() {
 }
 
 addtask do_makeclean before do_clean
-FILES:${PN} = " /usr/bin/* "
+FILES:${PN} = " /usr/bin/* ${sysconfdir}/dbus-1/system.d/* "
 FILES:${PN} += " /usr/share/pixmaps/sysapp/* "
 FILES:${PN} += " /usr/share/pixmaps/sysapp/bt-help-raw-gif/* "
 FILES:${PN} += " /usr/share/pixmaps/sysapp/network-help-raw-gif/* "

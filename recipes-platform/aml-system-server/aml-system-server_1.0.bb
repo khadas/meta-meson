@@ -7,7 +7,7 @@ DEPENDS += " aml-platformserver aml-tvserver aml-pqserver curl "
 DEPENDS += "aml-dbus"
 
 SRC_URI += "file://system-server.service"
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 PV = "${SRCPV}"
 S = "${WORKDIR}/git"
 
@@ -19,10 +19,11 @@ do_compile(){
 }
 
 do_install(){
-    install -d ${D}${bindir} ${D}${sysconfdir}/dbus-1/system.d/
+    install -d ${D}${bindir} ${D}${includedir} ${D}${sysconfdir}/dbus-1/system.d/
     install -m 0755 ${S}/system-server ${D}${bindir}
     install -D -m 0644 ${WORKDIR}/system-server.service ${D}${systemd_unitdir}/system/system-server.service
     install -D -m 0644 ${S}/amlogic.yocto.systemserver.conf ${D}${sysconfdir}/dbus-1/system.d/
+    install -m 0644 ${S}/SystemServerDbus.h ${D}${includedir}
     if ${@bb.utils.contains("DISTRO_FEATURES", "system-user", "true", "false", d)}
     then
         sed -i '/^\[Service\]/ a User=system' ${D}${systemd_unitdir}/system/system-server.service
@@ -34,6 +35,6 @@ do_makeclean() {
 }
 
 addtask do_makeclean before do_clean
-FILES:${PN} = " ${bindir}/* ${sysconfdir}/dbus-1/system.d/* "
+FILES:${PN} = " ${bindir}/* ${sysconfdir}/dbus-1/system.d/* /usr/include/*"
 SYSTEMD_SERVICE:${PN} = "system-server.service "
 SYSTEMD_AUTO_ENABLE = "enable"
