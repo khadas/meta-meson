@@ -1,0 +1,18 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+        target-path = "/reserved-memory/linux,codec_mm_reserved";
+        __overlay__ {
+            size = <0x3700000>;
+            reg = <0x01b00000 0x3700000>;
+        };
+    };
+    fragment@1 {
+        target-path = "/dvb-demux";
+        __overlay__ {
+            dmxdev_num = <0x2>;
+        };
+    };
+};

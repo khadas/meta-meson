@@ -9,7 +9,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/5.15:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/aml_dtoverlay:"
 
 FILESEXTRAPATHS:prepend:bf201 := "${THISDIR}/5.15/bf201:"
-FILESEXTRAPATHS:prepend:bg201 := "${THISDIR}/5.15/bg201:"
+FILESEXTRAPATHS:prepend:bg201 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-128m', '${THISDIR}/5.15/bg201_128m:',  '${THISDIR}/5.15/bg201:', d)}"
 #FILESEXTRAPATHS:prepend:ap222-zapper := "${THISDIR}/5.15/bg201:"
 
 KBRANCH = "amlogic-5.15-dev"
@@ -56,6 +56,7 @@ SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'nfs-boot', ' file://n
 # Irdeto IMW
 SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-imw', ' file://s1a_irdeto_imw_overlay.dtsi', '', d)}"
 SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'videocapture', ' file://s1a_videocapture.dtsi', '', d)}"
+SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-128m-sei', ' file://s1a_128m_sei_overlay.dtsi', '', d)}"
 
 #For common patches
 KDIR = "aml-5.15"
