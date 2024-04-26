@@ -1,0 +1,25 @@
+From 1fd822a0f79800026b8901bb809d29e3400a14e1 Mon Sep 17 00:00:00 2001
+From: "Jiacai.Liu" <jiacai.liu@amlogic.com>
+Date: Fri, 26 Apr 2024 16:30:26 +0800
+Subject: [PATCH] SWPL-115704 solution offest is an invalid value after seek0 [1/1]
+
+---
+ gst/mpegtsdemux/mpegtspacketizer.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gst/mpegtsdemux/mpegtspacketizer.c b/gst/mpegtsdemux/mpegtspacketizer.c
+index bbd9e80..7cd7193 100644
+--- a/gst/mpegtsdemux/mpegtspacketizer.c
++++ b/gst/mpegtsdemux/mpegtspacketizer.c
+@@ -2513,7 +2513,7 @@ calculate_points:
+       lastpcr, lastoffset);
+ 
+   res = firstoffset;
+-  if (lastpcr != firstpcr)
++  if (lastpcr != firstpcr  && querypcr > firstpcr)
+     res += gst_util_uint64_scale (querypcr - firstpcr,
+         lastoffset - firstoffset, lastpcr - firstpcr);
+ 
+-- 
+2.25.1
+

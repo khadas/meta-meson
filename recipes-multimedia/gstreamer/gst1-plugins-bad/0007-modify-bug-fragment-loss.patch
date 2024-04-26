@@ -1,0 +1,26 @@
+From 0407c541a7c7ea445353108429f1f0eaf6828873 Mon Sep 17 00:00:00 2001
+From: "Jiacai.Liu" <jiacai.liu@amlogic.com>
+Date: Fri, 26 Apr 2024 16:37:08 +0800
+Subject: [PATCH] modify bug fragment loss
+
+---
+ ext/hls/gsthlsdemux.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/ext/hls/gsthlsdemux.c b/ext/hls/gsthlsdemux.c
+index 93db317..15e3d08 100644
+--- a/ext/hls/gsthlsdemux.c
++++ b/ext/hls/gsthlsdemux.c
+@@ -1235,7 +1235,8 @@ gst_hls_demux_advance_fragment (GstAdaptiveDemuxStream * stream)
+ 
+   m3u8 = gst_hls_demux_stream_get_m3u8 (hlsdemux_stream);
+ 
+-  gst_m3u8_advance_fragment (m3u8, stream->demux->segment.rate > 0);
++  if(!GST_ADAPTIVE_DEMUX_STREAM_NEED_HEADER (stream))
++    gst_m3u8_advance_fragment (m3u8, stream->demux->segment.rate > 0);
+   hlsdemux_stream->reset_pts = FALSE;
+ 
+   return GST_FLOW_OK;
+-- 
+2.25.1
+
