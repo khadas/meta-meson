@@ -1,1 +1,2 @@
 KERNEL=="mediasync", GROUP="video", MODE="660"
+KERNEL=="amresource_mgr", GROUP="video", MODE="660"
