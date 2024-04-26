@@ -10,16 +10,16 @@ SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'westeros', 'file://appmgr-w
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRCREV ?= "${AUTOREV}"
+#SRCREV ?= "${AUTOREV}"
 
 S = "${WORKDIR}/git"
 do_configure[noexec] = "1"
 BUILDDIR = "${WORKDIR}/build"
 
-EXTRA_OEMAKE="BUILDDIR=${BUILDDIR}"
+EXTRA_OEMAKE="BUILDDIR=${BUILDDIR} STAGING_DIR_TARGET=${STAGING_DIR_TARGET}"
 
 
-DEPENDS += "wayland wayland-protocols aml-dbus readline virtual/egl"
+DEPENDS += "wayland wayland-protocols aml-dbus readline virtual/egl aml-platformserver"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'westeros', 'westeros-simpleshell westeros', '', d)}"
 DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston', '', d)}"
 
@@ -56,11 +56,16 @@ do_install() {
     install -m 0644 ${WORKDIR}/appmgr.service ${D}${systemd_unitdir}/system/
     install -d ${D}${sysconfdir}
     if ${@bb.utils.contains('DISTRO_FEATURES', 'westeros', 'true', 'false', d)};then
+      sed -i '/compositor.service/ s/compositor/westeros/g' ${D}${systemd_unitdir}/system/appmgr.service
       install -m 0644 ${WORKDIR}/appmgr-westeros.env ${D}${sysconfdir}/appmgr.env
     fi
     if ${@bb.utils.contains('DISTRO_FEATURES', 'weston', 'true', 'false', d)};then
-      sed -i '/westeros.service/ s/westeros/weston/g' ${D}${systemd_unitdir}/system/appmgr.service
+      sed -i '/compositor.service/ s/compositor/weston/g' ${D}${systemd_unitdir}/system/appmgr.service
       install -m 0644 ${WORKDIR}/appmgr-weston.env ${D}${sysconfdir}/appmgr.env
+    fi
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'UI_720P', 'true', 'false', d)};then
+      sed -i '/WESTEROS_GL_GRAPHICS_MAX_SIZE/d' ${D}${sysconfdir}/appmgr.env
+      sed -i '$aWESTEROS_GL_GRAPHICS_MAX_SIZE=1280x720' ${D}${sysconfdir}/appmgr.env
     fi
     cp -af ${WORKDIR}/build/libessos.so ${D}${libdir}
     cp -af ${WORKDIR}/build/libessosrmgr.so ${D}${libdir}
@@ -69,13 +74,6 @@ do_install() {
     cp -af ${S}/app_list.txt ${D}/${sysconfdir}
     install -d ${D}/etc/dbus-1/system.d
     install -m 0644 ${S}/amlogic.yocto.appmgr.conf ${D}/etc/dbus-1/system.d/
-}
-
-do_install:append:aq2432() {
-    if ${@bb.utils.contains('DISTRO_FEATURES', 'westeros', 'true', 'false', d)};then
-      sed -i '/WESTEROS_GL_GRAPHICS_MAX_SIZE/d' ${D}${sysconfdir}/appmgr.env
-      sed -i '$aWESTEROS_GL_GRAPHICS_MAX_SIZE=1280x720' ${D}${sysconfdir}/appmgr.env
-    fi
 }
 
 SYSTEMD_SERVICE:${PN} = "appmgr.service"

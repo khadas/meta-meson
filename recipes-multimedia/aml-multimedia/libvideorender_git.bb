@@ -6,6 +6,7 @@ do_configure[noexec] = "1"
 inherit autotools pkgconfig
 DEPENDS += "liblog libdrm-meson wayland wayland-protocols wayland-native"
 DEPENDS +="${@bb.utils.contains('DISTRO_FEATURES', 'wayland', bb.utils.contains('DISTRO_FEATURES', 'weston', '', 'westeros', d), ' ', d)}"
+DEPENDS +="${@bb.utils.contains('DISTRO_FEATURES', 'appmanager', 'aml-appmanager', '', d)}"
 RDEPENDS:${PN} += "libdrm-meson liblog"
 #SRC_URI = "git://${AML_GIT_ROOT}/linux/multimedia/libvideorender.git;protocol=${AML_GIT_PROTOCOL};branch=master"
 

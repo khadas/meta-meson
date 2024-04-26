@@ -1,6 +1,6 @@
 [Unit]
 Description=Application Manager
-After=basic.target aml_platformserver.service westeros.service
+After=basic.target aml_platformserver.service compositor.service
 
 [Service]
 Type=simple

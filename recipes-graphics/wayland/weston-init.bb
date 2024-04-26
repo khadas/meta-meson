@@ -10,14 +10,17 @@ SRC_URI = "file://init \
 S = "${WORKDIR}"
 
 do_install() {
-	install -Dm755 ${WORKDIR}/init ${D}/${sysconfdir}/init.d/weston
-	install -Dm644 ${WORKDIR}/aml-weston.ini ${D}/${sysconfdir}/
-	install -Dm0644 ${WORKDIR}/weston.service ${D}${systemd_system_unitdir}/weston.service
+  install -Dm755 ${WORKDIR}/init ${D}/${sysconfdir}/init.d/weston
+  install -Dm644 ${WORKDIR}/aml-weston.ini ${D}/${sysconfdir}/
+  install -Dm0644 ${WORKDIR}/weston.service ${D}${systemd_system_unitdir}/weston.service
 
-	# Install weston-start script
-	install -Dm755 ${WORKDIR}/weston-start ${D}${bindir}/weston-start
-	sed -i 's,@DATADIR@,${datadir},g' ${D}${bindir}/weston-start
-	sed -i 's,@LOCALSTATEDIR@,${localstatedir},g' ${D}${bindir}/weston-start
+# Install weston-start script
+  install -Dm755 ${WORKDIR}/weston-start ${D}${bindir}/weston-start
+  sed -i 's,@DATADIR@,${datadir},g' ${D}${bindir}/weston-start
+  sed -i 's,@LOCALSTATEDIR@,${localstatedir},g' ${D}${bindir}/weston-start
+  if ${@bb.utils.contains('DISTRO_FEATURES', 'UI_720P', 'true', 'false', d)};then
+    sed -i '/^ui-size/ s/.*/ui-size=1280x720/g' ${D}${sysconfdir}/aml-weston.ini
+  fi  
 }
 
 inherit allarch update-rc.d features_check systemd
