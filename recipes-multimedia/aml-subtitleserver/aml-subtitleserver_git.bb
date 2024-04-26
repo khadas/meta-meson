@@ -7,7 +7,10 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 inherit autotools cmake pkgconfig systemd update-rc.d
 
 INITSCRIPT_NAME = "subtitleserver"
-INITSCRIPT_PARAMS = "start 40 2 3 4 5 . stop 80 0 6 1 ."
+INITSCRIPT_PARAMS = " \
+ ${@bb.utils.contains('DISTRO_FEATURES', 'disable-subtitle', \
+    'disable', 'start 40 2 3 4 5 . stop 80 0 6 1 .', d)}\
+"
 
 DEPENDS = " libbinder liblog aml-zvbi libtinyxml2 cairo libpng aml-mediahal-sdk"
 
