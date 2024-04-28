@@ -4,6 +4,7 @@ DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', ' 
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', ' aml-swupdate-native', '', d)}"
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', ' aml-linux-scs-native', '', d)}"
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', ' aml-linux-sb-native', '', d)}"
+DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', ' casecure-image', '', d)}"
 
 SOC_FAMILY = "TBD"
 SOC_FAMILY:sc2= "sc2"
@@ -95,6 +96,9 @@ do_aml_pack() {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', 'true', 'false', d)}; then
         sed -i '/rootfs/a\file="caverify.img"            main_type="PARTITION"       sub_type="caverify"' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
     fi
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', 'true', 'false', d)}; then
+        sed -i '/rootfs/a\file="casecure.img"            main_type="PARTITION"       sub_type="casecure"' ${DEPLOY_DIR_IMAGE}/${PACK_CONF}
+    fi
 
     ${DEPLOY_DIR_IMAGE}/res_packer -r ${DEPLOY_DIR_IMAGE}/logo_img_files ${DEPLOY_DIR_IMAGE}/logo.img
 
@@ -108,6 +112,11 @@ do_aml_pack() {
             cp ${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/rootfs.img
             if [ -f ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ];then
                 cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/vendor.img
+            fi
+            if ${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', 'true', 'false', d)}; then
+                if [ -f ${DEPLOY_DIR_IMAGE}/casecure-image-${MACHINE}.${ROOTFS_TYPE} ];then
+                    cp ${DEPLOY_DIR_IMAGE}/casecure-image-${MACHINE}.${ROOTFS_TYPE} ${DEPLOY_DIR_IMAGE}/casecure.img
+                fi
             fi
         fi
     else
@@ -254,5 +263,6 @@ do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', ' vbmeta-image:do_compile', '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', ' aml-gpt-make:do_install', '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', ' caverify-image:do_install ', '', d)}"
+do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', ' casecure-image:do_image_complete ', '', d)}"
 addtask aml_pack after do_image_complete before do_build
 do_aml_pack[nostamp] = "1"
