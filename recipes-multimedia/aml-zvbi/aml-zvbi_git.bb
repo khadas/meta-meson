@@ -17,17 +17,17 @@ PV = "${SRCPV}"
 S="${WORKDIR}/git"
 ARCH_IS_64:aarch64 = "y"
 ARCH_IS_64:armv7a = "n"
-EXTRA_OEMAKE="ARCH_IS_64=${ARCH_IS_64}"
+EXTRA_OEMAKE=" OUT_DIR=${B} ARCH_IS_64=${ARCH_IS_64}"
 S="${WORKDIR}/git"
 
 do_compile() {
     cd ${S}
-    oe_runmake  all
+    oe_runmake all
 }
 do_install() {
    install -d ${D}${libdir}
    install -d ${D}${includedir}
-    install -m 0644 ${S}/libzvbi.so ${D}${libdir}
+    install -m 0644 ${B}/libzvbi.so ${D}${libdir}
     install -m 0644 ${S}/src/libzvbi.h ${D}${includedir}
     install -m 0644 ${S}/src/dtvcc.h ${D}${includedir}
 }
