@@ -34,11 +34,11 @@ do_compile(){
 do_install(){
     install -d ${D}${libdir}
     install -d ${D}${includedir}
-    install -m 0644 ${B}/liblog*.so* ${D}${libdir}
+    cp -ra ${B}/liblog*.so* ${D}${libdir}
     cp -ra ${S}/include/* ${D}${includedir}
     if ${@bb.utils.contains('DISTRO_FEATURES', 'disable-logcat', "true", "false", d)}; then
         install -d ${D}${sysconfdir}
-	install -m 755 ${WORKDIR}/logcat.conf ${D}${sysconfdir}
+        install -m 755 ${WORKDIR}/logcat.conf ${D}${sysconfdir}
     fi
 }
 
@@ -47,4 +47,4 @@ FILES:${PN} += "${@bb.utils.contains('DISTRO_FEATURES', 'disable-logcat', '${sys
 FILES:${PN}-dev = "${includedir}/* "
 
 INSANE_SKIP:${PN}-dev = "dev-so"
-INSANE_SKIP:${PN} = "ldflags"
+INSANE_SKIP:${PN} = "dev-so ldflags"
