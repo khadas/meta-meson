@@ -12,8 +12,8 @@ EXTRA_OEMAKE += "LIBJPEG_STAGING_DIR=${D} CROSS=${TARGET_PREFIX} TARGET_DIR=${D}
 
 do_compile () {
     cd ${S}
-    oe_runmake ${EXTRA_OEMAKE} -C ${S}/jpeg_enc/
-    oe_runmake ${EXTRA_OEMAKE} -C ${S}/
+    oe_runmake ${EXTRA_OEMAKE} "OUT_DIR=${B}/jpeg_enc" -C ${S}/jpeg_enc/
+    oe_runmake ${EXTRA_OEMAKE} "OUT_DIR=${B}" -C ${S}/
 }
 
 do_install () {
@@ -21,8 +21,8 @@ do_install () {
     install -d ${D}${libdir}
     install -d ${D}${bindir}
     install -m 0644 -D ${S}/jpeg_enc/include/jpegenc_api.h ${D}${includedir}
-    install -m 0644 -D ${S}/jpeg_enc/libjpegenc_api.so ${D}${libdir}
-    install -m 0755 -D ${S}/jpeg_enc_test ${D}${bindir}
+    install -m 0644 -D ${B}/jpeg_enc/libjpegenc_api.so ${D}${libdir}
+    install -m 0755 -D ${B}/jpeg_enc_test ${D}${bindir}
 }
 
 FILES:${PN} = " ${libdir}/* ${bindir}/*"

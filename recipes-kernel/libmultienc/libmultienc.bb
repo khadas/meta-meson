@@ -8,13 +8,13 @@ DEPENDS += "libge2d"
 
 do_configure[noexec] = "1"
 
-EXTRA_OEMAKE += "LIBMULTIENC_STAGING_DIR=${D} CROSS=${TARGET_PREFIX} TARGET_DIR=${D} STAGING_DIR=${D} DESTDIR=${D} INSTALL_DIR=${D}/usr/lib"
+EXTRA_OEMAKE += " OUT_DIR=${B} LIBMULTIENC_STAGING_DIR=${D} CROSS=${TARGET_PREFIX} TARGET_DIR=${D} STAGING_DIR=${D} DESTDIR=${D} INSTALL_DIR=${D}/usr/lib"
 
 do_compile () {
     cd ${S}
-    oe_runmake ${EXTRA_OEMAKE} -C ${S}/vpuapi
-    oe_runmake ${EXTRA_OEMAKE} -C ${S}/amvenc_lib
-    oe_runmake ${EXTRA_OEMAKE} -C ${S}/amvenc_test
+    oe_runmake ${EXTRA_OEMAKE} "OUT_DIR=${B}/vpuapi" -C ${S}/vpuapi
+    oe_runmake ${EXTRA_OEMAKE} "OUT_DIR=${B}/amvenc_lib" -C ${S}/amvenc_lib
+    oe_runmake ${EXTRA_OEMAKE} "OUT_DIR=${B}/amvenc_test" -C ${S}/amvenc_test
 }
 
 do_install () {
@@ -22,9 +22,9 @@ do_install () {
     install -d ${D}${libdir}
     install -d ${D}${bindir}
     install -m 0644 -D ${S}/amvenc_lib/include/vp_multi_codec_1_0.h ${D}${includedir}
-    install -m 0644 -D ${S}/vpuapi/libamvenc_api.so ${D}${libdir}
-    install -m 0644 -D ${S}/amvenc_lib/libvpcodec.so ${D}${libdir}
-    install -m 0755 -D ${S}/amvenc_test/aml_enc_test ${D}${bindir}
+    install -m 0644 -D ${B}/vpuapi/libamvenc_api.so ${D}${libdir}
+    install -m 0644 -D ${B}/amvenc_lib/libvpcodec.so ${D}${libdir}
+    install -m 0755 -D ${B}/amvenc_test/aml_enc_test ${D}${bindir}
 }
 
 FILES:${PN} = " ${libdir}/* ${bindir}/*"

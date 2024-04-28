@@ -12,8 +12,8 @@ EXTRA_OEMAKE += "LIBAMVENC_STAGING_DIR=${D} CROSS=${TARGET_PREFIX} TARGET_DIR=${
 
 do_compile () {
     cd ${S}
-    oe_runmake ${EXTRA_OEMAKE} -C ${S}/amvenc_lib
-    oe_runmake ${EXTRA_OEMAKE} -C ${S}/amvenc_test
+    oe_runmake ${EXTRA_OEMAKE} "OUT_DIR=${B}/amvenc_lib" -C ${S}/amvenc_lib
+    oe_runmake ${EXTRA_OEMAKE} "OUT_DIR=${B}/amvenc_test" -C ${S}/amvenc_test
 }
 
 do_install () {
@@ -21,8 +21,8 @@ do_install () {
     install -d ${D}${libdir}
     install -d ${D}${bindir}
     install -m 0644 -D ${S}/amvenc_lib/include/amvenc.h ${D}${includedir}
-    install -m 0644 -D ${S}/amvenc_lib/libamvenc.so ${D}${libdir}
-    install -m 0755 -D ${S}/amvenc_test/amvenc_test ${D}${bindir}
+    install -m 0644 -D ${B}/amvenc_lib/libamvenc.so ${D}${libdir}
+    install -m 0755 -D ${B}/amvenc_test/amvenc_test ${D}${bindir}
 }
 
 FILES:${PN} = " ${libdir}/* ${bindir}/*"
