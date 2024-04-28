@@ -15,7 +15,7 @@ inherit autotools pkgconfig
 
 do_configure[noexec] = "1"
 
-EXTRA_OEMAKE = "TARGET_DIR=${D} STAGING_DIR=${D} DESTDIR=${D} PKG_CONFIG=${STAGING_BINDIR_NATIVE}/pkg-config"
+EXTRA_OEMAKE = " OUT_DIR=${B} TARGET_DIR=${D} STAGING_DIR=${D} DESTDIR=${D} PKG_CONFIG=${STAGING_BINDIR_NATIVE}/pkg-config"
 
 do_compile(){
     oe_runmake -C ${S} ${EXTRA_OEMAKE} all
@@ -24,7 +24,7 @@ do_compile(){
 do_install() {
     install -d -m 0755 ${D}${libdir}
     install -d -m 0755 ${D}${libdir}/gstreamer-1.0/
-    install -D -m 0755 ${S}/libgstamlvenc.so ${D}${libdir}/gstreamer-1.0/
+    install -D -m 0755 ${B}/libgstamlvenc.so ${D}${libdir}/gstreamer-1.0/
 }
 
 FILES:${PN} = " ${libdir}/* "
