@@ -21,12 +21,14 @@ TA_TARGET="noarch"
 
 do_install:append() {
     install -d -m 0755 ${D}/usr/bin
+    install -d -m 0755 ${D}/usr/lib
     install -d -m 0755 ${D}/lib/optee_armtz
     install -D -m 0755 ${S}/netflix_ta-bin/prebuilt/${TA_TARGET}/ta/${TDK_VERSION}/*.ta ${D}/lib/optee_armtz/
     install -D -m 0755 ${S}/netflix_ta-bin/prebuilt/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/esn_provision ${D}/usr/bin/
+    install -D -m 0755 ${S}/netflix_ta-bin/prebuilt/${PLATFORM_TDK_VERSION}/${ARM_TARGET}/libnfx_esn.so ${D}/usr/lib/
 }
 
-FILES:${PN} += "${bindir}/* /lib/optee_armtz/* ${includedir}/*"
+FILES:${PN} += "${bindir}/* /lib/optee_armtz/* ${includedir}/* ${libdir}/*"
 FILES:${PN}-dev = "${includedir}/* "
 INSANE_SKIP:${PN} = "ldflags dev-so dev-elf already-stripped"
 INSANE_SKIP:${PN}-dev = "ldflags dev-so dev-elf already-stripped"
