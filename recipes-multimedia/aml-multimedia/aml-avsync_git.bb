@@ -10,24 +10,31 @@ inherit autotools pkgconfig
 
 S="${WORKDIR}/git/avsync-lib"
 
-EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D}"
+OUT_DIR="${B}/src"
+
+EXTRA_OEMAKE=" OUT_DIR=${OUT_DIR} STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D}"
 
 do_compile() {
     cd ${S}
-    bash version_config.sh
+    bash version_config.sh ${OUT_DIR}
     cd ${S}/src
-    oe_runmake  all
+    oe_runmake all
 }
 
 do_install() {
     install -d ${D}${bindir}
     install -d ${D}${libdir}
     install -d ${D}${includedir}
-    cd ${S}/src
-    install -m 0644 aml_avsync_log.h ${D}${includedir}
-    install -m 0644 aml_avsync.h ${D}${includedir}
-    install -m 0644 libamlavsync.so ${D}${libdir}
+    install -m 0644 ${S}/src/aml_avsync_log.h ${D}${includedir}
+    install -m 0644 ${S}/src/aml_avsync.h ${D}${includedir}
+    install -m 0644 ${OUT_DIR}/libamlavsync.so ${D}${libdir}
 }
+
+do_clean() {
+    cd ${S}/src
+    oe_runmake clean
+}
+
 
 FILES:${PN} = "${bindir}/* ${libdir}/*"
 FILES:${PN}-dev = "${includedir}/* "
