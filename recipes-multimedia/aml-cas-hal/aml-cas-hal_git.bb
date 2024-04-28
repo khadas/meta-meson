@@ -14,26 +14,26 @@ do_configure[noexec] = "1"
 inherit autotools pkgconfig
 S="${WORKDIR}/git"
 RDEPENDS:${PN} += "aml-audio-service aml-mediahal-sdk aml-libdvr liblog"
-EXTRA_OEMAKE="STAGING_DIR=${STAGING_DIR_TARGET}\
+EXTRA_OEMAKE=" OUT_DIR=${B} STAGING_DIR=${STAGING_DIR_TARGET}\
 	      TARGET_DIR=${D} \
 	      "
- 
+
 do_compile() {
     cd ${S}
-    oe_runmake  all
+    oe_runmake ${EXTRA_OEMAKE} all
 }
 do_install() {
     install -d ${D}${libdir}
     install -d ${D}${bindir}
     install -m 0755 -d ${D}${includedir}/libamcas
-    install -m 0755 ${S}/libamcas.a ${D}${libdir}
+    install -m 0755 ${B}/libamcas.a ${D}${libdir}
     install -m 0644 ${S}/libamcas/include/* ${D}${includedir}/libamcas/
 
     install -m 0755 -d ${D}${includedir}/liblinuxdvb_port
-    install -m 0755 ${S}/liblinuxdvb_port.a ${D}${libdir}
+    install -m 0755 ${B}/liblinuxdvb_port.a ${D}${libdir}
     install -m 0644 ${S}/liblinuxdvb_port/include/* ${D}${includedir}/liblinuxdvb_port/
 
-    install -m 0755 ${S}/cas_hal_test_bin ${D}${bindir}
+    install -m 0755 ${B}/cas_hal_test_bin ${D}${bindir}
 }
 
 FILES:${PN} = "${libdir}/* ${bindir}/*"
