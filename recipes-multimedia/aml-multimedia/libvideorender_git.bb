@@ -13,9 +13,9 @@ RDEPENDS:${PN} += "libdrm-meson liblog"
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git"
-EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} DESTDIR=${D}"
 
 SOURCE_DIR = "${@bb.utils.contains('DISTRO_FEATURES', 'wayland', bb.utils.contains('DISTRO_FEATURES', 'weston', 'weston', 'westeros', d), bb.utils.contains('DISTRO_FEATURES', 'videotunnel', 'videotunnel', 'drm', d), d)}"
+EXTRA_OEMAKE = " OUT_DIR=${B}/${SOURCE_DIR} CROSS=${TARGET_PREFIX} TARGET_DIR=${D} STAGING_DIR=${STAGING_DIR_TARGET} DESTDIR=${D}"
 
 do_compile(){
     cd ${S}/${SOURCE_DIR}
@@ -30,7 +30,7 @@ do_install() {
 
     install -D -m 0644 ${S}/render_common.h ${D}/usr/include
     install -D -m 0644 ${S}/render_plugin.h ${D}/usr/include
-    install -D -m 0644 ${S}/${SOURCE_DIR}/libvideorender_client.so ${D}${libdir}
+    install -D -m 0644 ${B}/${SOURCE_DIR}/libvideorender_client.so ${D}${libdir}
 }
 
 FILES:${PN} = "${bindir}/* ${libdir}/*"
