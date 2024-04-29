@@ -6,7 +6,7 @@ PR = "r0"
 
 #Only enable it in OpenLinux
 #IRDETO_BRANCH = "TBD"
-SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/irdeto/irdeto-app/irdeto-imw')}"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/vendor/irdeto/irdeto-app/irdeto_imw')}"
 
 inherit cmake pkgconfig systemd update-rc.d
 
@@ -26,7 +26,6 @@ DEPENDS += "liblog aml-libdvr aml-mediahal-sdk irdeto-sdk directfb meson-display
 RDEPENDS:${PN} += "liblog aml-libdvr aml-mediahal-sdk irdeto-sdk directfb meson-display libdrm"
 
 EXTRA_OEMAKE = "STAGING_DIR=${STAGING_DIR_TARGET} TARGET_DIR=${D} \
-          mode=release \
           idw_cas=cca \
         "
 
@@ -40,14 +39,14 @@ do_compile () {
 
 do_install() {
     install -d ${D}${bindir}
-    cp -rf ${S}/target/release.target.mw/idway/ ${D}/usr/bin/
+    cp -rf ${S}/target/*.target.mw/idway/ ${D}/usr/bin/
     chmod a+x ${D}/usr/bin/idway/startIDwayJ.sh
 
     install -d -m 0644 ${D}/etc/cas/irdeto
-    if [ -e ${S}/vendor/hal/prebuilts/conf/irdeto_hal.conf ] ; then
-        install -D -m 0644 ${S}/vendor/hal/prebuilts/conf/irdeto_hal.conf ${D}/etc/cas/irdeto/
+    if [ -e ${S}/vendor/aml_hal/prebuilts/conf/irdeto_hal.conf ] ; then
+        install -D -m 0644 ${S}/vendor/aml_hal/prebuilts/conf/irdeto_hal.conf ${D}/etc/cas/irdeto/
     fi
-    
+
     if [ -e ${S}/vendor/prebuilts/conf/irdeto_hal.conf ] ; then
          install -D -m 0644 ${S}/vendor/prebuilts/conf/irdeto_hal.conf ${D}/etc/cas/irdeto/
     fi
