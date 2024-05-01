@@ -11,6 +11,7 @@ FILES_SOLIBSDEV = ""
 PR = "r0"
 
 DEPENDS = "aml-mediahal-sdk libgpiod aml-libdvr aml-subtitleserver meson-display libdrm aml-cas-hal cjson"
+RDEPENDS:${PN} = "aml-mediahal-sdk aml-libdvr"
 
 INCLUDE_DIRS = " \
     -I${STAGING_DIR_TARGET}${libdir}/include/ \
@@ -21,11 +22,12 @@ INCLUDE_DIRS = " \
 
 TARGET_CFLAGS += "${INCLUDE_DIRS}"
 
-SRC_URI = "file://${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi"
+#SRC_URI = "file://${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi"
+
+EXTRA_OECMAKE = ""
 
 S = "${WORKDIR}"
 do_install() {
-    rm -rf ${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_hdi/oe-*
     mkdir -p ${D}${includedir}
     install -D -m 0644 ${S}/include/*.h  ${D}${includedir}/
     install -d ${D}${bindir}
@@ -36,4 +38,4 @@ do_install() {
 
 FILES_${PN} = "${libdir}/libaml_hdi.so"
 FILES_${PN} += "${bindir}/sample_*"
-INSANE_SKIP_${PN} = "dev-so"
+INSANE_SKIP:${PN} = "dev-so already-stripped"
