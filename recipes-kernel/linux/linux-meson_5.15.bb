@@ -34,6 +34,9 @@ SRC_URI:append:t7 = " file://t7.cfg"
 SRC_URI:append:g12b = " file://g12b.cfg"
 SRC_URI:append:sm1 = " file://sm1.cfg"
 
+#For common patches
+KDIR = "aml-5.15"
+SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
 
 # add support partition encryption
 SRC_URI:append = "${@bb.utils.contains_any('DISTRO_FEATURES', 'partition-enc partition-enc-local', ' file://partition-enc.cfg', '', d)}"
@@ -55,12 +58,9 @@ SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'nfs-boot', ' file://n
 
 # Irdeto IMW
 SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-imw', ' file://s1a_irdeto_imw_overlay.dtsi', '', d)}"
-SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'videocapture', ' file://s1a_videocapture.dtsi', '', d)}"
-SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-128m-sei', ' file://s1a_128m_sei_overlay.dtsi', '', d)}"
 
-#For common patches
-KDIR = "aml-5.15"
-SRC_URI:append = " ${@get_patch_list_with_path('${AML_PATCH_PATH}/kernel/${KDIR}')}"
+# sun direct
+SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-128m-sei', ' file://s1a_128m_sei_overlay.dtsi', '', d)}"
 
 #For amlbian dtsoverlay
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://partition_debian.dtsi', '', d)}"
@@ -72,7 +72,10 @@ SRC_URI:append:sc2 = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file:
 SRC_URI:append:sm1 = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://sm1_debian_overlay.dtsi', '', d)}"
 
 # add usbci
-SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'usbci', ' file://usbci.cfg', '', d)}"
+SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'usbci', ' file://s1a_usbci.cfg', '', d)}"
+
+# videocapture
+SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'videocapture', ' file://s1a_videocapture.dtsi', '', d)}"
 SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'videocapture', ' file://s1a_videocapture.cfg', '', d)}"
 
 LINUX_VERSION ?= "5.15.137"
