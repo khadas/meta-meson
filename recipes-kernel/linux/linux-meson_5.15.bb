@@ -57,6 +57,9 @@ SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'amlbian', ' file://am
 # support booting from nfs if the feature is enabled
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'nfs-boot', ' file://nfs-boot.cfg', '', d)}"
 
+# add support utf8
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'utf8', ' file://utf8.cfg', '', d)}"
+
 # Irdeto IMW
 SRC_URI:append:s1a = "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-imw', ' file://s1a_irdeto_imw_overlay.dtsi', '', d)}"
 
