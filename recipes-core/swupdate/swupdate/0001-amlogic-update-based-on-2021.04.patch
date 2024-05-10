@@ -1,4 +1,4 @@
-From 088cae64d37055d102fa381d5c210cfca9ad51f6 Mon Sep 17 00:00:00 2001
+From 9a36c5d49d4d68f4444643771d83258582fed015 Mon Sep 17 00:00:00 2001
 From: Blance Tang <guofeng.tang@amlogic.com>
 Date: Thu, 11 Jan 2024 17:05:27 +0800
 Subject: [PATCH] amlogic update based on 2021.04
@@ -20,7 +20,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  core/stream_interface.c   | 105 +++++-
  core/swupdate.c           |  35 +-
  core/util.c               |   2 +-
- corelib/mtd-interface.c   | 104 +++++
+ corelib/mtd-interface.c   | 107 ++++++
  handlers/Config.in        |   8 +
  handlers/Makefile         |   1 +
  handlers/ext4_handler.c   | 318 ++++++++++++++++
@@ -47,7 +47,7 @@ Change-Id: I9546cafc1df3d9eaddd821338329b6b2acf4d8ab
  libsparse/sparse_file.h   |  32 ++
  libsparse/sparse_format.h |  55 +++
  libsparse/sparse_read.c   | 510 +++++++++++++++++++++++++
- 35 files changed, 3880 insertions(+), 12 deletions(-)
+ 35 files changed, 3883 insertions(+), 12 deletions(-)
  create mode 100644 handlers/ext4_handler.c
  create mode 100644 libsparse/Config.in
  create mode 100644 libsparse/Makefile
@@ -265,7 +265,7 @@ index 9c2d5344..b8a259b6 100644
  	}
  
 diff --git a/core/stream_interface.c b/core/stream_interface.c
-index 1c9853d7..049e52e8 100644
+index 31d0de89..96787c64 100644
 --- a/core/stream_interface.c
 +++ b/core/stream_interface.c
 @@ -73,6 +73,50 @@ pthread_cond_t stream_wkup = PTHREAD_COND_INITIALIZER;
@@ -559,10 +559,20 @@ index 7e966524..1b501bcb 100644
  		       fname, size, (unsigned long long)statvfs.f_bfree * statvfs.f_bsize);
  		return false;
 diff --git a/corelib/mtd-interface.c b/corelib/mtd-interface.c
-index 586a9ba9..3c0043aa 100644
+index 586a9ba9..92beaff8 100644
 --- a/corelib/mtd-interface.c
 +++ b/corelib/mtd-interface.c
-@@ -148,6 +148,110 @@ int flash_erase(int mtdnum)
+@@ -79,6 +79,9 @@ int flash_erase_sector(int mtdnum, off_t start, size_t size)
+ 		if (!noskipbad) {
+ 			int isbad = mtd_is_bad(mtd, fd, eb);
+ 			if (isbad > 0) {
++				/* Will need to erase one more block, instead of the bad one */
++				if (eb_end * mtd->eb_size < mtd->size)
++					eb_end++;
+ 				continue;
+ 			} else if (isbad < 0) {
+ 				if (errno == EOPNOTSUPP) {
+@@ -148,6 +151,110 @@ int flash_erase(int mtdnum)
  	return flash_erase_sector(mtdnum, 0, 0);
  }
  
@@ -4493,5 +4503,5 @@ index 00000000..7d5cbbff
 +	return s;
 +}
 -- 
-2.29.0
+2.25.1
 
