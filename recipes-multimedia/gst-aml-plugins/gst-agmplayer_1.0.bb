@@ -25,8 +25,14 @@ DEPENDS += " optee-userspace "
 RDEPENDS:${PN} += "gst-aml-drm-plugins"
 ENABLE_GST1 = "--enable-gstreamer1=${@bb.utils.contains('DISTRO_FEATURES', 'gstreamer1', 'yes', 'no', d)}"
 EXTRA_OECONF = " ${ENABLE_GST1}"
-EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
+EXTRA_OECONF += "--with-path=${B}"
+EXTRA_OEMAKE = " OUT_DIR=${B} CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
 inherit autotools pkgconfig
+
+do_configure:append() {
+  cd ${S}
+  bash version_config.sh ${B}
+}
 
 FILES:${PN} += "${bindir}/*"
 INSANE_SKIP:${PN} = "ldflags dev-so "
