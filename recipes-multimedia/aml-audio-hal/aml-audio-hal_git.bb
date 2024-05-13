@@ -100,6 +100,10 @@ do_install:append() {
         sed -i '/Codec_Support_List/i \\t"Audio_Delay_Max":100,' ${D}/${sysconfdir}/halaudio/aml_audio_config.json
     fi
 
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'disable-submix', 'true', 'false', d)}; then
+        sed -i '/Codec_Support_List/i \\t"Sub_Mix_Enable": 0,' ${D}/${sysconfdir}/halaudio/aml_audio_config.json
+    fi
+
     for f in ${S}/include/hardware/*.h; do \
         install -m 644 -D ${f} -t ${D}/usr/include/hardware; \
     done
