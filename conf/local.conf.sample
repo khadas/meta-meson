@@ -162,6 +162,9 @@ PACKAGE_CLASSES ?= "package_ipk"
 # We default to enabling the debugging tweaks.
 EXTRA_IMAGE_FEATURES = "debug-tweaks"
 
+# without sources in /usr/src/debug
+PACKAGE_DEBUG_SPLIT_STYLE = "debug-without-src"
+
 #
 # Additional image features
 #
