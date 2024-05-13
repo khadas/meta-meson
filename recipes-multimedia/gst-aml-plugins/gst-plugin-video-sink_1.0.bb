@@ -12,13 +12,16 @@ RDEPENDS:${PN} = " aml-mediahal-sdk "
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/gst-plugin-video-sink-1.0"
-EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
+
+EXTRA_OECONF += "--with-path=${B}"
+
+EXTRA_OEMAKE = " OUT_DIR=${B} CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
 inherit autotools pkgconfig
 
 do_configure:append() {
   cd ${S}
-  bash version_config.sh
+  bash version_config.sh ${B}
 }
 
-FILES:${PN} += "/usr/lib/gstreamer-1.0/*"
+FILES:${PN} += "${libdir}/gstreamer-1.0/*"
 INSANE_SKIP:${PN} = "ldflags dev-so "
