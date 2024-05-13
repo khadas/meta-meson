@@ -18,16 +18,17 @@ S = "${WORKDIR}/git"
 EXTRA_OECONF += "--enable-ms12=yes"
 EXTRA_OECONF += "--enable-dts=yes"
 EXTRA_OECONF += "--enable-mediasync=no"
+EXTRA_OECONF += "--with-path=${B}"
 
 DEPENDS += "${@bb.utils.contains('EXTRA_OECONF', '--enable-mediasync=yes', 'aml-mediahal-sdk', '', d)}"
 RDEPENDS:${PN} += "${@bb.utils.contains('EXTRA_OECONF', '--enable-mediasync=yes', 'aml-mediahal-sdk', '', d)}"
 
-EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
+EXTRA_OEMAKE = " OUT_DIR=${B} CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
 inherit autotools pkgconfig
 
 do_configure:append() {
   cd ${S}
-  bash version_config.sh
+  bash version_config.sh ${B}
 }
 
 FILES:${PN} += "${libdir}/gstreamer-1.0/*"
