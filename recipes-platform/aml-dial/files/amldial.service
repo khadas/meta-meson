@@ -1,0 +1,14 @@
+[Unit]
+Description=amlogic dialserver
+After=wpeframework.service systemd-networkd.service basic.target network.target
+PartOf=wpeframework.service
+
+[Service]
+Environment="THUNDER_ACCESS=127.0.0.1:9998"
+ExecStartPre=/bin/mkdir -p /tmp/AmlDial
+ExecStart=/usr/bin/dialserver
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
