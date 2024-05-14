@@ -13,6 +13,9 @@ SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 
 do_install() {
+    install -d ${D}/usr/include
+    install -m 0644 -D ${S}/nnsdk/include/* ${D}/usr/include
+
     install -d ${D}/usr/lib
     if [ "${HOST_ARCH}" = "aarch64" ]; then
         install -m 0644 -D ${S}/nnsdk/linux/yocto/lib64/*.so ${D}/usr/lib
