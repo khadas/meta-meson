@@ -222,6 +222,7 @@ EXTERNALSRC:pn-mediactrlsrc = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/me
 EXTERNALSRC:pn-aml-qt-rxpreview= "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-qt-rxpreview' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-qt-rxpreview')) else ''}"
 EXTERNALSRC:pn-aml-screencapture= "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-screencapture' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-screencapture')) else ''}"
 EXTERNALSRC:pn-aml-qt-camera= "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-qt-camera' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-qt-camera')) else ''}"
+EXTERNALSRC:pn-aml-test= "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-test' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/linux_sample_app/aml-test')) else ''}"
 EXTERNALSRC:pn-web-ui-wifi= "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib/web-ui-wifi' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml_commonlib/web-ui-wifi')) else ''}"
 EXTERNALSRC:pn-partition-enc-native = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/partition_enc' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/partition_enc')) else ''}"
 EXTERNALSRC:pn-aml-appmanager = "${@'${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml-appmanager' if (os.path.isdir('${MESON_ROOT_PATH}/aml-comp/vendor/amlogic/aml-appmanager')) else ''}"
