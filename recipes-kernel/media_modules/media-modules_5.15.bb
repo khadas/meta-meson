@@ -77,6 +77,11 @@ MEDIA_CONFIGS:append:t5m = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
                  "
+MEDIA_CONFIGS:append:s7d = "\
+                 CONFIG_AMLOGIC_MEDIA_VENC_COMMON=m \
+                 CONFIG_AMLOGIC_MEDIA_VENC_H264=m \
+                 CONFIG_AMLOGIC_MEDIA_VENC_JPEG=m \
+                 "
 MEDIA_CONFIGS:append:t7 = "\
                  CONFIG_AMLOGIC_MEDIA_VENC_COMMON=m \
                  CONFIG_AMLOGIC_MEDIA_VENC_MULTI=m \
@@ -184,6 +189,7 @@ KERNEL_MODULE_AUTOLOAD:append:sc2 = " encoder_common amlogic-encoder amlogic-jpe
 KERNEL_MODULE_AUTOLOAD:append:s5 = " encoder_common amlogic-encoder amlogic-jpegenc amlogic-vpu"
 KERNEL_MODULE_AUTOLOAD:append:g12b = " encoder_common amlogic-encoder amlogic-jpegenc amlogic-vpu"
 KERNEL_MODULE_AUTOLOAD:append:sm1 = " encoder_common amlogic-encoder amlogic-jpegenc amlogic-vpu"
+KERNEL_MODULE_AUTOLOAD:append:s7d = " encoder_common amlogic-encoder amlogic-jpegenc "
 
 # Skip auto loading for Zapper project
 MODULE_AUTOLOAD_ZAPPER_SKIP = "\
