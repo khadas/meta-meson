@@ -25,6 +25,10 @@ do_install:append () {
     sed -i 's/vfat|fat/vfat|fat|ntfs|exfat/g' ${D}${sysconfdir}/udev/scripts/mount.sh
     sed -i 's/$UMOUNT $mnt/$UMOUNT $mnt/g' ${D}${sysconfdir}/udev/scripts/mount.sh
 
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'disable-udisk-label', 'true', 'false', d)}; then
+        sed -i '/^get_label_name/a \    return' ${D}${sysconfdir}/udev/scripts/mount.sh
+    fi
+
     if [ -e "${WORKDIR}/10-video.rules" ]; then
         install -d ${D}${sysconfdir}/udev/rules.d
         install -m 0644 ${WORKDIR}/10-video.rules ${D}${sysconfdir}/udev/rules.d
