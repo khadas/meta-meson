@@ -1,8 +1,13 @@
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 809c857..9eab2dc 100644
+index 809c857..8bcbb6a 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
-@@ -3257,6 +3257,7 @@ session_notify(struct wl_listener *listener, void *data)
+@@ -3253,10 +3253,11 @@ session_notify(struct wl_listener *listener, void *data)
+ 
+ 	if (compositor->session_active) {
+ 		weston_log("activating session\n");
+-		drmSetMaster(b->drm.fd);
++
  		weston_compositor_wake(compositor);
  		weston_compositor_damage_all(compositor);
  		b->state_invalid = true;
@@ -10,3 +15,12 @@ index 809c857..9eab2dc 100644
  		udev_input_enable(&b->input);
  	} else {
  		weston_log("deactivating session\n");
+@@ -3291,7 +3292,7 @@ session_notify(struct wl_listener *listener, void *data)
+ 			drmModeSetPlane(b->drm.fd, plane->plane_id, crtc->crtc_id,
+ 					0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+ 		}
+-		drmDropMaster(b->drm.fd);
++
+ 	}
+ }
+ 
