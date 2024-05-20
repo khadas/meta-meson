@@ -71,7 +71,8 @@ do_install() {
     cp -af ${WORKDIR}/build/libessosrmgr.so ${D}${libdir}
     cp -af ${WORKDIR}/build/appmgr ${D}${bindir}
     cp -af ${WORKDIR}/build/sample ${D}${bindir}
-    cp -af ${S}/app_list.txt ${D}/${sysconfdir}
+    install -d ${D}${sysconfdir}/app_list
+    cp -af ${S}/app_list.txt ${D}/${sysconfdir}/app_list/
     install -d ${D}/etc/dbus-1/system.d
     install -m 0644 ${S}/amlogic.yocto.appmgr.conf ${D}/etc/dbus-1/system.d/
 }
