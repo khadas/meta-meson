@@ -20,11 +20,12 @@ DEPENDS += "aml-audio-service"
 RDEPENDS:${PN} += "aml-audio-service"
 
 
-PACKAGECONFIG ??= "aplay cli hcitop ${@bb.utils.filter('DISTRO_FEATURES', 'systemd', d)}"
+PACKAGECONFIG ??= "aplay cli hcitop aml ${@bb.utils.filter('DISTRO_FEATURES', 'systemd', d)}"
 PACKAGECONFIG[a2dpconf]  = "--enable-a2dpconf,--disable-a2dpconf"
 PACKAGECONFIG[aac]  = "--enable-aac,--disable-aac,fdk-aac"
 PACKAGECONFIG[aplay] = "--enable-aplay,--disable-aplay"
 PACKAGECONFIG[cli] = "--enable-cli,--disable-cli"
+PACKAGECONFIG[aml] = "--enable-aml,--disable-aml"
 PACKAGECONFIG[coverage] = "--with-coverage,--without-coverage,lcov-native"
 PACKAGECONFIG[debug] = "--enable-debug,--disable-debug"
 PACKAGECONFIG[debug-time] = "--enable-debug-time,--disable-debug-time"
@@ -53,12 +54,13 @@ EXTRA_OECONF = " \
 PACKAGE_BEFORE_PN = "${PN}-aplay"
 RRECOMMENDS:${PN} = "${PN}-aplay"
 
+do_configure:prepend () {
+    cp -dR ${THISDIR}/files/aml/ ${S}/utils/
+}
+
 do_install:append () {
     install -d ${D}${base_libdir}/systemd/system
     install -m 0755 ${WORKDIR}/bluez-alsa.sh ${D}${bindir}
-    install -m 0755 ${B}/utils/aplay/bt-halplay ${D}${bindir}
-#    install -m 0755 ${B}/utils/a2dp_ctl ${D}${bindir}
-#    install -m 0755 ${B}/utils/hfp_ctl ${D}${bindir}
 }
 
 FILES:${PN} += "\
