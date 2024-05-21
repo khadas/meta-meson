@@ -39,7 +39,8 @@ SRC_URI = "git://github.com/sbabic/swupdate.git;branch=master;protocol=https \
 
 SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "absystem", \
         "file://0005-amlogic-add-rootfs_vendor-absystem.patch \
-         file://0006-amlogic-fix-absystem-update-error.patch", "", d)}"
+         file://0006-amlogic-fix-absystem-update-error.patch \
+         file://0007-amlogic-absystem-uboot-update.patch ", "", d)}"
 SRC_URI += "${@bb.utils.contains("DISTRO_FEATURES", "nand", \
             bb.utils.contains("ROOTFS_TYPE", "ubifs", "file://ubifs.cfg", "file://squashfs.cfg", d), "", d)}"
 

@@ -1,0 +1,99 @@
+diff --git a/handlers/flash_handler.c b/handlers/flash_handler.c
+index 420ae837..a6b823df 100644
+--- a/handlers/flash_handler.c
++++ b/handlers/flash_handler.c
+@@ -368,9 +368,9 @@ static int flash_write_boot(struct img_type *img) {
+ 
+     //get boot_a/b mtdnum
+     if (slot == 0) {
+-        ret = (strcmp(img->fname, "boot.img")==0)?get_mtd_by_name("boot_b"):get_mtd_by_name("fip_b");
++        ret = (strncmp(img->fname, "boot", 4)==0)?get_mtd_by_name("boot_b"):get_mtd_by_name("fip_b");
+     } else {
+-        ret = (strcmp(img->fname, "boot.img")==0)?get_mtd_by_name("boot_a"):get_mtd_by_name("fip_a");
++        ret = (strncmp(img->fname, "boot", 4)==0)?get_mtd_by_name("boot_a"):get_mtd_by_name("fip_a");
+     }
+ 
+     if (ret < 0) {
+@@ -400,7 +400,7 @@ static int install_flash_image(struct img_type *img,
+ 	int mtdnum;
+ 
+ 	//if a/b boot, need to write boot_a or boot_b
+-	if (((strcmp(img->fname, "boot.img")==0) || (strcmp(img->fname, "fip-bl33.bin")==0)) && (get_system_type()==0)) {
++	if (((strncmp(img->fname, "boot", 4)==0) || (strncmp(img->fname, "fip-bl33", 8)==0)) && (get_system_type()==0)) {
+ 		return flash_write_boot(img);
+ 	}
+ 
+@@ -415,13 +415,13 @@ static int install_flash_image(struct img_type *img,
+ 	}
+ 
+ #if 0
+-    if (strcmp(img->fname, "u-boot.bin.usb.bl2")==0) {
++    if (strncmp(img->fname, "u-boot.bin.usb.bl2", 18)==0) {
+        if(flash_erase_offset_size(mtdnum, img->seek, BL2_SIZE)) {
+            ERROR("I cannot erasing %s",
+                img->device);
+            return -1;
+        }
+-    } else if (strcmp(img->fname, "u-boot.bin.usb.tpl")==0) {
++    } else if (strncmp(img->fname, "u-boot.bin.usb.tpl", 18)==0) {
+        if(flash_erase_offset_size(mtdnum, img->seek, TPL_SIZE)) {
+            ERROR("I cannot erasing %s",
+                img->device);
+diff --git a/handlers/raw_handler.c b/handlers/raw_handler.c
+index 9bb93780..9abfc96a 100644
+--- a/handlers/raw_handler.c
++++ b/handlers/raw_handler.c
+@@ -49,15 +49,12 @@ enum emmcPartition {
+   BLK2BOOT1,
+ };
+ 
+-//static int sEmmcPartitionIndex = -1;
++/* For GPT partition absystem, bootloader update */
++#define EMMC_BOOTLOADER_A          "bootloader_a"
++#define EMMC_BOOTLOADER_B          "bootloader_b"
+ static const char *sEmmcPartitionName[] = {
+-  EMMC_USER_PARTITION,
+-  EMMC_BLK0BOOT0_PARTITION,
+-  EMMC_BLK0BOOT1_PARTITION,
+-  EMMC_BLK1BOOT0_PARTITION,
+-  EMMC_BLK1BOOT1_PARTITION,
+-  EMMC_BLK2BOOT0_PARTITION,
+-  EMMC_BLK2BOOT1_PARTITION,
++  EMMC_BOOTLOADER_A,
++  EMMC_BOOTLOADER_B,
+ };
+ 
+ 
+@@ -245,8 +242,8 @@ static int blkprotect(struct img_type *img, bool on)
+ 	}
+ 
+ //try a/b system
+-if (get_active_slot(&slot)==0 && ((strcmp(img->fname, "boot.img")==0) || (strcmp(img->fname, "fip-bl33.bin")==0) ||
+- (strcmp(img->fname, "recovery.img")==0) || (strcmp(img->fname, "vbmeta.img")==0) ||
++if (get_active_slot(&slot)==0 && ((strncmp(img->fname, "boot", 4)==0) || (strncmp(img->fname, "fip-bl33", 8)==0) ||
++ (strncmp(img->fname, "recovery", 8)==0) || (strncmp(img->fname, "vbmeta", 8)==0) ||
+  (strncmp(img->fname, "rootfs", 6)==0) || (strncmp(img->fname, "vendor", 6)==0))) {
+ 	if (slot == 0) {
+ 		sprintf(device_name, "%s%s", img->device, "_b");
+@@ -339,17 +336,16 @@ static int install_raw_image(struct img_type *img,
+ 	int slot = 0;
+ 	char device_name[256];
+ 	// bootloader maybe need to seek 512 byte
+-	if ((strcmp(img->fname, "u-boot.bin")==0) || (strcmp(img->fname, "u-boot.bin.signed")==0)
+-	|| (strcmp(img->fname, "u-boot.bin.encrypt")==0)) {
++	if (strncmp(img->fname, "u-boot.bin", 10)==0) {
+ 		return install_bootloader(img);
+ 	}
+ 
+ 	//if a/b system and write boot partition
+-	if (((strcmp(img->fname, "boot.img")==0) || (strcmp(img->fname, "fip-bl33.bin")==0)) && (get_system_type()==0)) {
+-		char *part=(strcmp(img->fname, "boot.img")==0)?"boot":"fip";return install_boot_ab(part, img);
++	if (((strncmp(img->fname, "boot", 4)==0) || (strncmp(img->fname, "fip-bl33", 8)==0)) && (get_system_type()==0)) {
++		char *part=(strncmp(img->fname, "boot", 4)==0)?"boot":"fip";return install_boot_ab(part, img);
+ 	}
+ 
+-  if ((get_system_type()==0) && ((strcmp(img->fname, "recovery.img")==0) || (strcmp(img->fname, "vbmeta.img")==0) ||
++  if ((get_system_type()==0) && ((strncmp(img->fname, "recovery", 8)==0) || (strncmp(img->fname, "vbmeta", 6)==0) ||
+  			(strncmp(img->fname, "rootfs", 6)==0) || (strncmp(img->fname, "vendor", 6)==0))) {
+ 		//try a/b  system
+ 		ret = get_active_slot(&slot);

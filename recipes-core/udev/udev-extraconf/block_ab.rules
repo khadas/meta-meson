@@ -1,0 +1,3 @@
+KERNEL=="mmcblk0p16", SYMLINK+="vendor"
+KERNEL=="mmcblk0p15", SYMLINK+="factory"
+KERNEL=="mmcblk0p14", SYMLINK+="tee"

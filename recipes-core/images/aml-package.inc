@@ -212,17 +212,11 @@ do_aml_pack() {
         sed 's@boardname@${MACHINE_ARCH}@' -i ${DEPLOY_DIR_IMAGE}/sw-description
         sed 's@_lib32_@_@' -i ${DEPLOY_DIR_IMAGE}/sw-description
         sed 's@_k5.15@@' -i ${DEPLOY_DIR_IMAGE}/sw-description
-        if ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'true', 'false', d)}; then
-            if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'false', 'true', d)}; then
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'false', 'true', d)}; then
+            if ${@bb.utils.contains('DISTRO_FEATURES', 'absystem', 'false', 'true', d)}; then
                 sed 's@bootloader@bootloader_up@' -i ${DEPLOY_DIR_IMAGE}/sw-description
-                sed 's@value = "1";@value = "2";@' -i ${DEPLOY_DIR_IMAGE}/sw-description
             fi
-        fi
-        if ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_66', 'true', 'false', d)}; then
-            if ${@bb.utils.contains('DISTRO_FEATURES', 'nand', 'false', 'true', d)}; then
-                sed 's@bootloader@bootloader_up@' -i ${DEPLOY_DIR_IMAGE}/sw-description
-                sed 's@value = "1";@value = "2";@' -i ${DEPLOY_DIR_IMAGE}/sw-description
-            fi
+            sed 's@value = "1";@value = "2";@' -i ${DEPLOY_DIR_IMAGE}/sw-description
         fi
         if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate-enc', 'true', 'false', d)}; then
             ${DEPLOY_DIR_IMAGE}/sw_enc_package_create.sh ${DEPLOY_DIR_IMAGE}

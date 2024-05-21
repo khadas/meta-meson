@@ -1180,8 +1180,8 @@ index 619a2f47..edb5b5f0 100644
 +  BLK2BOOT1,
 +};
 +
-+static int sEmmcPartionIndex = -1;
-+static const char *sEmmcPartionName[] = {
++static int sEmmcPartitionIndex = -1;
++static const char *sEmmcPartitionName[] = {
 +  EMMC_USER_PARTITION,
 +  EMMC_BLK0BOOT0_PARTITION,
 +  EMMC_BLK0BOOT1_PARTITION,
@@ -1305,9 +1305,9 @@ index 619a2f47..edb5b5f0 100644
 +
 +  unsigned int i = 0;
 +  char emmcPartitionPath[128];
-+  for (i = USER; i < ARRAY_SIZE(sEmmcPartionName); i ++) {
++  for (i = USER; i < ARRAY_SIZE(sEmmcPartitionName); i ++) {
 +	memset(emmcPartitionPath, 0, sizeof(emmcPartitionPath));
-+	sprintf(emmcPartitionPath, "/dev/%s", sEmmcPartionName[i]);
++	sprintf(emmcPartitionPath, "/dev/%s", sEmmcPartitionName[i]);
 +
 +	if (!access(emmcPartitionPath, F_OK)) {
 +	  printf("write %s to %s.\n", img->fname, emmcPartitionPath);
@@ -1406,7 +1406,7 @@ index 619a2f47..edb5b5f0 100644
 +	}
 +
 +	//if a/b system and write boot partition
-+	if (((strcmp(img->fname, "boot.img")==0) || ((img->fname, "fip-bl33.bin")==0)) && (get_system_type()==0)) {
++	if (((strcmp(img->fname, "boot.img")==0) || (strcmp(img->fname, "fip-bl33.bin")==0)) && (get_system_type()==0)) {
 +		char *part=(strcmp(img->fname, "boot.img")==0)?"boot":"fip";return install_boot_ab(part, img);
 +	}
 +

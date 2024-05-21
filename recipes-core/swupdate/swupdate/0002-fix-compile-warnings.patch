@@ -149,9 +149,9 @@ index 2451c07..9b2c434 100644
    BLK2BOOT1,
  };
  
--static int sEmmcPartionIndex = -1;
-+//static int sEmmcPartionIndex = -1;
- static const char *sEmmcPartionName[] = {
+-static int sEmmcPartitionIndex = -1;
++//static int sEmmcPartitionIndex = -1;
+ static const char *sEmmcPartitionName[] = {
    EMMC_USER_PARTITION,
    EMMC_BLK0BOOT0_PARTITION,
 @@ -221,7 +222,7 @@ static int blkprotect(struct img_type *img, bool on)

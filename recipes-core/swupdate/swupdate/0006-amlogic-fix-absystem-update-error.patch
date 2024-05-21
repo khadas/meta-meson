@@ -1,29 +1,33 @@
 diff --git a/handlers/raw_handler.c b/handlers/raw_handler.c
-index 52f2500..22f480f 100644
+index f342ad2b..42123aae 100644
 --- a/handlers/raw_handler.c
 +++ b/handlers/raw_handler.c
-@@ -332,8 +332,8 @@ static int install_raw_image(struct img_type *img,
- 		return install_boot_ab(img);
+@@ -349,8 +349,8 @@ static int install_raw_image(struct img_type *img,
+ 		char *part=(strcmp(img->fname, "boot.img")==0)?"boot":"fip";return install_boot_ab(part, img);
  	}
  
 -	fdout = open(img->device, O_RDWR);
 -	if (fdout < 0) {
-+	if ((get_system_type()==0) && ((strcmp(img->fname, "recovery.img")==0) || (strcmp(img->fname, "vbmeta.img")==0) ||
++  if ((get_system_type()==0) && ((strcmp(img->fname, "recovery.img")==0) || (strcmp(img->fname, "vbmeta.img")==0) ||
 + 			(strncmp(img->fname, "rootfs", 6)==0) || (strncmp(img->fname, "vendor", 6)==0))) {
  		//try a/b  system
  		ret = get_active_slot(&slot);
  		if (ret != 0) {
-@@ -353,6 +353,13 @@ static int install_raw_image(struct img_type *img,
+@@ -369,8 +369,15 @@ static int install_raw_image(struct img_type *img,
+ 			TRACE("Device %s cannot be opened: %s",
  				img->device, strerror(errno));
  			return -ENODEV;
- 		}
+-		}
+-	}
++    }
 +	} else {
-+		fdout = open(img->device, O_RDWR);
-+		if (fdout < 0) {
-+			TRACE("Device %s cannot be opened: %s",
-+				img->device, strerror(errno));
-+			return -ENODEV;
-+		}
- 	}
++      fdout = open(img->device, O_RDWR);
++      if (fdout < 0) {
++          TRACE("Device %s cannot be opened: %s",
++              img->device, strerror(errno));
++          return -ENODEV;
++      }
++  }
  #if defined(__FreeBSD__)
  	ret = copyimage(&fdout, img, copy_write_padded);
+ #else

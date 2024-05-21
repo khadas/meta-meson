@@ -2,6 +2,8 @@
 //ab don't need cache, but dts part will add 8M for it
 reserved,36M,64M,8M,0
 env,-,8M,8M,0
+bootloader_a,-,8M,8M,0x0001
+bootloader_b,-,8M,8M,0x0001
 logo,-,8M,8M,0x0001
 recovery_a,-,40M,8M,0x0001
 recovery_b,-,40M,8M,0x0001

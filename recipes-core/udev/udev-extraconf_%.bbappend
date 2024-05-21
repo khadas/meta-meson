@@ -7,9 +7,7 @@ SRC_URI:append = " \
 "
 SRC_URI:append = " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'nand', '', \
-    bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'file://block.rules', '', d),  d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'nand', '', \
-    bb.utils.contains('DISTRO_FEATURES', 'kernel_66', 'file://block.rules', '', d),  d)} \
+    bb.utils.contains('DISTRO_FEATURES', 'absystem', 'file://block_ab.rules', 'file://block.rules', d), d)} \
 "
 SRC_URI:append = " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'kernel_515', 'file://dmaheap.rules', '', d)} \
@@ -36,6 +34,9 @@ do_install:append () {
     if [ -e "${WORKDIR}/block.rules" ]; then
       echo "/dev/mmcblk0*" >> ${D}${sysconfdir}/udev/mount.ignorelist
       install -m 0644 ${WORKDIR}/block.rules ${D}${sysconfdir}/udev/rules.d
+    elif [ -e "${WORKDIR}/block_ab.rules" ]; then
+      echo "/dev/mmcblk0*" >> ${D}${sysconfdir}/udev/mount.ignorelist
+      install -m 0644 ${WORKDIR}/block_ab.rules ${D}${sysconfdir}/udev/rules.d/block.rules
     fi
     if ${@bb.utils.contains_any('DISTRO_FEATURES', ['bluetooth', 'wifi'], 'true', 'false', d)}; then
         install -d ${D}${sysconfdir}/udev/rules.d
