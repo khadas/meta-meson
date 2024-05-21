@@ -5,6 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/../meta-meson/license/AMLOGIC;md5=6c70138
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 DOLBY_PROP = " --prop dovi_hash:3cd93647bdd864b4ae1712d57a7de3153e3ee4a4dfcfae5af8b1b7d999b93c5a "
+DOLBY_PROP:s7d = " --prop dovi_hash:5c65b506c3a83b789b4dc7448a3ce7e3445519073e4fb55d73c90070a8431cdd "
 
 DEPENDS += "avb-native python3-native avbkey-native"
 DM_VERITY_SUPPORT = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'true', 'false', d)}"
