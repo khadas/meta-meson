@@ -4,6 +4,7 @@ LICENSE = "CLOSE"
 PV = "git${SRCPV}"
 PR = "r0"
 
+DEPENDS += "liblog optee-userspace"
 #Only enable it in OpenLinux
 #IRDETO_BRANCH = "TBD"
 #IRDETO_BRANCH:sc2 = "openlinux/sc2-msr4-linux"
@@ -23,6 +24,9 @@ IRDETO_PATH:s4 = "s905c3"
 IRDETO_PATH:aq2432 = "s805c3"
 IRDETO_PATH:bf201 = "s805c1a"
 IRDETO_PATH:bg201 = "s805c1"
+
+SOC_FAMILY = "TBD"
+SOC_FAMILY:s1a = "s1a"
 
 REE_ONLY = "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-ree-only', 'true', 'false', d)}"
 
@@ -57,6 +61,11 @@ do_install() {
         install -d -m 0755 ${D}/usr/lib
         install -D -m 0644 ${S}/lib/ca/libirdetoca.so ${D}/usr/lib
     fi
+
+    if [ "${SOC_FAMILY}" = "s1a" ]; then
+        install -D -m 0644 ${S}/lib/ta/${IRDETO_PATH}/6fbf7114-81e9-456f-8a62-b8da52da467d.ta ${D}/lib/optee_armtz
+    fi
+
     install -D -m 0644 ${S}/include/*.h ${D}/usr/include
 }
 
