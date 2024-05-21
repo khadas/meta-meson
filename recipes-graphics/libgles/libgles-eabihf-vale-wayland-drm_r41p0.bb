@@ -88,7 +88,7 @@ do_install() {
     # mali_csffw.bin
     FIRMWARE_INSTALL_DIR=${D}/lib/firmware
     mkdir -p ${FIRMWARE_INSTALL_DIR}
-    install -m 0755 ${S}/lib/${MALI_ARCH}/${GPU_MODEL}/${PV}/firmware/mali_csffw.bin ${FIRMWARE_INSTALL_DIR}/mali_csffw.bin
+    install -m 0755 ${S}/lib/firmware/${GPU_MODEL}/${PV}/mali_csffw.bin ${FIRMWARE_INSTALL_DIR}/mali_csffw.bin
 }
 
 FILES:${PN} += "${libdir}/*.so ${datadir}"
