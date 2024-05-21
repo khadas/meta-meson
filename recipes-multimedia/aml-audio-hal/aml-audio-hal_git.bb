@@ -45,6 +45,7 @@ SRC_URI  += "\
   file://aml_audio_config.at301.json \
   file://aml_audio_config.ap222.json \
   file://aml_audio_config.bh201.json \
+  file://aml_audio_config.bm201.json \
   file://aml_audio_config.u212.json \
   file://aml_audio_config.tv.json \
   file://aml_audio_config.s1a.json \
@@ -70,6 +71,7 @@ PROPERTY_SET_CONF:at301 = "aml_audio_config.at301.json"
 PROPERTY_SET_CONF:ap222 = "aml_audio_config.ap222.json"
 PROPERTY_SET_CONF:t7 = "aml_audio_config.tv.json"
 PROPERTY_SET_CONF:bh201 = "aml_audio_config.bh201.json"
+PROPERTY_SET_CONF:bm201 = "aml_audio_config.bm201.json"
 PROPERTY_SET_CONF:s1a = "aml_audio_config.s1a.json"
 
 PROPERTY_SET_MIXER = "mixer_paths.xml"
