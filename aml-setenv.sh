@@ -240,6 +240,18 @@ DISTRO_FEATURES:remove = " miraclecast"
 EOF
     fi
 
+    if [ ! -d ${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/playready-bin ]; then
+      cat >> conf/local.conf <<EOF
+DISTRO_FEATURES:remove = " playready"
+EOF
+    fi
+
+    if [ ! -d ${MESON_ROOT_PATH}/aml-comp/multimedia/libmediadrm/widevine-bin ]; then
+      cat >> conf/local.conf <<EOF
+DISTRO_FEATURES:remove = " widevine"
+EOF
+    fi
+
     unset NEED_A6432_SUPPORT
     if [ -n "$(echo $TARGET_MACHINE | grep -- lib32)" ]; then
       NEED_A6432_SUPPORT=y

@@ -6,7 +6,7 @@ inherit native
 export GCC_LINARO_AARCH64_NONE_TOOLCHAIN      = "/gcc-linaro-aarch64-none-elf"
 COMPATIBLE_HOST = "(i.86|x86_64).*-linux"
 
-SRC_URI="https://releases.linaro.org/archive/14.09/components/toolchain/binaries/gcc-linaro-aarch64-none-elf-4.9-2014.09_linux.tar.bz2;name=gcc-linaro-aarch64-none-elf-4.9-2014.09_linux"
+SRC_URI = "https://releases.linaro.org/archive/14.09/components/toolchain/binaries/gcc-linaro-aarch64-none-elf-4.9-2014.09_linux.tar.bz2;name=gcc-linaro-aarch64-none-elf-4.9-2014.09_linux"
 SRC_URI[gcc-linaro-aarch64-none-elf-4.9-2014.09_linux.md5sum] = "90d8cfb601fa3d81a9ff629327b07a9c"
 SRC_URI[gcc-linaro-aarch64-none-elf-4.9-2014.09_linux.sha256sum] = "ca96e224a8f5d022b18ed512a4e08b62a6f230b799fa96d75b8607f1e09e36ef"
 

@@ -17,8 +17,8 @@ DEPENDS += "wayland libdrm"
 # Add wayland
 RPROVIDES:${PN} += "libwayland-egl.so"
 
-SRCREV = "faba60eec6d252f60b027c9c216d0bbb473b58a9"
-SRC_URI = "git://git@openlinux.amlogic.com/yocto/platform/hardware/arm/mali-linux.git;protocol=ssh;branch=r16p0-RDK"
+#SRCREV = "faba60eec6d252f60b027c9c216d0bbb473b58a9"
+#SRC_URI = "git://${AML_GIT_ROOT}/platform/hardware/arm/mali-linux.git;protocol=ssh;branch=r16p0-RDK"
 
 S = "${WORKDIR}/git"
 GPU_MODEL = "gondul"

@@ -13,10 +13,9 @@ PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl"
 RPROVIDES:${PN} += "libGLESv2.so libEGL.so libGLESv1_CM.so libMali.so"
 DEPENDS += "patchelf-native"
 
-SRCREV = "ff2ef217a995bba2fd9b4337f38bb0dfcf3f3ccc"
-SRC_URI = "git://git.myamlogic.com/linux/amlogic/mali-linux.git;nobranch=1"
+#SRCREV = "ff2ef217a995bba2fd9b4337f38bb0dfcf3f3ccc"
+#SRC_URI = "git://${AML_GIT_ROOT}/linux/amlogic/mali-linux.git;nobranch=1"
 VERSION = "r7p0"
-MIRRORS:prepend = "git://git.myamlogic.com/linux/amlogic/mali-linux.git git://git@openlinux.amlogic.com/yocto/platform/hardware/arm/mali-linux.git;protocol=ssh; \n"
 
 S = "${WORKDIR}/git"
 
