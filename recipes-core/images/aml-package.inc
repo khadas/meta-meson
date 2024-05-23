@@ -136,6 +136,11 @@ do_aml_pack() {
             cp ${DEPLOY_DIR_IMAGE}/vendor-image-${MACHINE}.ext4 ${DEPLOY_DIR_IMAGE}/vendor.ext4.img2simg
         fi
     fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'mc_recovery', 'true', 'false', d)}; then
+        cp ${TMPDIR}/../recovery/recovery.img ${DEPLOY_DIR_IMAGE}
+    fi
+
     ${DEPLOY_DIR_IMAGE}/aml_image_v2_packer_new -r ${DEPLOY_DIR_IMAGE}/${PACK_CONF} ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', 'true', 'false', d)}; then
@@ -259,7 +264,8 @@ do_aml_pack() {
 
 do_aml_pack[depends] += "core-image-minimal:do_image_complete "
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', ' vendor-image:do_image_complete', '', d)}"
-do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'recovery', bb.utils.contains('MULTILIBS', 'multilib:lib32', ' lib32-recovery-image:do_image_complete', ' recovery-image:do_image_complete', d), '', d)}"
+do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'sc_recovery', bb.utils.contains('MULTILIBS', 'multilib:lib32', ' lib32-recovery-image:do_image_complete', ' recovery-image:do_image_complete', d), '', d)}"
+do_aml_pack[mcdepends] += "${@bb.utils.contains('DISTRO_FEATURES', 'mc_recovery', bb.utils.contains('MULTILIBS', 'multilib:lib32', ' mc::recovery:lib32-recovery-image:do_image_complete', ' mc::recovery:recovery-image:do_image_complete', d), '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', ' vbmeta-image:do_compile', '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'gpt-partition', ' aml-gpt-make:do_install', '', d)}"
 do_aml_pack[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'irdeto-downloader', ' caverify-image:do_install ', '', d)}"

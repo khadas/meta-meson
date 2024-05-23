@@ -15,7 +15,8 @@ ARM_TARGET:aarch64 = "64"
 PREBUILT_TARGET = ""
 PREBUILT_TARGET:aq2432 = "aq2432"
 PREBUILT_TARGET:bf201 = "bf201"
-PREBUILT_TARGET:bg201 = "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-128m', 'bg201_128m',  'bg201', d)}"
+PREBUILT_TARGET:bg201 = "${@bb.utils.contains('DISTRO_FEATURES', 'recovery_mode', 'bg201_recovery',\
+  bb.utils.contains('DISTRO_FEATURES', 'zapper-128m', 'bg201_128m', 'bg201', d), d)}"
 
 IS_KERNEL5.15_U = ""
 IS_KERNEL5.15_U:k5.15-u = "-u"

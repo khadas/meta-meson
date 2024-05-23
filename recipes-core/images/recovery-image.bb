@@ -184,3 +184,8 @@ IMAGE_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'AVB', 'si
 sign_recovery() {
     avbtool.py add_hash_footer --image ${DEPLOY_DIR_IMAGE}/recovery.img --partition_size ${DEVICE_PROPERTY_RECOVERY_PARTITION_SIZE}  --partition_name "recovery" ${SIGN_RECOVERY} ${RECOVERY_ROLLBACK_INDEX}
 }
+
+IMAGE_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'recovery_mode', 'install_recovery; ', '', d)}"
+install_recovery() {
+    cp ${DEPLOY_DIR_IMAGE}/recovery.img ${TMPDIR}/
+}

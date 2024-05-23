@@ -266,6 +266,29 @@ DEFAULTTUNE:virtclass-multilib-lib32 = "armv7athf-neon"
 EOF
     fi
 
+    unset NEED_MC_SUPPORT
+    rm -rf conf/multiconfig
+    if [ -n "$(echo $TARGET_MACHINE | grep -- mc)" ]; then
+      RECOVERY_MACHINE=$(sed -n '/^RECOVERY_MACHINE/p' $MESON_CFG_PATH/conf/machine/$TARGET_MACHINE.conf | sed 's/.*"\(.*\)".*/\1/g')
+      echo RECOVERY_MACHINE=${RECOVERY_MACHINE}
+      if [ -n "$RECOVERY_MACHINE" ]; then
+          NEED_MC_SUPPORT=y
+      fi
+    fi
+
+    if [ "${NEED_MC_SUPPORT+set}" = "set" ]; then
+      cat >> conf/local.conf <<EOF
+#Added for multiconfig support
+BBMULTICONFIG = "recovery"
+EOF
+
+      mkdir conf/multiconfig
+      cat >> conf/multiconfig/recovery.conf <<EOF
+MACHINE = "${RECOVERY_MACHINE}"
+TMPDIR = "${BUILD_DIR}/recovery"
+EOF
+    fi
+
     if [ "${SETUP_SOURCE_MIRROR}" = "1" ]; then
       cat >> conf/local.conf <<EOF
 #Setup source mirror, package will be generated under DL_DIR folder

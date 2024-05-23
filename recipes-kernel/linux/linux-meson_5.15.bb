@@ -9,7 +9,8 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/5.15:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/aml_dtoverlay:"
 
 FILESEXTRAPATHS:prepend:bf201 := "${THISDIR}/5.15/bf201:"
-FILESEXTRAPATHS:prepend:bg201 := "${@bb.utils.contains('DISTRO_FEATURES', 'zapper-128m', '${THISDIR}/5.15/bg201_128m:',  '${THISDIR}/5.15/bg201:', d)}"
+FILESEXTRAPATHS:prepend:bg201 := "${@bb.utils.contains('DISTRO_FEATURES', 'recovery_mode', '${THISDIR}/5.15/bg201_recovery:',\
+  bb.utils.contains('DISTRO_FEATURES', 'zapper-128m', '${THISDIR}/5.15/bg201_128m:', '${THISDIR}/5.15/bg201:', d), d)}"
 #FILESEXTRAPATHS:prepend:ap222-zapper := "${THISDIR}/5.15/bg201:"
 
 KBRANCH = "amlogic-5.15-dev"
@@ -44,6 +45,7 @@ SRC_URI:append = "${@bb.utils.contains_any('DISTRO_FEATURES', 'partition-enc par
 
 # add support nand
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'nand', ' file://nand.cfg', '', d)}"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'ubifs', ' file://ubifs.cfg', '', d)}"
 
 # Enable selinux support in the kernel if the feature is enabled
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' file://selinux.cfg', '', d)}"

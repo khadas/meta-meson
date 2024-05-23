@@ -129,8 +129,11 @@ KERNEL_MODULE_AUTOLOAD += " ${@bb.utils.contains('DISTRO_FEATURES', 'aml-dtv', '
 # set bootup splash
 SPLASH ?= "psplash"
 
+# support ubifs
+DISTRO_FEATURES:append = " ubifs"
+
 # default has recovery and swupdate
-DISTRO_FEATURES:append = " recovery"
+DISTRO_FEATURES:append = " recovery sc_recovery"
 DISTRO_FEATURES:append = " swupdate swupdate-enc"
 
 # default has vendor partition
