@@ -13,6 +13,10 @@ LDFLAGS:append  = " -L${STAGING_LIBDIR}/gstreamer-1.0 -Wl,-rpath -Wl,/usr/lib/gs
 PV = "${SRCPV}"
 
 S = "${WORKDIR}/git/gst-plugin-aml-demux-1.0"
+
+EXTRA_OECONF += "--enable-hwdemux=yes"
+EXTRA_OECONF += "--enable-amlqtdemux=yes"
+
 EXTRA_OEMAKE = "CROSS=${TARGET_PREFIX} TARGET_DIR=${STAGING_DIR_TARGET} STAGING_DIR=${D} DESTDIR=${D}"
 inherit autotools pkgconfig
 
