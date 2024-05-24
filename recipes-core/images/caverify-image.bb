@@ -2,6 +2,8 @@ SUMMARY = "generate caverify.img"
 LICENSE = "CLOSED"
 LIC_FILES_CHKSUM=""
 
+DEPENDS += " recovery-image"
+do_install[depends] += "recovery-image:do_image_complete"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
