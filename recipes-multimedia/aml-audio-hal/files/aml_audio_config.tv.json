@@ -6,6 +6,8 @@
 	"Dtv_Audio_Skipamadec": 0,
 	"Dtv_Audio_Syncenable": 1,
 	"HDMITX_Src_Select": 4,
+	"HDMITX_HBR_Src_Select": 4,
+	"HDMITX_HBR_PCM_INDEX": 2,
 	"Codec_Support_List":[
 		{"Name": "PCM", "Format": "AUDIO_FORMAT_PCM", "Support": true, "Description": "pcm", "License":false},
 		{"Name": "MP3", "Format": "AUDIO_FORMAT_MP3", "Support": true, "Description": "MPEG-1/2 Layer1/Layer2/Layer3", "License":false},
