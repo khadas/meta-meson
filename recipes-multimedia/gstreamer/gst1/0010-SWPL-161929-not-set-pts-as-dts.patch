@@ -1,0 +1,16 @@
+diff --git a/libs/gst/base/gstbaseparse.c b/libs/gst/base/gstbaseparse.c
+index 391dd21..09a3391 100644
+--- a/libs/gst/base/gstbaseparse.c
++++ b/libs/gst/base/gstbaseparse.c
+@@ -1044,9 +1044,9 @@ gst_base_parse_parse_frame (GstBaseParse * parse, GstBaseParseFrame * frame)
+      * observed to cause DTS going backwards */
+     GST_LOG_OBJECT (parse,
+         "Found DTS (%" GST_TIME_FORMAT ") > PTS (%" GST_TIME_FORMAT
+-        "), set PTS = DTS", GST_TIME_ARGS (GST_BUFFER_DTS (buffer)),
++        "), do not set PTS = DTS", GST_TIME_ARGS (GST_BUFFER_DTS (buffer)),
+         GST_TIME_ARGS (GST_BUFFER_PTS (buffer)));
+-    GST_BUFFER_PTS (buffer) = GST_BUFFER_DTS (buffer);
++    //GST_BUFFER_PTS (buffer) = GST_BUFFER_DTS (buffer);
+   }
+ 
+   if (!GST_BUFFER_DURATION_IS_VALID (buffer) &&
