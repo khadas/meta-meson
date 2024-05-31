@@ -342,7 +342,7 @@ index 31d0de89..96787c64 100644
 +						swupdate_progress_end(VER_SAME);
 +					} else {
 +						notify(FAILURE, RECOVERY_ERROR, INFOLEVEL, "higher version image has installed, skipping...");
-+						swupdate_progress_end(VER_OLER);
++						swupdate_progress_end(VER_OLDER);
 +					}
 +					return -1;
 +				}
@@ -1532,7 +1532,7 @@ index 8ac9af1b..e6bd0ecc 100644
 +	FAIL_LOAD,
 +	FAIL_SIGN,
 +	FAIL_FLASH_WRITE,
-+	VER_OLER,
++	VER_OLDER,
 +	VER_SAME,
  } RECOVERY_STATUS;
  
