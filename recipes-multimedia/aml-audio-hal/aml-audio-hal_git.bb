@@ -48,11 +48,13 @@ SRC_URI  += "\
   file://aml_audio_config.bm201.json \
   file://aml_audio_config.u212.json \
   file://aml_audio_config.tv.json \
+  file://aml_audio_config.t3x.json \
   file://aml_audio_config.s1a.json \
   file://mixer_paths.xml \
   file://mixer_paths.at301.xml \
   file://mixer_paths.t7.xml \
   file://mixer_paths.t5d.xml \
+  file://mixer_paths.t3x.xml \
   file://audio_hal_delay_base.json \
   file://audio_hal_delay_base.at301.json \
   file://audio_hal_delay_base.am301.json \
@@ -70,6 +72,7 @@ PROPERTY_SET_CONF:am301 = "aml_audio_config.am301.json"
 PROPERTY_SET_CONF:at301 = "aml_audio_config.at301.json"
 PROPERTY_SET_CONF:ap222 = "aml_audio_config.ap222.json"
 PROPERTY_SET_CONF:t7 = "aml_audio_config.tv.json"
+PROPERTY_SET_CONF:t3x = "aml_audio_config.t3x.json"
 PROPERTY_SET_CONF:bh201 = "aml_audio_config.bh201.json"
 PROPERTY_SET_CONF:bm201 = "aml_audio_config.bm201.json"
 PROPERTY_SET_CONF:s1a = "aml_audio_config.s1a.json"
@@ -78,6 +81,7 @@ PROPERTY_SET_MIXER = "mixer_paths.xml"
 PROPERTY_SET_MIXER:at301 = "mixer_paths.at301.xml"
 PROPERTY_SET_MIXER:t7 = "mixer_paths.t7.xml"
 PROPERTY_SET_MIXER:t5d = "mixer_paths.t5d.xml"
+PROPERTY_SET_MIXER_t3x = "mixer_paths.t3x.xml"
 PROPERTY_SET_AVSYNC = "audio_hal_delay_base.json"
 PROPERTY_SET_AVSYNC:at301 = "audio_hal_delay_base.at301.json"
 PROPERTY_SET_AVSYNC:am301 = "audio_hal_delay_base.am301.json"
