@@ -1,0 +1,22 @@
+#!/bin/sh
+
+PSPLASH_WRITE="/usr/bin/psplash-write"
+
+fb_release() {
+  GRAPH="/sys/class/graphics"
+  FB_BLANK="${GRAPH}/fb$1/blank"
+  FB_FREE_MEM="${GRAPH}/fb$1/force_free_mem"
+  if [ -e "$FB_BLANK" ]; then
+    echo 1 > "$FB_BLANK"
+  fi
+
+  if [ -e "$FB_FREE_MEM" ]; then
+    echo 1 > "$FB_FREE_MEM"
+  fi
+}
+
+if [ -f "$PSPLASH" ]; then
+  $PSPLASH_WRITE QUIT
+fi
+
+fb_release 1

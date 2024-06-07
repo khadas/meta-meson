@@ -1,0 +1,15 @@
+[Unit]
+Description=Actively exit psplash
+DefaultDependencies=no
+After=psplash-start.service
+Requires=psplash-start.service
+RequiresMountsFor=/run
+ConditionFileIsExecutable=/usr/bin/psplash-quit
+
+[Service]
+User=root
+ExecStart=/usr/bin/psplash-quit
+ExecStartPre=/bin/sleep 10
+
+[Install]
+WantedBy=multi-user.target
