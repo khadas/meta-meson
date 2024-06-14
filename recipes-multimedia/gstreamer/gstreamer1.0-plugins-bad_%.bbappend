@@ -47,6 +47,7 @@ SRC_URI:append = "file://0046-SWPL-100464-add-parse-sequence-extention.patch "
 SRC_URI:append = "file://0047-SWPL-85490-recalculate-frame-rate.patch "
 SRC_URI:append = "file://0048-OTT-44638-modify-hls-ts-demux-videoparser-to-parse-sampleAES.patch "
 SRC_URI:append = "file://0049-gsthlsdemux-CF1-support-HLS-AES128-decryption.patch "
+SRC_URI:append = "file://0050-SWPL-163568-remove-alignment-caps-in-tsdemux.patch "
 
 DEPENDS += "gst-aml-drmbufferpool-plugins"
 

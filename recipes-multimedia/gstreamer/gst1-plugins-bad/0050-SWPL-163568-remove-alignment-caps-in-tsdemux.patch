@@ -1,0 +1,26 @@
+diff --git a/gst/mpegtsdemux/tsdemux.c b/gst/mpegtsdemux/tsdemux.c
+index cc1b24d..54df774 100644
+--- a/gst/mpegtsdemux/tsdemux.c
++++ b/gst/mpegtsdemux/tsdemux.c
+@@ -1865,18 +1865,15 @@ create_pad_for_stream (MpegTSBase * base, MpegTSBaseStream * bstream,
+           stream->is_video = TRUE;
+           caps = gst_caps_new_simple ("application/x-hdcp",
+             "original-media-type", G_TYPE_STRING, "video/x-h264",
+-            "stream-format", G_TYPE_STRING, "byte-stream",
+-            "alignment", G_TYPE_STRING, "nal", NULL);
++            "stream-format", G_TYPE_STRING, "byte-stream", NULL);
+         } else {
+             caps = gst_caps_new_simple("video/x-h264",
+-              "stream-format", G_TYPE_STRING, "byte-stream",
+-              "alignment", G_TYPE_STRING, "nal", NULL);
++              "stream-format", G_TYPE_STRING, "byte-stream", NULL);
+         }
+       }
+       else {
+         caps = gst_caps_new_simple ("video/x-h265",
+-            "stream-format", G_TYPE_STRING, "byte-stream",
+-            "alignment", G_TYPE_STRING, "nal", NULL);
++            "stream-format", G_TYPE_STRING, "byte-stream", NULL);
+       }
+ 
+       desc = mpegts_get_descriptor_from_stream (bstream, 0xb0);
