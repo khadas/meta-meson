@@ -5,7 +5,49 @@
     fragment@0 {
         target-path = "/meson-amvideom";
         __overlay__ {
-            status = "disabled";
+            display_device_cnt = <1>;
+            vpp1_layer_count = <0>;
+        };
+    };
+    fragment@1 {
+        target-path = "/fb";
+        __overlay__ {
+            display_device_cnt = <1>;
+        };
+    };
+    fragment@2 {
+        target-path = "/lcd1";
+        __removenode__ {
+        };
+    };
+    fragment@3 {
+        target-path = "/lcd2";
+        __removenode__ {
+        };
+    };
+    fragment@4 {
+        target-path = "/lcd";
+        __removenode__ {
+        };
+    };
+    fragment@5 {
+        target-path = "/drm-vpu@0xff900000/port@1";
+        __overlay__ {
+            endpoint@2 {
+                remote-endpoint = <0>;
+            };
+            endpoint@3 {
+                remote-endpoint = <0>;
+            };
+            endpoint@4 {
+                remote-endpoint = <0>;
+            };
+        };
+    };
+    fragment@6 {
+        target-path = "/drm-subsystem";
+        __overlay__ {
+            crtc_masks = <7 7 1>;
         };
     };
 };

@@ -3,20 +3,6 @@
 
 / {
     fragment@0 {
-        target-path = "/lcd";
-        __overlay__ {
-            status = "disabled";
-        };
-    };
-
-    fragment@1 {
-        target-path = "/lcd2";
-        __overlay__ {
-            status = "disabled";
-        };
-    };
-
-    fragment@2 {
         target-path = "/aml_bt";
         __overlay__ {
             power_down_disable = <1>;
