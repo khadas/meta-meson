@@ -17,9 +17,12 @@ SOC_FAMILY:s4 = "s4"
 S = "${WORKDIR}/aml-linux-scs"
 
 do_install () {
+    local chipset_name=$(echo ${CHIPSET_NAME} | tr 'A-Z' 'a-z')
     install -d ${D}${bindir}/aml-linux-scs/
     if [ "${AML_SCS_SIGN_CONFIG_PATH}" = "" ];then
         cp -rf ${S}/${SOC_FAMILY}/${CHIPSET_NAME}/* ${D}${bindir}/aml-linux-scs/
+        mkdir -p ${DEPLOY_DIR_IMAGE}
+        cp -rf ${S}/${SOC_FAMILY}/${CHIPSET_NAME}/device-keys/fip/rsa/${chipset_name}/rootrsa-0/key/bl33-level-3-rsa-priv.pem ${DEPLOY_DIR_IMAGE}
     else
         cp -rf ${AML_SCS_SIGN_CONFIG_PATH}/${SOC_FAMILY}/${CHIPSET_NAME}/* ${D}${bindir}/aml-linux-scs/
     fi
@@ -33,6 +36,8 @@ do_install () {
 
         wget -q -N ${AML_TOOLS_SITE}/Aml_Linux_SCS_SignTool.zip
         unzip -q -u ${WORKDIR}/aml-linux-scs-${PV}/Aml_Linux_SCS_SignTool.zip
+
+        sed -i 's|#!/usr/bin/env python2|#!/usr/bin/env python3|' ${WORKDIR}/aml-linux-scs-${PV}/bin/recovery-sign.py
 
         install -m 0755 ${WORKDIR}/aml-linux-scs-${PV}/amlogic_scs_sign_whole_pkg.bash ${D}${bindir}/aml-linux-scs/
         cp -rf ${WORKDIR}/aml-linux-scs-${PV}/bin/* ${D}${bindir}/aml-linux-scs/bin/

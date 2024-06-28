@@ -20,6 +20,7 @@ PACKAGE_ARCH = "${MACHINE_ARCH}"
 SRC_URI:append = " file://merge_config.sh"
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'absystem', ' file://absystem.cfg', '', d)}"
 SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'hdmionly', ' file://hdmitx_only.cfg', '', d)}"
+SRC_URI:append = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', ' file://scs.cfg', '', d)}"
 
 #SRC_URI = "git://${AML_GIT_ROOT}/firmware/bin/bl2.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-dev;destsuffix=uboot-repo/bl2/bin;name=bl2"
 #SRC_URI:append = " git://${AML_GIT_ROOT}/firmware/bin/bl30.git;protocol=${AML_GIT_PROTOCOL};branch=amlogic-dev;destsuffix=uboot-repo/bl30/bin;name=bl30"
@@ -118,6 +119,7 @@ SOC = "TBD"
 SOC_aq2432 = "s805c3"
 SOC_ap222 = "s905y4"
 SOC_ah212 = "s905x4"
+SOC_a311d2 = "a311d2"
 
 FINAL_DEFCONFIG_PATH = "${S}/bl33/v2019/board/amlogic/defconfigs"
 DEFCONFIG = "${UBOOT_TYPE%_config}_defconfig"
@@ -146,11 +148,6 @@ do_compile () {
     LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BL30_ARG} ${BL2_ARG} ${BL32_ARG} ${BL33_ARG} ${VMX_UBOOT_ARG} ${NAGRA_UBOOT_ARG} ${IRDETO_UBOOT_ARG}
     cp -rf build/* fip/
 
-    if [ "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', 'true', 'false', d)}" = "true" ] &&\
-           [ "${@bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'true', 'false', d)}" = "true" ] ; then
-        mkdir -p ${DEPLOY_DIR_IMAGE}
-        cp ${S}/bl33/v2019/board/amlogic/${UBOOT_TYPE%_config}/device-keys/fip/rsa/${SOC}/rootrsa-0/key/bl33-level-3-rsa-priv.pem ${DEPLOY_DIR_IMAGE}
-    fi
 
     if [ -f "${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp" ]; then
         mv -f ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}.temp ${FINAL_DEFCONFIG_PATH}/${DEFCONFIG}

@@ -15,15 +15,16 @@ AVB_DM_VERITY_VENDOR_PARTITION_NAME = "vendor"
 AVB_DM_VERITY_SYSTEM_PARTITION_PUBKEY = "system_rsa2048.avbpubkey"
 AVB_DM_VERITY_VENDOR_PARTITION_PUBKEY = "vendor_rsa2048.avbpubkey"
 
-AVB_VBMETA_RSA_KEY = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
-    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'bl33-level-3-rsa-priv.pem', 'vbmeta_rsa2048.pem', d), \
-    'vbmeta_rsa2048.pem', d)}"
-AVB_VBMETA_RSA_KEY_PATH = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
-    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '${DEPLOY_DIR_IMAGE}', '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d), \
-    '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d)}"
-AVB_VBMETA_ALGORITHM = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
-    bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'SHA256_RSA4096', 'SHA256_RSA2048', d), \
-    'SHA256_RSA2048', d)}"
+AVB_VBMETA_RSA_KEY = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', 'bl33-level-3-rsa-priv.pem', 'vbmeta_rsa2048.pem', d)}"
+
+
+AVB_VBMETA_RSA_KEY_PATH = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', \
+    '${DEPLOY_DIR_IMAGE}', '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d)}"
+
+
+AVB_VBMETA_ALGORITHM = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', \
+    'SHA256_RSA4096', 'SHA256_RSA2048', d)}"
+
 
 SIGN_VBMETA = " --key ${AVB_VBMETA_RSA_KEY_PATH}/${AVB_VBMETA_RSA_KEY} --algorithm ${AVB_VBMETA_ALGORITHM} --padding_size 4096 "
 

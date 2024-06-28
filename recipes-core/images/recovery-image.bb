@@ -68,13 +68,13 @@ IMAGE_INSTALL:append= "${@bb.utils.contains("DISTRO_FEATURES", "irdeto-downloade
 
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 
-AVB_RECOVERY_RSA_KEY = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+AVB_RECOVERY_RSA_KEY = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', \
     bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'bl33-level-3-rsa-priv.pem', 'vbmeta_rsa2048.pem', d), \
     'vbmeta_rsa2048.pem', d)}"
-AVB_RECOVERY_RSA_KEY_PATH = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+AVB_RECOVERY_RSA_KEY_PATH = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', \
     bb.utils.contains('DISTRO_FEATURES', 'verimatrix', '${DEPLOY_DIR_IMAGE}', '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d), \
     '${STAGING_DIR_NATIVE}/${sysconfdir_native}', d)}"
-AVB_RECOVERY_ALGORITHM = "${@bb.utils.contains('DISTRO_FEATURES', 'secureboot', \
+AVB_RECOVERY_ALGORITHM = "${@bb.utils.contains('DISTRO_FEATURES', 'scs', \
     bb.utils.contains('DISTRO_FEATURES', 'verimatrix', 'SHA256_RSA4096', 'SHA256_RSA2048', d), \
     'SHA256_RSA2048', d)}"
 SIGN_RECOVERY = " --key ${AVB_RECOVERY_RSA_KEY_PATH}/${AVB_RECOVERY_RSA_KEY} --algorithm ${AVB_RECOVERY_ALGORITHM} "

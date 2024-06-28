@@ -357,10 +357,25 @@ dirs755:append:t3 = " /vendor /factory "
 do_install:append:t7 () {
     mkdir -p ${D}/vendor
     mkdir -p ${D}/factory
+    vendor_dev="vendor"
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'true', 'false', d)}; then
+        vendor_dev="dm-1"
+    elif ${@bb.utils.contains('DISTRO_FEATURES', 'absystem', 'true', 'false', d)}; then
+        vendor_dev="vendor_a"
+    fi
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', 'true', 'false', d)}; then
     cat >> ${D}${sysconfdir}/fstab <<EOF
- /dev/vendor            /vendor                    auto       defaults              0  0
+ /dev/${vendor_dev}     /vendor                    auto       defaults              0  0
+EOF
+    fi
+
+    cat >> ${D}${sysconfdir}/fstab <<EOF
  /dev/factory           /factory                   auto       defaults              0  0
 EOF
+
+
+
 }
 FILES:${PN}:append:t7 = " /vendor/* /factory/* "
 dirs755:append:t7 = " /vendor /factory "

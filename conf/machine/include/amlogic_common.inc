@@ -98,7 +98,7 @@ HOSTTOOLS_NONFATAL += "bc cc c++ bison repo python crc32"
 DISABLE_STATIC:pn-libevent = ""
 
 AML_RDK_PREBUILT_SITE ?= "http://10.18.11.6/shanghai/image/linux-distro/Public/YOCTO/prebuilt/"
-AML_TOOLS_SITE ?= "http://10.18.11.120:8000/Tools"
+AML_TOOLS_SITE ?= "http://10.8.9.5/amlogic/tools/release/plain/Tools_Common/0002.AML_ETOOL/Aml_Linux_SCS_SignTool/"
 # define sign tool
 #AML_SCS_SIGN_TOOL = "${COREBASE}/../aml-comp/prebuilt/hosttools/aml-linux-scs/Aml_Linux_SCS_SignTool/amlogic_scs_sign_whole_pkg.bash"
 # define config files device-keys and fw_arb.cfg

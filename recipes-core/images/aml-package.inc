@@ -1,4 +1,5 @@
 DEPENDS:append = " aml-img-packer-native"
+DEPENDS:append = " ncurses ncurses-native"
 DEPENDS:append:onepass = " core-image-minimal"
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'vendor-partition', ' vendor-image', '', d)}"
 DEPENDS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', ' aml-swupdate-native', '', d)}"
@@ -254,6 +255,7 @@ do_aml_pack() {
         if ${@bb.utils.contains('DISTRO_FEATURES', 'swupdate', 'true', 'false', d)}; then
             ${AML_SCS_SIGN} --soc ${chipset_name} \
                 --aml_key ${DEPLOY_DIR_IMAGE}/device-keys \
+                --fw_arb_cfg ${DEPLOY_DIR_IMAGE}/fw_arb.cfg \
                 --ota_key ${DEPLOY_DIR_IMAGE}/swupdate-priv.pem  \
                 --ota_swu ${DEPLOY_DIR_IMAGE}/software.swu  \
                 --bootloader_zip ${DEPLOY_DIR_IMAGE}/${UBOOT_TYPE%_config}-u-boot.aml.zip \
