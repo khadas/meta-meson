@@ -130,7 +130,7 @@ do_install:append:t7() {
     install -m 0755 -D ${S}/linux_515_t7/isp_lib/arm64/iv009_isp.elf ${D}/usr/bin/iv009_isp
     install -m 0666 ${KOUTPUT_COMMON_DRV_DIR}/linux_54_t7c/driver/amlsens/amlsens.ko ${ISPDIR}
     install -m 0666 ${KOUTPUT_COMMON_DRV_DIR}/linux_54_t7c/driver/amlcam/amlcam.ko ${ISPDIR}
-    #install -m 0666 ${KOUTPUT_COMMON_DRV_DIR}/linux_54_t7c/driver/sensor/dw9714/dw9714.ko ${ISPDIR}
+    install -m 0666 ${KOUTPUT_COMMON_DRV_DIR}/linux_54_t7c/driver/amllens/dw9714/dw9714.ko ${ISPDIR}
     install -m 0755 ${B}/linux_54_t7c/ispHal/v4l2_test_media/v4l2_test_raw ${D}${bindir}/v4l2_test_raw
     install -m 0755 ${B}/linux_54_t7c/ispHal/media2videoService/media2videoService ${D}${bindir}/media2videoService
     install -m 0666 ${S}/linux_54_t7c/ispHal/firmware/libispaml.so ${D}${libdir}
