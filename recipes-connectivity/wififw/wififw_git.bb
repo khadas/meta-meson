@@ -34,6 +34,7 @@ PACKAGES =+ "${PN}-ap6181 \
              ${PN}-bcm4356 \
              ${PN}-bcm43458 \
              ${PN}-qca6174\
+			 ${PN}-ap6275 \
             "
 
 do_install() {
@@ -127,7 +128,18 @@ do_install() {
 	install -D -m 0644 ${S}/qcom/config/qca6174/wifi/wlan/* ${D}${sysconfdir}/wifi/qca6174/wlan/
 	install -D -m 0644 ${S}/qcom/config/qca6174/bt/* ${D}${sysconfdir}/bluetooth/qca6174/
 	install -D -m 0644 ${S}/qcom/config/qca6174/bt/* ${D}${base_libdir}/firmware/qca_bt/
+
+#ap6275
+	mkdir -p ${D}${sysconfdir}/wifi/6275/
+	install -D -m 0644 ${S}/bcm_ampak/config/AP6275/Wi-Fi/*.bin ${D}${sysconfdir}/wifi/6275/
+	install -D -m 0644 ${S}/bcm_ampak/config/AP6275/Wi-Fi/nvram_ap6275s.txt ${D}${sysconfdir}/wifi/6275/
+	install -D -m 0644 ${S}/bcm_ampak/config/AP6275/Wi-Fi/clm_bcm43752a2_ag.blob ${D}${sysconfdir}/wifi/6275/
+	install -D -m 0644 ${S}/bcm_ampak/config/AP6275/BT/BCM4362A2.hcd ${D}/etc/bluetooth/
 }
+
+FILES:${PN}-ap6275 = "\
+                ${sysconfdir}/wifi/6275/*\
+				${sysconfdir}/bluetooth/BCM4362A2.hcd"
 
 FILES:${PN}-ap6181 = "\
                 ${sysconfdir}/wifi/6181/*"\

@@ -136,9 +136,18 @@ aml_bt_init()
 	usleep 100000
 }
 
+cpu_chipid=`cat /proc/cpu_chipid`
+prefix=$(echo "$cpu_chipid" | grep -o -E "[0-9a-fA-F]{25}")
+prefix=$(echo "$prefix" | cut -c1-4)
+
 brcm_bt_init()
 {
-	brcm_patchram_plus --enable_hci --baudrate 2000000 --use_baudrate_for_download --patchram /etc/bluetooth/BCM4359C0SR2.hcd /dev/ttyS1 --no2bytes &
+	if [ "$prefix" == "290b" ]; then
+  		brcm_patchram_plus --enable_hci --baudrate 2000000 --use_baudrate_for_download --patchram /etc/bluetooth/BCM4359C0SR2.hcd /dev/ttyS1 --no2bytes &
+  	else
+  		brcm_patchram_plus --enable_hci --baudrate 2000000 --use_baudrate_for_download --patchram /etc/bluetooth/BCM4362A2.hcd /dev/ttyS1 --no2bytes &
+  	fi
+	/usr/bin/bluealsa -p a2dp-source -p a2dp-sink -p hfp-hf -p hfp-ag -p hsp-hs -p hsp-ag &
 }
 
 service_down()
