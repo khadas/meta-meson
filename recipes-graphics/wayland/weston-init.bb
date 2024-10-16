@@ -5,13 +5,15 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 SRC_URI = "file://init \
            file://weston.service \
            file://weston-start \
-           file://aml-weston.ini "
+           file://aml-weston.ini \
+           file://aml-weston-hdmi.ini"
 
 S = "${WORKDIR}"
 
 do_install() {
   install -Dm755 ${WORKDIR}/init ${D}/${sysconfdir}/init.d/weston
   install -Dm644 ${WORKDIR}/aml-weston.ini ${D}/${sysconfdir}/
+  install -Dm644 ${WORKDIR}/aml-weston-hdmi.ini ${D}/${sysconfdir}/
   install -Dm0644 ${WORKDIR}/weston.service ${D}${systemd_system_unitdir}/weston.service
 
 # Install weston-start script
@@ -20,6 +22,7 @@ do_install() {
   sed -i 's,@LOCALSTATEDIR@,${localstatedir},g' ${D}${bindir}/weston-start
   if ${@bb.utils.contains('DISTRO_FEATURES', 'UI_720P', 'true', 'false', d)};then
     sed -i '/^ui-size/ s/.*/ui-size=1280x720/g' ${D}${sysconfdir}/aml-weston.ini
+    sed -i '/^ui-size/ s/.*/ui-size=1280x720/g' ${D}${sysconfdir}/aml-weston-hdmi.ini
   fi  
 }
 
