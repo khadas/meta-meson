@@ -9,7 +9,7 @@ inherit image
 SDKEXTCLASS ?= "${@['populate_sdk', 'populate_sdk_ext']['linux' in d.getVar("SDK_OS", True)]}"
 inherit ${SDKEXTCLASS}
 
-DEPENDS:append = " android-tools-native"
+DEPENDS:append = " android-tools-native linux-meson"
 DEPENDS:append = "${@bb.utils.contains("DISTRO_FEATURES", "FIT", " u-boot-tools-native dtc-native", "" ,d)}"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
@@ -104,6 +104,8 @@ do_install_kernel_modules() {
    if [ -f ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz ]; then
     tar -zxvf ${DEPLOY_DIR_IMAGE}/kernel-modules.tgz -C ${IMAGE_ROOTFS}/
     rm -rf ${IMAGE_ROOTFS}/modules/vendor
+   else
+    echo "Miss file of kernel-modules.tgz"
    fi
 }
 
@@ -112,6 +114,7 @@ remove_alternative_files () {
     rm -rf ${IMAGE_ROOTFS}/usr/lib/opkg
 }
 
+do_install_kernel_modules[depends] += "linux-meson:do_deploy"
 addtask install_kernel_modules before do_image_cpio after do_rootfs
 
 addtask bundle_initramfs_dtb before do_image_complete after do_image_cpio do_unpack
