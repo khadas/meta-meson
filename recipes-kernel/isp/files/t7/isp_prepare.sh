@@ -8,7 +8,7 @@ elif cat /proc/device-tree/compatible | grep "t7c_a311d2_an400-hdmitx-only"; the
     CHIP_NAME="t7c"
 elif cat /proc/device-tree/compatible | grep "t7_a311d2_kvim4"; then
     CHIP_NAME="t7"
-elif cat /proc/device-tree/compatible | grep "g12b_w400_a"; then
+elif cat /proc/device-tree/compatible | grep "g12b_kvim3"; then
     CHIP_NAME="g12b"
 fi
 
