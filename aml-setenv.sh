@@ -342,21 +342,21 @@ EOF
 	  fi
 	done
 
-	# Copy <manifest>.conf file to auto.conf for revision lock
-	if [ -L ./../.repo/manifest.xml ] ; then
-	  MANIFEST="$(basename `readlink -f ./../.repo/manifest.xml `)"
-	else
-	  MANIFEST=$(grep include ./../.repo/manifest.xml | cut -d '"' -f 2)
-	fi
-	MANIFEST=${MANIFEST%.*}
-	echo "Manifest Name = ${MANIFEST}"
-	if [ -f "./../.repo/manifests/${MANIFEST}.conf" ]; then
-	  cp ./../.repo/manifests/${MANIFEST}.conf ./conf/auto.conf
-	else
-	  echo
-	  echo -e "\033[31m Missing file $LOCAL_DIR/.repo/manifests/${MANIFEST}.conf !!!  Please check. \033[0m"
-	  echo
-	fi
+	# # Copy <manifest>.conf file to auto.conf for revision lock
+	# if [ -L ./../.repo/manifest.xml ] ; then
+	#   MANIFEST="$(basename `readlink -f ./../.repo/manifest.xml `)"
+	# else
+	#   MANIFEST=$(grep include ./../.repo/manifest.xml | cut -d '"' -f 2)
+	# fi
+	# MANIFEST=${MANIFEST%.*}
+	# echo "Manifest Name = ${MANIFEST}"
+	# if [ -f "./../.repo/manifests/${MANIFEST}.conf" ]; then
+	#   cp ./../.repo/manifests/${MANIFEST}.conf ./conf/auto.conf
+	# else
+	#   echo
+	#   echo -e "\033[31m Missing file $LOCAL_DIR/.repo/manifests/${MANIFEST}.conf !!!  Please check. \033[0m"
+	#   echo
+	# fi
 
     if [ -f "$MESON_ROOT_PATH/yocto-release-info" ]; then
         cat $MESON_ROOT_PATH/yocto-release-info  >> conf/auto.conf
