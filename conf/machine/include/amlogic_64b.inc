@@ -22,5 +22,4 @@ DISTROOVERRIDES .= ":dunfell"
 #PREFERRED_VERSION_libopus = "1.1"
 
 include conf/include/bbmasks-amlogic-platform.inc
-PREFERRED_VERSION_cmake-native= "3.16.5"
 PREFERRED_VERSION_youtube= "24%"
