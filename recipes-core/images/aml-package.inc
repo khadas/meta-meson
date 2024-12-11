@@ -256,6 +256,12 @@ do_aml_pack() {
                 --output ${DEPLOY_DIR_IMAGE}/software.sign.swu
         fi
     fi
+
+    if [ -n "${BOARD_NAME}" ]; then
+        local img_file="${BOARD_NAME}-yocto-$(date +"%Y%m%d" | cut -c 3-).img"
+        mv ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img  ${DEPLOY_DIR_IMAGE}/$img_file
+        xz -k ${DEPLOY_DIR_IMAGE}/$img_file
+    fi
 }
 
 do_aml_pack[depends] += "core-image-minimal:do_image_complete "
