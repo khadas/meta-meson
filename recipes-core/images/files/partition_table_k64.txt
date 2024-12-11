@@ -16,6 +16,6 @@ factory,-,8M,8M,0x0011
 vendor,-,448M,8M,0x0001
 vbmeta,-,2M,8M,0x0001
 odm,-,128M,8M,0x0001
-system,-,1536M,8M,0x0001
+system,-,3072M,8M,0x0001
 product,-,128M,8M,0x0001
 data,-,-,8M,0x0004
