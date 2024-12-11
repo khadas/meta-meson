@@ -144,7 +144,9 @@ brcm_bt_init()
 {
 	if [ "$prefix" == "290b" ]; then
   		brcm_patchram_plus --enable_hci --baudrate 2000000 --use_baudrate_for_download --patchram /etc/bluetooth/BCM4359C0SR2.hcd /dev/ttyS1 --no2bytes &
-  	else
+  	elif [ "$prefix" == "370b" ]; then
+  		brcm_patchram_plus --enable_hci --baudrate 2000000 --use_baudrate_for_download --patchram /etc/bluetooth/BCM4345C5.hcd /dev/ttyS1 --no2bytes &
+	else
   		brcm_patchram_plus --enable_hci --baudrate 2000000 --use_baudrate_for_download --patchram /etc/bluetooth/BCM4362A2.hcd /dev/ttyS1 --no2bytes &
   	fi
 	/usr/bin/bluealsa -p a2dp-source -p a2dp-sink -p hfp-hf -p hfp-ag -p hsp-hs -p hsp-ag &

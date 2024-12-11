@@ -71,6 +71,7 @@ do_install() {
 	mkdir -p ${D}${sysconfdir}/wifi/6256/
 	install -D -m 0644 ${S}/bcm_ampak/config/AP6256/Wi-Fi/*.bin ${D}${sysconfdir}/wifi/6256/
 	install -D -m 0644 ${S}/bcm_ampak/config/AP6256/Wi-Fi/nvram_ap6256.txt ${D}${sysconfdir}/wifi/6256/
+	install -D -m 0644 ${S}/bcm_ampak/config/AP6256/BT/BCM4345C5.hcd ${D}/etc/bluetooth/
 #bcm40181
 	mkdir -p ${D}${sysconfdir}/wifi/40181/
 	install -D -m 0644 ${S}/bcm_ampak/config/40181/*.bin ${D}${sysconfdir}/wifi/40181/
@@ -156,7 +157,8 @@ FILES:${PN}-ap6493 = "\
                 ${sysconfdir}/wifi/6493/*"
 
 FILES:${PN}-ap6256 = "\
-                ${sysconfdir}/wifi/6256/*"
+                ${sysconfdir}/wifi/6256/* \
+                ${sysconfdir}/bluetooth/BCM4345C5.hcd"
 
 FILES:${PN}-ap6398 = "\
                 ${sysconfdir}/wifi/6398/* \
