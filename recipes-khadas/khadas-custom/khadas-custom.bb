@@ -37,6 +37,16 @@ SRC_URI = "\
 	file://overlays/vim3/uart3.dtbo \
 	file://overlays/vim3/watchdog.dtbo \
 	file://overlays/vim3/kvim3.dtb.overlay.env \
+	file://overlays/vim1s/4k2k_fb.dtbo \
+	file://overlays/vim1s/i2cm_e.dtbo \
+	file://overlays/vim1s/i2s.dtbo \
+	file://overlays/vim1s/onewire.dtbo \
+	file://overlays/vim1s/panfrost.dtbo \
+	file://overlays/vim1s/pwm_f.dtbo \
+	file://overlays/vim1s/spdifout.dtbo \
+	file://overlays/vim1s/spi0.dtbo \
+	file://overlays/vim1s/uart_c.dtbo \
+	file://overlays/vim1s/kvim1s.dtb.overlay.env \
 	"
 
 do_install() {
@@ -47,6 +57,8 @@ do_install() {
         DTB_PATH="kvim4.dtb.overlays"
     elif [ "${BOARD_NAME}" = "vim3" ]; then
         DTB_PATH="kvim3.dtb.overlays"
+	elif [ "${BOARD_NAME}" = "vim1s" ]; then
+        DTB_PATH="kvim1s.dtb.overlays"
     else
         bbwarn "This is not khadas board,skipping overlays installation."
         return
