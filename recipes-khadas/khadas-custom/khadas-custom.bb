@@ -2,6 +2,8 @@ SUMMARY = "khadas-custom"
 SECTION = "khadas-custom"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302" 
+
+inherit systemd
  
 S = "${WORKDIR}"
  
@@ -47,6 +49,8 @@ SRC_URI = "\
 	file://overlays/vim1s/spi0.dtbo \
 	file://overlays/vim1s/uart_c.dtbo \
 	file://overlays/vim1s/kvim1s.dtb.overlay.env \
+	file://khadas-custom.sh \
+	file://khadas-custom.service \
 	"
 
 do_install() {
@@ -79,7 +83,14 @@ do_install() {
 	install -m 0755 ${S}/fan.sh ${D}${bindir}
     install -m 0755 ${S}/fan_setup.sh ${D}${bindir}
 
+	if [ "${@bb.utils.contains("DISTRO_FEATURES", "systemd", "yes", "no", d)}" = "yes"  ]; then
+        install -D -m 0644 ${WORKDIR}/khadas-custom.service ${D}${systemd_unitdir}/system/khadas-custom.service
+    fi
+	install -m 0755 ${S}/khadas-custom.sh ${D}${bindir}
+
 }
+
+SYSTEMD_SERVICE:${PN} = " khadas-custom.service "
 
 FILES:${PN} += " /boot/* "
 

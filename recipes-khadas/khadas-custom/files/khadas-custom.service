@@ -1,0 +1,13 @@
+[Unit]
+Description=khadas custom rootfs init
+After=dnsmasq.service
+
+[Service]
+User=root
+Group=root
+AmbientCapabilities=CAP_DAC_OVERRIDE
+CapabilityBoundingSet=CAP_DAC_OVERRIDE
+ExecStart=/usr/bin/khadas-custom.sh
+
+[Install]
+WantedBy=multi-user.target

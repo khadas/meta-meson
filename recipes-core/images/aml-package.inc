@@ -260,7 +260,7 @@ do_aml_pack() {
     if [ -n "${BOARD_NAME}" ]; then
         local img_file="${BOARD_NAME}-yocto-$(date +"%Y%m%d" | cut -c 3-).img"
         mv ${DEPLOY_DIR_IMAGE}/aml_upgrade_package.img  ${DEPLOY_DIR_IMAGE}/$img_file
-        xz -k ${DEPLOY_DIR_IMAGE}/$img_file
+        xz -kf ${DEPLOY_DIR_IMAGE}/$img_file
     fi
 }
 
