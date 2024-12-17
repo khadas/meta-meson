@@ -142,7 +142,7 @@ prefix=$(echo "$prefix" | cut -c1-4)
 
 brcm_bt_init()
 {
-	if [ "$prefix" == "290b" ]; then
+	if [ "$prefix" == "290b" ] || [ "$prefix" == "2b0b" ]; then
   		brcm_patchram_plus --enable_hci --baudrate 2000000 --use_baudrate_for_download --patchram /etc/bluetooth/BCM4359C0SR2.hcd /dev/ttyS1 --no2bytes &
   	elif [ "$prefix" == "370b" ]; then
   		brcm_patchram_plus --enable_hci --baudrate 2000000 --use_baudrate_for_download --patchram /etc/bluetooth/BCM4345C5.hcd /dev/ttyS1 --no2bytes &
