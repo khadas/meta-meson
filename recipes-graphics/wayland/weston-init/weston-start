@@ -80,4 +80,8 @@ if test -z "$XDG_RUNTIME_DIR"; then
 	fi
 fi
 export WESTON_FORCE_DRI=1
-exec openvt $openvt_args -- $launcher $weston_args --log=var/log/weston.log --config=/etc/aml-weston-hdmi.ini --socket=wayland-0
+if cat /proc/cmdline  | grep mipi_lcd_exist=1; then
+	exec openvt $openvt_args -- $launcher $weston_args --log=var/log/weston.log --config=/etc/aml-weston.ini --socket=wayland-0
+else
+	exec openvt $openvt_args -- $launcher $weston_args --log=var/log/weston.log --config=/etc/aml-weston-hdmi.ini --socket=wayland-0
+fi
