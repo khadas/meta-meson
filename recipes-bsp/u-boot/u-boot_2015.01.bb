@@ -125,7 +125,7 @@ do_compile () {
                 LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --bl32 bl32/bl32_2.4/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}
             fi
         elif [ "${BL32_SOC_FAMILY}" = "g12a" ];then
-            LDFLAGS= ./mk ${UBOOT_TYPE%_config} --gpt --bl32 bl32/bl32_3.8/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG}
+          LDFLAGS= ./mk ${UBOOT_TYPE%_config} --gpt ${BL30_ARG} ${BL2_ARG}
         else
             LDFLAGS= ./mk ${UBOOT_TYPE%_config} ${BUILD_GPT_FLAG} --bl32 bl32/bl32_3.8/bin/${BL32_SOC_FAMILY}/bl32.img ${BL30_ARG} ${BL2_ARG} ${BL33_ARG}
         fi
