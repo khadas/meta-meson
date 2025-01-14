@@ -39,6 +39,20 @@ SRC_URI = "\
 	file://overlays/vim3/uart3.dtbo \
 	file://overlays/vim3/watchdog.dtbo \
 	file://overlays/vim3/kvim3.dtb.overlay.env \
+	file://overlays/vim3l/4k2k_fb.dtbo \
+	file://overlays/vim3l/disable-i2c3.dtbo \
+	file://overlays/vim3l/disable-ts050.dtbo \
+	file://overlays/vim3l/i2s.dtbo \
+	file://overlays/vim3l/m2x-eth.dtbo \
+	file://overlays/vim3l/onewire.dtbo \
+	file://overlays/vim3l/os08a10.dtbo \
+	file://overlays/vim3l/otg-device.dtbo \
+	file://overlays/vim3l/panfrost.dtbo \
+	file://overlays/vim3l/pwm_f.dtbo \
+	file://overlays/vim3l/spi1.dtbo \
+	file://overlays/vim3l/uart3.dtbo \
+	file://overlays/vim3l/watchdog.dtbo \
+	file://overlays/vim3l/kvim3l.dtb.overlay.env \
 	file://overlays/vim1s/4k2k_fb.dtbo \
 	file://overlays/vim1s/i2cm_e.dtbo \
 	file://overlays/vim1s/i2s.dtbo \
@@ -61,6 +75,8 @@ do_install() {
         DTB_PATH="kvim4.dtb.overlays"
     elif [ "${BOARD_NAME}" = "vim3" ]; then
         DTB_PATH="kvim3.dtb.overlays"
+	elif [ "${BOARD_NAME}" = "vim3l" ]; then
+        DTB_PATH="kvim3l.dtb.overlays"
 	elif [ "${BOARD_NAME}" = "vim1s" ]; then
         DTB_PATH="kvim1s.dtb.overlays"
     else
