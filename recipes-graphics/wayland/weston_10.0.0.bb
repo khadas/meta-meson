@@ -30,7 +30,7 @@ inherit meson pkgconfig useradd features_check
 # depends on virtual/egl
 REQUIRED_DISTRO_FEATURES = "opengl"
 
-DEPENDS = "libxkbcommon gdk-pixbuf pixman cairo glib-2.0"
+DEPENDS = "libxkbcommon gdk-pixbuf pixman cairo glib-2.0 libge2d"
 DEPENDS += "wayland wayland-protocols libinput virtual/egl pango wayland-native meson-display"
 
 WESTON_MAJOR_VERSION = "${@'.'.join(d.getVar('PV').split('.')[0:1])}"

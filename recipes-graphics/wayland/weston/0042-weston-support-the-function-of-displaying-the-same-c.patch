@@ -1,0 +1,477 @@
+From d07dfab47c5bb947e2480d90ce8319b5244b1e6a Mon Sep 17 00:00:00 2001
+From: "leng.fang" <leng.fang@amlogic.com>
+Date: Thu, 27 Mar 2025 09:16:49 +0000
+Subject: [PATCH] weston: support the function of displaying the same content
+ on dual screens [1/1]
+
+PD#SH-23882
+
+Problem:
+support the function of displaying the same content on dual screens,
+and secondary screen maintains aspect ratio.
+
+Solution:
+use the same fb when displaying on different screens
+
+Verify:
+A311D2
+
+Signed-off-by: leng.fang <leng.fang@amlogic.com>
+---
+ compositor/main.c                    |   5 +
+ include/libweston/backend-drm.h      |   4 +-
+ include/libweston/libweston.h        |   3 +
+ libweston/backend-drm/drm-internal.h |   2 +
+ libweston/backend-drm/drm.c          | 245 ++++++++++++++++++++++++++-
+ libweston/backend-drm/meson.build    |   3 +-
+ libweston/compositor.c               |  11 +-
+ 7 files changed, 259 insertions(+), 14 deletions(-)
+
+diff --git a/compositor/main.c b/compositor/main.c
+index a19d3c4..39ebae7 100644
+--- a/compositor/main.c
++++ b/compositor/main.c
+@@ -2391,6 +2391,7 @@ static void drm_get_should_enable_heads_by_priority(struct weston_compositor *co
+ 		if (i == 0)
+ 			weston_log("Output pipline limited:%d, Enable connect by priority:", out_size);
+ 		if (out[i] != NULL) {
++			out[i]->primary = (i == 0);
+ 			weston_log("[=>%s]", weston_head_get_name(out[i]));
+ 		}
+ 	}
+@@ -2807,6 +2808,10 @@ load_drm_backend(struct weston_compositor *c,
+ 	                               &config.pageflip_timeout, 0);
+ 	weston_config_section_get_bool(section, "pixman-shadow",
+ 				       &config.use_pixman_shadow, true);
++	weston_config_section_get_bool(section, "mirror-display",
++				       &config.mirror, false);
++	weston_config_section_get_bool(section, "secondary-support-scale",
++				       &config.secondary_scale, false);
+ 	if (without_input)
+ 		c->require_input = !without_input;
+ 
+diff --git a/include/libweston/backend-drm.h b/include/libweston/backend-drm.h
+index 9b8acbe..528902e 100644
+--- a/include/libweston/backend-drm.h
++++ b/include/libweston/backend-drm.h
+@@ -233,7 +233,9 @@ struct weston_drm_backend_config {
+ 	 * after enable fixed ui size.  */
+ 	struct weston_size  fixed_ui_size;
+ #endif
+-	
++	bool mirror;
++	bool secondary_scale;
++
+ };
+ 
+ #ifdef  __cplusplus
+diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
+index 17bd196..f987fd2 100644
+--- a/include/libweston/libweston.h
++++ b/include/libweston/libweston.h
+@@ -263,6 +263,7 @@ struct weston_head {
+ 
+ 	/** Current content protection status */
+ 	enum weston_hdcp_protection current_protection;
++	bool primary;
+ };
+ 
+ /** Content producer for heads
+@@ -352,6 +353,7 @@ struct weston_output {
+ 	enum weston_hdcp_protection desired_protection;
+ 	enum weston_hdcp_protection current_protection;
+ 	bool allow_protection;
++	bool primary;
+ 
+ 	int (*start_repaint_loop)(struct weston_output *output);
+ 	int (*repaint)(struct weston_output *output,
+@@ -1198,6 +1200,7 @@ struct weston_compositor {
+ 	struct content_protection *content_protection;
+ 	struct weston_surface* last_keyboard_focus;
+ 	int video_surface_count;
++	int display_mode;
+ };
+ 
+ struct weston_buffer {
+diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
+index d91a1c7..c76edd0 100644
+--- a/libweston/backend-drm/drm-internal.h
++++ b/libweston/backend-drm/drm-internal.h
+@@ -321,6 +321,8 @@ struct drm_backend {
+ 	int vdin_detect_fd;
+ #endif
+ 	bool allow_modeset;
++	int display_mode;
++	bool secondary_support_scale;
+ };
+ 
+ struct drm_mode {
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 8bcbb6a..6cdd16b 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -65,6 +65,7 @@
+ #include "linux-dmabuf.h"
+ #include "linux-dmabuf-unstable-v1-server-protocol.h"
+ #include "linux-explicit-synchronization.h"
++#include "aml_ge2d.h"
+ 
+ static const char default_seat[] = "seat0";
+ #ifdef ENABLE_DRM_HELP
+@@ -502,6 +503,171 @@ drm_output_render_pixman(struct drm_output_state *state,
+ 	return drm_fb_ref(output->dumb[output->current_image]);
+ }
+ 
++static struct drm_output *
++drm_get_primary_output(struct weston_compositor *c)
++{
++	struct drm_output *output;
++	if (!c)
++		return NULL;
++
++	wl_list_for_each(output, &c->output_list, base.link) {
++		if (output->base.primary)
++			return output;
++	}
++	return NULL;
++}
++
++static struct drm_fb *
++drm_get_fb(struct drm_pending_state *pending_state,
++		  struct drm_output *output)
++{
++	struct drm_plane_state *scanout_state;
++	struct drm_output_state *state;
++	struct drm_fb *fb = NULL;
++
++	if (!output)
++		return fb;
++
++	fb = output->scanout_plane->state_cur->fb;
++
++	state = drm_pending_state_get_output(pending_state, output);
++	if (!state)
++		return fb;
++
++	scanout_state =
++		drm_output_state_get_existing_plane(state,
++						    output->scanout_plane);
++	if (!scanout_state || !scanout_state->fb)
++		return fb;
++
++	return scanout_state->fb;
++}
++
++static pixel_format_t
++ge2d_get_format(const struct pixel_format_info *format)
++{
++	switch (format->format) {
++	case DRM_FORMAT_ARGB8888:
++		return PIXEL_FORMAT_ARGB_8888;
++	case DRM_FORMAT_RGB565:
++		return PIXEL_FORMAT_RGB_565;
++	default:
++		return PIXEL_FORMAT_RGBA_8888;
++	}
++}
++
++static void
++clear_ge2d_info(aml_ge2d_t *amlge2d)
++{
++	if (!amlge2d) {
++		weston_log("clear ge2d info error\n");
++		return;
++	}
++	memset(&(amlge2d->ge2dinfo.src_info[0]), 0, sizeof(buffer_info_t));
++	memset(&(amlge2d->ge2dinfo.src_info[1]), 0, sizeof(buffer_info_t));
++	memset(&(amlge2d->ge2dinfo.dst_info), 0, sizeof(buffer_info_t));
++}
++
++static int
++drm_convert_fb(struct drm_fb *src, struct drm_fb *dst, int dst_w, int dst_h)
++{
++	static aml_ge2d_t amlge2d = { 0 };
++	static bool ge2d_inited = false;
++	static bool ge2d_supported = true;
++	int src_fd, dst_fd;
++	int ret;
++	aml_ge2d_info_t *pge2dinfo = &amlge2d.ge2dinfo;
++	int sw, sh;
++	int dx, dy, dw, dh;
++
++	if (!src || !dst)
++		return -1;
++
++	if (!ge2d_supported)
++		return -1;
++
++	if (!ge2d_inited) {
++		memset(&amlge2d, 0, sizeof(aml_ge2d_t));
++		ret = aml_ge2d_init(&amlge2d);
++		if (ret < 0) {
++			ge2d_supported = false;
++			weston_log("ge2d init failed\n");
++			return ret;
++		}
++		ge2d_inited = true;
++	}
++
++	ret = drmPrimeHandleToFD(src->fd, src->handles[0],
++			0, &src_fd);
++	if (ret < 0)
++		return ret;
++
++	ret = drmPrimeHandleToFD(dst->fd, dst->handles[0],
++			0, &dst_fd);
++	if (ret < 0) {
++		close(src_fd);
++		return ret;
++	}
++
++	int offset;
++	sw = src->width;
++	sh = src->height;
++	dx = 0;
++	dy = 0;
++	dw = dst->width;
++	dh = dst->height;
++
++	if (sw * dh > dw * sh) {
++		offset = dh - dw * sh / sw;
++		dy = offset / 2;
++		dh -= offset;
++	} else {
++		offset = dw - dh * sw / sh;
++		dx = offset / 2;
++		dw -= offset;
++	}
++
++	clear_ge2d_info(&amlge2d);
++	pge2dinfo->src_info[0].memtype = GE2D_CANVAS_ALLOC; /* use allocated memory */
++	pge2dinfo->src_info[0].mem_alloc_type = AML_GE2D_MEM_DMABUF; /* use dma memory */
++	pge2dinfo->src_info[0].shared_fd[0] = src_fd; /* src buf shared fd */
++	pge2dinfo->src_info[0].plane_number = 1; /* src plane_number */
++	pge2dinfo->src_info[0].canvas_w = src->width; /* src canvas width */
++	pge2dinfo->src_info[0].canvas_h = src->height; /* src canvas height */
++	pge2dinfo->src_info[0].rect.x = 0; /* src rect x, input data area */
++	pge2dinfo->src_info[0].rect.y = 0; /* src rect y, input data area */
++	pge2dinfo->src_info[0].rect.w = src->width; /* src rect w, input data area */
++	pge2dinfo->src_info[0].rect.h = src->height; /* src rect h, input data area */
++	pge2dinfo->src_info[0].format = ge2d_get_format(src->format); /* src format */
++	pge2dinfo->src_info[0].plane_alpha = 0xFF; /* global plane alpha*/
++
++	pge2dinfo->dst_info.memtype = GE2D_CANVAS_ALLOC; /* use allocated memory */
++	pge2dinfo->dst_info.mem_alloc_type = AML_GE2D_MEM_DMABUF; /* use dma memory */
++	pge2dinfo->dst_info.shared_fd[0] = dst_fd; /* dst buf shared fd */
++	pge2dinfo->dst_info.plane_number = 1; /* dst plane_number */
++	pge2dinfo->dst_info.canvas_w = dst_w; /* dst canvas width */
++	pge2dinfo->dst_info.canvas_h = dst_h; /* dst canvas height */
++	pge2dinfo->dst_info.rect.x = dx; /* dst rect x, input data area */
++	pge2dinfo->dst_info.rect.y = dy; /* dst rect y, input data area */
++	pge2dinfo->dst_info.rect.w = dw; /* dst rect w, input data area */
++	pge2dinfo->dst_info.rect.h = dh; /* dst rect h, input data area */
++	pge2dinfo->dst_info.format = ge2d_get_format(dst->format); /* dst format */
++	pge2dinfo->dst_info.plane_alpha = 0xFF; /* global plane alpha*/
++	pge2dinfo->dst_info.rotation = 0; /* dst rotation option*/
++
++	pge2dinfo->ge2d_op = AML_GE2D_STRETCHBLIT;
++
++	/* start a process. */
++	ret = aml_ge2d_process(pge2dinfo);
++	if (ret < 0) {
++		weston_log("ge2d process failed, %s (%d)\n", __func__, __LINE__);
++	}
++
++	close(src_fd);
++	close(dst_fd);
++	return ret;
++}
++
+ void
+ drm_output_render(struct drm_output_state *state, pixman_region32_t *damage)
+ {
+@@ -512,7 +678,8 @@ drm_output_render(struct drm_output_state *state, pixman_region32_t *damage)
+ 	struct drm_property_info *damage_info =
+ 		&scanout_plane->props[WDRM_PLANE_FB_DAMAGE_CLIPS];
+ 	struct drm_backend *b = to_drm_backend(c);
+-	struct drm_fb *fb;
++	struct drm_fb *fb = NULL;
++	struct drm_fb *src_fb = NULL;
+ 	pixman_region32_t scanout_damage;
+ 	pixman_box32_t *rects;
+ 	int n_rects;
+@@ -542,23 +709,70 @@ drm_output_render(struct drm_output_state *state, pixman_region32_t *damage)
+ 		fb = drm_output_render_gl(state, damage);
+ 	}
+ 
++    if (b->display_mode == 1) {
++		if (output->base.primary) {
++			struct drm_output *tmp;
++			wl_list_for_each(tmp, &c->output_list, base.link)
++				if (!tmp->base.primary)
++					weston_output_schedule_repaint(&tmp->base);
++		} else {
++			struct drm_output *doutput = drm_get_primary_output(c);
++			src_fb = drm_get_fb(state->pending_state, doutput);
++			if (!src_fb) {
++				weston_compositor_damage_all(c);
++				drm_plane_state_put_back(scanout_state);
++				return;
++			}
++		}
++	}
++
+ 	if (!fb) {
+ 		drm_plane_state_put_back(scanout_state);
+ 		return;
+ 	}
+ 
++	int sw, sh;
++	int dx, dy, dw, dh;
++
++	sw = fb->width;
++	sh = fb->height;
++	dx = 0;
++	dy = 0;
++	dw = output->base.current_mode->width;
++	dh = output->base.current_mode->height;
++
++	if (b->display_mode == 1 && !output->base.primary) {
++		if (!b->secondary_support_scale) {
++			drm_convert_fb(src_fb, fb, dw, dh);
++		} else {
++			int offset;
++			sw = src_fb->width;
++			sh = src_fb->height;
++			if (sw * dh > dw * sh) {
++				offset = dh - dw * sh / sw;
++				dy = offset / 2;
++				dh -= offset;
++			} else {
++				offset = dw - dh * sw / sh;
++				dx = offset / 2;
++				dw -= offset;
++			}
++			drm_fb_unref(fb);
++			fb = drm_fb_ref(src_fb);
++		}
++	}
+ 	scanout_state->fb = fb;
+ 	scanout_state->output = output;
+ 
+ 	scanout_state->src_x = 0;
+ 	scanout_state->src_y = 0;
+-	scanout_state->src_w = fb->width << 16;
+-	scanout_state->src_h = fb->height << 16;
++	scanout_state->src_w = sw << 16;
++	scanout_state->src_h = sh << 16;
+ 
+-	scanout_state->dest_x = 0;
+-	scanout_state->dest_y = 0;
+-	scanout_state->dest_w = output->base.current_mode->width;
+-	scanout_state->dest_h = output->base.current_mode->height;
++	scanout_state->dest_x = dx;
++	scanout_state->dest_y = dy;
++	scanout_state->dest_w = dw;
++	scanout_state->dest_h = dh;
+ 
+ #ifdef ENABLE_DRM_HELP
+ 	help_get_scanout_viewport(&scanout_state->dest_x, &scanout_state->dest_y, &scanout_state->dest_w, &scanout_state->dest_h);
+@@ -571,6 +785,15 @@ drm_output_render(struct drm_output_state *state, pixman_region32_t *damage)
+ 	scanout_state->dest_h = output->display_size.height;
+ #endif
+ 
++	if (b->display_mode == 1 && !output->base.primary) {
++		if (b->secondary_support_scale) {
++			scanout_state->dest_x = dx;
++			scanout_state->dest_y = dy;
++			scanout_state->dest_w = dw;
++			scanout_state->dest_h = dh;
++		}
++	}
++
+ 	pixman_region32_subtract(&c->primary_plane.damage,
+ 				 &c->primary_plane.damage, damage);
+ 
+@@ -2123,8 +2346,9 @@ drm_output_enable(struct weston_output *base)
+ 	output->base.set_dpms = drm_set_dpms;
+ 	output->base.switch_mode = drm_output_switch_mode;
+ 	output->base.set_gamma = drm_output_set_gamma;
+-	weston_log("Output %s (crtc %d) video modes:\n",
+-		   output->base.name, output->crtc->crtc_id);
++
++	weston_log("Output %s (crtc %d) (primary %d) video modes:\n",
++		   output->base.name, output->crtc->crtc_id, output->base.primary);
+ 	drm_output_print_modes(output);
+ 
+ 	struct drm_plane *plane;
+@@ -3672,6 +3896,9 @@ drm_backend_create(struct weston_compositor *compositor,
+ 	b->use_pixman = config->use_pixman;
+ 	b->pageflip_timeout = config->pageflip_timeout;
+ 	b->use_pixman_shadow = config->use_pixman_shadow;
++	b->display_mode = config->mirror ? 1 : 0;
++	compositor->display_mode = b->display_mode;
++	b->secondary_support_scale = config->secondary_scale;
+ 
+ 	b->debug = weston_compositor_add_log_scope(compositor, "drm-backend",
+ 						   "Debug messages from DRM/KMS backend\n",
+diff --git a/libweston/backend-drm/meson.build b/libweston/backend-drm/meson.build
+index fa63eb6..96911ec 100644
+--- a/libweston/backend-drm/meson.build
++++ b/libweston/backend-drm/meson.build
+@@ -45,7 +45,8 @@ deps_drm = [
+ 	dep_libinput_backend,
+ 	dependency('libudev', version: '>= 136'),
+ 	dep_backlight,
+-	dep_meson_display
++	dep_meson_display,
++	declare_dependency(link_args: ['-lge2d'])
+ ]
+ 
+ if get_option('renderer-gl')
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 4d96a56..e6a9717 100755
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -6163,6 +6163,7 @@ weston_output_attach_head(struct weston_output *output,
+ 	}
+ 
+ 	head->output = output;
++	output->primary = head->primary;
+ 	wl_list_insert(output->head_list.prev, &head->output_link);
+ 
+ 	if (output->enabled) {
+@@ -7357,6 +7358,7 @@ weston_output_enable(struct weston_output *output)
+ 	struct weston_head *head;
+ 	char *head_names;
+ 	int x = 0, y = 0;
++	int offset = 0;
+ 
+ 	if (output->enabled) {
+ 		weston_log("Error: attempt to enable an enabled output '%s'\n",
+@@ -7384,8 +7386,11 @@ weston_output_enable(struct weston_output *output)
+ 	iterator = container_of(c->output_list.prev,
+ 				struct weston_output, link);
+ 
+-	if (!wl_list_empty(&c->output_list))
+-		x = iterator->x + iterator->width;
++	if (!wl_list_empty(&c->output_list)) {
++		if (c->display_mode == 1 && !output->primary)
++			offset = iterator->width * 2;
++		x = iterator->x + iterator->width + offset;
++	}
+ 
+ 	/* Make sure the scale is set up */
+ 	assert(output->scale);
+@@ -8459,7 +8464,7 @@ static void weston_compositor_print_scene(struct weston_compositor *ec, FILE *fp
+ 		struct weston_head *head;
+ 		int head_idx = 0;
+ 
+-		fprintf(fp, "Output %d (%s):\n", output->id, output->name);
++		fprintf(fp, "Output %d (%s) primary(%d):\n", output->id, output->name, output->primary);
+ 		assert(output->enabled);
+ 
+ 		fprintf(fp, "\tposition: (%d, %d) -> (%d, %d)\n",
+-- 
+2.45.2
+

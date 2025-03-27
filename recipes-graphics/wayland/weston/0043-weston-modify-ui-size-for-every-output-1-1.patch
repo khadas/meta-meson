@@ -1,0 +1,153 @@
+From d1efa42e7b4008e642b3e45d5d05301a22bf2b20 Mon Sep 17 00:00:00 2001
+From: "leng.fang" <leng.fang@amlogic.com>
+Date: Fri, 28 Mar 2025 02:15:25 +0000
+Subject: [PATCH] weston: modify ui-size for every output [1/1]
+
+PD#SH-23882
+
+Problem:
+need ui-size for every output
+
+Solution:
+modify ui-size for every output
+
+Verify:
+A311D2
+
+Signed-off-by: leng.fang <leng.fang@amlogic.com>
+---
+ compositor/main.c             | 22 +++++++++++-----------
+ include/libweston/libweston.h |  9 +++++++++
+ libweston/backend-drm/drm.c   | 19 ++++---------------
+ libweston/backend-drm/modes.c |  4 ++--
+ 4 files changed, 26 insertions(+), 28 deletions(-)
+
+diff --git a/compositor/main.c b/compositor/main.c
+index 28b8b3d..a03c298 100644
+--- a/compositor/main.c
++++ b/compositor/main.c
+@@ -1837,6 +1837,17 @@ drm_backend_output_configure(struct weston_output *output,
+ 	}
+ 	free(s);
+ 
++#ifdef MESON_DRM_FIX_UI_SIZE
++	char* buffp = NULL;
++	weston_config_section_get_string(section, "ui-size", &buffp, "1280x720");
++	if (buffp != NULL) {
++		sscanf(buffp, "%dx%d", &output->fixed_ui_size.width, &output->fixed_ui_size.height);
++		free(buffp);
++	}
++	weston_log("%s, L%d, fixed UI size(%dX%d)\n",
++		__FUNCTION__, __LINE__, output->fixed_ui_size.width, output->fixed_ui_size.height);
++#endif
++
+ 	if (api->set_mode(output, mode, modeline) < 0) {
+ 		weston_log("Cannot configure an output using weston_drm_output_api.\n");
+ 		free(modeline);
+@@ -2789,17 +2800,6 @@ load_drm_backend(struct weston_compositor *c,
+ 
+ 	parse_options(options, ARRAY_LENGTH(options), argc, argv);
+ 
+-#ifdef MESON_DRM_FIX_UI_SIZE
+-	char* buffp = NULL;
+-	section = weston_config_get_section(wc, "output", NULL, NULL);
+-	weston_config_section_get_string(section,
+-					 "ui-size", &buffp,
+-					 NULL);
+-	if (buffp != NULL) {
+-		sscanf(buffp, "%dx%d", &config.fixed_ui_size.width, &config.fixed_ui_size.height);
+-	}
+-#endif
+-
+ 	section = weston_config_get_section(wc, "core", NULL, NULL);
+ 	weston_config_section_get_string(section,
+ 					 "gbm-format", &config.gbm_format,
+diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
+index 959596e..78ba6ea 100644
+--- a/include/libweston/libweston.h
++++ b/include/libweston/libweston.h
+@@ -43,6 +43,11 @@ extern "C" {
+ 
+ #include <libweston/matrix.h>
+ #include <libweston/zalloc.h>
++
++#ifndef MESON_DRM_FIX_UI_SIZE
++#define MESON_DRM_FIX_UI_SIZE 1
++#endif
++
+ #define MESON_VIDEO_PLAN_SUPPORT 1
+ #define SURFACE_QUEUE_CAPACITY 10
+ 
+@@ -413,6 +418,10 @@ struct weston_output {
+ 	 */
+ 	void (*detach_head)(struct weston_output *output,
+ 			    struct weston_head *head);
++
++#ifdef MESON_DRM_FIX_UI_SIZE
++	struct weston_size  fixed_ui_size;
++#endif
+ };
+ 
+ enum weston_pointer_motion_mask {
+diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
+index 150e079..a21baf8 100644
+--- a/libweston/backend-drm/drm.c
++++ b/libweston/backend-drm/drm.c
+@@ -941,8 +941,8 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
+ 	output->display_size.width = drm_mode->base.width;
+ 	output->display_size.height = drm_mode->base.height;
+ 	//Set the fixed ui size to current_mode
+-	drm_mode->base.width = b->fixed_ui_size.width;
+-	drm_mode->base.height = b->fixed_ui_size.height;
++	drm_mode->base.width = output->base.fixed_ui_size.width;
++	drm_mode->base.height = output->base.fixed_ui_size.height;
+ #endif
+ 
+ 	output->base.current_mode = &drm_mode->base;
+@@ -2165,8 +2165,8 @@ drm_output_enable(struct weston_output *base)
+ 
+ #ifdef MESON_DRM_FIX_UI_SIZE
+ 	if (output->base.current_mode && output->current_mode_need_restore) {
+-		output->base.current_mode->width = b->fixed_ui_size.width;
+-		output->base.current_mode->height = b->fixed_ui_size.height;
++		output->base.current_mode->width = output->base.fixed_ui_size.width;
++		output->base.current_mode->height = output->base.fixed_ui_size.height;
+ 		output->current_mode_need_restore = false;
+ 	}
+ #endif
+@@ -3759,17 +3759,6 @@ drm_backend_create(struct weston_compositor *compositor,
+ 	b->session_listener.notify = session_notify;
+ 	wl_signal_add(&compositor->session_signal, &b->session_listener);
+ 
+-#ifdef MESON_DRM_FIX_UI_SIZE
+-	if (config->fixed_ui_size.width > 0 && config->fixed_ui_size.height > 0) {
+-		b->fixed_ui_size.width = config->fixed_ui_size.width;
+-		b->fixed_ui_size.height = config->fixed_ui_size.height;
+-	} else {
+-		b->fixed_ui_size.width = 1920;
+-		b->fixed_ui_size.height = 1080;
+-	}
+-	weston_log("Fix ui-size to : %dx%d\n", b->fixed_ui_size.width, b->fixed_ui_size.height);
+-#endif
+-
+ 	if (config->specific_device)
+ 		drm_device = open_specific_drm_device(b, config->specific_device);
+ 	else
+diff --git a/libweston/backend-drm/modes.c b/libweston/backend-drm/modes.c
+index 088db00..6afd5d3 100755
+--- a/libweston/backend-drm/modes.c
++++ b/libweston/backend-drm/modes.c
+@@ -872,8 +872,8 @@ drm_output_set_mode(struct weston_output *base,
+ 	output->display_size.width = output->base.current_mode->width;
+ 	output->display_size.height = output->base.current_mode->height;
+ 	//Set the fixed ui size to current_mode
+-	output->base.current_mode->width = b->fixed_ui_size.width;
+-	output->base.current_mode->height = b->fixed_ui_size.height;
++	output->base.current_mode->width = output->base.fixed_ui_size.width;
++	output->base.current_mode->height = output->base.fixed_ui_size.height;
+ 	output->current_mode_need_restore = true;
+ #endif
+ 
+-- 
+2.45.2
+

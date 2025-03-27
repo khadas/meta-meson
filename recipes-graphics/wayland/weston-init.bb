@@ -23,7 +23,11 @@ do_install() {
   if ${@bb.utils.contains('DISTRO_FEATURES', 'UI_720P', 'true', 'false', d)};then
     sed -i '/^ui-size/ s/.*/ui-size=1280x720/g' ${D}${sysconfdir}/aml-weston.ini
     sed -i '/^ui-size/ s/.*/ui-size=1280x720/g' ${D}${sysconfdir}/aml-weston-hdmi.ini
-  fi  
+  fi
+  # VIM4 HDMI supports resize, so dont use ge2d to resize
+  if ${@bb.utils.contains('BOARD_NAME', 'vim4', 'true', 'false', d)};then
+    sed -i '/^secondary-support-scale/ s/.*/secondary-support-scale=true/g' ${D}${sysconfdir}/aml-weston.ini
+  fi
 }
 
 inherit allarch update-rc.d features_check systemd
