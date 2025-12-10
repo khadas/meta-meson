@@ -1,0 +1,54 @@
+diff -Nuar gstreamer-1.20.7.orig/tools/gst-launch.c gstreamer-1.20.7/tools/gst-launch.c
+--- gstreamer-1.20.7.orig/tools/gst-launch.c	2025-12-10 13:37:14.097392942 +0800
++++ gstreamer-1.20.7/tools/gst-launch.c	2025-12-10 13:41:19.948235612 +0800
+@@ -492,6 +492,7 @@
+ #endif
+ #if defined(G_OS_UNIX) || defined(G_OS_WIN32)
+ static guint signal_watch_intr_id;
++static guint signal_watch_term_id;
+ #endif
+ 
+ #if defined(G_OS_UNIX) || defined(G_OS_WIN32)
+@@ -515,6 +516,24 @@
+   return G_SOURCE_REMOVE;
+ }
+ 
++static gboolean
++term_handler (gpointer user_data)
++{
++  GstElement *pipeline = (GstElement *) user_data;
++
++  PRINT ("handling terminate signal (SIGTERM).\n");
++
++  /* post an application specific message */
++  gst_element_post_message (GST_ELEMENT (pipeline),
++      gst_message_new_application (GST_OBJECT (pipeline),
++          gst_structure_new ("GstLaunchInterrupt",
++              "message", G_TYPE_STRING, "Pipeline terminated", NULL)));
++
++  /* remove signal handler */
++  signal_watch_term_id = 0;
++  return G_SOURCE_REMOVE;
++}
++
+ #ifdef G_OS_UNIX
+ static gboolean
+ hup_handler (gpointer user_data)
+@@ -1282,6 +1301,8 @@
+ #ifdef G_OS_UNIX
+     signal_watch_intr_id =
+         g_unix_signal_add (SIGINT, (GSourceFunc) intr_handler, pipeline);
++	signal_watch_term_id =
++        g_unix_signal_add (SIGTERM, (GSourceFunc) term_handler, pipeline);
+     signal_watch_hup_id =
+         g_unix_signal_add (SIGHUP, (GSourceFunc) hup_handler, pipeline);
+ #elif defined(G_OS_WIN32)
+@@ -1340,6 +1361,8 @@
+ #ifdef G_OS_UNIX
+     if (signal_watch_intr_id > 0)
+       g_source_remove (signal_watch_intr_id);
++	if (signal_watch_term_id > 0)
++      g_source_remove (signal_watch_term_id);
+     if (signal_watch_hup_id > 0)
+       g_source_remove (signal_watch_hup_id);
+ #endif

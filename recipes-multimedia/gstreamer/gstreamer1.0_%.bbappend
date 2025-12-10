@@ -10,3 +10,4 @@ SRC_URI:append = "file://0007-modify-protec-meta-transform-to-support-sampleAES.
 SRC_URI:append = "file://0008-SWPL-136361-set-multiqueue-size-when-event-received.patch "
 SRC_URI:append = "file://0009-SWPL-153710-multiqueue-default-size.patch "
 SRC_URI:append = "file://0010-SWPL-161929-not-set-pts-as-dts.patch "
+SRC_URI:append = "file://0011-gst-signal-add-term-handler.patch "
